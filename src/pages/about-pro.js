@@ -3,10 +3,8 @@ import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js
 import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 
-(function () {
-    'use strict';
-
-    if (!/^\/about-pro\/?$/i.test(window.location.pathname)) return;
+export function initAboutProPage(main) {
+    if (!main || !main.isConnected) return;
 
     const STYLE_ID = 'tmvu-aboutpro-style';
     const clean = (v) => String(v || '').replace(/\s+/g, ' ').trim();
@@ -107,12 +105,10 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
     };
 
     const renderPage = () => {
-        const main = document.querySelector('.tmvu-main, .main_center');
-        if (!main) return;
-
-        const col1 = main.querySelector('.column1');
-        const col2 = main.querySelector('.column2_a');
-        const col3 = main.querySelector('.column3_a');
+        const nativeMain = document.querySelector('.main_center') || main;
+        const col1 = nativeMain.querySelector('.column1');
+        const col2 = nativeMain.querySelector('.column2_a');
+        const col3 = nativeMain.querySelector('.column3_a');
         if (!col2) return;
 
         injectStyles();
@@ -253,9 +249,5 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
         observer.observe(document.body, { childList: true, subtree: true });
     };
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', waitForContent);
-    } else {
-        waitForContent();
-    }
-})();
+    waitForContent();
+}

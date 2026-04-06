@@ -8,10 +8,8 @@ import { TmApi } from '../services/index.js';
 import { buildHomeFeedModel } from '../utils/home-feed.js';
 import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../utils/home-feed-native.js';
 
-(function () {
-    'use strict';
-
-    if (!/^\/home\/?$/i.test(window.location.pathname)) return;
+export function initHomePage(main) {
+    if (!main || !main.isConnected) return;
 
     const STYLE_ID = 'tmvu-home-style';
     const clean = (v) => String(v || '').replace(/\s+/g, ' ').trim();
@@ -789,7 +787,6 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
     };
 
     const renderPage = () => {
-        const main = document.querySelector('.tmvu-main');
         const nativeMain = document.querySelector('.main_center');
         if (!main || !nativeMain) return;
 
@@ -1103,9 +1100,5 @@ import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../util
         observer.observe(document.body || document.documentElement, { childList: true, subtree: true });
     };
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', waitForContent);
-    } else {
-        waitForContent();
-    }
-})();
+    waitForContent();
+}

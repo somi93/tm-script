@@ -3,12 +3,10 @@ import { TmUI } from '../shared/tm-ui.js';
 import { TmHistoryHelpers } from './tm-history-helpers.js';
 import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
 
-const $ = window.jQuery;
-    const H = () => TmHistoryHelpers;
+const H = () => TmHistoryHelpers;
 
-    /* ── module state ── */
-    let _clubId = null, _seasons = null, _el = null;
-    let leagueCache = null;
+let _clubId = null, _seasons = null, _el = null;
+let leagueCache = null;
 
     /* ═══════════════════════════════════════
        LEAGUE TAB
@@ -16,9 +14,9 @@ const $ = window.jQuery;
     function renderLeague() {
         const el = _el;
         if (leagueCache) { doRenderLeague(el, leagueCache); return; }
-        el.html(TmUI.loading('Loading league history…'));
+        el.innerHTML = TmUI.loading('Loading league history…');
         TmClubService.fetchClubLeagueHistory(_clubId, _seasons[0].id).then(function(html) {
-            if (!html) { el.html(TmUI.error('Failed to load league history.')); return; }
+            if (!html) { el.innerHTML = TmUI.error('Failed to load league history.'); return;}
             var data = parseLeagueHtml(html);
             leagueCache = data;
             doRenderLeague(el, data);
@@ -26,35 +24,33 @@ const $ = window.jQuery;
     }
 
     function parseLeagueHtml(html) {
-        var doc = $($.parseHTML(html));
-        var table = doc.find('table.zebra.sortable');
-        if (!table.length) {
-            var wrap = $('<div>').append(doc);
-            table = wrap.find('table.zebra.sortable');
-        }
-        var rows = [];
-        table.find('tr').each(function () {
-            var tds = $(this).find('td');
+        const doc = document.createElement('div');
+        doc.innerHTML = html;
+        const table = doc.querySelector('table.zebra.sortable');
+        const rows = [];
+        if (!table) return rows;
+        Array.from(table.querySelectorAll('tr')).forEach(function(tr) {
+            const tds = Array.from(tr.querySelectorAll('td'));
             if (!tds.length) return;
-            var seasonRaw = $.trim(tds.eq(0).text());
-            var isCurrent = seasonRaw.indexOf('*') !== -1;
-            var season = seasonRaw.replace('*', '');
-            var div = $.trim(tds.eq(1).text());
-            var w = parseInt($.trim(tds.eq(2).text())) || 0;
-            var d = parseInt($.trim(tds.eq(3).text())) || 0;
-            var l = parseInt($.trim(tds.eq(4).text())) || 0;
-            var pts = parseInt($.trim(tds.eq(5).text())) || 0;
-            var goalsRaw = $.trim(tds.eq(6).text());
-            var gf = 0, ga = 0;
+            const seasonRaw = tds[0]?.textContent.trim() ?? '';
+            const isCurrent = seasonRaw.indexOf('*') !== -1;
+            const season = seasonRaw.replace('*', '');
+            const div = tds[1]?.textContent.trim() ?? '';
+            const w = parseInt(tds[2]?.textContent.trim()) || 0;
+            const d = parseInt(tds[3]?.textContent.trim()) || 0;
+            const l = parseInt(tds[4]?.textContent.trim()) || 0;
+            const pts = parseInt(tds[5]?.textContent.trim()) || 0;
+            const goalsRaw = tds[6]?.textContent.trim() ?? '';
+            let gf = 0, ga = 0;
             if (goalsRaw.indexOf('-') !== -1) {
-                var gParts = goalsRaw.split('-');
+                const gParts = goalsRaw.split('-');
                 gf = parseInt(gParts[0]) || 0;
                 ga = parseInt(gParts[1]) || 0;
             }
-            var gd = parseInt($.trim(tds.eq(7).text())) || 0;
-            var avgGoals = $.trim(tds.eq(8).text());
-            var perMatch = parseFloat($.trim(tds.eq(9).text())) || 0;
-            var pos = $.trim(tds.eq(10).text());
+            const gd = parseInt(tds[7]?.textContent.trim()) || 0;
+            const avgGoals = tds[8]?.textContent.trim() ?? '';
+            const perMatch = parseFloat(tds[9]?.textContent.trim()) || 0;
+            const pos = tds[10]?.textContent.trim() ?? '';
             if (!season || div === '.') return;
             rows.push({
                 season: season, isCurrent: isCurrent, div: div,
@@ -82,7 +78,7 @@ const $ = window.jQuery;
     }
 
     function doRenderLeague(container, data) {
-        if (!data.length) { container.html(TmUI.empty('No league data found.')); return; }
+        if (!data.length) { container.innerHTML = TmUI.empty('No league data found.'); return; }
 
         const completed = data.filter(r => !r.isCurrent);
 
@@ -117,7 +113,7 @@ const $ = window.jQuery;
             { label: 'Avg PPM', value: avgPPM, minWidth: '70px' },
             ...(bestPos !== Infinity ? [{ label: 'Best Finish', valueHtml: '#' + bestPos + ' <span style="font-size:var(--tmu-font-xs);color:var(--tmu-text-faint)">(S' + bestPosSeason + ')</span>', valueCls: 'tmh-pos', minWidth: '70px' }] : []),
         ], { cls: 'tmh-summary-strip tmh-league-summary', itemMinWidth: '70px' });
-        container.html(h);
+        container.innerHTML = h;
 
         const n = totalSeasons || 1;
         const footer = completed.length ? [
@@ -177,8 +173,8 @@ const $ = window.jQuery;
             sortDir: -1,
             rowCls: r => r.isCurrent ? 'tmh-league-current' : r.pos === 1 ? 'tmh-league-champion' : '',
         });
-        container[0].appendChild(tbl);
-        container.append('<p style="font-size:var(--tmu-font-xs);color:var(--tmu-text-faint);margin-top:var(--tmu-space-xs)">* Current season (projected values)</p>');
+        container.appendChild(tbl);
+        container.insertAdjacentHTML('beforeend', '<p style="font-size:var(--tmu-font-xs);color:var(--tmu-text-faint);margin-top:var(--tmu-space-xs)">* Current season (projected values)</p>');
     }
 
     export const TmHistoryLeague = {

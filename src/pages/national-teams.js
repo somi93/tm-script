@@ -12,16 +12,12 @@ import { TmPosition } from '../lib/tm-position.js';
 import { TmUtils } from '../lib/tm-utils.js';
 import { TmPlayerService } from '../services/player.js';
 
-(function () {
-    'use strict';
+export function initNationalTeamsPage(main) {
+    if (!main || !main.isConnected) return;
 
     const routeMatch = window.location.pathname.match(/^\/national-teams\/(?:([a-z]{2,3})\/?)?$/i);
     if (!routeMatch) return;
-
-    const main = document.querySelector('.tmvu-main, .main_center');
-    if (!main) return;
-
-    const sourceRoot = main.cloneNode(true);
+    const sourceRoot = (document.querySelector('.main_center') || main).cloneNode(true);
     const STYLE_ID = 'tmvu-national-teams-style';
     const { R5_THRESHOLDS } = TmConst;
     const CURRENT_SEASON = (typeof SESSION !== 'undefined' && SESSION.season) ? Number(SESSION.season) : null;
@@ -740,4 +736,4 @@ import { TmPlayerService } from '../services/player.js';
     };
 
     render();
-})();
+}

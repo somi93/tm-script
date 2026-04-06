@@ -5,14 +5,10 @@ import { TmTournamentPage } from '../components/shared/tm-tournament-page.js';
 import { TmTournamentCards } from '../components/shared/tm-tournament-cards.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 
-(function () {
-    'use strict';
+export function initCupPage(main) {
+    if (!main || !main.isConnected) return;
 
-    if (!/^\/cup\/?$/.test(window.location.pathname)) return;
-
-    const main = document.querySelector('.tmvu-main, .main_center');
-    if (!main) return;
-    const sourceRoot = main.cloneNode(true);
+    const sourceRoot = document.querySelector('.main_center') || main;
 
     const STYLE_ID = 'tmvu-cup-style';
     const CURRENT_SEASON = (typeof SESSION !== 'undefined' && SESSION.season) ? Number(SESSION.season) : null;
@@ -95,15 +91,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
 
     const cleanText = (value) => String(value || '').replace(/\s+/g, ' ').trim();
 
-    const escapeHtml = (value) => String(value || '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-
     const htmlOf = (node) => node ? node.outerHTML : '';
-    const metricHtml = (opts) => TmUI.metric(opts);
 
     const extractClubId = (node) => {
         if (!node) return '';
@@ -327,4 +315,4 @@ import { TmUI } from '../components/shared/tm-ui.js';
     };
 
     render();
-})();
+}

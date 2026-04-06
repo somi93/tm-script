@@ -7,9 +7,8 @@ import { TmPlayerService } from '../services/player.js';
 import { TmClubService } from '../services/club.js';
 import { TmUtils } from '../lib/tm-utils.js';
 
-(function () {
-    'use strict';
-    if (!/^\/123/.test(location.pathname)) return;
+export function initDbRepairPage(main) {
+    if (!main || !main.isConnected) return;
 
     const htmlOf = node => node?.outerHTML || '';
     const buttonHtml = opts => htmlOf(TmUI.button(opts));
@@ -857,10 +856,5 @@ import { TmUtils } from '../lib/tm-utils.js';
         });
     };
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
-
-})();
+    init();
+}

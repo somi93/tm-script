@@ -8,39 +8,23 @@ import { initClubLayout, normalizeClubHref } from '../components/club/tm-club-la
 import { TmClubService } from '../services/club.js';
 import { TmMatchService } from '../services/match.js';
 
-(function () {
-    'use strict';
-
-    const getStatsContainer = () => document.querySelector('.tmvu-club-main, .column2_a');
+export function initStatsPage(main) {
+    if (!main || !main.isConnected) return;
 
     // ─── Extract club ID from URL ────────────────────────────────────────
     const urlMatch = location.pathname.match(/\/statistics\/club\/(\d+)/);
     if (!urlMatch) return;
     const CLUB_ID = urlMatch[1];
     const CURRENT_PATH = normalizeClubHref(window.location.pathname);
+    const layout = initClubLayout({ main, currentPath: CURRENT_PATH });
+    if (!layout?.mainColumn) return;
+    const container = layout.mainColumn;
 
     const setPendingVisibility = (pending) => {
-        document.querySelectorAll('.tmvu-club-main, .column2_a').forEach(node => {
-            node.classList.toggle('tmvu-stats-pending', pending);
-        });
+        container.classList.toggle('tmvu-stats-pending', pending);
     };
 
-    const waitForStatsContainer = () => new Promise(resolve => {
-        const existing = getStatsContainer();
-        if (existing) {
-            resolve(existing);
-            return;
-        }
-
-        const observer = new MutationObserver(() => {
-            const container = getStatsContainer();
-            if (!container) return;
-            observer.disconnect();
-            resolve(container);
-        });
-
-        observer.observe(document.body, { childList: true, subtree: true });
-    });
+    const waitForStatsContainer = () => Promise.resolve(container);
 
 
     // ─── State ───────────────────────────────────────────────────────────
@@ -239,8 +223,6 @@ import { TmMatchService } from '../services/match.js';
 
     // ─── Build the main container ────────────────────────────────────────
     const buildUI = () => {
-        const container = getStatsContainer();
-        if (!container) return;
 
         // Clear existing content
         container.innerHTML = '';
@@ -355,17 +337,10 @@ import { TmMatchService } from '../services/match.js';
 
     const start = async () => {
         TmStatsStyles.inject();
-        initClubLayout({ currentPath: CURRENT_PATH });
         setPendingVisibility(true);
         await waitForStatsContainer();
         init();
     };
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            start().catch(err => console.error('TM Season Analysis start error:', err));
-        }, { once: true });
-    } else {
-        start().catch(err => console.error('TM Season Analysis start error:', err));
-    }
-})();
+    start().catch(err => console.error('TM Season Analysis start error:', err));
+}

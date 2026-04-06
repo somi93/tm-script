@@ -4,10 +4,8 @@ import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 
-(function () {
-    'use strict';
-
-    if (!/^\/teamsters\//i.test(window.location.pathname)) return;
+export function initTeamstersPage(main) {
+    if (!main || !main.isConnected) return;
 
     const STYLE_ID = 'tmvu-teamsters-style';
     const clean = (v) => String(v || '').replace(/\s+/g, ' ').trim();
@@ -118,11 +116,11 @@ import { TmUI } from '../components/shared/tm-ui.js';
     // ── render ────────────────────────────────────────────────────────────────
 
     const renderPage = () => {
-        const main = document.querySelector('.tmvu-main, .main_center');
-        if (!main) return;
-        const col1 = main.querySelector('.column1');
-        const col2 = main.querySelector('.column2_a');
-        const col3 = main.querySelector('.column3_a');
+        const nativeMain = document.querySelector('.main_center');
+        if (!nativeMain) return;
+        const col1 = nativeMain.querySelector('.column1');
+        const col2 = nativeMain.querySelector('.column2_a');
+        const col3 = nativeMain.querySelector('.column3_a');
         if (!col2) return;
 
         const snap1 = col1?.cloneNode(true);
@@ -360,13 +358,11 @@ import { TmUI } from '../components/shared/tm-ui.js';
             : document.querySelector('.column2_a .box_head');
 
         const run = () => {
-            const main = document.querySelector('.tmvu-main, .main_center');
-            if (!main) return;
             injectStyles();
             if (isApply) {
                 const liveForm = document.querySelector('#teamster_apply');
-                const col1 = main.querySelector('.column1');
-                const navItems = col1 ? parseNav(col1.cloneNode(true)) : [];
+                const nativeCol1 = document.querySelector('.main_center .column1');
+                const navItems = nativeCol1 ? parseNav(nativeCol1.cloneNode(true)) : [];
                 renderApply(main, liveForm, navItems);
             } else {
                 renderPage();
@@ -380,9 +376,5 @@ import { TmUI } from '../components/shared/tm-ui.js';
         observer.observe(document.body, { childList: true, subtree: true });
     };
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', waitForContent);
-    } else {
-        waitForContent();
-    }
-})();
+    waitForContent();
+}

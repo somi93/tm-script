@@ -106,11 +106,10 @@ export function resolveClubCurrentPath(currentPath = normalizeClubHref(window.lo
     return normalizeClubHref(selected?.getAttribute('href') || '') || currentPath;
 }
 
-export function initClubLayout({ currentPath = normalizeClubHref(window.location.pathname), singleColumn = false } = {}) {
+export function initClubLayout({ main: _main, currentPath = normalizeClubHref(window.location.pathname), singleColumn = false } = {}) {
     currentPath = resolveClubCurrentPath(currentPath);
-    if (!isClubWorkspaceRoute(currentPath)) return null;
 
-    const main = TmUtils.getMainContainer();
+    const main = _main || TmUtils.getMainContainer();
     const items = collectClubMenuItems();
     const existingNav = main?.querySelector('#tmvu-club-nav');
     if (!main || (!items.length && !existingNav)) return null;
@@ -118,24 +117,26 @@ export function initClubLayout({ currentPath = normalizeClubHref(window.location
     main.classList.add('tmvu-club-layout');
     main.classList.toggle('tmvu-club-single', Boolean(singleColumn));
 
-    const mainColumn = document.querySelector('.tmvu-club-main, .column2_a');
-    if (mainColumn) {
-        mainColumn.classList.remove('column2_a');
-        mainColumn.classList.add('tmvu-club-main');
+    // Create fresh content containers inside .tmvu-main — never touch native columns
+    let mainColumn = main.querySelector('.tmvu-club-main');
+    if (!mainColumn) {
+        mainColumn = document.createElement('div');
+        mainColumn.className = 'tmvu-club-main';
+        main.appendChild(mainColumn);
     }
 
-    const secondaryColumn = document.querySelector('.tmvu-club-secondary, .column3_a, .column3');
-    if (secondaryColumn && singleColumn) {
-        secondaryColumn.remove();
-    } else if (secondaryColumn) {
-        secondaryColumn.classList.remove('column3_a', 'column3');
-        secondaryColumn.classList.add('tmvu-club-secondary');
-        if (!hasMeaningfulSecondaryContent(secondaryColumn)) secondaryColumn.remove();
+    let secondaryColumn = main.querySelector('.tmvu-club-secondary');
+    if (!secondaryColumn && !singleColumn) {
+        const nativeSecondary = document.querySelector('.column3_a, .column3');
+        if (nativeSecondary && hasMeaningfulSecondaryContent(nativeSecondary)) {
+            secondaryColumn = document.createElement('div');
+            secondaryColumn.className = 'tmvu-club-secondary';
+            main.appendChild(secondaryColumn);
+        }
     }
 
     if (items.length) {
         TmClubSideMenu.mount(main, { items, currentHref: currentPath });
-        document.querySelectorAll('.column1, .column1_a').forEach(node => node.remove());
     }
 
     return { main, mainColumn, secondaryColumn };

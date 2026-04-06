@@ -5,34 +5,27 @@ import { TmShortlistService } from '../services/shortlist.js';
 import { enrichPlayers, dbRecordToPlayer, toPageRecord } from '../services/players-enrich.js';
 import { TmUtils } from '../lib/tm-utils.js';
 
-(function () {
-    'use strict';
+'use strict';
 
-    if (!/^\/shortlist\/?$/.test(location.pathname)) return;
+let mountedMain = null;
+const PAGE_DATA = {};
 
-    const PAGE_DATA = {};
-    if (Array.isArray(window.players_ar)) {
-        for (const p of window.players_ar) PAGE_DATA[String(p.id)] = toPageRecord(p);
-    }
-
-
-    //    ═════════════════════════════════════════════════════════ */
-    let allPlayers = [];
-    let sortCol = 'r5', sortDir = -1;
-    let fPos = new Set(), fSide = new Set();
-    let fAgeMin = 0, fAgeMax = 99;
-    let fR5Min = '', fR5Max = '', fRecMin = '', fRecMax = '', fTiMin = '', fTiMax = '';
-    let shortlistLoading = true;
-    let loadProgress = null;       // { done, total } during any fetch
-    let loadMoreState = null;      // null | 'loading' | 'done'
-    let nextStart = 0;             // offset for next shortlist page fetch
-    let totalKnown = 0;            // total IDs discovered across all pages
-    let activeTab = 'shortlist';
-    let indexedPlayers = null;
-    let indexedLoading = false;
-    let ixSortCol = 'r5', ixSortDir = -1;
-    let ixPage = 0, slPage = 0;
-    const IX_PAGE_SIZE = 50, SL_PAGE_SIZE = 50;
+let allPlayers = [];
+let sortCol = 'r5', sortDir = -1;
+let fPos = new Set(), fSide = new Set();
+let fAgeMin = 0, fAgeMax = 99;
+let fR5Min = '', fR5Max = '', fRecMin = '', fRecMax = '', fTiMin = '', fTiMax = '';
+let shortlistLoading = true;
+let loadProgress = null;       // { done, total } during any fetch
+let loadMoreState = null;      // null | 'loading' | 'done'
+let nextStart = 0;             // offset for next shortlist page fetch
+let totalKnown = 0;            // total IDs discovered across all pages
+let activeTab = 'shortlist';
+let indexedPlayers = null;
+let indexedLoading = false;
+let ixSortCol = 'r5', ixSortDir = -1;
+let ixPage = 0, slPage = 0;
+const IX_PAGE_SIZE = 50, SL_PAGE_SIZE = 50;
 
     /* ═════════════════════════════════════════════════════════
        INDEXED TAB
@@ -108,6 +101,7 @@ import { TmUtils } from '../lib/tm-utils.js';
        ═════════════════════════════════════════════════════════ */
     function buildCtx() {
         return {
+            main: mountedMain,
             allPlayers, indexedPlayers, activeTab,
             sortCol, sortDir, ixSortCol, ixSortDir, ixPage, IX_PAGE_SIZE, slPage, SL_PAGE_SIZE,
             shortlistLoading, loadProgress, loadMoreState,
@@ -146,6 +140,9 @@ import { TmUtils } from '../lib/tm-utils.js';
        INIT
        ═════════════════════════════════════════════════════════ */
     async function init() {
+        if (Array.isArray(window.players_ar)) {
+            for (const p of window.players_ar) PAGE_DATA[String(p.id)] = toPageRecord(p);
+        }
         if (!Array.isArray(window.players_ar) || !window.players_ar.length) return;
 
         injectCSS();
@@ -192,10 +189,15 @@ import { TmUtils } from '../lib/tm-utils.js';
         renderPanel();
     }
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
-
-})();
+export function initShortlistPage(main) {
+    if (!main || !main.isConnected) return;
+    if (!Array.isArray(window.players_ar) || !window.players_ar.length) return;
+    mountedMain = main;
+    main.classList.add('tmvu-shortlist-page', 'tmu-page-density-regular');
+    allPlayers = []; indexedPlayers = null;
+    sortCol = 'r5'; sortDir = -1;
+    activeTab = 'shortlist';
+    shortlistLoading = true; loadProgress = null; loadMoreState = null;
+    nextStart = 0; totalKnown = 0; ixPage = 0; slPage = 0;
+    init();
+}

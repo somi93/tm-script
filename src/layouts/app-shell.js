@@ -13,6 +13,34 @@ import { initScoutsHirePage } from '../pages/scouts-hire.js';
 import { initSponsorsPage } from '../pages/sponsors.js';
 import { initTrainingPage } from '../pages/training.js';
 import { initYouthDevelopmentPage } from '../pages/youth-development.js';
+import { initShortlistPage } from '../pages/shortlist.js';
+import { initSquadPage } from '../pages/squad.js';
+import { initHistoryPage } from '../pages/history.js';
+import { initClubPage } from '../pages/club.js';
+import { initFixturesPage } from '../pages/fixtures.js';
+import { initStatsPage } from '../pages/stats.js';
+import { initTransferPage } from '../pages/transfer.js';
+import { initLeaguePage } from '../pages/league.js';
+import { initMatchPage } from '../pages/match.js';
+import { initCupPage } from '../pages/cup.js';
+import { initHomePage } from '../pages/home.js';
+import { initInternationalCupPage } from '../pages/international-cup.js';
+import { initForumPage } from '../pages/forum.js';
+import { initImportPage } from '../pages/import.js';
+import { initTeamstersPage } from '../pages/teamsters.js';
+import { initAboutTmPage } from '../pages/about-tm.js';
+import { initAboutProPage } from '../pages/about-pro.js';
+import { initBuyProPage } from '../pages/buy-pro.js';
+import { initFreeProPage } from '../pages/free-pro.js';
+import { initDonationsPage } from '../pages/donations.js';
+import { initUserGuidePage } from '../pages/user-guide.js';
+import { initInternationalCupCoefficientsPage } from '../pages/international-cup-coefficients.js';
+import { initDbInspectPage } from '../pages/dbinspect.js';
+import { initDbRepairPage } from '../pages/dbrepair.js';
+import { initNationalTeamsRankingsPage } from '../pages/national-teams-rankings.js';
+import { initNationalTeamsPage } from '../pages/national-teams.js';
+import { initSupportProPage } from '../pages/support-pro.js';
+import { initPlayerPage } from '../pages/player.js';
 
 const IMPORT_PATH = '/import/';
 
@@ -639,6 +667,88 @@ function initCurrentPage() {
     }
     if (/^\/youth-development(?:\/.*)?$/i.test(currentPath)) {
         initYouthDevelopmentPage(main);
+    }
+    if (/^\/club\/\d+\/squad\/?$/i.test(currentPath)) {
+        initSquadPage(main);
+        return;
+    }
+    if (/^\/shortlist\/?$/i.test(currentPath)) {
+        initShortlistPage(main);
+    }
+    if (/^\/history\/club\//i.test(currentPath)) {
+        initHistoryPage(main);
+    }
+    if (/^\/club(?:\/\d+(?:\/(?:overview\/)?)?)?\/?$/i.test(currentPath)) {
+        initClubPage(main);
+    }    if (/^\/fixtures\/club\/\d+\/?$/i.test(currentPath)) {
+        initFixturesPage(main);
+    }
+    if (/^\/statistics\/club\/\d+\/?$/i.test(currentPath)) {
+        initStatsPage(main);
+    }
+    if (/^\/transfer\/?$/i.test(currentPath)) {
+        initTransferPage(main);
+    }
+    if (/^\/league\//.test(currentPath)) {
+        initLeaguePage(main);
+    }
+    if (/^\/matches\/\d+/.test(currentPath)) {
+        initMatchPage(main);
+    }
+    if (/^\/cup\/?$/i.test(currentPath)) {
+        initCupPage(main);
+    }
+    if (/^\/home\/?$/i.test(currentPath)) {
+        initHomePage(main);
+    }
+    if (/^\/international-cup(?:\/\d+)?\/?$/i.test(currentPath)) {
+        initInternationalCupPage(main);
+    }
+    if (/^\/forum\//i.test(currentPath)) {
+        initForumPage(main);
+    }
+    if (/^\/import\/?$/i.test(currentPath)) {
+        initImportPage(main);
+    }
+    if (/^\/teamsters\//i.test(currentPath)) {
+        initTeamstersPage(main);
+    }
+    if (/^\/about-tm\//i.test(currentPath)) {
+        initAboutTmPage(main);
+    }
+    if (/^\/about-pro\/?$/i.test(currentPath)) {
+        initAboutProPage(main);
+    }
+    if (/^\/buy-pro\/?$/i.test(currentPath)) {
+        initBuyProPage(main);
+    }
+    if (/^\/free-pro\/?$/i.test(currentPath)) {
+        initFreeProPage(main);
+    }
+    if (/^\/donations(\/legendary)?\/?$/i.test(currentPath)) {
+        initDonationsPage(main);
+    }
+    if (/^\/user-guide\//i.test(currentPath)) {
+        initUserGuidePage(main);
+    }
+    if (/^\/international-cup\/coefficients/i.test(currentPath)) {
+        initInternationalCupCoefficientsPage(main);
+    }
+    if (/^\/123/.test(currentPath)) {
+        initDbInspectPage(main);
+        initDbRepairPage(main);
+    }
+    if (/^\/national-teams\/rankings\//i.test(currentPath)) {
+        initNationalTeamsRankingsPage(main);
+    }
+    if (/^\/national-teams\//i.test(currentPath)) {
+        initNationalTeamsPage(main);
+    }
+    if (/^\/support-pro\/?$/i.test(currentPath)) {
+        initSupportProPage(main);
+    }
+    if (/^\/players\/\d+/i.test(currentPath)) {
+        initPlayerPage(main);
     }
 }
 

@@ -2,10 +2,8 @@ import { TmHeroCard } from '../components/shared/tm-hero-card.js';
 import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmSectionCard } from '../components/shared/tm-section-card.js';
 
-(function () {
-    'use strict';
-
-    if (!/^\/about-tm\//i.test(window.location.pathname)) return;
+export function initAboutTmPage(main) {
+    if (!main || !main.isConnected) return;
 
     const STYLE_ID = 'tmvu-abouttm-style';
     const clean = (v) => String(v || '').replace(/\s+/g, ' ').trim();
@@ -47,9 +45,8 @@ import { TmSectionCard } from '../components/shared/tm-section-card.js';
     };
 
     const renderPage = () => {
-        const main = document.querySelector('.tmvu-main, .main_center');
-        if (!main) return;
-        const col2 = main.querySelector('.column2_b');
+        const nativeMain = document.querySelector('.main_center') || main;
+        const col2 = nativeMain.querySelector('.column2_b');
         if (!col2) return;
 
         const snap = col2.cloneNode(true);
@@ -91,9 +88,5 @@ import { TmSectionCard } from '../components/shared/tm-section-card.js';
         observer.observe(document.body, { childList: true, subtree: true });
     };
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', waitForContent);
-    } else {
-        waitForContent();
-    }
-})();
+    waitForContent();
+}

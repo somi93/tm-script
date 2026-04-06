@@ -8,11 +8,11 @@ import { TmTournamentPage } from './tm-tournament-page.js';
 import { TmTournamentCards } from './tm-tournament-cards.js';
 import { TmUI } from './tm-ui.js';
 
-export function mountInternationalCupOverviewPage() {
-    const main = document.querySelector('.tmvu-main, .main_center');
+export function mountInternationalCupOverviewPage(main) {
+    if (!main) main = document.querySelector('.tmvu-main');
     if (!main) return;
 
-    const sourceRoot = main.cloneNode(true);
+    const sourceRoot = document.querySelector('.main_center') || main;
     const STYLE_ID = 'tmvu-international-cup-overview-style';
     const CURRENT_SEASON = (typeof SESSION !== 'undefined' && SESSION.season) ? Number(SESSION.season) : null;
 

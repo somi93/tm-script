@@ -13,10 +13,8 @@ import { TmMatchVenue } from '../components/match/tm-match-venue.js';
 import { TmTabs } from '../components/shared/tm-tabs.js';
 import { TmMatchService } from '../services/match.js';
 
-(function () {
-    'use strict';
-
-    if (!/\/matches\/\d+/.test(location.pathname)) return;
+export function initMatchPage(main) {
+    if (!main || !main.isConnected) return;
 
     const injectStyles = () => TmMatchStyles.inject();
     const getOverlayTabsWrap = () => document.querySelector('#rnd-overlay .tmu-tabs');
@@ -1184,4 +1182,4 @@ import { TmMatchService } from '../services/match.js';
     };
 
     initForCurrentPage();
-})();
+}

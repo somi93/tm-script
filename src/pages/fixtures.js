@@ -3,15 +3,18 @@ import { TmFixturesList } from '../components/shared/tm-fixtures-list.js';
 import { TmSummaryStrip } from '../components/shared/tm-summary-strip.js';
 import { TmClubFixturesStyles } from '../components/club/tm-club-fixtures-styles.js';
 import { TmClubService } from '../services/club.js';
+import { initClubLayout, normalizeClubHref } from '../components/club/tm-club-layout.js';
 
-(function () {
-    'use strict';
+export function initFixturesPage(main) {
+    if (!main || !main.isConnected) return;
 
     const routeMatch = window.location.pathname.match(/^\/fixtures\/club\/(\d+)\/?$/);
     if (!routeMatch) return;
 
     const CLUB_ID = routeMatch[1];
-    const getContainer = () => document.querySelector('.tmvu-club-main, .column2_a');
+    const layout = initClubLayout({ main, currentPath: normalizeClubHref(window.location.pathname) });
+    if (!layout?.mainColumn) return;
+    const container = layout.mainColumn;
     const htmlOf = node => node?.outerHTML || '';
     const buttonHtml = opts => htmlOf(TmUI.button(opts));
 
@@ -152,8 +155,6 @@ import { TmClubService } from '../services/club.js';
     }
 
     function render() {
-        const container = getContainer();
-        if (!container) return;
         if (!fixturesData) return;
 
         const filteredMonths = getFilteredMonths(fixturesData);
@@ -226,9 +227,6 @@ import { TmClubService } from '../services/club.js';
     }
 
     async function init() {
-        const container = getContainer();
-        if (!container) return;
-
         TmClubFixturesStyles.inject();
         container.innerHTML = TmUI.loading('Loading club fixtures...');
 
@@ -242,17 +240,5 @@ import { TmClubService } from '../services/club.js';
         }
     }
 
-    function waitForReady() {
-        if (getContainer()) {
-            init();
-        } else {
-            window.setTimeout(waitForReady, 300);
-        }
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', waitForReady, { once: true });
-    } else {
-        waitForReady();
-    }
-})();
+    init();
+}

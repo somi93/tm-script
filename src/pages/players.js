@@ -4,10 +4,7 @@ import { TmPlayerService } from '../services/player.js';
 import { TmSquad } from '../lib/tm-squad.js';
 import { TmUtils } from '../lib/tm-utils.js';
 
-(function () {
-    'use strict';
-
-    if (!/^\/players\/?$/.test(location.pathname)) return;
+export function initPlayersPage() {
 
     const getSquadRoot = () => document.getElementById('sq');
 
@@ -395,4 +392,4 @@ import { TmUtils } from '../lib/tm-utils.js';
         if (parsed?.length) processSquadPage(parsed);
     });
 
-})();
+}

@@ -6,10 +6,8 @@ import { TmLib } from '../lib/tm-lib.js';
 import { TmPlayerService } from '../services/player.js';
 import { TmUtils } from '../lib/tm-utils.js';
 
-(function () {
-    'use strict';
-    // if (true) return;
-    if (!/^\/123/.test(location.pathname)) return;
+export function initDbInspectPage(main) {
+    if (!main || !main.isConnected) return;
 
     const DB_NAME = 'TMPlayerData';
     const STORE_NAME = 'players';
@@ -842,9 +840,5 @@ import { TmUtils } from '../lib/tm-utils.js';
         render();
     };
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => init().catch(e => console.error('[DBInspect]', e)));
-    } else {
-        init().catch(e => console.error('[DBInspect]', e));
-    }
-})();
+    init().catch(e => console.error('[DBInspect]', e));
+}

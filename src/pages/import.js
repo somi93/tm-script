@@ -10,10 +10,9 @@ import { TmPlayerService } from '../services/player.js';
 import { TmClubService } from '../services/club.js';
 import { TmUtils } from '../lib/tm-utils.js';
 
-(function () {
-    'use strict';
+export function initImportPage(main) {
+    if (!main || !main.isConnected) return;
 
-    if (!/^\/import\/?$/.test(location.pathname)) return;
     const $ = window.jQuery;
     if (!$) return;
 
@@ -68,10 +67,7 @@ import { TmUtils } from '../lib/tm-utils.js';
        ═══════════════════════════════════════════════════════════ */
     let parsedPlayers = null;
     let isSyncing = false;
-    const getImportContainer = () => {
-        const containers = TmUtils.getMainContainers();
-        return containers[containers.length - 1] || null;
-    };
+    const getImportContainer = () => main;
 
     const buildUI = () => {
         TmImportStyles.inject();
@@ -683,9 +679,7 @@ import { TmUtils } from '../lib/tm-utils.js';
        ═══════════════════════════════════════════════════════════ */
     PlayerDB.init().then(() => {
         buildUI();
-        console.log('[Import] Import page ready — DB loaded');
     }).catch(e => {
         console.warn('[Import] DB init failed:', e);
     });
-
-})();
+}

@@ -157,8 +157,8 @@ import { TmUI } from '../shared/tm-ui.js';
 
         panel.innerHTML = h;
 
-        const ref = TmUtils.getMainContainer();
-        if (ref) ref.parentNode.insertBefore(panel, ref);
+        const ref = ctx.main || TmUtils.getMainContainer();
+        if (ref) ref.appendChild(panel);
         else document.body.appendChild(panel);
 
         panel.onclick = (event) => {

@@ -4,10 +4,8 @@ import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 
-(function () {
-    'use strict';
-
-    if (!/^\/buy-pro\/?$/i.test(window.location.pathname)) return;
+export function initBuyProPage(main) {
+    if (!main || !main.isConnected) return;
 
     const STYLE_ID = 'tmvu-buypro-style';
     const clean = (v) => String(v || '').replace(/\s+/g, ' ').trim();
@@ -110,11 +108,9 @@ import { TmUI } from '../components/shared/tm-ui.js';
     };
 
     const renderPage = () => {
-        const main = document.querySelector('.tmvu-main, .main_center');
-        if (!main) return;
-
-        const col1 = main.querySelector('.column1');
-        const col3 = main.querySelector('.column3_a');
+        const nativeMain = document.querySelector('.main_center') || main;
+        const col1 = nativeMain.querySelector('.column1');
+        const col3 = nativeMain.querySelector('.column3_a');
 
         const liveForm = document.getElementById('order_submit');
         if (!liveForm) return;
@@ -201,9 +197,5 @@ import { TmUI } from '../components/shared/tm-ui.js';
         observer.observe(document.body, { childList: true, subtree: true });
     };
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', waitForContent);
-    } else {
-        waitForContent();
-    }
-})();
+    waitForContent();
+}

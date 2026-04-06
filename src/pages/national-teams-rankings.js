@@ -3,15 +3,10 @@ import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 
-(function () {
-    'use strict';
+export function initNationalTeamsRankingsPage(main) {
+    if (!main || !main.isConnected) return;
 
-    if (!/^\/national-teams\/rankings\/(?:[^/]+\/)?$/i.test(window.location.pathname)) return;
-
-    const main = document.querySelector('.tmvu-main, .main_center');
-    if (!main) return;
-
-    const sourceRoot = main.cloneNode(true);
+    const sourceRoot = (document.querySelector('.main_center') || main).cloneNode(true);
     const STYLE_ID = 'tmvu-national-teams-rankings-style';
 
     const cleanText = (value) => String(value || '').replace(/\s+/g, ' ').trim();
@@ -234,4 +229,4 @@ import { TmUI } from '../components/shared/tm-ui.js';
     };
 
     render();
-})();
+}

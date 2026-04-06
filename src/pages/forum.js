@@ -6,10 +6,8 @@ import { TmUI } from '../components/shared/tm-ui.js';
 import { TmPlayerService } from '../services/player.js';
 import { TmPlayerTooltip } from '../components/player/tm-player-tooltip.js';
 
-(function () {
-    'use strict';
-
-    if (!/^\/forum\//i.test(window.location.pathname)) return;
+export function initForumPage(main) {
+    if (!main || !main.isConnected) return;
 
     const clean = (v) => String(v || '').replace(/\s+/g, ' ').trim();
     const esc = (v) => String(v || '')
@@ -816,9 +814,7 @@ import { TmPlayerTooltip } from '../components/player/tm-player-tooltip.js';
     }
 
     waitForContent(function () {
-        const main = document.querySelector('.tmvu-main') || document.querySelector('.main_center');
-        if (!main) return;
-        const src = main.cloneNode(true);
+        const src = document.querySelector('.main_center') || main;
         if (src.querySelector('.forum_topics')) {
             renderListing(main, src);
         } else if (src.querySelector('.topic_post')) {
@@ -827,5 +823,4 @@ import { TmPlayerTooltip } from '../components/player/tm-player-tooltip.js';
             renderNewTopic(main, src);
         }
     });
-
-})();
+}

@@ -12,8 +12,8 @@ import { TmPlayerArchiveDB, TmPlayerDB } from '../lib/tm-playerdb.js';
 import { TmPlayerService } from '../services/player.js';
 import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 
-(function () {
-    'use strict';
+export function initPlayerPage(main) {
+    if (!main || !main.isConnected) return;
 
     const urlMatch = location.pathname.match(/\/players\/(\d+)/);
     if (!urlMatch) return;
@@ -229,4 +229,4 @@ import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js
         try { renderPlayerChrome({ rerenderSkills: true }); } catch (e) { }
     });
 
-})();
+}

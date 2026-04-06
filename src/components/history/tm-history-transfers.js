@@ -3,7 +3,6 @@ import { TmUI } from '../shared/tm-ui.js';
 import { TmHistoryHelpers } from './tm-history-helpers.js';
 import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
 
-const $ = window.jQuery;
 const H = () => TmHistoryHelpers;
 
 /* ── module state ── */
@@ -28,7 +27,7 @@ function renderTransfers() {
         ],
     });
     h += '<div id="tmh-tdata"></div>';
-    el.html(h);
+    el.innerHTML = h;
 
     function goSeason(sid) {
         currentSeason = sid;
@@ -44,18 +43,19 @@ function renderTransfers() {
         onChange: goSeason,
     });
 
-    $('#tmh-all-btn').on('click', function () { loadAllSeasons(); });
-    $('#tmh-still-btn').on('click', function () { loadStillPlaying(); });
+    el.querySelector('#tmh-all-btn')?.addEventListener('click', function () { loadAllSeasons(); });
+    el.querySelector('#tmh-still-btn')?.addEventListener('click', function () { loadStillPlaying(); });
 
     loadSeason(currentSeason);
 }
 
 /* ─── load single season ─── */
 function loadSeason(sid) {
-    const c = $('#tmh-tdata');
+    const c = document.getElementById('tmh-tdata');
+    if (!c) return;
     if (transferCache[sid]) { renderSeasonData(c, transferCache[sid]); return; }
 
-    c.html(TmUI.loading('Loading Season ' + sid + '…'));
+    c.innerHTML = TmUI.loading('Loading Season ' + sid + '…');
 
     TmClubService.fetchClubTransferHistory(_clubId, sid).then(function (html) {
         if (html) {
@@ -63,65 +63,65 @@ function loadSeason(sid) {
             transferCache[sid] = d;
             renderSeasonData(c, d);
         } else {
-            c.html(TmUI.error('Failed to load transfers'));
+            c.innerHTML = TmUI.error('Failed to load transfers');
         }
     });
 }
 
 /* ─── parse transfer page ─── */
 function parseTransfers(html) {
-    const doc = $('<div>').html(html);
+    const doc = document.createElement('div');
+    doc.innerHTML = html;
 
-    const h3s = doc.find('h3');
     let boughtTable = null, soldTable = null;
-    h3s.each(function () {
-        const txt = $(this).text().trim().toLowerCase();
-        if (txt === 'bought') boughtTable = $(this).next('table');
-        if (txt === 'sold') soldTable = $(this).next('table');
+    Array.from(doc.querySelectorAll('h3')).forEach(function (h3) {
+        const txt = h3.textContent.trim().toLowerCase();
+        const next = h3.nextElementSibling;
+        if (txt === 'bought' && next?.tagName === 'TABLE') boughtTable = next;
+        if (txt === 'sold' && next?.tagName === 'TABLE') soldTable = next;
     });
 
     const bought = [], sold = [];
 
-    if (boughtTable && boughtTable.length) {
-        boughtTable.find('tr').each(function (i) {
+    if (boughtTable) {
+        Array.from(boughtTable.querySelectorAll('tr')).forEach(function (tr, i) {
             if (i === 0) return;
-            const tds = $(this).find('td');
+            const tds = Array.from(tr.querySelectorAll('td'));
             if (tds.length < 4) return;
-            const a = tds.eq(0).find('a[player_link]');
-            if (!a.length) return;
+            const a = tds[0].querySelector('a[player_link]');
+            if (!a) return;
             bought.push({
-                name: a.text().trim(),
-                pid: a.attr('player_link'),
-                url: a.attr('href'),
-                starsHtml: tds.eq(1).html(),
-                price: parseFloat(tds.eq(3).text().replace(/,/g, '').trim()) || 0
+                name: a.textContent.trim(),
+                pid: a.getAttribute('player_link'),
+                url: a.getAttribute('href'),
+                starsHtml: tds[1].innerHTML,
+                price: parseFloat(tds[3].textContent.replace(/,/g, '').trim()) || 0
             });
         });
     }
 
-    if (soldTable && soldTable.length) {
-        soldTable.find('tr').each(function (i) {
+    if (soldTable) {
+        Array.from(soldTable.querySelectorAll('tr')).forEach(function (tr, i) {
             if (i === 0) return;
-            const tds = $(this).find('td');
+            const tds = Array.from(tr.querySelectorAll('td'));
             if (tds.length < 4) return;
-            if (tds.eq(0).attr('colspan')) return;
-            const a = tds.eq(0).find('a[player_link]');
-            if (!a.length) return;
+            if (tds[0].getAttribute('colspan')) return;
+            const a = tds[0].querySelector('a[player_link]');
+            if (!a) return;
             sold.push({
-                name: a.text().trim(),
-                pid: a.attr('player_link'),
-                url: a.attr('href'),
-                starsHtml: tds.eq(1).html(),
-                price: parseFloat(tds.eq(3).text().replace(/,/g, '').trim()) || 0
+                name: a.textContent.trim(),
+                pid: a.getAttribute('player_link'),
+                url: a.getAttribute('href'),
+                starsHtml: tds[1].innerHTML,
+                price: parseFloat(tds[3].textContent.replace(/,/g, '').trim()) || 0
             });
         });
     }
 
     let totalBought = 0, totalSold = 0, balance = 0;
-    const allTds = doc.find('td[colspan]');
-    allTds.each(function () {
-        const txt = $(this).text().trim();
-        const val = parseFloat(($(this).find('strong').text() || '0').replace(/,/g, '')) || 0;
+    Array.from(doc.querySelectorAll('td[colspan]')).forEach(function (td) {
+        const txt = td.textContent.trim();
+        const val = parseFloat((td.querySelector('strong')?.textContent || '0').replace(/,/g, '')) || 0;
         if (/Total Bought/i.test(txt)) totalBought = val;
         else if (/Total Sold/i.test(txt)) totalSold = val;
         else if (/Balance/i.test(txt)) balance = val;
@@ -152,15 +152,15 @@ function renderSeasonData(c, d) {
     h += '<div class="tmh-sec">Sold (' + d.sold.length + ')</div>';
     h += '<div id="tmh-sold-wrap"></div>';
 
-    c.html(h);
-    renderSortablePlayerTable($('#tmh-bought-wrap'), d.bought, 'From');
-    renderSortablePlayerTable($('#tmh-sold-wrap'), d.sold, 'To');
+    c.innerHTML = h;
+    renderSortablePlayerTable(c.querySelector('#tmh-bought-wrap'), d.bought, 'From');
+    renderSortablePlayerTable(c.querySelector('#tmh-sold-wrap'), d.sold, 'To');
 }
 
 function renderSortablePlayerTable(c, arr, clubLabel, opts) {
     opts = opts || {};
     if (!arr.length) {
-        c.html(TmUI.empty('No players', true));
+        c.innerHTML = TmUI.empty('No players', true);
         return;
     }
     const pic = H().playerInfoCache;
@@ -199,8 +199,8 @@ function renderSortablePlayerTable(c, arr, clubLabel, opts) {
         headers.push({ key: 'season', label: 'Season', align: 'r', render: v => 'S' + v });
     }
     const tbl = TmUI.table({ headers, items: arr, sortKey: opts.defaultSort || 'price', sortDir: opts.defaultDir || -1 });
-    c.html('');
-    c[0].appendChild(tbl);
+    c.innerHTML = '';
+    c.appendChild(tbl);
     H().prefetchPlayers(arr.map(p => p.pid), () => tbl.refresh());
 }
 
@@ -208,9 +208,9 @@ function renderSortablePlayerTable(c, arr, clubLabel, opts) {
    STILL PLAYING (sold players not retired)
    ═══════════════════════════════════════ */
 function loadStillPlaying() {
-    const btn = $('#tmh-still-btn');
-    const wrap = $('#tmh-tdata');
-    btn.addClass('busy').text('Loading…');
+    const btn = _el.querySelector('#tmh-still-btn');
+    const wrap = _el.querySelector('#tmh-tdata');
+    if (btn) { btn.classList.add('busy'); btn.textContent = 'Loading…'; }
 
     const total = _seasons.length;
     let loaded = 0;
@@ -243,7 +243,7 @@ function loadStillPlaying() {
     });
 
     function finishStillPlaying(c, all) {
-        btn.removeClass('busy').text('Still Playing (sold)');
+        if (btn) { btn.classList.remove('busy'); btn.textContent = 'Still Playing (sold)'; }
 
         const pMap = {};
         _seasons.forEach(s => {
@@ -280,9 +280,9 @@ function loadStillPlaying() {
         function renderStillPlayingTable(c, list) {
             const pic = H().playerInfoCache;
             let h = '<div class="tmh-sec">Sold Players Still Playing (' + list.length + ')</div>';
-            c.html(h);
+            c.innerHTML = h;
             if (!list.length) {
-                c.append(TmUI.empty('No sold players still active'));
+                c.insertAdjacentHTML('beforeend', TmUI.empty('No sold players still active'));
                 return;
             }
             const headers = [
@@ -320,7 +320,7 @@ function loadStillPlaying() {
                 },
             ];
             const tbl = TmUI.table({ headers, items: list, sortKey: 'r5', sortDir: -1 });
-            c[0].appendChild(tbl);
+            c.appendChild(tbl);
             H().prefetchPlayers(list.map(p => p.pid), () => tbl.refresh());
         }
 
@@ -332,9 +332,9 @@ function loadStillPlaying() {
    LOAD ALL SEASONS (aggregate)
    ═══════════════════════════════════════ */
 function loadAllSeasons() {
-    const btn = $('#tmh-all-btn');
-    const wrap = $('#tmh-tdata');
-    btn.addClass('busy').text('Loading…');
+    const btn = _el.querySelector('#tmh-all-btn');
+    const wrap = _el.querySelector('#tmh-tdata');
+    if (btn) { btn.classList.add('busy'); btn.textContent = 'Loading…'; }
 
     const total = _seasons.length;
     let loaded = 0;
@@ -349,7 +349,7 @@ function loadAllSeasons() {
     }
 
     function finish() {
-        btn.removeClass('busy').text('Load All Seasons Summary');
+        if (btn) { btn.classList.remove('busy'); btn.textContent = 'Load All Seasons Summary'; }
         renderAllSeasons(wrap, allData);
     }
 
@@ -430,16 +430,16 @@ function renderAllSeasons(c, all) {
         h += '<div id="tmh-academy"></div>';
     }
 
-    c.html(h);
-    renderSortableSeasonTable($('#tmh-szn-wrap'), rows, gB, gS, gBal, gN);
-    renderSortablePlayerTable($('#tmh-top-buy'), topBuy.slice(0, 10), 'From', { showSeason: true });
-    renderSortablePlayerTable($('#tmh-top-sell'), topSell.slice(0, 10), 'To', { showSeason: true });
+    c.innerHTML = h;
+    renderSortableSeasonTable(c.querySelector('#tmh-szn-wrap'), rows, gB, gS, gBal, gN);
+    renderSortablePlayerTable(c.querySelector('#tmh-top-buy'), topBuy.slice(0, 10), 'From', { showSeason: true });
+    renderSortablePlayerTable(c.querySelector('#tmh-top-sell'), topSell.slice(0, 10), 'To', { showSeason: true });
     if (trades.length) {
-        renderSortableTradeTable($('#tmh-best-trades'), trades.slice(0, 10));
+        renderSortableTradeTable(c.querySelector('#tmh-best-trades'), trades.slice(0, 10));
         var worst2 = trades.filter(t => t.profit < 0).sort((a, b) => a.profit - b.profit);
-        if (worst2.length) renderSortableTradeTable($('#tmh-worst-trades'), worst2.slice(0, 10));
+        if (worst2.length) renderSortableTradeTable(c.querySelector('#tmh-worst-trades'), worst2.slice(0, 10));
     }
-    if (academy.rows.length) renderSortableAcademyTable($('#tmh-academy'), academy);
+    if (academy.rows.length) renderSortableAcademyTable(c.querySelector('#tmh-academy'), academy);
 }
 
 /* ─── sortable season-by-season table ─── */
@@ -479,12 +479,13 @@ function renderSortableSeasonTable(c, rows, gB, gS, gBal, gN) {
         items: rows, footer, sortKey: 'label', sortDir: 1,
         onRowClick: row => {
             currentSeason = String(row.sid);
-            $('#tmh-sel-season').val(currentSeason);
+            const sel = _el.querySelector('#tmh-sel-season');
+            if (sel) sel.value = currentSeason;
             loadSeason(currentSeason);
         },
     });
-    c.html('');
-    c[0].appendChild(tbl);
+    c.innerHTML = '';
+    c.appendChild(tbl);
 }
 
 /* ─── sortable trade table ─── */
@@ -507,8 +508,8 @@ function renderSortableTradeTable(c, arr) {
         ],
         items: arr, sortKey: 'profit', sortDir: -1,
     });
-    c.html('');
-    c[0].appendChild(tbl);
+    c.innerHTML = '';
+    c.appendChild(tbl);
 }
 
 /* ─── sortable academy revenue table ─── */
@@ -530,8 +531,8 @@ function renderSortableAcademyTable(c, academy) {
         ],
         items: academy.rows, footer, sortKey: 'sid', sortDir: 1,
     });
-    c.html('');
-    c[0].appendChild(tbl);
+    c.innerHTML = '';
+    c.appendChild(tbl);
 }
 
 /* ─── build trades: match buy→sell per player across seasons ─── */

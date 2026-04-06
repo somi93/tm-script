@@ -13,10 +13,8 @@ import { TmApi } from '../services/index.js';
 import { TmPlayerService } from '../services/player.js';
 import { TmUtils } from '../lib/tm-utils.js';
 
-(function () {
-    'use strict';
-
-    if (!/^\/league\//.test(location.pathname)) return;
+export function initLeaguePage(main) {
+    if (!main || !main.isConnected) return;
 
     // ─── Constants ───────────────────────────────────────────────────────
     const STORAGE_KEY = 'TM_LEAGUE_LINEUP_NUM_ROUNDS';
@@ -499,4 +497,4 @@ import { TmUtils } from '../lib/tm-utils.js';
     TmPlayerDB.init().catch(e => console.warn('[League] TmPlayerDB init failed:', e));
     setInterval(initForCurrentPage, 500);
     initForCurrentPage();
-})();
+}

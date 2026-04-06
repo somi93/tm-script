@@ -5,7 +5,6 @@ import { TmMatchTooltip } from '../shared/tm-match-tooltip.js';
 import { TmHistoryHelpers } from './tm-history-helpers.js';
 import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
 
-const $ = window.jQuery;
 const H = () => TmHistoryHelpers;
 
 /* ── module state ── */
@@ -26,7 +25,7 @@ function renderMatches() {
     const el = _el;
     const matchSeasons = _seasons.filter(s => s.id != _seasons[0].id);
     if (!matchSeasons.length) {
-        el.html(TmUI.empty('No past seasons found'));
+        el.innerHTML = TmUI.empty('No past seasons found');
         return;
     }
 
@@ -41,7 +40,7 @@ function renderMatches() {
         nextId: 'tmh-m-next',
     });
     h += '<div id="tmh-mdata"></div>';
-    el.html(h);
+    el.innerHTML = h;
 
     function goSeason(sid) {
         currentSeason = sid;
@@ -62,13 +61,14 @@ function renderMatches() {
 
 /* ─── load matches for a season ─── */
 function loadMatches(sid) {
-    const c = $('#tmh-mdata');
+    const c = document.getElementById('tmh-mdata');
+    if (!c) return;
     if (matchesCache[sid]) { renderMatchList(c, matchesCache[sid], sid); return; }
 
-    c.html(TmUI.loading('Loading Season ' + sid + ' matches…'));
+    c.innerHTML = TmUI.loading('Loading Season ' + sid + ' matches…');
 
     TmClubService.fetchClubMatchHistory(_clubId, sid).then(function (html) {
-        if (!html) { c.html(TmUI.error('Failed to load matches')); return; }
+        if (!html) { c.innerHTML = TmUI.error('Failed to load matches'); return; }
         const d = parseMatchesHtml(html);
         matchesCache[sid] = d;
         renderMatchList(c, d, sid);
@@ -77,29 +77,29 @@ function loadMatches(sid) {
 
 /* ─── parse matches HTML ─── */
 function parseMatchesHtml(html) {
-    const doc = $('<div>').html(html);
+    const doc = document.createElement('div');
+    doc.innerHTML = html;
     const matches = [];
 
-    doc.find('.match_list li').each(function () {
-        const li = $(this);
-        const calImg = li.find('.match_date img').attr('src') || '';
+    Array.from(doc.querySelectorAll('.match_list li')).forEach(function (li) {
+        const calImg = li.querySelector('.match_date img')?.getAttribute('src') || '';
         const dayMatch = calImg.match(/calendar_numeral_(\d+)/);
         const day = dayMatch ? dayMatch[1] : '';
 
-        const matchType = li.find('.matchtype').text().trim();
+        const matchType = li.querySelector('.matchtype')?.textContent.trim() || '';
 
-        const homeEl = li.find('.hometeam a');
-        const homeName = homeEl.text().trim();
-        const homeLink = homeEl.attr('club_link') || '';
+        const homeEl = li.querySelector('.hometeam a');
+        const homeName = homeEl?.textContent.trim() || '';
+        const homeLink = homeEl?.getAttribute('club_link') || '';
 
-        const awayEl = li.find('.awayteam a');
-        const awayName = awayEl.text().trim();
-        const awayLink = awayEl.attr('club_link') || '';
+        const awayEl = li.querySelector('.awayteam a');
+        const awayName = awayEl?.textContent.trim() || '';
+        const awayLink = awayEl?.getAttribute('club_link') || '';
 
-        const resultEl = li.find('.match_results span[match_link]');
-        const result = resultEl.find('a').text().trim();
-        const matchId = resultEl.attr('match_link') || '';
-        const matchSeason = resultEl.attr('match_season') || '';
+        const resultEl = li.querySelector('.match_results span[match_link]');
+        const result = resultEl?.querySelector('a')?.textContent.trim() || '';
+        const matchId = resultEl?.getAttribute('match_link') || '';
+        const matchSeason = resultEl?.getAttribute('match_season') || '';
 
         const isHome = homeLink == _clubId;
         const isAway = awayLink == _clubId;
@@ -137,7 +137,7 @@ function matchTypeShort(t) {
 function renderMatchList(c, data, sid) {
     const matches = data.matches;
     if (!matches.length) {
-        c.html(TmUI.empty('No matches found for this season'));
+        c.innerHTML = TmUI.empty('No matches found for this season');
         return;
     }
 
@@ -225,26 +225,26 @@ function renderMatchList(c, data, sid) {
     h += '</div>';
     h += '<div id="tmh-pstats"></div>';
 
-    c.html(h);
+    c.innerHTML = h;
 
-    c.on('click', '.tmh-filter', function () {
-        matchFilter = $(this).data('f');
-        renderMatchList(c, data, sid);
+    c.addEventListener('click', function (e) {
+        const filter = e.target.closest('.tmh-filter');
+        if (filter) { matchFilter = filter.dataset.f; renderMatchList(c, data, sid); return; }
+        const statsBtn = e.target.closest('#tmh-pstats-btn');
+        if (statsBtn) { statsBtn.classList.add('busy'); loadPlayerStats(data); }
     });
 
-    c.on('click', '#tmh-pstats-btn', function () {
-        $(this).addClass('busy');
-        loadPlayerStats(data);
-    });
-
-    c.on('mouseenter', '.tmh-match-row', function () {
-        const el = this;
-        const mid = $(el).data('mid');
-        const season = $(el).data('season');
+    c.addEventListener('mouseover', function (e) {
+        const row = e.target.closest('.tmh-match-row');
+        if (!row || row.contains(e.relatedTarget)) return;
+        const mid = row.dataset.mid;
+        const season = row.dataset.season;
         clearTimeout(_matchTooltipTimer);
-        _matchTooltipTimer = setTimeout(function () { showMatchTooltip(el, mid, season); }, 300);
+        _matchTooltipTimer = setTimeout(function () { showMatchTooltip(row, mid, season); }, 300);
     });
-    c.on('mouseleave', '.tmh-match-row', function () {
+    c.addEventListener('mouseout', function (e) {
+        const row = e.target.closest('.tmh-match-row');
+        if (!row || row.contains(e.relatedTarget)) return;
         clearTimeout(_matchTooltipTimer);
         hideMatchTooltip();
     });
@@ -252,11 +252,12 @@ function renderMatchList(c, data, sid) {
 
 /* ─── load player stats for all matches in a season ─── */
 function loadPlayerStats(data) {
-    const c = $('#tmh-pstats');
+    const c = document.getElementById('tmh-pstats');
+    if (!c) return;
     const matches = data.matches;
     const filtered = matchFilter === 'all' ? matches : matches.filter(m => matchTypeShort(m.matchType) === matchFilter);
     if (!filtered.length) {
-        c.html(TmUI.empty('No matches to analyze'));
+        c.innerHTML = TmUI.empty('No matches to analyze');
         return;
     }
 
@@ -442,7 +443,7 @@ function aggregateAndRender(results, c) {
     });
 
     if (!arr.length) {
-        c.html(TmUI.empty('No player stats found'));
+        c.innerHTML = TmUI.empty('No player stats found');
         return;
     }
 
@@ -464,9 +465,9 @@ function renderPlayerStatsTable(c, arr) {
         ],
         items: arr, sortKey: 'goals', sortDir: -1,
     });
-    c.html('');
-    c[0].appendChild(sec);
-    c[0].appendChild(tbl);
+    c.innerHTML = '';
+    c.appendChild(sec);
+    c.appendChild(tbl);
 }
 
 /* ─── build tooltip content from tooltip.ajax.php response ─── */
@@ -481,16 +482,17 @@ function buildMatchRichTooltip(mData) {
 
 /* ─── tooltip positioning and show/hide ─── */
 function positionTooltip(el) {
-    if (!_matchTooltipEl || !_matchTooltipEl.length) return;
+    if (!_matchTooltipEl) return;
     var rect = el.getBoundingClientRect();
-    var ttW = _matchTooltipEl.outerWidth();
-    var ttH = _matchTooltipEl.outerHeight();
+    var ttW = _matchTooltipEl.offsetWidth;
+    var ttH = _matchTooltipEl.offsetHeight;
     var left = rect.left + rect.width / 2 - ttW / 2;
     var top = rect.bottom + 4;
     if (top + ttH > window.innerHeight - 10) top = rect.top - ttH - 4;
     if (left < 8) left = 8;
     if (left + ttW > window.innerWidth - 8) left = window.innerWidth - ttW - 8;
-    _matchTooltipEl.css({ left: left + 'px', top: top + 'px' });
+    _matchTooltipEl.style.left = left + 'px';
+    _matchTooltipEl.style.top = top + 'px';
 }
 
 function showMatchTooltip(el, mid, season) {
@@ -501,21 +503,22 @@ function showMatchTooltip(el, mid, season) {
     var isCurrentSeason = Number(season) === currentSeasonNum;
     _matchTooltipMid = mid;
 
-    _matchTooltipEl = $('<div class="tmh-tooltip rnd-h2h-tooltip"></div>');
-    $('body').append(_matchTooltipEl);
+    _matchTooltipEl = document.createElement('div');
+    _matchTooltipEl.className = 'tmh-tooltip rnd-h2h-tooltip';
+    document.body.appendChild(_matchTooltipEl);
     positionTooltip(el);
 
     if (_matchTooltipCache[mid]) {
         var cached = _matchTooltipCache[mid];
-        _matchTooltipEl.html(cached._rich ? buildMatchRichTooltip(cached) : buildMatchTooltipContent(cached));
+        _matchTooltipEl.innerHTML = cached._rich ? buildMatchRichTooltip(cached) : buildMatchTooltipContent(cached);
         positionTooltip(el);
-        requestAnimationFrame(function () { _matchTooltipEl.addClass('visible'); });
+        requestAnimationFrame(function () { _matchTooltipEl.classList.add('visible'); });
     } else {
-        _matchTooltipEl.html(TmUI.loading('Loading...', true));
-        requestAnimationFrame(function () { _matchTooltipEl.addClass('visible'); });
+        _matchTooltipEl.innerHTML = TmUI.loading('Loading...', true);
+        requestAnimationFrame(function () { _matchTooltipEl.classList.add('visible'); });
 
         var onFail = function () {
-            if (_matchTooltipEl) _matchTooltipEl.html(TmUI.error('Failed', true));
+            if (_matchTooltipEl) _matchTooltipEl.innerHTML = TmUI.error('Failed', true);
         };
         if (isCurrentSeason) {
             TmMatchService.fetchMatch(mid).then(function (d) {
@@ -523,7 +526,7 @@ function showMatchTooltip(el, mid, season) {
                 d._rich = true;
                 _matchTooltipCache[mid] = d;
                 if (_matchTooltipEl && _matchTooltipMid == mid) {
-                    _matchTooltipEl.html(buildMatchRichTooltip(d));
+                    _matchTooltipEl.innerHTML = buildMatchRichTooltip(d);
                     positionTooltip(el);
                 }
             });
@@ -532,7 +535,7 @@ function showMatchTooltip(el, mid, season) {
                 if (!d) { onFail(); return; }
                 _matchTooltipCache[mid] = d;
                 if (_matchTooltipEl && _matchTooltipMid == mid) {
-                    _matchTooltipEl.html(buildMatchTooltipContent(d));
+                    _matchTooltipEl.innerHTML = buildMatchTooltipContent(d);
                     positionTooltip(el);
                 }
             });

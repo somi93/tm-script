@@ -7,14 +7,9 @@ import { TmLib } from '../lib/tm-lib.js';
 import { TmPosition } from '../lib/tm-position.js';
 import { TmUtils } from '../lib/tm-utils.js';
 
-(function () {
-    'use strict';
-
+export function initR5HistoryPage() {
     const $ = window.jQuery;
     if (!$) return;
-
-    /* Abort if this is a specific player page like /players/12345/ */
-    if (/\/players\/\d+/.test(location.pathname)) return;
 
     /* ═══════════════════════════════════════════════════════════
        CONSTANTS
@@ -798,11 +793,5 @@ import { TmUtils } from '../lib/tm-utils.js';
        INIT
        ═══════════════════════════════════════════════════════════ */
     TmR5HistoryStyles.inject();
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => setTimeout(injectButton, 500));
-    } else {
-        setTimeout(injectButton, 500);
-    }
-
-})();
+    setTimeout(injectButton, 500);
+}

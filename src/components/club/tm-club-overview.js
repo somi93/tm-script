@@ -569,8 +569,11 @@ export const TmClubOverview = {
         if (!mainColumn) return;
         injectStyles();
         TmNativeFeed.injectStyles();
-
-        const data = parseOverview(mainColumn, secondaryColumn);
+        console.log('Mounting club overview with columns:', { mainColumn, secondaryColumn });
+        // Parse data from native hidden columns (.column2_a/.column3_a inside .main_center)
+        const nativeMain = document.querySelector('.column2_a');
+        const nativeSecondary = document.querySelector('.column3_a, .column3');
+        const data = parseOverview(nativeMain || mainColumn, nativeSecondary || secondaryColumn);
 
         mainColumn.classList.add('tmco-main');
         mainColumn.innerHTML = '';

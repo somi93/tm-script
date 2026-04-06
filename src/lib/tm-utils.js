@@ -111,9 +111,9 @@ const skillEff = (lvl) => {
     return bracket ? bracket[1] : 0.15;
 };
 
-const getMainContainer = (root = document) => root.querySelector('.tmvu-main, .main_center');
+const getMainContainer = (root = document) => root.querySelector('.tmvu-main');
 
-const getMainContainers = (root = document) => Array.from(root.querySelectorAll('.tmvu-main, .main_center'));
+const getMainContainers = (root = document) => Array.from(root.querySelectorAll('.tmvu-main'));
 
 /* Map an R5 value (25–118) to a hex color string.
    Uses piecewise HSL tiers for < 95, explicit per-integer lookup for 95–118.

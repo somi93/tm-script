@@ -9,14 +9,11 @@ import { TmTransferService } from '../services/transfer.js';
 import { TmPlayerService } from '../services/player.js';
 import { TmUtils } from '../lib/tm-utils.js';
 
-(function () {
-    'use strict';
+export function initTransferPage(main) {
+    if (!main || !main.isConnected) return;
 
     const $ = window.jQuery;
     if (!$) return;
-
-    // Only match the main transfer page, not /transfer/bids etc.
-    if (!/^\/transfer\/?$/.test(location.pathname)) return;
 
     // ═══════════════════════════════════════════════════════════════════
     //  CONSTANTS
@@ -730,9 +727,8 @@ import { TmUtils } from '../lib/tm-utils.js';
     // ═══════════════════════════════════════════════════════════════════
 
     function buildLayout() {
-        console.log('Building layout');
-                if ($('#tms-main').length || $('#tms-sidebar').length) return;
-                const layoutHtml = `
+        if ($('#tms-main').length || $('#tms-sidebar').length) return;
+        const layoutHtml = `
   ${TmTransferSidebar.build()}
     <div id="tms-main" class="tmvu-transfer-main">
     <div id="tms-toolbar">
@@ -746,15 +742,9 @@ import { TmUtils } from '../lib/tm-utils.js';
 <div id="transfer_list" style="display:none"></div>
         `;
 
-        const mainContainer = TmUtils.getMainContainer();
-        if (mainContainer) {
-            mainContainer.classList.add('tmvu-transfer-page');
-                        mainContainer.querySelectorAll('.column1_d').forEach(node => node.remove());
-            mainContainer.insertAdjacentHTML('beforeend', layoutHtml);
-            return;
-        }
-
-        $('body').append(layoutHtml);
+        main.classList.add('tmvu-transfer-page');
+        main.querySelectorAll('.column1_d').forEach(node => node.remove());
+        main.insertAdjacentHTML('beforeend', layoutHtml);
     }
 
     // ═══════════════════════════════════════════════════════════════════
@@ -880,10 +870,5 @@ import { TmUtils } from '../lib/tm-utils.js';
         console.log('Transfer Market Scanner initialized');
     }
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
-
-})();
+    init();
+}

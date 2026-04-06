@@ -4,63 +4,37 @@ import { TmUI } from '../components/shared/tm-ui.js';
 import { TmPlayerArchiveDB, TmPlayerDB } from '../lib/tm-playerdb.js';
 import { TmClubService } from '../services/club.js';
 
-(function () {
-    'use strict';
+'use strict';
 
-    if (!/\/club\/\d+\/squad\//.test(location.pathname)) return;
-    const CURRENT_PATH = normalizeClubHref(window.location.pathname);
+let CURRENT_PATH = '';
+let _main = null;
+const PlayerDB = TmPlayerDB;
+const PlayerArchiveDB = TmPlayerArchiveDB;
 
-    if (!document.getElementById('tmvu-squad-pending-style')) {
-        const style = document.createElement('style');
-        style.id = 'tmvu-squad-pending-style';
-        style.textContent = `
-            .tmvu-club-main.tmvu-squad-pending,
-            .column2_a.tmvu-squad-pending {
-                visibility: hidden;
-            }
-        `;
-        document.head.appendChild(style);
+let processed = false;
+let allPlayers = [];
+let bTeamPlayers = [];
+let bTeamFetched = false;
+const onSaleIds = new Set();
+
+const getSquadContainer = () => {
+    if (_main) {
+        let c = _main.querySelector('.tmvu-club-main');
+        if (!c) {
+            c = document.createElement('div');
+            c.className = 'tmvu-club-main';
+            _main.appendChild(c);
+        }
+        return c;
     }
-
-    /* ═══════════════════════════════════════════════════════════
-       CONSTANTS
-       ═══════════════════════════════════════════════════════════ */
-    const PlayerDB = TmPlayerDB;
-    const PlayerArchiveDB = TmPlayerArchiveDB;
-
-    /* ═══════════════════════════════════════════════════════════
-       DATA PROCESSING
-       ═══════════════════════════════════════════════════════════ */
-    let processed = false;
-    let allPlayers = [];
-    let bTeamPlayers = [];
-    let bTeamFetched = false;
-    const onSaleIds = new Set();
-
-    const getSquadContainer = () => document.querySelector('.tmvu-club-main, .column2_a');
+    return null;
+};
 
     const setPendingVisibility = (pending) => {
-        document.querySelectorAll('.tmvu-club-main, .column2_a').forEach(node => {
-            node.classList.toggle('tmvu-squad-pending', pending);
-        });
+        getSquadContainer()?.classList.toggle('tmvu-squad-pending', pending);
     };
 
-    const waitForSquadContainer = () => new Promise(resolve => {
-        const existing = getSquadContainer();
-        if (existing) {
-            resolve(existing);
-            return;
-        }
-
-        const observer = new MutationObserver(() => {
-            const container = getSquadContainer();
-            if (!container) return;
-            observer.disconnect();
-            resolve(container);
-        });
-
-        observer.observe(document.body, { childList: true, subtree: true });
-    });
+    const waitForSquadContainer = () => Promise.resolve(getSquadContainer());
 
     const waitForJQuery = () => new Promise(resolve => {
         if (window.jQuery) {
@@ -137,14 +111,11 @@ import { TmClubService } from '../services/club.js';
 
         TmSquadTable.render(panel, [...allPlayers, ...bTeamPlayers], { onSaleIds });
 
-        const target = document.querySelector('.tmvu-club-main, .column2_a');
+        const target = getSquadContainer();
         if (target) {
             target.innerHTML = '';
             target.appendChild(panel);
             setPendingVisibility(false);
-        } else {
-            const fallback = document.querySelector('#middle_column') || document.body;
-            fallback.insertBefore(panel, fallback.firstChild);
         }
     };
 
@@ -193,12 +164,12 @@ import { TmClubService } from '../services/club.js';
         });
     };
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            start().catch(err => console.error('[Squad] start error:', err));
-        }, { once: true });
-    } else {
-        start().catch(err => console.error('[Squad] start error:', err));
-    }
-
-})();
+export function initSquadPage(main) {
+    if (!main || !main.isConnected) return;
+    _main = main;
+    CURRENT_PATH = normalizeClubHref(window.location.pathname);
+    processed = false;
+    allPlayers = []; bTeamPlayers = []; bTeamFetched = false;
+    onSaleIds.clear();
+    start().catch(err => console.error('[Squad] start error:', err));
+}

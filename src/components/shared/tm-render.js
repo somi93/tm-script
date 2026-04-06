@@ -22,7 +22,7 @@ document.head.appendChild(Object.assign(document.createElement('style'), {
 .tmu-card-body-flush { padding: 0; gap: 0; }
 /* ── Panel ── */
 .tmu-panel { background: var(--tmu-surface-panel); border: 1px solid var(--tmu-border-soft); border-radius: var(--tmu-space-sm); color: var(--tmu-text-main); box-shadow: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-.tmu-panel-page { margin: var(--tmu-space-md) auto var(--tmu-space-lg); max-width: 1200px; padding: var(--tmu-space-lg); }
+.tmu-panel-page { padding: var(--tmu-space-lg); }
 /* ── Flat panel (squad, league standings — no card gradient) ── */
 .tmu-flat-panel { background: var(--tmu-surface-dark-strong); border: 1px solid var(--tmu-border-soft-alpha); border-radius: var(--tmu-space-md); overflow: hidden; margin-bottom: var(--tmu-space-lg); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: var(--tmu-text-main); }
 .tmu-flat-panel .tmu-card-head { background: none; border-bottom: 1px solid var(--tmu-border-soft-alpha); }

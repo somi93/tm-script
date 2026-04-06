@@ -66,20 +66,19 @@ const { R5_THRESHOLDS } = TmConst;
             return spinnerHtml + nextMessage + (total ? ' ' + current + '/' + total : '');
         }
 
-        container.html(
+        container.innerHTML =
             '<div class="tmh-load">' + textFor(start, message) + '</div>' +
-            '<div class="tmh-prog"><div class="tmh-prog-bar" style="width:0%"></div></div>'
-        );
+            '<div class="tmh-prog"><div class="tmh-prog-bar" style="width:0%"></div></div>';
 
-        const loadEl = container.find('.tmh-load');
-        const barEl = container.find('.tmh-prog-bar');
+        const loadEl = container.querySelector('.tmh-load');
+        const barEl = container.querySelector('.tmh-prog-bar');
 
         return {
             update(current, nextMessage) {
                 const safeCurrent = Number(current) || 0;
                 const pct = total > 0 ? Math.round(safeCurrent / total * 100) : 0;
-                loadEl.html(textFor(safeCurrent, nextMessage || message));
-                barEl.css('width', pct + '%');
+                loadEl.innerHTML = textFor(safeCurrent, nextMessage || message);
+                barEl.style.width = pct + '%';
             }
         };
     }
@@ -126,14 +125,14 @@ const { R5_THRESHOLDS } = TmConst;
         const nextId = opts?.nextId || 'tmh-season-next';
         const onChange = opts?.onChange || function () {};
 
-        container.find('#' + selectId).on('change', function () {
-            onChange($(this).val());
+        container.querySelector('#' + selectId)?.addEventListener('change', function () {
+            onChange(this.value);
         });
-        container.find('#' + prevId).on('click', function () {
+        container.querySelector('#' + prevId)?.addEventListener('click', function () {
             const i = seasons.findIndex(s => s.id == currentSeason);
             if (i < seasons.length - 1) onChange(seasons[i + 1].id);
         });
-        container.find('#' + nextId).on('click', function () {
+        container.querySelector('#' + nextId)?.addEventListener('click', function () {
             const i = seasons.findIndex(s => s.id == currentSeason);
             if (i > 0) onChange(seasons[i - 1].id);
         });
