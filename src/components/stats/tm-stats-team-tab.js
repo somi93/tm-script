@@ -79,14 +79,12 @@ export const TmStatsTeamTab = {
         let html = opts.renderMatchTypeButtons();
 
         // Total/Average filter
-        html += TmStatsFilterGroup.renderGroup({
-            items: ['total', 'average'].map(f => ({ key: f, label: f.charAt(0).toUpperCase() + f.slice(1) })),
-            active: opts.getActiveTeamFilter(),
-            wrapCls: 'tsa-filters',
-            itemCls: 'tsa-filter-btn',
-            dataAttr: 'tfilter',
-            renderItem: item => item.label,
-        });
+        const tf0 = opts.getActiveTeamFilter();
+        html += `<div class="tsa-filters">${['total', 'average'].map(f => {
+            const label = f.charAt(0).toUpperCase() + f.slice(1);
+            const active = f === tf0;
+            return `<button type="button" class="tmu-btn tmu-btn-variant-button tmu-btn-primary rounded-md tmu-btn-size-sm${active ? ' tmu-btn-active' : ''}" data-tfilter="${f}">${label}</button>`;
+        }).join('')}</div>`;
 
         // Tactic dropdown filters
         const tv = collectTacticValues(opts);
@@ -194,13 +192,13 @@ export const TmStatsTeamTab = {
 
         // Wire match type filter
         opts.bindMatchTypeButtons(body);
-        TmStatsFilterGroup.bindGroup(body, {
-            selector: '[data-tfilter]',
-            dataAttr: 'tfilter',
-            onChange: key => {
-                opts.setActiveTeamFilter(key);
-                opts.rerender();
-            },
+        body.addEventListener('click', (event) => {
+            const btn = event.target.closest('[data-tfilter]');
+            if (!btn || !body.contains(btn)) return;
+            const key = btn.dataset.tfilter;
+            if (!key || key === opts.getActiveTeamFilter()) return;
+            opts.setActiveTeamFilter(key);
+            opts.rerender();
         });
         TmStatsTacticDropdown.bindDropdowns(body, {
             getFilter: opts.getTacticFilter,

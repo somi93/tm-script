@@ -33,7 +33,7 @@ const CSS = `
             <tm-card data-title="ASI Calculator" data-icon="📊">
                 <tm-input data-label="Trainings" data-ref="trainings" data-type="number" data-value="${defaultTrainings}" data-placeholder="12" data-min="1" data-max="500"></tm-input>
                 <tm-input data-label="Avg TI" data-ref="ti" data-type="number" data-value="${player?.ti || ''}" data-placeholder="8" data-min="-10" data-max="10" data-step="0.1"></tm-input>
-                <tm-button data-label="Calculate" data-action="calc"></tm-button>
+                <tm-button data-label="Calculate" data-variant="primary" data-action="calc"></tm-button>
                 <div data-ref="result" class="tmac-result rounded-md py-2 px-3">
                     <tm-stat data-label="Age" data-value="-" data-ref="age" data-val-cls="text-md"></tm-stat>
                     <tm-stat data-label="New ASI" data-value="-" data-ref="asi" data-val-cls="text-md"></tm-stat>

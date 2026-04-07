@@ -109,7 +109,7 @@ export function initHomePage(main) {
             '.tmvu-home-thread-main{min-width:0;display:flex;align-items:flex-start;gap:var(--tmu-space-sm)}',
             '.tmvu-home-thread-dot{width:5px;height:5px;border-radius:999px;background:var(--tmu-text-faint);flex:0 0 auto;margin-top:var(--tmu-space-sm);opacity:.9}',
             '.tmvu-home-thread-copy{min-width:0}',
-            '.tmvu-home-thread a{font-size:var(--tmu-font-sm);color:#fff;text-decoration:none;display:block;line-height:1.5;font-weight:800}',
+            '.tmvu-home-thread a{font-size:var(--tmu-font-sm);color:var(--tmu-text-inverse);text-decoration:none;display:block;line-height:1.5;font-weight:800}',
             '.tmvu-home-thread a:hover{color:var(--tmu-text-accent-soft)}',
             '.tmvu-home-thread-date{font-size:var(--tmu-font-xs);color:var(--tmu-text-muted);font-weight:800;white-space:nowrap;padding:var(--tmu-space-xs) var(--tmu-space-sm);border-radius:999px;background:var(--tmu-border-contrast);border:1px solid var(--tmu-border-soft-alpha)}',
             '.tmvu-home-forum-footer{padding-top:var(--tmu-space-md)}',

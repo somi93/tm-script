@@ -4,8 +4,9 @@ import { TmUI } from '../shared/tm-ui.js';
 
 const CSS = `
 .tmpt-tip {
-    display: none; position: absolute; z-index: 9999;
-    background: linear-gradient(135deg, var(--tmu-surface-card) 0%, var(--tmu-surface-tab-hover) 100%);
+    display: none; position: fixed; z-index: 9999;
+    background: var(--tmu-color-accent);
+    isolation: isolate;
     border: 1px solid var(--tmu-border-success); border-radius: var(--tmu-space-sm);
     padding: var(--tmu-space-md); min-width: 200px; max-width: 280px;
     box-shadow: 0 6px 24px var(--tmu-shadow-panel);

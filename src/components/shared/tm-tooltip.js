@@ -8,19 +8,22 @@ export const TmTooltip = {
      */
     positionTooltip(el, anchor) {
         const rect = anchor.getBoundingClientRect();
+        const isFixed = getComputedStyle(el).position === 'fixed';
+        const scrollX = isFixed ? 0 : window.scrollX;
+        const scrollY = isFixed ? 0 : window.scrollY;
         const headerH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--tmvu-header-height')) || 0;
-        const topMin = window.scrollY + headerH + 8;
+        const topMin = (isFixed ? 0 : window.scrollY) + headerH + 8;
 
-        el.style.top  = (rect.bottom + window.scrollY + 4) + 'px';
-        el.style.left = (rect.left  + window.scrollX) + 'px';
+        el.style.top  = (rect.bottom + scrollY + 4) + 'px';
+        el.style.left = (rect.left  + scrollX) + 'px';
         requestAnimationFrame(() => {
             const tipRect = el.getBoundingClientRect();
-            // Clamp right edge (viewport → document coords)
+            // Clamp right edge
             if (tipRect.right > window.innerWidth - 10)
-                el.style.left = Math.max(8 + window.scrollX, window.innerWidth - tipRect.width - 10 + window.scrollX) + 'px';
+                el.style.left = Math.max(8 + scrollX, window.innerWidth - tipRect.width - 10 + scrollX) + 'px';
             // Flip above anchor if overflows bottom viewport edge
             if (tipRect.bottom > window.innerHeight - 10) {
-                const aboveTop = rect.top + window.scrollY - tipRect.height - 4;
+                const aboveTop = rect.top + scrollY - tipRect.height - 4;
                 el.style.top = Math.max(topMin, aboveTop) + 'px';
             }
             // Clamp top so tooltip never goes under fixed header
@@ -37,8 +40,8 @@ export const TmTooltip = {
      * @param {string} [cls]        — CSS class (default: 'tm-pos-chip')
      * @returns {string} HTML string
      */
-    positionChip: (primaryColor, innerHTML, cls = 'tm-pos-chip') =>
-        `<span class="${cls}" style="background:color-mix(in srgb, ${primaryColor} 13%, transparent);border:1px solid color-mix(in srgb, ${primaryColor} 27%, transparent)">${innerHTML}</span>`,
+    positionChip: (primaryColor, innerHTML, cls = 'tm-pos-chip', extraAttrs = '') =>
+        `<span class="${cls}"${extraAttrs} style="background:color-mix(in srgb, ${primaryColor} 13%, transparent);border:1px solid color-mix(in srgb, ${primaryColor} 27%, transparent)">${innerHTML}</span>`,
 
     /**
      * Renders a country flag `<ib>` element, or empty string if no country.

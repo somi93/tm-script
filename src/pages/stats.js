@@ -140,21 +140,17 @@ export function initStatsPage(main) {
     );
 
     const renderMatchTypeButtons = () => {
-        return TmUI.tabs({
-            items: MATCH_TYPES.map(mt => {
-                const count = mt.key === 'all' ? allMatchData.length : allMatchData.filter(m => m.matchType === mt.key).length;
-                if (count === 0 && mt.key !== 'all') return null;
-                const wdl = getWDL(mt.key);
-                return {
-                    key: mt.key,
-                    slot: `${mt.label} (${count}) <span class="tsa-mf-wdl">${wdl.w}W-${wdl.d}D-${wdl.l}L</span>`,
-                };
-            }).filter(Boolean),
-            active: activeMatchType,
-            color: 'secondary',
-            cls: 'tsa-match-filters',
-            itemCls: 'tsa-mf-btn',
-        }).outerHTML;
+        const items = MATCH_TYPES.map(mt => {
+            const count = mt.key === 'all' ? allMatchData.length : allMatchData.filter(m => m.matchType === mt.key).length;
+            if (count === 0 && mt.key !== 'all') return null;
+            const wdl = getWDL(mt.key);
+            return { key: mt.key, label: mt.label, count, wdl };
+        }).filter(Boolean);
+
+        return `<div class="tsa-match-filters">${items.map(({ key, label, count, wdl }) => {
+            const active = key === activeMatchType;
+            return `<button type="button" class="tmu-btn tmu-btn-variant-button tmu-btn-primary rounded-md tmu-btn-size-sm${active ? ' tmu-btn-active' : ''}" data-tab="${key}">${label} (${count}) <span class="tsa-mf-wdl">${wdl.w}W-${wdl.d}D-${wdl.l}L</span></button>`;
+        }).join('')}</div>`;
     };
 
     const bindMatchTypeButtons = (body) => {
@@ -162,7 +158,7 @@ export function initStatsPage(main) {
         body.dataset.tsaMatchTypeBound = '1';
 
         body.addEventListener('click', (event) => {
-            const button = event.target.closest('.tsa-match-filters .tmu-tab[data-tab]');
+            const button = event.target.closest('.tsa-match-filters [data-tab]');
             if (!button || !body.contains(button)) return;
             const nextMatchType = button.dataset.tab;
             if (!nextMatchType || nextMatchType === activeMatchType) return;

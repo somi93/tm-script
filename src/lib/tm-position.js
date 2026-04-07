@@ -107,7 +107,7 @@ import { TmConst } from './tm-constants.js';
          * @param {Array<{position:string,color:string}> | Array<string>} positions
          * @param {string} [cls] CSS class for the outer chip span
          */
-        chip(positions, cls = 'tm-pos-chip') {
+        chip(positions, cls = 'tm-pos-chip', { attrs = {} } = {}) {
             ensureChipCSS();
             if (!positions || (Array.isArray(positions) && !positions.length)) return '-';
             const arr = Array.isArray(positions) ? positions : [positions];
@@ -124,7 +124,9 @@ import { TmConst } from './tm-constants.js';
             const inner = items
                 .map(it => `<span style="color:${it.color}">${it.label}</span>`)
                 .join('<span style="color:var(--tmu-text-faint)">, </span>');
-            return TmUI.positionChip(firstColor, inner, cls);
+            const attrStr = Object.entries(attrs)
+                .map(([k, v]) => ` ${k}="${String(v).replace(/"/g, '&quot;')}"`).join('');
+            return TmUI.positionChip(firstColor, inner, cls, attrStr);
         },
     };
 

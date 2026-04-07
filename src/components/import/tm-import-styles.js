@@ -1,11 +1,13 @@
 export const TmImportStyles = {
-        inject() {
-            if (document.getElementById('tmi-import-style')) return;
-            const style = document.createElement('style');
-            style.id = 'tmi-import-style';
-            style.textContent = `
+    inject() {
+        if (document.getElementById('tmi-import-style')) return;
+        const style = document.createElement('style');
+        style.id = 'tmi-import-style';
+        style.textContent = `
 /* ── Base ── */
 .tmi-page {
+    flex: 1;
+    min-width: 0;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     color: var(--tmu-text-main); font-size: var(--tmu-font-sm); padding: var(--tmu-space-md) var(--tmu-space-lg);
 }
@@ -20,45 +22,18 @@ export const TmImportStyles = {
 
 /* ── Wrap container ── */
 .tmi-wrap {
-    background: var(--tmu-surface-panel); border: 1px solid var(--tmu-border-embedded); border-radius: var(--tmu-space-sm);
+    background: var(--tmu-surface-panel); border-radius: var(--tmu-space-sm);
     overflow: hidden; margin-bottom: var(--tmu-space-md);
 }
 .tmi-wrap-head {
     display: flex; align-items: center; justify-content: space-between;
     padding: var(--tmu-space-md) var(--tmu-space-lg); background: linear-gradient(180deg, var(--tmu-surface-tab-hover), var(--tmu-surface-panel));
-    border-bottom: 1px solid var(--tmu-border-embedded);
 }
 .tmi-wrap-head h2 { margin: 0; font-size: var(--tmu-font-md); color: var(--tmu-text-strong); font-weight: 700; }
 .tmi-wrap-body { padding: var(--tmu-space-md) var(--tmu-space-lg); }
 
 /* ── DB player list ── */
 .tmi-db-count { font-size: var(--tmu-font-xs); color: var(--tmu-text-faint); font-weight: 400; }
-.tmi-db-table {
-    width: 100%; border-collapse: collapse; font-size: var(--tmu-font-xs);
-}
-.tmi-db-table th {
-    text-align: left; padding: var(--tmu-space-sm) var(--tmu-space-sm); font-size: var(--tmu-font-xs); font-weight: 700;
-    color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.4px;
-    border-bottom: 1px solid var(--tmu-border-soft); white-space: nowrap;
-    cursor: pointer; user-select: none;
-}
-.tmi-db-table th:hover { color: var(--tmu-text-main); }
-.tmi-db-table td {
-    padding: var(--tmu-space-xs) var(--tmu-space-sm); border-bottom: 1px solid var(--tmu-border-faint);
-    color: var(--tmu-text-main); font-variant-numeric: tabular-nums; vertical-align: middle;
-}
-.tmi-db-table tbody tr:nth-child(odd) { background: var(--tmu-surface-panel); }
-.tmi-db-table tbody tr:nth-child(even) { background: var(--tmu-surface-card-soft); }
-.tmi-db-table tbody tr:hover { background: var(--tmu-surface-tab-hover) !important; }
-.tmi-db-table .c { text-align: center; }
-.tmi-db-table .r { text-align: right; font-variant-numeric: tabular-nums; }
-.tmi-db-table a { color: var(--tmu-accent); text-decoration: none; font-weight: 600; }
-.tmi-db-table a:hover { color: var(--tmu-text-main); text-decoration: underline; }
-.tmi-db-table .pos-cell { color: var(--tmu-text-muted); font-size: var(--tmu-font-xs); }
-.tmi-db-scroll {
-    max-height: 70vh; overflow-y: auto;
-    border: 1px solid var(--tmu-border-soft); border-radius: var(--tmu-space-sm); background: var(--tmu-surface-card-soft);
-}
 .tmi-toolbar .tmu-btn[aria-expanded='true'] {
     background: var(--tmu-surface-tab-active);
     border-color: var(--tmu-success);
@@ -99,27 +74,6 @@ export const TmImportStyles = {
 .tmi-parsed { margin-bottom: var(--tmu-space-md); }
 .tmi-parsed-header {
     font-weight: 700; color: var(--tmu-accent); margin-bottom: var(--tmu-space-sm); font-size: var(--tmu-font-sm);
-}
-.tmi-table {
-    width: 100%; border-collapse: collapse; font-size: var(--tmu-font-xs);
-}
-.tmi-table th {
-    text-align: left; padding: var(--tmu-space-sm) var(--tmu-space-sm); font-size: var(--tmu-font-xs); font-weight: 700;
-    color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.4px;
-    border-bottom: 1px solid var(--tmu-border-soft);
-}
-.tmi-table td {
-    padding: var(--tmu-space-xs) var(--tmu-space-sm); border-bottom: 1px solid var(--tmu-border-faint);
-    color: var(--tmu-text-main);
-}
-.tmi-table tbody tr:hover { background: var(--tmu-border-contrast); }
-.tmi-table .c { text-align: center; }
-.tmi-table .r { text-align: right; }
-.tmi-table a { color: var(--tmu-accent); text-decoration: none; font-weight: 600; }
-.tmi-table a:hover { color: var(--tmu-text-main); text-decoration: underline; }
-.tmi-table-scroll {
-    max-height: 200px; overflow-y: auto;
-    border: 1px solid var(--tmu-border-soft); border-radius: var(--tmu-space-sm); background: var(--tmu-surface-card-soft);
 }
 
 /* ── Progress ── */
@@ -177,7 +131,7 @@ export const TmImportStyles = {
 .tmi-routine-cat:first-child { margin-top: 0; }
 .tmi-routine-cat span { color: var(--tmu-warning); font-size: var(--tmu-font-sm); margin-left: var(--tmu-space-sm); }
 `;
-            document.head.appendChild(style);
-        }
-    };
+        document.head.appendChild(style);
+    }
+};
 

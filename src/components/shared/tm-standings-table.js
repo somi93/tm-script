@@ -87,12 +87,12 @@ function injectStyles() {
         }
 
         .tsa-club-cell {
-            color: #fff;
+            color: var(--tmu-text-inverse);
             min-width: 220px;
         }
 
         .tsa-club-link {
-            color: #fff !important;
+            color: var(--tmu-text-inverse) !important;
             text-decoration: none;
         }
 

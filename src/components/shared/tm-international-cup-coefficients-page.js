@@ -119,37 +119,8 @@ export function mountInternationalCupCoefficientsPage(main) {
                 vertical-align: middle;
             }
 
-            .tmvu-icup-tabs {
-                display: flex;
-                flex-wrap: wrap;
-                gap: var(--tmu-space-sm);
+            .tmvu-icup-coeff .tmu-tabs {
                 margin-bottom: var(--tmu-space-md);
-                background: none;
-                border: none;
-                overflow: visible;
-            }
-
-            .tmvu-icup-tab {
-                display: inline-flex;
-                align-items: center;
-                gap: var(--tmu-space-sm);
-                min-height: 36px;
-                padding: 0 var(--tmu-space-lg);
-                border: 1px solid var(--tmu-border-contrast);
-                border-radius: 999px;
-                background: var(--tmu-surface-tab);
-                color: var(--tmu-text-main);
-                font-size: var(--tmu-font-sm);
-                font-weight: 800;
-                cursor: pointer;
-                flex: 0 0 auto;
-                min-width: 0;
-            }
-
-            .tmvu-icup-tab.active {
-                border-color: var(--tmu-border-input-overlay);
-                background: linear-gradient(135deg, var(--tmu-success-fill-strong), var(--tmu-surface-panel));
-                color: var(--tmu-text-strong);
             }
 
             .tmvu-icup-tab-panel[hidden] {
@@ -470,12 +441,11 @@ export function mountInternationalCupCoefficientsPage(main) {
             items: panels.map(panel => ({ key: panel.id, label: panel.label })),
             active: panels[0]?.id,
             color: 'primary',
-            cls: 'tmvu-icup-tabs',
-            itemCls: 'tmvu-icup-tab',
+            stretch: true,
         });
         tabsNode.setAttribute('role', 'tablist');
         tabsNode.setAttribute('aria-label', 'Coefficient views');
-        tabsNode.querySelectorAll('.tmvu-icup-tab').forEach(tab => {
+        tabsNode.querySelectorAll('.tmu-tab').forEach(tab => {
             tab.setAttribute('role', 'tab');
             tab.setAttribute('data-tab-target', tab.dataset.tab || '');
         });

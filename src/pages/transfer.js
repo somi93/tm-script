@@ -3,6 +3,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
 import { TmTransferSidebar } from '../components/transfer/tm-transfer-sidebar.js';
 import { TmTransferStyles } from '../components/transfer/tm-transfer-styles.js';
 import { TmTransferTable } from '../components/transfer/tm-transfer-table.js';
+import { TmPlayersTable } from '../components/shared/tm-players-table.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmLib } from '../lib/tm-lib.js';
 import { TmTransferService } from '../services/transfer.js';
@@ -46,25 +47,18 @@ export function initTransferPage(main) {
     // ═══════════════════════════════════════════════════════════════════
 
     let allPlayers = [];
-    let sortKey = 'time';
-    let sortDir = 1;  // 1 = asc, -1 = desc
     let isLoading = false;
-    let skillsMode = false;
     let tooltipCache = {};   // pid → { recSort, ti, skills }
     const tooltipPromiseCache = new Map();
     let tooltipFetchAbort = false;
     let findAllRunning = false;
     let findAllAbort = false;
+    let _tableWrap = null;
+    let _refreshPending = false;
 
     // ═══════════════════════════════════════════════════════════════════
     //  CALCULATION HELPERS
     // ═══════════════════════════════════════════════════════════════════
-
-    const fmtRec = TmTransferTable.fmtRec;
-    const tiHtml = TmTransferTable.tiHtml;
-    const fmtR5 = TmTransferTable.fmtR5;
-    const fmtR5Range = TmTransferTable.fmtR5Range;
-    const BREAKDOWN_COLS = TmTransferTable.BREAKDOWN_COLS;
 
     const getCurrentSession = TmLib.getCurrentSession;
     const CURRENT_SESSION = getCurrentSession();
@@ -90,6 +84,46 @@ export function initTransferPage(main) {
         return TmTransferService.normalizeTransferPlayer(p);
     }
 
+    function fmtCountdown(t) {
+        const s = Math.max(0, t || 0);
+        const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60);
+        if (d > 0) return `${d}d ${h}h`;
+        if (h > 0) return `${h}h ${m}m`;
+        return `${m}m ${s % 60}s`;
+    }
+
+    function adaptTransferPlayer(p) {
+        const tip = tooltipCache[p.id];
+        const ap = p._ageP || {};
+        const t = Math.max(0, p.time || 0);
+        return {
+            id: p.id, pid: p.id,
+            name: p.name || '',
+            href: `/players/${p.id}/`,
+            fp: (p.fp || []).join(','),
+            country: '',
+            age: ap.years || 0,
+            months: ap.months || 0,
+            asi: p.asi || null,
+            r5: tip?.r5 ?? null,
+            rec: tip?.recCalc ?? tip?.recSort ?? null,
+            ti: tip?.ti ?? null,
+            timeleft: t,
+            timeleft_string: t > 0 ? fmtCountdown(t) : '',
+            curbid: p.bid ? TmUtils.fmtCoins(p.bid) : '',
+            _nextBid: p.next_bid || 0,
+            _pro: p.pro || 0,
+            _txt: p.txt || '',
+            bump: !!p.bump,
+        };
+    }
+
+    function scheduleRefresh() {
+        if (_refreshPending) return;
+        _refreshPending = true;
+        requestAnimationFrame(() => { _refreshPending = false; refreshDisplay(); });
+    }
+
     function tooltipPid(playerOrId) {
         return String(typeof playerOrId === 'object' ? playerOrId?.id : playerOrId);
     }
@@ -106,8 +140,6 @@ export function initTransferPage(main) {
     // ═══════════════════════════════════════════════════════════════════
     //  TABLE RENDER
     // ═══════════════════════════════════════════════════════════════════
-
-    const buildExpandRow = (p, colCount) => TmTransferTable.buildExpandRow(p, tooltipCache, colCount, skillsMode);
 
     // ═══════════════════════════════════════════════════════════════════
     //  FILTER + SORT + REFRESH
@@ -141,77 +173,9 @@ export function initTransferPage(main) {
 
     function getVisible() {
         const pf = getPostFilters();
-        let arr = allPlayers.filter(p => passesPostFilters(p, pf));
-        arr.sort((a, b) => {
-            // Bump players always float to the top
-            if (a.bump && !b.bump) return -1;
-            if (!a.bump && b.bump) return 1;
-            let av, bv;
-            switch (sortKey) {
-                case 'name': av = (a.name || '').toLowerCase(); bv = (b.name || '').toLowerCase(); break;
-                case 'age': av = a.age || 0; bv = b.age || 0; break;
-                case 'rec': {
-                    const ta = tooltipCache[a.id]; const tb = tooltipCache[b.id];
-                    av = ta && ta.recCalc != null ? ta.recCalc : (ta && ta.recSort != null ? ta.recSort : (a.rec || 0));
-                    bv = tb && tb.recCalc != null ? tb.recCalc : (tb && tb.recSort != null ? tb.recSort : (b.rec || 0));
-                    break;
-                }
-                case 'r5': {
-                    const ta = tooltipCache[a.id]; const tb = tooltipCache[b.id];
-                    av = ta ? (ta.r5 != null ? ta.r5 : (ta.r5Hi != null ? ta.r5Hi : -9999)) : -9999;
-                    bv = tb ? (tb.r5 != null ? tb.r5 : (tb.r5Hi != null ? tb.r5Hi : -9999)) : -9999;
-                    break;
-                }
-                case 'ti': {
-                    const ta = tooltipCache[a.id]; const tb = tooltipCache[b.id];
-                    av = ta && ta.ti != null ? ta.ti : -9999;
-                    bv = tb && tb.ti != null ? tb.ti : -9999;
-                    break;
-                }
-                case 'asi': av = a.asi || 0; bv = b.asi || 0; break;
-                case 'bid': av = a.bid || 0; bv = b.bid || 0; break;
-                default:
-                case 'time': av = a.time || 0; bv = b.time || 0; break;
-            }
-            if (typeof av === 'string') return sortDir * av.localeCompare(bv);
-            return sortDir * (av - bv);
-        });
-
-        return arr;
-    }
-
-    function startCountdowns(arr) {
-        arr.forEach(p => {
-            if (!p.time || p.time <= 0) return;
-            const $span = $(`#tms-td-${p.id}`);
-            if (!$span.length) return;
-
-            // Reuse existing countdown if alive
-            if (window.countDowns && window.countDowns[p.id]) {
-                try { $span.html(window.countDowns[p.id].getJQ()); return; } catch (e) { }
-            }
-
-            if (!window.Countdown) { $span.text(p.time + 's'); return; }
-
-            const cd = new window.Countdown(p.time, '', 'highest', true, (cntdwn) => {
-                if (!cntdwn || !cntdwn.getJQ) return;
-                const $row = cntdwn.getJQ().closest('tr');
-                if (!$row.length) return;
-                if ($row.hasClass('watched-player-currentbid')) {
-                    $row.find('.tms-time-cell').text('Won').removeClass('tms-time-cell');
-                } else if ($row.hasClass('watched-player-outbid')) {
-                    $row.find('.tms-time-cell').text('Lost').removeClass('tms-time-cell');
-                } else {
-                    $row.find('td').css({ color: 'var(--tmu-danger)' });
-                    $row.find('.tms-bid-btn').remove();
-                    cntdwn.getJQ().closest('td').html('—');
-                    setTimeout(() => $row.fadeOut(800, () => $row.remove()), 3000);
-                }
-            });
-
-            if (window.countDowns) window.countDowns[p.id] = cd;
-            try { $span.html(cd.getJQ()); } catch (e) { $span.text(p.time + 's'); }
-        });
+        return allPlayers
+            .filter(p => passesPostFilters(p, pf))
+            .sort((a, b) => (b.bump ? 1 : 0) - (a.bump ? 1 : 0));
     }
 
     function removePlayerTip() {
@@ -219,60 +183,72 @@ export function initTransferPage(main) {
     }
 
     function refreshDisplay() {
-        const $wrap = $('#tms-table-wrap');
-        if (!$wrap.length) return;
+        const container = document.getElementById('tms-table-wrap');
+        if (!container) return;
 
         const arr = getVisible();
         $('#tms-hits').text(arr.length);
 
         if (!arr.length) {
-            $wrap.html(TmUI.empty('No players found. Try adjusting your filters.'));
+            container.innerHTML = TmUI.empty('No players found. Try adjusting your filters.');
+            _tableWrap = null;
             return;
         }
 
-        if (skillsMode) {
-            const tableEl = TmTransferTable.createSkillsTableElement(ALL_SKILLS, SKILL_NAMES, sortKey, sortDir, (key) => {
-                const defaultDir = key === 'time' ? 1 : (key === 'name' ? 1 : -1);
-                ({ key: sortKey, dir: sortDir } = TmUtils.toggleSort(key, sortKey, sortDir, defaultDir));
-                refreshDisplay();
-            });
-            $wrap.empty().append(tableEl);
-            startCountdowns(arr);
-        } else {
-            const tableEl = TmTransferTable.createBreakdownTableElement(arr, sortKey, sortDir, tooltipCache, (key) => {
-                const defaultDir = key === 'time' ? 1 : (key === 'name' ? 1 : -1);
-                ({ key: sortKey, dir: sortDir } = TmUtils.toggleSort(key, sortKey, sortDir, defaultDir));
-                refreshDisplay();
-            });
-            $wrap.empty().append(tableEl);
-            startCountdowns(arr);
+        const adapted = arr.map(adaptTransferPlayer);
+
+        if (_tableWrap) {
+            _tableWrap.refresh(adapted);
+            return;
         }
 
-        // Row hover tooltip
-        removePlayerTip();
-        $('#tms-table tbody')
-            .on('mouseenter', '.tms-player-row', function () {
-                const pid = $(this).data('pid');
-                const player = allPlayers.find(x => x.id == pid);
-                if (!player) return;
-                const nameCell = this.querySelector('.tms-col-name') || this;
-                const $row = $(this);
-                TmPlayerTooltip.show(nameCell, TmTransferTable.adaptForTooltip(player, tooltipCache));
-                // Fetch tooltip on hover if not yet loaded
-                const cachedTip = tooltipCache[pid];
-                if (!cachedTip || cachedTip.estimated) {
-                    fetchOnePlayer(player).then(() => {
-                        if ($row.is(':hover'))
-                            TmPlayerTooltip.show(nameCell, TmTransferTable.adaptForTooltip(player, tooltipCache));
-                    });
-                }
-            })
-            .on('mouseleave', '.tms-player-row', removePlayerTip);
+        container.innerHTML = '';
+        _tableWrap = TmPlayersTable.mount(container, adapted, {
+            columns: { rtn: false },
+            sortKey: 'timeleft',
+            sortDir: 1,
+            onRowClick: (p) => {
+                if (!p.timeleft) return;
+                const nameJs = (p.name || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                window.tlpop_pop_transfer_bid?.(p._nextBid || 0, p._pro || 0, p.id, nameJs);
+            },
+            rowCls: (p) => p.timeleft > 0 ? 'tmpt-row-clickable' : null,
+            rowAttrs: (p) => ({ 'data-pid': String(p.id) }),
+            nameDecorator: (p) => {
+                const fetched = tooltipCache[p.id] && !tooltipCache[p.id].estimated;
+                const note = p._txt ? `<span title="${p._txt.replace(/"/g, '&quot;')}">&#x1F4CB;</span>` : '';
+                const reload = fetched ? '' : `<button class="tmu-btn tmu-btn-icon tmu-btn-xs" data-transfer-reload data-pid="${p.id}" title="Fetch stats" onclick="event.stopPropagation()">&#x21BB;</button>`;
+                return note + reload;
+            },
+            extraColsAfter: [{
+                key: '_nextBid', label: '', sortable: false,
+                render: (v, p) => {
+                    if (!p.timeleft) return '';
+                    const nameJs = (p.name || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                    return `<button class="tmu-btn tmu-btn-primary tmu-btn-sm rounded-full" onclick="event.stopPropagation();window.tlpop_pop_transfer_bid&&tlpop_pop_transfer_bid('${p._nextBid||0}',${p._pro||0},'${p.id}','${nameJs}')">Bid</button>`;
+                },
+            }],
+        });
 
-        // Compatibility hooks
-        if (typeof window.make_highlighted_rows === 'function') {
-            try { window.make_highlighted_rows(); } catch (e) { }
-        }
+        // Hover tooltip on player name
+        container.addEventListener('mouseover', e => {
+            const row = e.target.closest('tr[data-pid]');
+            if (!row || !container.contains(row)) return;
+            const pid = row.dataset.pid;
+            const player = allPlayers.find(x => String(x.id) === pid);
+            if (!player) return;
+            const anchor = row.querySelector('.tmpt-link') || row;
+            TmPlayerTooltip.show(anchor, TmTransferTable.adaptForTooltip(player, tooltipCache));
+            if (!tooltipCache[pid] || tooltipCache[pid].estimated) {
+                fetchOnePlayer(player).then(() => {
+                    if (row.matches(':hover'))
+                        TmPlayerTooltip.show(anchor, TmTransferTable.adaptForTooltip(player, tooltipCache));
+                });
+            }
+        });
+        container.addEventListener('mouseout', e => {
+            if (e.target.closest('tr[data-pid]')) TmPlayerTooltip.hide();
+        });
     }
 
     // ═══════════════════════════════════════════════════════════════════
@@ -281,8 +257,6 @@ export function initTransferPage(main) {
 
     function updateTooltipCells(pid, tip) {
         const recVal = tip.recCalc != null ? tip.recCalc : tip.recSort;
-
-        // Post-filters: remove rows that no longer pass after tooltip data arrives
         const pf = getPostFilters();
         const failsRec = (() => {
             if (recVal == null) return false;
@@ -298,51 +272,9 @@ export function initTransferPage(main) {
         const failsTI = (pf.timin !== null && tip.ti != null && tip.ti < pf.timin) ||
             (pf.timax !== null && tip.ti != null && tip.ti > pf.timax);
         if (failsRec || failsR5 || failsTI) {
-            const $row = $(`#player_row_${pid}`);
-            $row.next('.tms-expand-row').remove();
-            $row.remove();
             allPlayers = allPlayers.filter(p => String(p.id) !== String(pid));
-            const parts = ($('#tms-hits').text() || '').split('/');
-            const shown = parseInt(parts[0]) || 0;
-            const total = parseInt(parts[1]) || 0;
-            $('#tms-hits').text((shown > 0 ? shown - 1 : 0) + ' / ' + (total > 0 ? total - 1 : 0));
-            return;
         }
-
-        // Remove reload button now that we have full data
-        $(`#player_row_${pid} [data-transfer-reload]`).remove();
-
-        const $rec = $(`#tms-rec-${pid}`);
-        if ($rec.length && recVal != null) $rec.html(fmtRec(recVal));
-
-        const $r5 = $(`#tms-r5-${pid}`);
-        if ($r5.length) {
-            if (tip.r5 != null) $r5.html(fmtR5(tip.r5));
-            else if (tip.r5Lo != null || tip.r5Hi != null) $r5.html(fmtR5Range(tip.r5Lo, tip.r5Hi));
-        }
-
-        const $ti = $(`#tms-ti-${pid}`);
-        if ($ti.length) $ti.html(tiHtml(tip.ti));
-
-        // Refresh open expand row for this player (legacy — no-op when no expand rows)
-        const $expRow = $(`#player_row_${pid}`).next('.tms-expand-row');
-        if ($expRow.length) {
-            const player = allPlayers.find(x => x.id == pid);
-            if (player) {
-                const colCount = skillsMode ? (5 + ALL_SKILLS.length + 2) : BREAKDOWN_COLS.length;
-                $expRow.replaceWith(buildExpandRow(player, colCount));
-            }
-        }
-
-        // Refresh hover tooltip if it's showing this player
-        const $hovRow = $(`#player_row_${pid}`);
-        if ($hovRow.length && $hovRow.is(':hover')) {
-            const player = allPlayers.find(x => x.id == pid);
-            if (player) {
-                const anchor = $hovRow[0].querySelector('.tms-col-name') || $hovRow[0];
-                TmPlayerTooltip.show(anchor, TmTransferTable.adaptForTooltip(player, tooltipCache));
-            }
-        }
+        scheduleRefresh();
     }
 
     async function fetchOnePlayer(p) {
@@ -422,8 +354,9 @@ export function initTransferPage(main) {
     function doSearch() {
         if (isLoading) return;
         isLoading = true;
-        tooltipFetchAbort = true; // cancel in-flight tooltip fetches
-        findAllAbort = true;      // cancel in-flight findAll scan
+        tooltipFetchAbort = true;
+        findAllAbort = true;
+        _tableWrap = null;
         $('#tms-table-wrap').html(TmUI.loading('Searching transfer market…'));
 
         // Clear old countdowns
@@ -718,6 +651,7 @@ export function initTransferPage(main) {
 
         allPlayers = [...collected.values()].map(processPlayer);
         computeAllEstimates(allPlayers);
+        _tableWrap = null;
         refreshDisplay();
         if (fetchTooltips) setTimeout(() => startTooltipFetch(allPlayers), 300);
     }
@@ -730,7 +664,7 @@ export function initTransferPage(main) {
         if ($('#tms-main').length || $('#tms-sidebar').length) return;
         const layoutHtml = `
   ${TmTransferSidebar.build()}
-    <div id="tms-main" class="tmvu-transfer-main">
+    <div id="tms-main" class="tmvu-transfer-main tmu-panel">
     <div id="tms-toolbar">
       <span id="tms-hits">0</span>
       <span class="tms-toolbar-label"> players</span>
@@ -819,19 +753,6 @@ export function initTransferPage(main) {
         });
 
 
-        $(document).on('click', '#tms-mode-bd', function () {
-            skillsMode = false;
-            $(this).addClass('active');
-            $('#tms-mode-sk').removeClass('active');
-            refreshDisplay();
-        });
-
-        $(document).on('click', '#tms-mode-sk', function () {
-            skillsMode = true;
-            $(this).addClass('active');
-            $('#tms-mode-bd').removeClass('active');
-            refreshDisplay();
-        });
     }
 
     // ═══════════════════════════════════════════════════════════════════

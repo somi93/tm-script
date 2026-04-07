@@ -121,7 +121,7 @@ const CSS = `
             let bidHandler = null;
             if (!isExpired && !transferListed.isOwnPlayer) {
                 const nb = d.next_bid ? fmtCoin(d.next_bid) : transferListed.minBid;
-                tpl += `<tm-button data-label="🔨 Make Bid" data-block data-action="bid"></tm-button>`;
+                tpl += `<tm-button data-label="🔨 Make Bid" data-variant="primary" data-block data-action="bid"></tm-button>`;
                 bidHandler = () => tlpop_pop_transfer_bid(nb, 1, transferListed.playerId, transferListed.playerName);
             }
 
@@ -285,7 +285,7 @@ const CSS = `
             handlers.pending_withdraw = new Function(pendingBid.onclick);
             h += '<tm-card data-title="Pending bid" data-icon="⚡" data-flush data-variant="sidebar">';
             h += `<div class="text-sm muted px-3 pt-3 pb-2">${renderPendingBidCopy(pendingBid.copy, pendingBid.amount)}</div>`;
-            h += '<div class="px-3 pt-2 pb-4"><tm-button data-label="Withdraw Bid" data-variant="secondary" data-block data-action="pending_withdraw"></tm-button></div>';
+            h += '<div class="px-3 pt-2 pb-4"><tm-button data-label="Withdraw Bid" data-variant="primary" data-block data-action="pending_withdraw"></tm-button></div>';
             h += '</tm-card>';
         }
 

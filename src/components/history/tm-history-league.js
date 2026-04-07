@@ -104,15 +104,15 @@ let leagueCache = null;
 
         let h = '';
         h += TmSummaryStrip.render([
-            { label: 'Seasons', value: String(totalSeasons), minWidth: '70px' },
-            { label: 'Titles', value: String(titles), valueStyle: 'color:var(--tmu-text-highlight)', minWidth: '70px' },
-            { label: 'W / D / L', value: totalW + ' / ' + totalD + ' / ' + totalL, minWidth: '70px' },
-            { label: 'Goals', value: totalGF + ' - ' + totalGA, minWidth: '70px' },
-            { label: 'GD', valueHtml: (totalGD > 0 ? '+' : '') + String(totalGD), valueCls: H().balCls(totalGD), minWidth: '70px' },
-            { label: 'Win %', value: winPct + '%', minWidth: '70px' },
-            { label: 'Avg PPM', value: avgPPM, minWidth: '70px' },
-            ...(bestPos !== Infinity ? [{ label: 'Best Finish', valueHtml: '#' + bestPos + ' <span style="font-size:var(--tmu-font-xs);color:var(--tmu-text-faint)">(S' + bestPosSeason + ')</span>', valueCls: 'tmh-pos', minWidth: '70px' }] : []),
-        ], { cls: 'tmh-summary-strip tmh-league-summary', itemMinWidth: '70px' });
+            { label: 'Seasons', value: String(totalSeasons) },
+            { label: 'Titles', value: String(titles), valueCls: 'tmh-pos' },
+            { label: 'W / D / L', value: totalW + ' / ' + totalD + ' / ' + totalL },
+            { label: 'Goals', value: totalGF + ' - ' + totalGA },
+            { label: 'GD', valueHtml: (totalGD > 0 ? '+' : '') + String(totalGD), valueCls: H().balCls(totalGD) },
+            { label: 'Win %', value: winPct + '%' },
+            { label: 'Avg PPM', value: avgPPM },
+            ...(bestPos !== Infinity ? [{ label: 'Best Finish', valueHtml: '#' + bestPos + ' <span style="font-size:var(--tmu-font-xs);color:var(--tmu-text-faint)">(S' + bestPosSeason + ')</span>', valueCls: 'tmh-pos' }] : []),
+        ], { variant: 'boxed', valueFirst: true, align: 'center' });
         container.innerHTML = h;
 
         const n = totalSeasons || 1;

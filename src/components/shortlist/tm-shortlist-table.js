@@ -26,7 +26,7 @@ import { TmPlayersTable } from '../shared/tm-players-table.js';
                 cursor:pointer; transition:all .12s; user-select:none;
             }
             .tmsl-pos-btn:hover { background:var(--tmu-surface-tab-hover); }
-            .tmsl-pos-btn.active { background:var(--tmu-success-fill-hover); border-color:var(--tmu-success-fill-hover); color:#fff; }
+            .tmsl-pos-btn.active { background:var(--tmu-success-fill-hover); border-color:var(--tmu-success-fill-hover); color:var(--tmu-text-inverse); }
             .tmsl-pos-btn.gk  { color:var(--tmu-success-strong); }
             .tmsl-pos-btn.de  { color:var(--tmu-info); }
             .tmsl-pos-btn.dm  { color:var(--tmu-warning); }
@@ -40,7 +40,7 @@ import { TmPlayersTable } from '../shared/tm-players-table.js';
                 cursor:pointer; transition:all .12s; user-select:none;
             }
             .tmsl-side-btn:hover { background:var(--tmu-surface-tab-hover); }
-            .tmsl-side-btn.active { background:var(--tmu-success-fill-hover); border-color:var(--tmu-success-fill-hover); color:#fff; }
+            .tmsl-side-btn.active { background:var(--tmu-success-fill-hover); border-color:var(--tmu-success-fill-hover); color:var(--tmu-text-inverse); }
             .tmsl-btngrp { display:flex; align-items:center; }
             .tmsl-btngrp > * { border-radius:0; border-right-width:0; }
             .tmsl-btngrp > :first-child { border-radius:var(--tmu-space-xs) 0 0 var(--tmu-space-xs); }

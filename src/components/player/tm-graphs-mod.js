@@ -472,11 +472,11 @@ export const TmGraphsMod = (() => {
             })}<span class="tmg-legend-dot" style="color:${s.color}">●</span>${s.label}${arr}</label>`;
         });
         legendH += '</div>';
-        let toggleH = def.showToggle ? '<tm-row data-justify="center" data-gap="6px" data-cls="pt-1 pb-1"><tm-button data-variant="secondary" data-size="sm" data-cls="uppercase" data-action="all">All</tm-button><tm-button data-variant="secondary" data-size="sm" data-cls="uppercase" data-action="none">None</tm-button></tm-row>' : '';
+        let toggleH = def.showToggle ? '<tm-row data-justify="center" data-gap="6px" data-cls="pt-1 pb-1"><tm-button data-variant="primary" data-size="sm" data-cls="uppercase" data-action="all">All</tm-button><tm-button data-variant="primary" data-size="sm" data-cls="uppercase" data-action="none">None</tm-button></tm-row>' : '';
         const computedLabel = fromStore ? ' <span class="text-xs font-normal blue">(computed)</span>' : '';
         const enableKey = (fromStore && isOwnPlayer && def.enableKey) ? def.enableKey : null;
         const enableBtnH = enableKey
-            ? `<tm-button data-variant="lime" data-size="xs" data-cls="font-bold uppercase" data-action="enableGraph" style="margin-left:auto;">Enable <img src="/pics/pro_icon.png" class="pro_icon"></tm-button>`
+            ? `<tm-button data-variant="primary" data-size="xs" data-cls="font-bold uppercase" data-action="enableGraph" style="margin-left:auto;">Enable <img src="/pics/pro_icon.png" class="pro_icon"></tm-button>`
             : '';
         wrap.innerHTML = `<div class="tmg-chart-title text-md font-bold" style="display:flex;align-items:center;gap:var(--tmu-space-sm);">${def.title}${computedLabel}${enableBtnH}</div><canvas class="tmg-canvas" style="width:100%;height:280px;"></canvas><div class="tmg-tooltip py-1 px-2 rounded-sm text-sm"></div>${legendH}${toggleH}`;
         el.appendChild(wrap);
@@ -537,7 +537,7 @@ export const TmGraphsMod = (() => {
             wrap._tmgR5Values = values;
             wrap.innerHTML = `<div class="tmg-chart-title text-md font-bold" style="display:flex;align-items:center;justify-content:space-between">
                     <span>R5 <span class="text-xs font-normal blue">(computed)</span></span>
-                    <tm-button data-variant="secondary" data-size="xs" data-cls="tmg-export-btn" title="Export to Excel">⬇ Excel</tm-button>
+                    <tm-button data-variant="primary" data-size="xs" data-cls="tmg-export-btn" title="Export to Excel">⬇ Excel</tm-button>
                 </div><canvas class="tmg-canvas" style="width:100%;height:260px;"></canvas><div class="tmg-tooltip py-1 px-2 rounded-sm text-sm"></div>`;
             el.appendChild(wrap);
             TmUI?.render(wrap);
@@ -552,7 +552,7 @@ export const TmGraphsMod = (() => {
         if (!info) return;
         const card = document.createElement('div');
         card.className = 'tmg-enable-card rounded-md py-4 px-4';
-        card.innerHTML = `<tm-row data-justify="space-between" data-align="center" data-gap="12px"><div><div class="tmg-enable-title text-md font-bold">${info.title}</div><div class="tmg-enable-desc text-sm">${info.desc}</div></div><tm-button data-variant="lime" data-size="sm" data-cls="font-bold uppercase px-4" data-action="enableGraph">Enable <img src="/pics/pro_icon.png" class="pro_icon"></tm-button></tm-row>`;
+        card.innerHTML = `<tm-row data-justify="space-between" data-align="center" data-gap="12px"><div><div class="tmg-enable-title text-md font-bold">${info.title}</div><div class="tmg-enable-desc text-sm">${info.desc}</div></div><tm-button data-variant="primary" data-size="sm" data-cls="font-bold uppercase px-4" data-action="enableGraph">Enable <img src="/pics/pro_icon.png" class="pro_icon"></tm-button></tm-row>`;
         TmUI?.render(card, undefined, {
             enableGraph: () => { if (typeof window.graph_enable === 'function') window.graph_enable(_playerId, info.enableKey); }
         });

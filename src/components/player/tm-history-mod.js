@@ -6,34 +6,9 @@ const CSS = `
    HISTORY (tmph-*)
    ═══════════════════════════════════════ */
 #tmph-root {
-    display: block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: var(--tmu-text-main); line-height: 1.4;
+    display: block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;line-height: 1.4;
 }
-.tmph-wrap {
-    background: transparent; border-radius: 0; border: none; overflow: hidden;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: var(--tmu-text-main); font-size: var(--tmu-font-sm);
-}
-.tmu-tabs.tmph-tabs { margin: var(--tmu-space-md) var(--tmu-space-lg) var(--tmu-space-sm); border-radius: var(--tmu-space-sm); overflow: hidden; }
-.tmph-body { padding: var(--tmu-space-sm) var(--tmu-space-lg) var(--tmu-space-lg); font-size: var(--tmu-font-sm); min-height: 120px; }
-.tmph-tbl { width: 100%; border-collapse: collapse; font-size: var(--tmu-font-xs); margin-bottom: var(--tmu-space-xs); }
-.tmph-tbl th {
-    padding: var(--tmu-space-sm); font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-text-faint);
-    text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid var(--tmu-border-soft);
-    text-align: left; white-space: nowrap;
-}
-.tmph-tbl th.c { text-align: center; }
-.tmph-tbl th.r { text-align: right; }
-.tmph-tbl td {
-    padding: var(--tmu-space-xs) var(--tmu-space-sm); border-bottom: 1px solid var(--tmu-border-faint);
-    color: var(--tmu-text-main); font-variant-numeric: tabular-nums; vertical-align: middle;
-}
-.tmph-tbl td.c { text-align: center; }
-.tmph-tbl td.r { text-align: right; }
-.tmph-tbl tr:hover { background: var(--tmu-border-contrast); }
-.tmph-tbl a { color: var(--tmu-accent); text-decoration: none; font-weight: 600; }
-.tmph-tbl a:hover { color: var(--tmu-text-main); text-decoration: underline; }
-.tmph-tbl .tmph-tot td { border-top: 2px solid var(--tmu-border-embedded); color: var(--tmu-text-strong); font-weight: 800; }
+.tmu-tabs.tmph-tabs { margin-bottom: var(--tmu-space-md); border-radius: var(--tmu-space-sm); overflow: hidden; }
 .tmph-transfer td {
     background: var(--tmu-surface-accent-soft); color: var(--tmu-text-faint); font-size: var(--tmu-font-xs);
     padding: var(--tmu-space-xs) var(--tmu-space-sm); border-bottom: 1px solid var(--tmu-border-soft-alpha-mid);
@@ -41,8 +16,6 @@ const CSS = `
 .tmph-xfer-sum { background: var(--tmu-warning-fill); padding: 0 var(--tmu-space-sm); border-radius: var(--tmu-space-xs); border: 1px solid var(--tmu-border-warning); }
 .tmph-div { white-space: nowrap; font-size: var(--tmu-font-xs); }
 .tmph-club { display: flex; align-items: center; gap: var(--tmu-space-sm); white-space: nowrap; max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
-.tmph-tbl td.tmph-r-good { color: var(--tmu-success); }
-.tmph-tbl td.tmph-r-low { color: var(--tmu-danger); }
 `;
     const _s = document.createElement('style');
     _s.textContent = CSS;

@@ -1,5 +1,9 @@
 import { TmConst } from '../../lib/tm-constants.js';
 import { TmUI } from '../shared/tm-ui.js';
+import { TmPosition } from '../../lib/tm-position.js';
+
+const posChip = (fp) =>
+    TmPosition.chip([fp], 'tm-pos-chip tms-pos-chip', { attrs: { 'data-fp': fp } });
 
 export const TmTransferSidebar = {
         build() {
@@ -18,7 +22,7 @@ export const TmTransferSidebar = {
 
             return `
     <div id="tms-sidebar" class="tmvu-transfer-sidebar">
-      <div id="tms-filter-box">
+      <div id="tms-filter-box" class="tmu-card">
       <div class="tms-sb-section">
         <div class="tms-sb-head">Age Range
           ${checkboxFieldHtml({ id: 'tms-for', checked: true, label: 'Foreigners', cls: 'tms-for-inline' })}
@@ -65,29 +69,27 @@ export const TmTransferSidebar = {
         </div>
       </div>
 
-      <div class="tms-sb-section">
-        <div class="tms-sb-body">
+      <div class="tms-sb-body">
           <div class="tms-pos-formation">
             <div class="tms-pos-formation-empty"></div>
-            <div class="tms-filter-btn tms-gk" data-fp="gk">GK</div>
+            ${posChip('gk')}
             <div class="tms-pos-formation-empty"></div>
-            <div class="tms-filter-btn tms-de" data-fp="dl">DL</div>
-            <div class="tms-filter-btn tms-de" data-fp="dc">DC</div>
-            <div class="tms-filter-btn tms-de" data-fp="dr">DR</div>
-            <div class="tms-filter-btn tms-dm" data-fp="dml">DML</div>
-            <div class="tms-filter-btn tms-dm" data-fp="dmc">DMC</div>
-            <div class="tms-filter-btn tms-dm" data-fp="dmr">DMR</div>
-            <div class="tms-filter-btn tms-mf" data-fp="ml">ML</div>
-            <div class="tms-filter-btn tms-mf" data-fp="mc">MC</div>
-            <div class="tms-filter-btn tms-mf" data-fp="mr">MR</div>
-            <div class="tms-filter-btn tms-om" data-fp="oml">OML</div>
-            <div class="tms-filter-btn tms-om" data-fp="omc">OMC</div>
-            <div class="tms-filter-btn tms-om" data-fp="omr">OMR</div>
+            ${posChip('dl')}
+            ${posChip('dc')}
+            ${posChip('dr')}
+            ${posChip('dml')}
+            ${posChip('dmc')}
+            ${posChip('dmr')}
+            ${posChip('ml')}
+            ${posChip('mc')}
+            ${posChip('mr')}
+            ${posChip('oml')}
+            ${posChip('omc')}
+            ${posChip('omr')}
             <div class="tms-pos-formation-empty"></div>
-            <div class="tms-filter-btn tms-fw" data-fp="fc">FC</div>
+            ${posChip('fc')}
             <div class="tms-pos-formation-empty"></div>
           </div>
-        </div>
       </div>
       <div class="tms-primary-actions">
         ${buttonHtml({ id: 'tms-search-btn', label: '🔍 Search 100', color: 'primary', block: true })}
@@ -100,7 +102,7 @@ export const TmTransferSidebar = {
           <div class="tms-filter-actions">
             <div class="tms-filter-action-cell">${buttonHtml({ id: 'tms-filter-load-btn', label: '📂 Load', color: 'secondary', size: 'xs', block: true })}</div>
             <div class="tms-filter-action-cell tms-filter-action-cell-wide">${buttonHtml({ id: 'tms-filter-save-btn', label: '💾 Save Current', color: 'secondary', size: 'xs', block: true })}</div>
-            <div class="tms-filter-action-cell">${buttonHtml({ id: 'tms-filter-del-btn', label: '🗑', color: 'danger', size: 'xs', block: true })}</div>
+            <div class="tms-filter-action-cell">${buttonHtml({ id: 'tms-filter-del-btn', icon: '🗑', color: 'danger', size: 'xs', block: true })}</div>
           </div>
         </div>
       </div>

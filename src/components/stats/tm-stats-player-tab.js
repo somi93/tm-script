@@ -1,6 +1,5 @@
 import { TmStatsGKTable } from './tm-stats-gk-table.js';
 import { TmStatsPlayerTable } from './tm-stats-player-table.js';
-import { TmStatsFilterGroup } from './tm-stats-filter-group.js';
 import { TmUI } from '../shared/tm-ui.js';
 
 const PLAYER_SUB_TABS = [
@@ -28,17 +27,7 @@ const PLAYER_SUB_TABS = [
 
             let html = opts.renderMatchTypeButtons();
             html += '<div id="tsa-player-subtabs" class="tsa-subtabs"></div>';
-            html += TmStatsFilterGroup.renderGroup({
-                items: ['total', 'average', 'per90'].map(fk => ({
-                    key: fk,
-                    label: fk === 'per90' ? 'Per 90 min' : fk.charAt(0).toUpperCase() + fk.slice(1),
-                })),
-                active: f,
-                wrapCls: 'tsa-filters',
-                itemCls: 'tsa-filter-btn',
-                dataAttr: 'filter',
-                renderItem: item => item.label,
-            });
+            html += '<div id="tsa-player-filters" class="tsa-filters"></div>';
             html += '<div id="tsa-player-tbl"></div>';
             if (keepers.length > 0) html += '<div id="tsa-gk-tbl"></div>';
 
@@ -48,7 +37,7 @@ const PLAYER_SUB_TABS = [
                 ?.appendChild(TmUI.tabs({
                     items: PLAYER_SUB_TABS,
                     active: activePlayerSubTab,
-                    color: 'secondary',
+                    stretch: true,
                     cls: 'tsa-subtabs-bar',
                     onChange: key => {
                         opts.setActivePlayerSubTab(key);
@@ -56,20 +45,26 @@ const PLAYER_SUB_TABS = [
                     },
                 }));
 
+            const filtersEl = body.querySelector('#tsa-player-filters');
+            if (filtersEl) {
+                ['total', 'average', 'per90'].forEach(fk => {
+                    const label = fk === 'per90' ? 'Per 90 min' : fk.charAt(0).toUpperCase() + fk.slice(1);
+                    filtersEl.appendChild(TmUI.button({
+                        label,
+                        color: 'primary',
+                        size: 'sm',
+                        active: fk === f,
+                        onClick: () => { opts.setActiveFilter(fk); opts.rerender(); },
+                    }));
+                });
+            }
+
             body.querySelector('#tsa-player-tbl')
                 .replaceWith(TmStatsPlayerTable.build(outfield, { filter: f, matchTypeCount, category: activePlayerSubTab }));
             if (keepers.length > 0)
                 body.querySelector('#tsa-gk-tbl')
                     .replaceWith(TmStatsGKTable.build(keepers, { filter: f, category: activePlayerSubTab, showCards: activePlayerSubTab === 'defending' }));
 
-            TmStatsFilterGroup.bindGroup(body, {
-                selector: '.tsa-filter-btn',
-                dataAttr: 'filter',
-                onChange: key => {
-                    opts.setActiveFilter(key);
-                    opts.rerender();
-                },
-            });
             opts.bindMatchTypeButtons(body);
         },
     };

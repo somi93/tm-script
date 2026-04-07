@@ -5,7 +5,7 @@ document.head.appendChild(Object.assign(document.createElement('style'), {
     textContent: `
 /* ── Modal ── */
 #tmu-modal-overlay{position:fixed;inset:0;z-index:200000;background:var(--tmu-surface-overlay-strong);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
-.tmu-modal{background:linear-gradient(160deg,var(--tmu-surface-panel) 0%, var(--tmu-surface-item-dark) 100%);border:1px solid var(--tmu-border-success);border-radius:var(--tmu-space-md);padding:var(--tmu-space-xxl) var(--tmu-space-xxl) var(--tmu-space-xl);max-width:440px;width:calc(100% - 40px);box-shadow:0 20px 60px var(--tmu-shadow-panel),0 0 0 1px var(--tmu-success-fill-soft);color:var(--tmu-text-main);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.tmu-modal{background:var(--tmu-color-accent);border:1px solid var(--tmu-border-success);border-radius:var(--tmu-space-md);padding:var(--tmu-space-xxl) var(--tmu-space-xxl) var(--tmu-space-xl);max-width:440px;width:calc(100% - 40px);box-shadow:0 20px 60px var(--tmu-shadow-panel),0 0 0 1px var(--tmu-success-fill-soft);color:var(--tmu-text-main);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 .tmu-modal-icon{font-size:var(--tmu-font-3xl);margin-bottom:var(--tmu-space-md);line-height:1}
 .tmu-modal-title{font-size:var(--tmu-font-md);font-weight:800;color:var(--tmu-text-strong);margin-bottom:var(--tmu-space-sm)}
 .tmu-modal-msg{font-size:var(--tmu-font-sm);color:var(--tmu-text-muted);line-height:1.65;margin-bottom:var(--tmu-space-xl)}
@@ -114,5 +114,37 @@ export const TmModal = {
             document.body.appendChild(overlay);
             setTimeout(() => overlay.querySelector('#tmu-prompt-input').focus(), 50);
         });
+    },
+
+    open({ title, contentEl, maxWidth = '440px' } = {}) {
+        const overlay = document.createElement('div');
+        overlay.id = 'tmu-modal-overlay';
+
+        const modal = document.createElement('div');
+        modal.className = 'tmu-modal';
+        modal.style.padding = '0';
+        modal.style.maxWidth = maxWidth;
+
+        if (title) {
+            const titleEl = document.createElement('div');
+            titleEl.className = 'tmu-modal-title';
+            titleEl.style.padding = 'var(--tmu-space-md) var(--tmu-space-lg)';
+            titleEl.textContent = title;
+            modal.appendChild(titleEl);
+        }
+
+        modal.appendChild(contentEl);
+        overlay.appendChild(modal);
+
+        const destroy = () => {
+            document.removeEventListener('keydown', onKey);
+            overlay.remove();
+        };
+        const onKey = e => { if (e.key === 'Escape') destroy(); };
+        overlay.addEventListener('click', e => { if (e.target === overlay) destroy(); });
+        document.addEventListener('keydown', onKey);
+        document.body.appendChild(overlay);
+
+        return { destroy };
     },
 };

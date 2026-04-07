@@ -90,6 +90,7 @@ const PAGES = [
     'league',
     'stats',
     'training',
+    'tactics',
     'history',
     'shortlist',
     'import',

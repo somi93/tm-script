@@ -1,9 +1,11 @@
 import { TmClubService } from '../../services/club.js';
 import { TmMatchService } from '../../services/match.js';
 import { TmUI } from '../shared/tm-ui.js';
-import { TmMatchTooltip } from '../shared/tm-match-tooltip.js';
 import { TmHistoryHelpers } from './tm-history-helpers.js';
 import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
+import { TmSeasonBar } from '../shared/tm-season-bar.js';
+import { TmFixturesList } from '../shared/tm-fixtures-list.js';
+import { TmFixtureMatchRow } from '../shared/tm-fixture-match-row.js';
 
 const H = () => TmHistoryHelpers;
 
@@ -12,11 +14,7 @@ let _clubId = null, _seasons = null, _el = null;
 let matchesCache = {};
 let matchFilter = 'all';
 let currentSeason = null;
-let _matchTooltipCache = {};
-let _matchTooltipEl = null;
-let _matchTooltipTimer = null;
-let _matchTooltipHideTimer = null;
-let _matchTooltipMid = null;
+let _matchDataCache = {};
 
 /* ═══════════════════════════════════════
    MATCHES TAB
@@ -32,29 +30,12 @@ function renderMatches() {
     const validSeason = matchSeasons.find(s => s.id == currentSeason) ? currentSeason : matchSeasons[0].id;
     if (validSeason !== currentSeason) currentSeason = validSeason;
 
-    let h = H().seasonBar({
-        seasons: matchSeasons,
-        currentSeason,
-        selectId: 'tmh-m-sel',
-        prevId: 'tmh-m-prev',
-        nextId: 'tmh-m-next',
-    });
-    h += '<div id="tmh-mdata"></div>';
-    el.innerHTML = h;
+    el.innerHTML = '<div id="tmh-mdata"></div>';
 
-    function goSeason(sid) {
-        currentSeason = sid;
-        renderMatches();
-    }
+    function goSeason(sid) { currentSeason = sid; renderMatches(); }
 
-    H().bindSeasonBar(el, {
-        seasons: matchSeasons,
-        currentSeason,
-        selectId: 'tmh-m-sel',
-        prevId: 'tmh-m-prev',
-        nextId: 'tmh-m-next',
-        onChange: goSeason,
-    });
+    TmSeasonBar.mount(el, { seasons: matchSeasons, current: currentSeason, onChange: goSeason });
+    el.appendChild(el.querySelector('#tmh-mdata'));
 
     loadMatches(currentSeason);
 }
@@ -176,50 +157,28 @@ function renderMatchList(c, data, sid) {
     let h = '';
 
     h += TmSummaryStrip.render([
-        { label: 'Played', value: String(filtered.length), minWidth: '60px' },
-        { label: 'Won', value: String(wins), valueCls: 'tmh-pos', minWidth: '60px' },
-        { label: 'Drawn', value: String(draws), valueCls: 'tmh-neut', minWidth: '60px' },
-        { label: 'Lost', value: String(losses), valueCls: 'tmh-neg', minWidth: '60px' },
-        { label: 'GF', value: String(gf), minWidth: '60px' },
-        { label: 'GA', value: String(ga), minWidth: '60px' },
-        { label: 'GD', valueHtml: (gf - ga > 0 ? '+' : '') + String(gf - ga), valueCls: H().balCls(gf - ga), minWidth: '60px' },
-        { label: 'Win %', value: (filtered.length ? Math.round(wins / filtered.length * 100) : 0) + '%', minWidth: '60px' },
-    ], { cls: 'tmh-summary-strip tmh-match-summary', itemMinWidth: '60px' });
+        { label: 'Played', value: String(filtered.length) },
+        { label: 'Won', value: String(wins), valueCls: 'tmh-pos' },
+        { label: 'Drawn', value: String(draws), valueCls: 'tmh-neut' },
+        { label: 'Lost', value: String(losses), valueCls: 'tmh-neg' },
+        { label: 'GF', value: String(gf) },
+        { label: 'GA', value: String(ga) },
+        { label: 'GD', valueHtml: (gf - ga > 0 ? '+' : '') + String(gf - ga), valueCls: H().balCls(gf - ga) },
+        { label: 'Win %', value: (filtered.length ? Math.round(wins / filtered.length * 100) : 0) + '%' },
+    ], { variant: 'boxed', valueFirst: true, align: 'center' });
+
+    const filterBtn = (f, label, active) =>
+        `<button class="tmu-btn tmu-btn-primary tmu-btn-sm rounded-full${active ? ' tmu-btn-active' : ''}" data-f="${f}">${label}</button>`;
 
     h += '<div class="tmh-filter-bar">';
-    h += '<span class="tmh-filter' + (matchFilter === 'all' ? ' active' : '') + '" data-f="all">All (' + matches.length + ')</span>';
-    if (typeCounts.has('league')) {
-        const cnt = typeCounts.get('league');
-        h += '<span class="tmh-filter' + (matchFilter === 'league' ? ' active' : '') + '" data-f="league">League (' + cnt + ')</span>';
-    }
-    if (typeCounts.has('cup')) {
-        const cnt = typeCounts.get('cup');
-        h += '<span class="tmh-filter' + (matchFilter === 'cup' ? ' active' : '') + '" data-f="cup">Cup (' + cnt + ')</span>';
-    }
-    if (typeCounts.has('friendly')) {
-        const cnt = typeCounts.get('friendly');
-        h += '<span class="tmh-filter' + (matchFilter === 'friendly' ? ' active' : '') + '" data-f="friendly">Friendly (' + cnt + ')</span>';
-    }
-    if (typeCounts.has('international')) {
-        const cnt = typeCounts.get('international');
-        h += '<span class="tmh-filter' + (matchFilter === 'international' ? ' active' : '') + '" data-f="international">International (' + cnt + ')</span>';
-    }
+    h += filterBtn('all', 'All (' + matches.length + ')', matchFilter === 'all');
+    if (typeCounts.has('league')) h += filterBtn('league', 'League (' + typeCounts.get('league') + ')', matchFilter === 'league');
+    if (typeCounts.has('cup')) h += filterBtn('cup', 'Cup (' + typeCounts.get('cup') + ')', matchFilter === 'cup');
+    if (typeCounts.has('friendly')) h += filterBtn('friendly', 'Friendly (' + typeCounts.get('friendly') + ')', matchFilter === 'friendly');
+    if (typeCounts.has('international')) h += filterBtn('international', 'International (' + typeCounts.get('international') + ')', matchFilter === 'international');
     h += '</div>';
 
-    h += '<div class="tmh-match-list" id="tmh-match-list">';
-    filtered.forEach(function (m) {
-        const cls = m.outcome === 'win' ? 'tmh-win' : m.outcome === 'loss' ? 'tmh-loss' : 'tmh-draw';
-
-        h += '<div class="tmh-match-row ' + cls + '" data-mid="' + m.matchId + '" data-season="' + m.matchSeason + '">';
-        h += '<span class="tmh-match-date">' + m.day + '</span>';
-        h += '<span class="tmh-match-type">' + m.matchType + '</span>';
-        h += '<span class="tmh-match-home' + (m._homeWin ? ' tmh-winner' : '') + '">' + m.homeName + '</span>';
-        h += '<span class="tmh-match-result">' + m.result + '</span>';
-        h += '<span class="tmh-match-away' + (m._awayWin ? ' tmh-winner' : '') + '">' + m.awayName + '</span>';
-        h += '</div>';
-    });
-    h += '</div>';
-
+    h += '<div id="tmh-match-list"></div>';
     h += '<div style="margin-top:var(--tmu-space-md)">';
     h += TmUI.button({ color: 'secondary', size: 'xs', id: 'tmh-pstats-btn', label: 'Load Player Stats', cls: 'tmh-btn' }).outerHTML;
     h += '</div>';
@@ -227,26 +186,18 @@ function renderMatchList(c, data, sid) {
 
     c.innerHTML = h;
 
+    const listEl = c.querySelector('#tmh-match-list');
+    listEl.innerHTML = filtered.map(m => TmFixtureMatchRow.render(
+        { matchId: m.matchId, homeId: m.homeLink, homeName: m.homeName, awayId: m.awayLink, awayName: m.awayName, scoreText: m.result, matchtype_sort: m.matchType },
+        { myClubId: String(_clubId), season: m.matchSeason, showType: true }
+    )).join('');
+    TmFixturesList.bindHover(listEl, { season: sid });
+    TmFixturesList.bindRowNav(listEl);
+
     c.addEventListener('click', function (e) {
-        const filter = e.target.closest('.tmh-filter');
-        if (filter) { matchFilter = filter.dataset.f; renderMatchList(c, data, sid); return; }
+        if (e.target.closest('[data-f]')) { matchFilter = e.target.closest('[data-f]').dataset.f; renderMatchList(c, data, sid); return; }
         const statsBtn = e.target.closest('#tmh-pstats-btn');
         if (statsBtn) { statsBtn.classList.add('busy'); loadPlayerStats(data); }
-    });
-
-    c.addEventListener('mouseover', function (e) {
-        const row = e.target.closest('.tmh-match-row');
-        if (!row || row.contains(e.relatedTarget)) return;
-        const mid = row.dataset.mid;
-        const season = row.dataset.season;
-        clearTimeout(_matchTooltipTimer);
-        _matchTooltipTimer = setTimeout(function () { showMatchTooltip(row, mid, season); }, 300);
-    });
-    c.addEventListener('mouseout', function (e) {
-        const row = e.target.closest('.tmh-match-row');
-        if (!row || row.contains(e.relatedTarget)) return;
-        clearTimeout(_matchTooltipTimer);
-        hideMatchTooltip();
     });
 }
 
@@ -288,8 +239,8 @@ function loadPlayerStats(data) {
         const season = m.matchSeason;
         const isCurrentSeason = Number(season) === currentSeasonNum;
 
-        if (_matchTooltipCache[mid]) {
-            results.push({ matchData: _matchTooltipCache[mid], isRich: !!_matchTooltipCache[mid]._rich, matchInfo: m });
+        if (_matchDataCache[mid]) {
+            results.push({ matchData: _matchDataCache[mid], isRich: !!_matchDataCache[mid]._rich, matchInfo: m });
             done++;
             running--;
             updateProg();
@@ -301,13 +252,13 @@ function loadPlayerStats(data) {
             ? TmMatchService.fetchMatch(mid).then(function (d) {
                 if (d) {
                     d._rich = true;
-                    _matchTooltipCache[mid] = d;
+                    _matchDataCache[mid] = d;
                     results.push({ matchData: d, isRich: true, matchInfo: m });
                 }
             })
             : TmMatchService.fetchMatchTooltip(mid, season).then(function (d) {
                 if (d) {
-                    _matchTooltipCache[mid] = d;
+                    _matchDataCache[mid] = d;
                     results.push({ matchData: d, isRich: false, matchInfo: m });
                 }
             });
@@ -468,85 +419,6 @@ function renderPlayerStatsTable(c, arr) {
     c.innerHTML = '';
     c.appendChild(sec);
     c.appendChild(tbl);
-}
-
-/* ─── build tooltip content from tooltip.ajax.php response ─── */
-function buildMatchTooltipContent(d) {
-    return TmMatchTooltip.buildLegacyTooltipContent(d);
-}
-
-/* ─── build rich tooltip from match.ajax.php (current season) ─── */
-function buildMatchRichTooltip(mData) {
-    return TmMatchTooltip.buildRichTooltip(mData);
-}
-
-/* ─── tooltip positioning and show/hide ─── */
-function positionTooltip(el) {
-    if (!_matchTooltipEl) return;
-    var rect = el.getBoundingClientRect();
-    var ttW = _matchTooltipEl.offsetWidth;
-    var ttH = _matchTooltipEl.offsetHeight;
-    var left = rect.left + rect.width / 2 - ttW / 2;
-    var top = rect.bottom + 4;
-    if (top + ttH > window.innerHeight - 10) top = rect.top - ttH - 4;
-    if (left < 8) left = 8;
-    if (left + ttW > window.innerWidth - 8) left = window.innerWidth - ttW - 8;
-    _matchTooltipEl.style.left = left + 'px';
-    _matchTooltipEl.style.top = top + 'px';
-}
-
-function showMatchTooltip(el, mid, season) {
-    clearTimeout(_matchTooltipHideTimer);
-    if (_matchTooltipEl) _matchTooltipEl.remove();
-    TmMatchTooltip.ensureStyles();
-    var currentSeasonNum = window.SESSION ? window.SESSION.season : 0;
-    var isCurrentSeason = Number(season) === currentSeasonNum;
-    _matchTooltipMid = mid;
-
-    _matchTooltipEl = document.createElement('div');
-    _matchTooltipEl.className = 'tmh-tooltip rnd-h2h-tooltip';
-    document.body.appendChild(_matchTooltipEl);
-    positionTooltip(el);
-
-    if (_matchTooltipCache[mid]) {
-        var cached = _matchTooltipCache[mid];
-        _matchTooltipEl.innerHTML = cached._rich ? buildMatchRichTooltip(cached) : buildMatchTooltipContent(cached);
-        positionTooltip(el);
-        requestAnimationFrame(function () { _matchTooltipEl.classList.add('visible'); });
-    } else {
-        _matchTooltipEl.innerHTML = TmUI.loading('Loading...', true);
-        requestAnimationFrame(function () { _matchTooltipEl.classList.add('visible'); });
-
-        var onFail = function () {
-            if (_matchTooltipEl) _matchTooltipEl.innerHTML = TmUI.error('Failed', true);
-        };
-        if (isCurrentSeason) {
-            TmMatchService.fetchMatch(mid).then(function (d) {
-                if (!d) { onFail(); return; }
-                d._rich = true;
-                _matchTooltipCache[mid] = d;
-                if (_matchTooltipEl && _matchTooltipMid == mid) {
-                    _matchTooltipEl.innerHTML = buildMatchRichTooltip(d);
-                    positionTooltip(el);
-                }
-            });
-        } else {
-            TmMatchService.fetchMatchTooltip(mid, season).then(function (d) {
-                if (!d) { onFail(); return; }
-                _matchTooltipCache[mid] = d;
-                if (_matchTooltipEl && _matchTooltipMid == mid) {
-                    _matchTooltipEl.innerHTML = buildMatchTooltipContent(d);
-                    positionTooltip(el);
-                }
-            });
-        }
-    }
-}
-
-function hideMatchTooltip() {
-    _matchTooltipHideTimer = setTimeout(function () {
-        if (_matchTooltipEl) { _matchTooltipEl.remove(); _matchTooltipEl = null; }
-    }, 100);
 }
 
 export const TmHistoryMatches = {

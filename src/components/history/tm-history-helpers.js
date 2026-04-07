@@ -138,4 +138,4 @@ const { R5_THRESHOLDS } = TmConst;
         });
     }
 
-    export const TmHistoryHelpers = { fmt, balCls, starVal, fix2, r5Color, posVariant, prefetchPlayers, progressState, seasonBar, bindSeasonBar, playerInfoCache };
+    export const TmHistoryHelpers = { fmt, balCls, starVal, fix2, r5Color, posVariant, prefetchPlayers, progressState, playerInfoCache };

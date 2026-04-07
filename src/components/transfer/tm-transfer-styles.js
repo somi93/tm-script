@@ -16,9 +16,9 @@ export const TmTransferStyles = {
     .tmvu-transfer-sidebar {
         width: 250px;
         min-width: 250px;
-        background: transparent;
         box-sizing: border-box;
         position: sticky;
+        border-radius: var(--tmu-space-sm);
         top: var(--tmu-space-sm);
         max-height: calc(100vh - 20px);
         overflow-y: auto;
@@ -29,9 +29,6 @@ export const TmTransferStyles = {
 
     /* Card-style sections (matching tm-player widget style) */
     .tms-sb-section {
-        background: var(--tmu-surface-panel);
-        border: 1px solid var(--tmu-border-embedded);
-        border-radius: var(--tmu-space-sm);
         overflow: hidden;
         margin-bottom: var(--tmu-space-sm);
     }
@@ -45,7 +42,6 @@ export const TmTransferStyles = {
         text-transform: uppercase;
         letter-spacing: 0.5px;
         padding: var(--tmu-space-sm) var(--tmu-space-md) var(--tmu-space-sm);
-        border-bottom: 1px solid var(--tmu-border-success);
     }
     .tms-for-inline {
         display: flex; align-items: center; gap: var(--tmu-space-xs);
@@ -58,11 +54,11 @@ export const TmTransferStyles = {
 
     .tms-pos-formation { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--tmu-space-xs); }
     .tms-pos-formation-empty { pointer-events: none; }
-    .tms-primary-actions { display: flex; flex-direction: column; gap: var(--tmu-space-sm); }
+    .tms-primary-actions { display: flex; flex-direction: column; gap: var(--tmu-space-sm); padding: var(--tmu-space-sm) var(--tmu-space-md); }
     .tms-filter-actions { display: flex; gap: var(--tmu-space-xs); }
     .tms-filter-action-cell { flex: 1; }
     .tms-filter-action-cell-wide { flex: 2; }
-    .tms-more-toggle-wrap { margin: var(--tmu-space-lg) 0; }
+    .tms-more-toggle-wrap { margin: var(--tmu-space-lg) 0; padding: 0 var(--tmu-space-md); }
     .tms-more-toggle-content {
         display: flex;
         align-items: center;
@@ -74,27 +70,9 @@ export const TmTransferStyles = {
     .tms-more-body { display: none; }
     .tms-more-body.open { display: block; }
 
-    .tms-filter-btn {
-        padding: var(--tmu-space-xs) var(--tmu-space-xs);
-        border-radius: var(--tmu-space-xs);
-        font-size: var(--tmu-font-xs);
-        font-weight: 700;
-        border: 1px solid var(--tmu-border-input-overlay);
-        background: var(--tmu-surface-overlay);
-        color: var(--tmu-text-panel-label);
-        cursor: pointer;
-        text-align: center;
-        transition: all 0.12s;
-        user-select: none;
-    }
-    .tms-filter-btn.active  { background: var(--tmu-border-embedded); color: var(--tmu-text-strong); border-color: var(--tmu-success); }
-    .tms-filter-btn:hover   { background: var(--tmu-surface-tab-hover); }
-    .tms-filter-btn.tms-gk  { color: var(--tmu-success-strong); }
-    .tms-filter-btn.tms-de  { color: var(--tmu-info); }
-    .tms-filter-btn.tms-dm  { color: var(--tmu-warning); }
-    .tms-filter-btn.tms-mf  { color: var(--tmu-warning); }
-    .tms-filter-btn.tms-om  { color: var(--tmu-warning-soft); }
-    .tms-filter-btn.tms-fw  { color: var(--tmu-danger); }
+    .tms-pos-chip { cursor: pointer; transition: opacity 0.12s; user-select: none; }
+    .tms-pos-formation:has(.tms-pos-chip.active) .tms-pos-chip:not(.active) { opacity: 0.3; }
+    .tms-pos-chip:hover { opacity: 1 !important; }
 
     .tms-row { display: flex; align-items: center; gap: var(--tmu-space-sm); margin-bottom: var(--tmu-space-xs); }
     .tms-row:last-child { margin-bottom: 0; }
@@ -133,13 +111,6 @@ export const TmTransferStyles = {
         margin-left: var(--tmu-space-xs);
     }
 
-    #tms-filter-box {
-        background: var(--tmu-surface-embedded);
-        border: 1px solid var(--tmu-border-embedded);
-        border-radius: var(--tmu-space-sm);
-        padding: var(--tmu-space-sm);
-        margin-bottom: var(--tmu-space-sm);
-    }
     #tms-filter-box .tms-sb-section { margin-bottom: var(--tmu-space-sm); }
     #tms-filter-box .tms-sb-section:last-of-type { margin-bottom: var(--tmu-space-sm); }
 

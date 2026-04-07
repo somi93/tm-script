@@ -2,28 +2,16 @@ import { TmConst } from '../../lib/tm-constants.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 import { PlayerTrainingDots } from '../shared/tm-training-dots.js';
 import { TmPlayerTooltip } from '../player/tm-player-tooltip.js';
-import { TmUI } from '../shared/tm-ui.js';
-import { TmPosition } from '../../lib/tm-position.js';
 import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
 import { playerStatusIconsHtml } from '../shared/tm-player-status-icons.js';
-
-/* ═══════════════════════════════════════════════════════════
-       CONSTANTS
-       ═══════════════════════════════════════════════════════════ */
-const { AGE_THRESHOLDS } = TmConst;
-const badgeHtml = (opts, tone = 'muted') => TmUI.badge({ size: 'xs', shape: 'rounded', weight: 'bold', ...opts }, tone);
-
-
-/* ═══════════════════════════════════════════════════════════
-   ROW HELPERS
-   ═══════════════════════════════════════════════════════════ */
+import { TmPlayersTable } from '../shared/tm-players-table.js';
 
 /* ═══════════════════════════════════════════════════════════
    SUMMARY BAR
    ═══════════════════════════════════════════════════════════ */
 const buildSummary = players => {
     const { getColor } = TmUtils;
-    const { REC_THRESHOLDS, R5_THRESHOLDS, TI_THRESHOLDS } = TmConst;
+    const { AGE_THRESHOLDS, REC_THRESHOLDS, R5_THRESHOLDS, TI_THRESHOLDS } = TmConst;
     const n = players.length;
     if (!n) return '';
     const avgR5 = players.reduce((s, p) => s + Number(p.r5), 0) / n;
@@ -43,80 +31,21 @@ const buildSummary = players => {
     ], { cls: 'tmsq-summary', variant: 'boxed', valueFirst: true });
 };
 
-/* ═══════════════════════════════════════════════════════════
-   TABLE
-   ═══════════════════════════════════════════════════════════ */
-const buildSquadTable = (players, onSaleIds) => {
-    const { getColor } = TmUtils;
-    const { R5_THRESHOLDS, REC_THRESHOLDS, RTN_THRESHOLDS, TI_THRESHOLDS } = TmConst;
 
-    const tbl = TmUI.table({
-        headers: [
-            {
-                key: '_bar', label: '', sortable: false, cls: 'tmsq-pb', thCls: 'tmsq-pb',
-                render: (_, p) => `<span class="tmsq-pb-inner" style="background:${p.positions[0].color}"></span>`
-            },
-            { key: 'no', label: '#', align: 'r' },
-            {
-                key: 'name', label: 'Player',
-                render: (_, p) => {
-                    const flag = TmUI.flag(p.country, 'tmsq-flag');
-                    const enriched = { ...p, onSale: onSaleIds.has(String(p.id)) };
-                    return `${flag}<a href="/players/${p.id}/" class="tmsq-link">${p.name}</a>${playerStatusIconsHtml(enriched)}`;
-                }
-            },
-            {
-                key: 'pos', label: 'Pos', align: 'c',
-                sort: (a, b) => {
-                    const getMin = p => Math.min(...(p.positions || p.posList).map(pos => pos.ordering ?? (pos.id === 9 ? 0 : (pos.id ?? pos.idx ?? 0) + 1)));
-                    return getMin(a) - getMin(b);
-                },
-                render: (_, p) => TmPosition.chip(p.positions)
-            },
-            {
-                key: 'age', label: 'Age', align: 'r',
-                sort: (a, b) => (a.age * 12 + a.month) - (b.age * 12 + b.month),
-                render: (_, p) => `<span style="color:${getColor(p.age, AGE_THRESHOLDS)}">${p.age}.${String(p.month).padStart(2, '0')}</span>`
-            },
-            {
-                key: 'asi', label: 'ASI', align: 'r',
-                render: v => `<span style="color:var(--tmu-text-strong)">${Number(v).toLocaleString()}</span>`
-            },
-            {
-                key: 'r5', label: 'R5', align: 'r',
-                render: v => `<span style="color:${getColor(v, R5_THRESHOLDS)};font-weight:700">${v}</span>`
-            },
-            {
-                key: 'rec', label: 'REC', align: 'r',
-                render: v => `<span style="color:${getColor(Number(v), REC_THRESHOLDS)};font-weight:700">${Number(v)}</span>`
-            },
-            {
-                key: 'ti', label: 'TI', align: 'r',
-                sort: (a, b) => (a.ti ?? -Infinity) - (b.ti ?? -Infinity),
-                render: v => v !== null ? `<span style="color:${getColor(v, TI_THRESHOLDS)}">${v.toFixed(1)}</span>` : '<span style="color:var(--tmu-text-dim)">—</span>'
-            },
-            {
-                key: 'routine', label: 'Rtn', align: 'r',
-                render: v => `<span style="color:${getColor(v, RTN_THRESHOLDS)}">${v.toFixed(1)}</span>`
-            },
-            {
-                key: 'trainingCustom', label: 'Training', align: 'c', sortable: false,
-                render: v => PlayerTrainingDots.render(v)
-            },
-        ],
-        items: players,
-        sortKey: 'pos',
-        sortDir: 1,
-        density: 'cozy',
-    });
-    tbl.className = 'tmsq-table-wrap';
-    return tbl;
-};
 
 /* ═══════════════════════════════════════════════════════════
    INTERNAL STATE
    ═══════════════════════════════════════════════════════════ */
 let _container, _allPlayers, _onSaleIds;
+
+const _tableOpts = () => ({
+    columns: { timeleft: false, curbid: false },
+    sortKey: 'pos', sortDir: 1,
+    onRowClick: null, rowCls: null,
+    nameDecorator: p => playerStatusIconsHtml({ ...p, onSale: _onSaleIds.has(String(p.id)) }),
+    extraColsBefore: [{ key: 'no', label: '#', align: 'r' }],
+    extraColsAfter: [{ key: 'trainingCustom', label: 'Training', align: 'c', sortable: false, render: v => PlayerTrainingDots.render(v) }],
+});
 
 const _doRender = () => {
     const seniors = _allPlayers.filter(p => p.age > 21);
@@ -134,7 +63,7 @@ const _doRender = () => {
     senLbl.textContent = `Seniors (${seniors.length})`;
     body.appendChild(senLbl);
     body.insertAdjacentHTML('beforeend', buildSummary(seniors));
-    body.appendChild(buildSquadTable(seniors, _onSaleIds));
+    TmPlayersTable.mount(body, seniors, _tableOpts());
 
     const youthLbl = document.createElement('div');
     youthLbl.className = 'tmsq-section-lbl';
@@ -142,7 +71,7 @@ const _doRender = () => {
     youthLbl.textContent = `Youth ≤21 (${youth.length})`;
     body.appendChild(youthLbl);
     body.insertAdjacentHTML('beforeend', buildSummary(youth));
-    body.appendChild(buildSquadTable(youth, _onSaleIds));
+    TmPlayersTable.mount(body, youth, _tableOpts());
 };
 
 /* ═══════════════════════════════════════════════════════════
@@ -169,14 +98,6 @@ const injectCSS = () => {
             .tmsq-page-title-icon { font-size: var(--tmu-font-lg); }
 
             .tmsq-summary { margin-bottom: var(--tmu-space-md); }
-            .tmsq-pb-inner { display: block; width: 3px; min-height: 16px; border-radius: var(--tmu-space-xs); }
-
-            .tmsq-link {
-                color: #fff !important; text-decoration: none; font-weight: 500;
-            }
-            .tmsq-link:hover { color: var(--tmu-text-accent-soft) !important; text-decoration: underline; }
-
-            .tmsq-flag { margin-right: var(--tmu-space-xs); vertical-align: middle; }
 
             .tmsq-section-lbl {
                 font-size: var(--tmu-font-sm); font-weight: 700; color: var(--tmu-success);
@@ -184,7 +105,7 @@ const injectCSS = () => {
                 margin-bottom: var(--tmu-space-sm); padding: var(--tmu-space-xs) 0;
                 border-bottom: 1px solid var(--tmu-border-soft);
             }
-            .tmsq-table-wrap .tm-pos-chip { font-size: var(--tmu-font-xs); }
+            .tmpt-wrap .tm-pos-chip { font-size: var(--tmu-font-xs); }
         `;
     document.head.appendChild(style);
 };
@@ -207,9 +128,9 @@ const render = (container, players, { onSaleIds = new Set() } = {}) => {
     _allPlayers = players;
     _onSaleIds = onSaleIds;
 
-    // Tooltip delegation — survives TmUI.table() internal re-renders on sort
+    // Tooltip delegation — survives sort re-renders
     container.addEventListener('mouseover', e => {
-        const link = e.target.closest('.tmsq-link');
+        const link = e.target.closest('.tmpt-link');
         if (!link || !TmPlayerTooltip) return;
         const m = link.href.match(/\/players\/(\d+)/);
         if (!m) return;

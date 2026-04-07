@@ -35,12 +35,14 @@ const inject = () => {
   border-radius:var(--tmu-space-sm);text-transform:uppercase;letter-spacing:.6px}
 
 /* ── Shared summary strip tone helpers ── */
-.tmh-summary-strip { margin-bottom:var(--tmu-space-md); }
 .tmh-pos{color:var(--tmu-success)}.tmh-neg{color:var(--tmu-danger)}.tmh-neut{color:var(--tmu-warning)}
 
 /* ── Stars ── */
 .tmh-stars{white-space:nowrap}
 .tmh-stars img{width:12px;height:12px;vertical-align:middle}
+
+/* ── Match filter buttons ── */
+.tmh-filter-bar{display:flex;gap:var(--tmu-space-sm);margin-bottom:var(--tmu-space-md);flex-wrap:wrap}
 
 /* ── Loading / placeholder ── */
 .tmh-load{text-align:center;color:var(--tmu-text-faint);padding:var(--tmu-space-xxl);font-size:var(--tmu-font-sm)}
@@ -54,45 +56,6 @@ const inject = () => {
 /* ── Progress bar ── */
 .tmh-prog{width:100%;height:5px;background:var(--tmu-surface-tab-active);border-radius:var(--tmu-space-xs);margin:var(--tmu-space-sm) 0;overflow:hidden}
 .tmh-prog-bar{height:100%;background:linear-gradient(90deg,var(--tmu-compare-home-grad-start),var(--tmu-accent));border-radius:var(--tmu-space-xs);transition:width .4s}
-
-/* ── Match list (Matches tab) ── */
-.tmh-match-row{position:relative;display:flex;align-items:center;gap:0;
-  padding:var(--tmu-space-sm);margin:0;border-radius:var(--tmu-space-sm);font-size:var(--tmu-font-sm);
-  cursor:pointer;transition:background .15s}
-.tmh-match-row:hover{background:var(--tmu-border-contrast)}
-.tmh-match-row.tmh-win{border-left:3px solid var(--tmu-success)}
-.tmh-match-row.tmh-loss{border-left:3px solid var(--tmu-danger)}
-.tmh-match-row.tmh-draw{border-left:3px solid var(--tmu-text-dim)}
-.tmh-match-date{color:var(--tmu-text-faint);font-size:var(--tmu-font-xs);width:32px;flex-shrink:0;font-weight:600;text-align:center}
-.tmh-match-type{font-size:var(--tmu-font-2xs);font-weight:700;color:var(--tmu-text-faint);
-  background:var(--tmu-surface-overlay);padding:0 var(--tmu-space-xs);border-radius:var(--tmu-space-xs);
-  text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;margin-right:var(--tmu-space-sm);width:100px;text-align:center}
-.tmh-match-home{text-align:right;color:var(--tmu-text-main);font-size:var(--tmu-font-sm);white-space:nowrap;
-  overflow:hidden;text-overflow:ellipsis;padding-right:var(--tmu-space-sm);flex:1}
-.tmh-match-result{font-weight:800;color:var(--tmu-text-strong);width:44px;text-align:center;
-  font-size:var(--tmu-font-md);flex-shrink:0;letter-spacing:1px}
-.tmh-match-away{flex:1;text-align:left;color:var(--tmu-text-main);font-size:var(--tmu-font-sm);white-space:nowrap;
-  overflow:hidden;text-overflow:ellipsis;padding-left:var(--tmu-space-sm)}
-.tmh-match-home.tmh-winner{color:var(--tmu-success);font-weight:700}
-.tmh-match-away.tmh-winner{color:var(--tmu-success);font-weight:700}
-
-/* ── Match summary bar ── */
-.tmh-match-summary{margin-bottom:var(--tmu-space-md)}
-
-/* ── Match filter buttons ── */
-.tmh-filter-bar{display:flex;gap:var(--tmu-space-sm);margin-bottom:var(--tmu-space-md);flex-wrap:wrap}
-.tmh-filter{display:inline-block;padding:var(--tmu-space-xs) var(--tmu-space-md);background:var(--tmu-surface-tab-active);
-  border:1px solid var(--tmu-border-soft);border-radius:var(--tmu-space-xs);color:var(--tmu-text-muted);font-size:var(--tmu-font-xs);
-  font-weight:600;cursor:pointer;transition:all .15s;text-transform:uppercase;letter-spacing:.3px}
-.tmh-filter:hover{background:var(--tmu-surface-tab-hover);color:var(--tmu-text-main);}
-.tmh-filter.active{background:var(--tmu-border-embedded);border-color:var(--tmu-success);color:var(--tmu-text-strong)}
-
-/* ── Match hover tooltip ── */
-.tmh-tooltip.rnd-h2h-tooltip{position:fixed;z-index:999999;
-  padding:var(--tmu-space-md) var(--tmu-space-xl);min-width:420px;max-width:540px;
-  max-height:70vh;overflow-y:auto}
-.tmh-tooltip.visible{opacity:1}
-.tmh-tooltip .rnd-h2h-tooltip-team{max-width:160px}
 
 /* ── League tab ── */
 .tmh-league-summary{margin-bottom:var(--tmu-space-md)}

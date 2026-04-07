@@ -68,7 +68,7 @@ export function injectPlayersTableCSS() {
         .tmpt-wrap::-webkit-scrollbar-thumb { background: var(--tmu-border-embedded); border-radius: 2px; }
         .tmpt-pb-cell { width: 4px !important; padding: 0 !important; }
         .tmpt-pb-inner { display: block; width: 3px; min-height: 16px; border-radius: 2px; }
-        .tmpt-link { color: #fff; text-decoration: none; font-weight: 500; }
+        .tmpt-link { color: var(--tmu-text-inverse); text-decoration: none; font-weight: 500; }
         .tmpt-link:hover { color: var(--tmu-text-accent-soft) !important; text-decoration: underline; }
         .tmpt-flag { margin-right: var(--tmu-space-xs); vertical-align: middle; }
         .tmpt-row-clickable { cursor: pointer; }
@@ -220,21 +220,28 @@ export const TmPlayersTable = {
      * @param {HTMLElement} container
      * @param {object[]} players  — raw player/bid rows (normalized internally)
      * @param {object}  [opts]
-     * @param {object}  [opts.columns]       — { asi, rtn } — column visibility
-     * @param {string}  [opts.sortKey]       — initial sort column key
-     * @param {number}  [opts.sortDir]       — 1 asc / -1 desc
-     * @param {string}  [opts.sectionTitle]  — passed through to TmBidsDialog
+     * @param {object}  [opts.columns]          — { asi, rtn, timeleft, curbid } — column visibility
+     * @param {object[]} [opts.extraColsBefore]  — extra TmTable column defs prepended before standard cols
+     * @param {object[]} [opts.extraColsAfter]   — extra TmTable column defs appended after standard cols
+     * @param {string}  [opts.sortKey]           — initial sort column key
+     * @param {number}  [opts.sortDir]           — 1 asc / -1 desc
+     * @param {string}  [opts.sectionTitle]      — passed through to TmBidsDialog
      * @param {string}  [opts.emptyText]
+     * @returns {HTMLDivElement} wrap — has .refresh(newPlayers?) method
      */
     mount(container, players, opts = {}) {
         injectTmTableCss();
         injectPlayersTableCSS();
 
         const rows = (players || []).map(normalizeRow);
-        const headers = buildPlayerHeaders({
-            ...(opts.columns || {}),
-            ...(opts.nameDecorator ? { nameDecorator: opts.nameDecorator } : {}),
-        });
+        const headers = [
+            ...(opts.extraColsBefore || []),
+            ...buildPlayerHeaders({
+                ...(opts.columns || {}),
+                ...(opts.nameDecorator ? { nameDecorator: opts.nameDecorator } : {}),
+            }),
+            ...(opts.extraColsAfter || []),
+        ];
         const sectionTitle = opts.sectionTitle || '';
 
         const tableEl = TmTable.table({
@@ -257,6 +264,13 @@ export const TmPlayersTable = {
         wrap.className = 'tmpt-wrap';
         wrap.appendChild(tableEl);
         container.appendChild(wrap);
+
+        wrap.refresh = (newPlayers) => {
+            const updated = (newPlayers || []).map(normalizeRow);
+            rows.length = 0;
+            updated.forEach(r => rows.push(r));
+            tableEl.refresh();
+        };
 
         if (opts.onSort) {
             wrap.addEventListener('click', (e) => {

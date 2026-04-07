@@ -17,6 +17,9 @@ export const TmStatsStyles = {
             .tsa-card-host {
                 margin-bottom: var(--tmu-space-lg);
             }
+            .tsa-card-host .tmu-card {
+                border: none;
+            }
             .tsa-card-host .tm-section-card-titlebar {
                 padding: var(--tmu-space-md) var(--tmu-space-md) 0;
                 margin-bottom: var(--tmu-space-sm);
@@ -59,46 +62,20 @@ export const TmStatsStyles = {
                 display: flex; gap: var(--tmu-space-xs); justify-content: center;
                 margin-bottom: var(--tmu-space-md);
             }
-            .tsa-filter-btn {
-                background: var(--tmu-surface-accent-soft); border: 1px solid var(--tmu-border-soft);
-                border-radius: var(--tmu-space-sm); padding: var(--tmu-space-xs) var(--tmu-space-md);
-                font-size: var(--tmu-font-xs); font-weight: 600; color: var(--tmu-text-muted);
-                cursor: pointer; transition: all 0.15s;
-                text-transform: uppercase; letter-spacing: 0.4px;
-            }
-            .tsa-filter-btn:hover { background: var(--tmu-surface-tab-hover); color: var(--tmu-text-main); }
-            .tsa-filter-btn.active {
-                background: var(--tmu-compare-home-grad-start); border-color: var(--tmu-success);
-                color: var(--tmu-text-strong); box-shadow: 0 0 8px var(--tmu-success-fill-hover);
-            }
 
             /* ── Player sub-tab buttons ── */
             .tsa-subtabs {
-                margin-bottom: var(--tmu-space-md);
+                margin-bottom: 0;
             }
             .tsa-subtabs .tmu-tabs {
-                justify-content: center;
-                gap: var(--tmu-space-xs);
-                border: 0;
-                background: transparent;
-                overflow: visible;
-                scrollbar-width: auto;
+                border-left: 0;
+                border-right: 0;
+                border-top: 0;
+                border-bottom-color: var(--tmu-border-embedded);
             }
             .tsa-subtabs .tmu-tab {
-                background: var(--tmu-surface-tab-active);
-                border: 1px solid var(--tmu-border-soft);
-                border-radius: var(--tmu-space-sm);
-                padding: var(--tmu-space-xs) var(--tmu-space-xl);
                 font-size: var(--tmu-font-xs);
                 font-weight: 700;
-                color: var(--tmu-text-panel-label);
-                box-shadow: none;
-            }
-            .tsa-subtabs .tmu-tab:hover { background: var(--tmu-surface-tab-hover); color: var(--tmu-text-strong); }
-            .tsa-subtabs .tmu-tab.active {
-                background: var(--tmu-success-fill-strong);
-                border-bottom-color: var(--tmu-success);
-                color: var(--tmu-text-strong); box-shadow: 0 0 10px var(--tmu-success-fill-soft);
             }
             .tsa-pos-chip {
                 vertical-align: middle;
@@ -110,31 +87,14 @@ export const TmStatsStyles = {
 
             /* ── Match type filter ── */
             .tsa-match-filters {
+                display: flex;
                 justify-content: center;
                 gap: var(--tmu-space-xs);
                 margin-bottom: var(--tmu-space-md);
                 flex-wrap: wrap;
-                border: 0;
-                background: transparent;
-                overflow: visible;
-                scrollbar-width: auto;
             }
-            .tsa-mf-btn {
-                background: var(--tmu-surface-tab-active);
-                border: 1px solid var(--tmu-border-soft);
-                border-radius: var(--tmu-space-md);
-                padding: var(--tmu-space-xs) var(--tmu-space-md);
-                font-size: var(--tmu-font-xs);
-                font-weight: 600;
-                color: var(--tmu-text-faint);
-                white-space: nowrap;
-                box-shadow: none;
-            }
-            .tsa-mf-btn:hover { background: var(--tmu-surface-tab-hover); color: var(--tmu-text-main); }
-            .tsa-mf-btn.active {
-                background: var(--tmu-success-fill-strong); border-bottom-color: var(--tmu-border-success);
-                color: var(--tmu-text-main);
-            }
+            .tsa-match-filters .tmu-btn { white-space: nowrap; }
+            .tsa-mf-wdl { font-weight: 400; opacity: 0.7; font-size: var(--tmu-font-2xs); }
 
             /* ── Tactic dropdown filters ── */
             .tsa-tactic-row {

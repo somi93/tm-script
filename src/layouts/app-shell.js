@@ -41,6 +41,7 @@ import { initNationalTeamsRankingsPage } from '../pages/national-teams-rankings.
 import { initNationalTeamsPage } from '../pages/national-teams.js';
 import { initSupportProPage } from '../pages/support-pro.js';
 import { initPlayerPage } from '../pages/player.js';
+import { initTacticsPage } from '../pages/tactics.js';
 
 const IMPORT_PATH = '/import/';
 
@@ -663,6 +664,10 @@ function initCurrentPage() {
     }
     if (/^\/training\/?$/i.test(currentPath)) {
         initTrainingPage(main);
+        return;
+    }
+    if (/^\/tactics(?:\/reserves)?\/?$/i.test(currentPath)) {
+        initTacticsPage(main);
         return;
     }
     if (/^\/youth-development(?:\/.*)?$/i.test(currentPath)) {
