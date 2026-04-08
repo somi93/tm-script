@@ -278,16 +278,28 @@ export function mountTacticsPanel(container, data, initialSettings, opts, lineup
                 const avail = Object.values(players_by_id)
                     .filter(p => p?.player_id && !usedPids.has(String(p.player_id)))
                     .map(p => {
-                        const fav = String(p.favposition || '').split(',')[0].trim().toLowerCase();
                         const r5 = p.allPositionRatings?.length
                             ? Math.max(0, ...p.allPositionRatings.map(r => parseFloat(r.r5) || 0))
                             : (parseFloat(p.rec_sort) || 0);
-                        return { pid: p.player_id, fav, r5 };
+                        const favPositions = new Set(
+                            String(p.favposition || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean)
+                        );
+                        return { pid: p.player_id, favPositions, ratings: p.allPositionRatings || [], r5 };
                     })
                     .sort((a, b) => b.r5 - a.r5);
 
                 const pickBestSub = (posSet) => {
-                    const hit = avail.find(a => !usedPids.has(String(a.pid)) && posSet.has(a.fav));
+                    const posIds = new Set(
+                        [...posSet].map(pk => TmConst.POSITION_MAP[pk]?.id).filter(id => id != null)
+                    );
+                    const hit = avail.find(a => {
+                        if (usedPids.has(String(a.pid))) return false;
+                        if (a.ratings.length) {
+                            return a.ratings.some(r => posIds.has(r.id) && (parseFloat(r.r5) || 0) > 0);
+                        }
+                        // Fallback when tooltip not yet loaded: check all favpositions
+                        return [...a.favPositions].some(fp => posSet.has(fp));
+                    });
                     if (!hit) return null;
                     usedPids.add(String(hit.pid));
                     return hit.pid;

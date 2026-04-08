@@ -46373,6 +46373,7 @@ ${names}`)) {
         }
         .tmtc-slot-empty {
             opacity: .35;
+            min-height: 72px; /* match populated slot height so empty zones don't collapse */
         }
         .tmtc-slot-no {
             font-size: var(--tmu-font-xs);
@@ -46794,7 +46795,17 @@ ${names}`)) {
       if (si >= 0) return 100 + si;
       return 999;
     };
-    const buildAssocForSave = () => Object.fromEntries(Object.entries(assignment).filter(([, v]) => v != null && String(v) !== "" && String(v) !== "0"));
+    const buildAssocForSave = (outPid = null) => {
+      const result = {};
+      for (const pk of Object.keys(TmConst.POSITION_MAP)) {
+        result[pk] = assignment[pk] || 0;
+      }
+      for (const role of [...BENCH_SLOTS2, ...SPECIAL_SLOTS2]) {
+        if (assignment[role]) result[role] = assignment[role];
+      }
+      if (outPid) result.out = outPid;
+      return result;
+    };
     const changeListeners = [];
     const notifyChange = () => changeListeners.forEach((fn) => fn());
     const sortedPlayers = () => {
@@ -47041,15 +47052,14 @@ ${names}`)) {
             width: "68px",
             sortable: false,
             render: (v, p) => {
-              var _a;
               if (p._isBenchPlaceholder)
                 return `<span class="tmtc-sub-badge" style="opacity:.5">${escHtml(BENCH_LABELS2[p._benchRole] || p._benchRole)}</span>`;
               if (p._benchRole)
                 return `<span class="tmtc-sub-badge">${escHtml(BENCH_LABELS2[p._benchRole] || p._benchRole)}</span>`;
               if (!v) {
-                const pos = ((_a = String((p == null ? void 0 : p.favposition) || "").split(",")[0]) == null ? void 0 : _a.trim()) || "";
-                if (!pos) return "";
-                return `<span style="opacity:0.45;filter:grayscale(1)">${TmPosition.chip([pos])}</span>`;
+                const positions = String((p == null ? void 0 : p.favposition) || "").split(",").map((s6) => s6.trim()).filter(Boolean);
+                if (!positions.length) return "";
+                return `<span style="opacity:0.45;filter:grayscale(1)">${TmPosition.chip(positions)}</span>`;
               }
               return TmPosition.chip([v.toUpperCase()]);
             }
@@ -47184,7 +47194,8 @@ ${names}`)) {
         }
         refreshSquadTable();
         try {
-          await postSave(buildAssocForSave(), changed, reserves, national, miniGameId);
+          const outPid = Object.keys(changed).find((p) => changed[p] === "out") || null;
+          await postSave(buildAssocForSave(outPid), changed, reserves, national, miniGameId);
           showStatus(true, "Saved \u2713");
           notifyChange();
         } catch (e2) {
@@ -47296,7 +47307,8 @@ ${names}`)) {
         for (const zone of FIELD_ZONES2) normalizeZone(zone.key, changed);
         refreshSquadTable();
         try {
-          await postSave(buildAssocForSave(), changed, reserves, national, miniGameId);
+          const outPid = Object.keys(changed).find((p) => changed[p] === "out") || null;
+          await postSave(buildAssocForSave(outPid), changed, reserves, national, miniGameId);
           showStatus(true, "Saved \u2713");
           notifyChange();
         } catch (e2) {
@@ -47339,7 +47351,8 @@ ${names}`)) {
         for (const zone of FIELD_ZONES2) normalizeZone(zone.key, changed);
         refreshSquadTable();
         try {
-          await postSave(buildAssocForSave(), changed, reserves, national, miniGameId);
+          const outPid = Object.keys(changed).find((p) => changed[p] === "out") || null;
+          await postSave(buildAssocForSave(outPid), changed, reserves, national, miniGameId);
           showStatus(true, "Saved \u2713");
           notifyChange();
         } catch (e2) {
@@ -47372,6 +47385,9 @@ ${names}`)) {
     tblWrap = buildSquadTable();
     squadTarget.appendChild(tblWrap);
     async function applyAssignment(newAssignment) {
+      const prevFieldPids = new Set(
+        [...getOccupiedFieldKeys()].map((pk) => String(assignment[pk]))
+      );
       for (const pk of getOccupiedFieldKeys()) assignment[pk] = null;
       const touchesBench = BENCH_SLOTS2.some((r) => r in newAssignment);
       if (touchesBench) for (const role of BENCH_SLOTS2) assignment[role] = null;
@@ -47381,6 +47397,9 @@ ${names}`)) {
         assignment[key] = pid;
         changed[String(pid)] = key;
       }
+      for (const pid of prevFieldPids) {
+        if (!changed[pid]) changed[pid] = "out";
+      }
       buildField();
       for (const [role, el2] of Object.entries(benchSlotEls)) {
         const pid = assignment[role];
@@ -47388,7 +47407,8 @@ ${names}`)) {
       }
       refreshSquadTable();
       try {
-        await postSave(buildAssocForSave(), changed, reserves, national, miniGameId);
+        const outPid = Object.keys(changed).find((p) => changed[p] === "out") || null;
+        await postSave(buildAssocForSave(outPid), changed, reserves, national, miniGameId);
         showStatus(true, "Saved \u2713");
         notifyChange();
       } catch (e) {
@@ -47712,12 +47732,26 @@ ${names}`)) {
           const FWD_POS = /* @__PURE__ */ new Set(["fc", "fcl", "fcr"]);
           const avail = Object.values(players_by_id).filter((p) => (p == null ? void 0 : p.player_id) && !usedPids.has(String(p.player_id))).map((p) => {
             var _a;
-            const fav = String(p.favposition || "").split(",")[0].trim().toLowerCase();
             const r5 = ((_a = p.allPositionRatings) == null ? void 0 : _a.length) ? Math.max(0, ...p.allPositionRatings.map((r) => parseFloat(r.r5) || 0)) : parseFloat(p.rec_sort) || 0;
-            return { pid: p.player_id, fav, r5 };
+            const favPositions = new Set(
+              String(p.favposition || "").split(",").map((s6) => s6.trim().toLowerCase()).filter(Boolean)
+            );
+            return { pid: p.player_id, favPositions, ratings: p.allPositionRatings || [], r5 };
           }).sort((a, b) => b.r5 - a.r5);
           const pickBestSub = (posSet) => {
-            const hit = avail.find((a) => !usedPids.has(String(a.pid)) && posSet.has(a.fav));
+            const posIds = new Set(
+              [...posSet].map((pk) => {
+                var _a;
+                return (_a = TmConst.POSITION_MAP[pk]) == null ? void 0 : _a.id;
+              }).filter((id) => id != null)
+            );
+            const hit = avail.find((a) => {
+              if (usedPids.has(String(a.pid))) return false;
+              if (a.ratings.length) {
+                return a.ratings.some((r) => posIds.has(r.id) && (parseFloat(r.r5) || 0) > 0);
+              }
+              return [...a.favPositions].some((fp) => posSet.has(fp));
+            });
             if (!hit) return null;
             usedPids.add(String(hit.pid));
             return hit.pid;
@@ -48262,31 +48296,26 @@ ${names}`)) {
     const lineupApi = mountTacticsLineup(leftPanel, data, { ...opts, squadContainer: midPanel });
     const panelApi = mountTacticsPanel(statsPanel, data, initialSettings, opts, lineupApi);
     mountTacticsOrders(rightPanel, data, opts);
-    await TmPlayerDB.init();
-    for (const p of Object.values(players_by_id)) {
-      const DBPlayer = TmPlayerDB.get(p.player_id);
-      if (DBPlayer) TmPlayerService.normalizePlayer(p, DBPlayer, { skipSync: true });
-    }
-    lineupApi.refresh();
-    panelApi.refreshStats();
-    let refreshTimer2 = null, panelTimer = null;
-    const scheduleRefresh = () => {
-      clearTimeout(refreshTimer2);
-      refreshTimer2 = setTimeout(lineupApi.refresh, 50);
-    };
-    const schedulePanelRefresh = () => {
-      clearTimeout(panelTimer);
-      panelTimer = setTimeout(panelApi.refreshStats, 100);
-    };
-    for (const p of Object.values(players_by_id)) {
-      if ((_e = p.allPositionRatings) == null ? void 0 : _e.length) continue;
-      TmPlayerService.fetchPlayerTooltip(p.player_id).then((tooltipData) => {
-        if (!(tooltipData == null ? void 0 : tooltipData.player)) return;
-        const np = tooltipData.player;
-        p.allPositionRatings = np.allPositionRatings;
-        p.routine = np.routine;
-        scheduleRefresh();
-        schedulePanelRefresh();
+    const clubId2 = String(((_e = window.SESSION) == null ? void 0 : _e.main_id) || "");
+    if (clubId2) {
+      await TmPlayerDB.init();
+      TmClubService.fetchSquadRaw(clubId2, { skipSync: true }).then((data2) => {
+        var _a2;
+        if (!((_a2 = data2 == null ? void 0 : data2.post) == null ? void 0 : _a2.length)) return;
+        for (const sp of data2.post) {
+          const pid = String(sp.id || sp.player_id || "");
+          if (!pid) continue;
+          const existing = players_by_id[pid];
+          if (existing) {
+            existing.allPositionRatings = sp.allPositionRatings;
+            existing.routine = sp.routine;
+            existing.favposition = sp.favposition;
+          } else {
+            players_by_id[pid] = sp;
+          }
+        }
+        lineupApi.refresh();
+        panelApi.refreshStats();
       }).catch(() => {
       });
     }

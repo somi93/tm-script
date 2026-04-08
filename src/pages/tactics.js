@@ -1,7 +1,7 @@
 import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmUI } from '../components/shared/tm-ui.js';
-import { TmPlayerService } from '../services/player.js';
 import { TmPlayerDB } from '../lib/tm-playerdb.js';
+import { TmClubService } from '../services/club.js';
 import { injectTacticsStyles } from '../components/tactics/tm-tactics-styles.js';
 import { mountTacticsLineup } from '../components/tactics/tm-tactics-lineup.js';
 import { mountTacticsPanel } from '../components/tactics/tm-tactics-panel.js';
@@ -117,28 +117,26 @@ export async function initTacticsPage(main) {
     const panelApi  = mountTacticsPanel(statsPanel, data, initialSettings, opts, lineupApi);
     mountTacticsOrders(rightPanel, data, opts);
 
-    // Phase 1: normalize from local DB instantly (no network, shows R5 immediately for known players)
-    await TmPlayerDB.init();
-    for (const p of Object.values(players_by_id)) {
-        const DBPlayer = TmPlayerDB.get(p.player_id);
-        if (DBPlayer) TmPlayerService.normalizePlayer(p, DBPlayer, { skipSync: true });
-    }
-    lineupApi.refresh();
-    panelApi.refreshStats();
-
-    // Phase 2: fetch tooltip only for players not yet enriched from DB
-    let refreshTimer = null, panelTimer = null;
-    const scheduleRefresh      = () => { clearTimeout(refreshTimer); refreshTimer = setTimeout(lineupApi.refresh,       50);  };
-    const schedulePanelRefresh = () => { clearTimeout(panelTimer);   panelTimer   = setTimeout(panelApi.refreshStats, 100); };
-    for (const p of Object.values(players_by_id)) {
-        if (p.allPositionRatings?.length) continue; // already enriched from DB
-        TmPlayerService.fetchPlayerTooltip(p.player_id).then(tooltipData => {
-            if (!tooltipData?.player) return;
-            const np = tooltipData.player;
-            p.allPositionRatings = np.allPositionRatings;
-            p.routine = np.routine;
-            scheduleRefresh();
-            schedulePanelRefresh();
+    // Enrich players_by_id using the squad endpoint (one request, all players normalized with allPositionRatings)
+    const clubId = String(window.SESSION?.main_id || '');
+    if (clubId) {
+        await TmPlayerDB.init();
+        TmClubService.fetchSquadRaw(clubId, { skipSync: true }).then(data => {
+            if (!data?.post?.length) return;
+            for (const sp of data.post) {
+                const pid = String(sp.id || sp.player_id || '');
+                if (!pid) continue;
+                const existing = players_by_id[pid];
+                if (existing) {
+                    existing.allPositionRatings = sp.allPositionRatings;
+                    existing.routine = sp.routine;
+                    existing.favposition = sp.favposition;
+                } else {
+                    players_by_id[pid] = sp;
+                }
+            }
+            lineupApi.refresh();
+            panelApi.refreshStats();
         }).catch(() => {});
     }
 }

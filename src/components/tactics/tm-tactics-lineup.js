@@ -123,8 +123,19 @@ export function mountTacticsLineup(container, data, opts = {}) {
         return 999;
     };
 
-    const buildAssocForSave = () =>
-        Object.fromEntries(Object.entries(assignment).filter(([, v]) => v != null && String(v) !== '' && String(v) !== '0'));
+    // Build the full on_field assoc for saving — all 23 field posKeys + bench + special roles.
+    // Empty field slots are sent as 0 so the server clears previously assigned players.
+    const buildAssocForSave = (outPid = null) => {
+        const result = {};
+        for (const pk of Object.keys(TmConst.POSITION_MAP)) {
+            result[pk] = assignment[pk] || 0;
+        }
+        for (const role of [...BENCH_SLOTS, ...SPECIAL_SLOTS]) {
+            if (assignment[role]) result[role] = assignment[role];
+        }
+        if (outPid) result.out = outPid;
+        return result;
+    };
 
     // ── Change listeners ───────────────────────────────────────────────────
     const changeListeners = [];
@@ -411,9 +422,9 @@ export function mountTacticsLineup(container, data, opts = {}) {
                         if (p._benchRole)
                             return `<span class="tmtc-sub-badge">${escHtml(BENCH_LABELS[p._benchRole] || p._benchRole)}</span>`;
                         if (!v) {
-                            const pos = String(p?.favposition || '').split(',')[0]?.trim() || '';
-                            if (!pos) return '';
-                            return `<span style="opacity:0.45;filter:grayscale(1)">${TmPosition.chip([pos])}</span>`;
+                            const positions = String(p?.favposition || '').split(',').map(s => s.trim()).filter(Boolean);
+                            if (!positions.length) return '';
+                            return `<span style="opacity:0.45;filter:grayscale(1)">${TmPosition.chip(positions)}</span>`;
                         }
                         return TmPosition.chip([v.toUpperCase()]);
                     },
@@ -545,7 +556,8 @@ export function mountTacticsLineup(container, data, opts = {}) {
 
             refreshSquadTable();
             try {
-                await postSave(buildAssocForSave(), changed, reserves, national, miniGameId);
+                const outPid = Object.keys(changed).find(p => changed[p] === 'out') || null;
+                await postSave(buildAssocForSave(outPid), changed, reserves, national, miniGameId);
                 showStatus(true, 'Saved ✓');
                 notifyChange();
             } catch { showStatus(false, 'Save failed'); }
@@ -668,7 +680,8 @@ export function mountTacticsLineup(container, data, opts = {}) {
             refreshSquadTable();
 
             try {
-                await postSave(buildAssocForSave(), changed, reserves, national, miniGameId);
+                const outPid = Object.keys(changed).find(p => changed[p] === 'out') || null;
+                await postSave(buildAssocForSave(outPid), changed, reserves, national, miniGameId);
                 showStatus(true, 'Saved ✓');
                 notifyChange();
             } catch { showStatus(false, 'Save failed'); }
@@ -707,7 +720,8 @@ export function mountTacticsLineup(container, data, opts = {}) {
             refreshSquadTable();
 
             try {
-                await postSave(buildAssocForSave(), changed, reserves, national, miniGameId);
+                const outPid = Object.keys(changed).find(p => changed[p] === 'out') || null;
+                await postSave(buildAssocForSave(outPid), changed, reserves, national, miniGameId);
                 showStatus(true, 'Saved ✓');
                 notifyChange();
             } catch { showStatus(false, 'Save failed'); }
@@ -761,6 +775,11 @@ export function mountTacticsLineup(container, data, opts = {}) {
      * @param {Set}    [newActiveKeys] — When provided, rebuilds field DOM for the new formation.
      */
     async function applyAssignment(newAssignment) {
+        // Snapshot who was on the field before clearing
+        const prevFieldPids = new Set(
+            [...getOccupiedFieldKeys()].map(pk => String(assignment[pk]))
+        );
+
         // Clear currently occupied field positions
         for (const pk of getOccupiedFieldKeys()) assignment[pk] = null;
         // Clear bench only if the new assignment explicitly touches bench slots
@@ -774,6 +793,11 @@ export function mountTacticsLineup(container, data, opts = {}) {
             changed[String(pid)] = key;
         }
 
+        // Mark players who were on the field before but are not placed anywhere now
+        for (const pid of prevFieldPids) {
+            if (!changed[pid]) changed[pid] = 'out';
+        }
+
         // Rebuild field DOM — zones and slots are derived from the updated assignment
         buildField();
         // Re-render all bench slots
@@ -784,7 +808,8 @@ export function mountTacticsLineup(container, data, opts = {}) {
 
         refreshSquadTable();
         try {
-            await postSave(buildAssocForSave(), changed, reserves, national, miniGameId);
+            const outPid = Object.keys(changed).find(p => changed[p] === 'out') || null;
+            await postSave(buildAssocForSave(outPid), changed, reserves, national, miniGameId);
             showStatus(true, 'Saved ✓');
             notifyChange();
         } catch { showStatus(false, 'Save failed'); }

@@ -160,6 +160,7 @@ export function injectTacticsStyles() {
         }
         .tmtc-slot-empty {
             opacity: .35;
+            min-height: 72px; /* match populated slot height so empty zones don't collapse */
         }
         .tmtc-slot-no {
             font-size: var(--tmu-font-xs);
