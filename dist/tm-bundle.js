@@ -8773,8 +8773,8 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     const showLastSeen = !!opts.lastSeen;
     const tiLabel = opts.tiLabel || "TI";
     const nameDecorator = typeof opts.nameDecorator === "function" ? opts.nameDecorator : null;
-    const gc3 = TmUtils.getColor;
-    const { R5_THRESHOLDS: R5_THRESHOLDS6, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS3 } = TmConst;
+    const gc2 = TmUtils.getColor;
+    const { R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2 } = TmConst;
     const AGE_THRESHOLDS2 = TmConst.AGE_THRESHOLDS;
     const cols = [
       posBarCol(),
@@ -8818,7 +8818,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
           var _a, _b, _c, _d;
           const yr = (_b = (_a = p.ageYears) != null ? _a : p.age) != null ? _b : 0;
           const mo = (_d = (_c = p.ageMonths) != null ? _c : p.months) != null ? _d : 0;
-          return `<span class="tmu-tabular" style="color:${gc3(yr + mo / 12, AGE_THRESHOLDS2)}">${yr}.${mo}</span>`;
+          return `<span class="tmu-tabular" style="color:${gc2(yr + mo / 12, AGE_THRESHOLDS2)}">${yr}.${mo}</span>`;
         }
       }
     ];
@@ -8833,13 +8833,13 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         key: "r5",
         label: "R5",
         align: "r",
-        render: (_, p) => p.r5 != null ? `<span class="tmu-tabular" style="color:${gc3(p.r5, R5_THRESHOLDS6)};font-weight:700">${p.r5}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
+        render: (_, p) => p.r5 != null ? `<span class="tmu-tabular" style="color:${gc2(p.r5, R5_THRESHOLDS5)};font-weight:700">${p.r5}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
       },
       {
         key: "rec",
         label: "REC",
         align: "r",
-        render: (_, p) => p.rec != null ? `<span class="tmu-tabular" style="color:${gc3(p.rec, REC_THRESHOLDS2)};font-weight:700">${p.rec}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
+        render: (_, p) => p.rec != null ? `<span class="tmu-tabular" style="color:${gc2(p.rec, REC_THRESHOLDS2)};font-weight:700">${p.rec}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
       },
       {
         key: "ti",
@@ -8849,14 +8849,14 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
           var _a, _b;
           return ((_a = a.ti) != null ? _a : -Infinity) - ((_b = b.ti) != null ? _b : -Infinity);
         },
-        render: (_, p) => p.ti != null ? `<span class="tmu-tabular" style="color:${gc3(p.ti, TI_THRESHOLDS2)}">${p.ti.toFixed ? p.ti.toFixed(1) : p.ti}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
+        render: (_, p) => p.ti != null ? `<span class="tmu-tabular" style="color:${gc2(p.ti, TI_THRESHOLDS2)}">${p.ti.toFixed ? p.ti.toFixed(1) : p.ti}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
       }
     );
     if (showRtn) cols.push({
       key: "routine",
       label: "RTN",
       align: "r",
-      render: (_, p) => p.routine != null ? `<span class="tmu-tabular" style="color:${gc3(p.routine, RTN_THRESHOLDS3)}">${p.routine.toFixed ? p.routine.toFixed(1) : p.routine}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
+      render: (_, p) => p.routine != null ? `<span class="tmu-tabular" style="color:${gc2(p.routine, RTN_THRESHOLDS2)}">${p.routine.toFixed ? p.routine.toFixed(1) : p.routine}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
     });
     if (showTimeleft) cols.push({
       key: "timeleft",
@@ -17589,7 +17589,7 @@ ${teamsTable.outerHTML}
   document.head.appendChild(styleEl);
   var renderHTML = (player) => {
     const { getColor: getColor6 } = TmUtils;
-    const { R5_THRESHOLDS: R5_THRESHOLDS6, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
+    const { R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
     const badgeHtml7 = (opts, tone = "muted") => TmUI.badge({ size: "sm", shape: "rounded", weight: "bold", ...opts }, tone);
     let h = '<div class="tmpt-header">';
     h += `<div><div class="tmpt-name">${player.name}</div>`;
@@ -17597,11 +17597,11 @@ ${teamsTable.outerHTML}
     h += `<div class="tmpt-pos">${(player.positions || []).map((pos) => pos.position).join(", ")}${noStr} \xB7 Age ${player.ageMonthsString}</div></div>`;
     h += '<div class="tmpt-badges">';
     if (player.r5 != null) {
-      h += badgeHtml7({ slot: `<span class="tmu-badge-label">R5</span><span class="tmu-badge-value" style="color:${getColor6(player.r5, R5_THRESHOLDS6)}">${player.r5}</span>` });
+      h += badgeHtml7({ slot: `<span class="tmu-badge-label">R5</span><span class="tmu-badge-value" style="color:${getColor6(player.r5, R5_THRESHOLDS5)}">${player.r5}</span>` });
     } else if (player.r5Range) {
       const { lo, hi } = player.r5Range;
       const rangeStr = lo != null && lo.toFixed(1) !== hi.toFixed(1) ? `${lo.toFixed(1)}\u2013${hi.toFixed(1)}` : `${hi.toFixed(1)}`;
-      h += badgeHtml7({ slot: `<span class="tmu-badge-label">R5</span><span class="tmu-badge-value" style="color:${getColor6(hi != null ? hi : 0, R5_THRESHOLDS6)}">${rangeStr}</span>` });
+      h += badgeHtml7({ slot: `<span class="tmu-badge-label">R5</span><span class="tmu-badge-value" style="color:${getColor6(hi != null ? hi : 0, R5_THRESHOLDS5)}">${rangeStr}</span>` });
     }
     if (player.ti != null)
       h += badgeHtml7({ slot: `<span class="tmu-badge-label">TI</span><span class="tmu-badge-value" style="color:${getColor6(player.ti, TI_THRESHOLDS2)}">${player.ti.toFixed(1)}</span>` });
@@ -18554,7 +18554,7 @@ ${teamsTable.outerHTML}
   // src/components/squad/tm-squad-table.js
   var buildSummary2 = (players) => {
     const { getColor: getColor6 } = TmUtils;
-    const { AGE_THRESHOLDS: AGE_THRESHOLDS2, REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS6, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
+    const { AGE_THRESHOLDS: AGE_THRESHOLDS2, REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS5, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
     const n = players.length;
     if (!n) return "";
     const avgR5 = players.reduce((s6, p) => s6 + Number(p.r5), 0) / n;
@@ -18565,7 +18565,7 @@ ${teamsTable.outerHTML}
     const avgTI = tiPlayers.length ? tiPlayers.reduce((s6, p) => s6 + p.ti, 0) / tiPlayers.length : 0;
     return TmSummaryStrip.render([
       { label: "Players", value: String(n) },
-      { label: "Avg R5", value: avgR5.toFixed(2), valueStyle: `color:${getColor6(avgR5, R5_THRESHOLDS6)}` },
+      { label: "Avg R5", value: avgR5.toFixed(2), valueStyle: `color:${getColor6(avgR5, R5_THRESHOLDS5)}` },
       { label: "Avg REC", value: avgRec.toFixed(2), valueStyle: `color:${getColor6(avgRec, REC_THRESHOLDS2)}` },
       ...tiPlayers.length ? [{ label: "Avg TI", value: avgTI.toFixed(1), valueStyle: `color:${getColor6(avgTI, TI_THRESHOLDS2)}` }] : [],
       { label: "Avg Age", value: avgAge.toFixed(1), valueStyle: `color:${getColor6(avgAge, AGE_THRESHOLDS2)}` },
@@ -24138,9 +24138,9 @@ ${teamsTable.outerHTML}
     return `<span class="tms-strong-val tmu-tabular" style="color:${clr3}">${ti.toFixed(1)}</span>`;
   }
   function fmtR5(r5) {
-    const { R5_THRESHOLDS: R5_THRESHOLDS6 } = TmConst;
+    const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
     if (r5 == null) return '<span class="tms-tip-pending">\u2026</span>';
-    const clr3 = getColor4(r5, R5_THRESHOLDS6);
+    const clr3 = getColor4(r5, R5_THRESHOLDS5);
     return `<span class="tms-strong-val tmu-tabular" style="color:${clr3}">${r5.toFixed(1)}</span>`;
   }
   function fmtAge(ageFloat) {
@@ -24155,11 +24155,11 @@ ${teamsTable.outerHTML}
   }
   var skillColor3 = TmUtils.skillColor;
   function fmtR5Range(lo, hi) {
-    const { R5_THRESHOLDS: R5_THRESHOLDS6 } = TmConst;
+    const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
     if (lo == null || hi == null) return '<span class="tms-tip-pending">\u2026</span>';
     const loFixed = lo.toFixed(1), hiFixed = hi.toFixed(1);
-    const clrLo = getColor4(lo, R5_THRESHOLDS6);
-    const clrHi = getColor4(hi, R5_THRESHOLDS6);
+    const clrLo = getColor4(lo, R5_THRESHOLDS5);
+    const clrHi = getColor4(hi, R5_THRESHOLDS5);
     if (loFixed === hiFixed)
       return `<span class="tms-range-wrap tmu-tabular"><span class="tms-strong-val tmu-tabular" style="color:${clrHi}">${hiFixed}</span></span>`;
     return `<span class="tms-range-wrap tmu-tabular"><span class="tms-range-val tmu-tabular" style="color:${clrLo}">${loFixed}</span><span class="tms-range-sep">\u2013</span><span class="tms-range-val tmu-tabular" style="color:${clrHi}">${hiFixed}</span></span>`;
@@ -24321,7 +24321,7 @@ ${teamsTable.outerHTML}
 </tr>`;
   }
   function adaptForTooltip2(p, tooltipCache2) {
-    const { R5_THRESHOLDS: R5_THRESHOLDS6, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
+    const { R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
     const tip = tooltipCache2[p.id];
     const gk = p._gk;
     const skillKeys = gk ? GK_SKILLS : OUTFIELD_SKILLS;
@@ -24362,7 +24362,7 @@ ${teamsTable.outerHTML}
       routine: null,
       note: p.txt || null,
       footerStats: [
-        { val: r5FooterDisp, lbl: "R5", color: r5FooterVal != null ? getColor4(r5FooterVal, R5_THRESHOLDS6) : "var(--tmu-text-faint)" },
+        { val: r5FooterDisp, lbl: "R5", color: r5FooterVal != null ? getColor4(r5FooterVal, R5_THRESHOLDS5) : "var(--tmu-text-faint)" },
         { val: recVal != null ? recVal.toFixed(2) : "\u2026", lbl: "Rec", color: recVal != null ? getColor4(recVal, REC_THRESHOLDS2) : "var(--tmu-text-faint)" },
         { val: ti != null ? ti.toFixed(1) : "\u2026", lbl: "TI", color: ti != null ? getColor4(ti, TI_THRESHOLDS2) : "var(--tmu-text-faint)" },
         { val: fmtNum(p.asi) || "\u2014", lbl: "ASI", color: "var(--tmu-text-strong)" },
@@ -26572,8 +26572,8 @@ ${teamsTable.outerHTML}
   ];
   var renderSkillTable = () => {
     const s6 = window.TmLeagueCtx;
-    const { skillData, skillSortCol, skillSortAsc, REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS6, AGE_THRESHOLDS: AGE_THRESHOLDS2, getColor: getColor6 } = s6;
-    const thresholds = { REC: REC_THRESHOLDS2, R5: R5_THRESHOLDS6, Age: AGE_THRESHOLDS2 };
+    const { skillData, skillSortCol, skillSortAsc, REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS5, AGE_THRESHOLDS: AGE_THRESHOLDS2, getColor: getColor6 } = s6;
+    const thresholds = { REC: REC_THRESHOLDS2, R5: R5_THRESHOLDS5, Age: AGE_THRESHOLDS2 };
     const decimals = { REC: 2, R5: 2, Age: 1 };
     const arrow = (key) => key === skillSortCol ? skillSortAsc ? " \u25B2" : " \u25BC" : "";
     const headerHtml = `
@@ -27946,7 +27946,7 @@ ${teamsTable.outerHTML}
     const STORAGE_KEY = "TM_LEAGUE_LINEUP_NUM_ROUNDS";
     const SKILL_NAMES_FIELD = TmConst.SKILL_DEFS_OUT.map((d) => d.label || d.key);
     const SKILL_NAMES_GK3 = TmConst.SKILL_DEFS_GK.map((d) => d.label || d.key);
-    const { REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS6, AGE_THRESHOLDS: AGE_THRESHOLDS2 } = TmConst;
+    const { REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS5, AGE_THRESHOLDS: AGE_THRESHOLDS2 } = TmConst;
     const htmlOf9 = (node) => (node == null ? void 0 : node.outerHTML) || "";
     const inputHtml5 = (opts) => htmlOf9(TmUI.input({ tone: "overlay", density: "regular", ...opts }));
     const appendHtml = (parent, html2) => {
@@ -28320,7 +28320,7 @@ ${teamsTable.outerHTML}
       SKILL_NAMES_FIELD,
       SKILL_NAMES_GK: SKILL_NAMES_GK3,
       REC_THRESHOLDS: REC_THRESHOLDS2,
-      R5_THRESHOLDS: R5_THRESHOLDS6,
+      R5_THRESHOLDS: R5_THRESHOLDS5,
       AGE_THRESHOLDS: AGE_THRESHOLDS2,
       // ── Coordinated state transitions ─────────────────────────────────────────────────────
       // Use these instead of direct property writes when multiple fields must change together.
@@ -32772,11 +32772,11 @@ ${teamsTable.outerHTML}
       target.innerHTML = "";
       target.appendChild(webglContent);
       webglContent.style.display = "block";
-      const gc3 = document.getElementById("gameContainer");
-      if (gc3) {
-        gc3.style.width = "100%";
-        gc3.style.height = "100%";
-        gc3.style.margin = "0";
+      const gc2 = document.getElementById("gameContainer");
+      if (gc2) {
+        gc2.style.width = "100%";
+        gc2.style.height = "100%";
+        gc2.style.margin = "0";
       }
       target.style.display = "block";
       const row = document.querySelector(".rnd-unity-row");
@@ -42841,7 +42841,7 @@ ${names}`)) {
     if (!routeMatch) return;
     const sourceRoot3 = (document.querySelector(".main_center") || main2).cloneNode(true);
     const STYLE_ID45 = "tmvu-national-teams-style";
-    const { R5_THRESHOLDS: R5_THRESHOLDS6 } = TmConst;
+    const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
     const CURRENT_SEASON2 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const cleanText22 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml29 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
@@ -43329,7 +43329,7 @@ ${names}`)) {
     const formatR5 = (value) => {
       if (!Number.isFinite(Number(value))) return '<span style="color:var(--tmu-text-faint)">\u2014</span>';
       const numeric = Number(value);
-      return `<span style="color:${TmUtils.getColor(numeric, R5_THRESHOLDS6)};font-weight:700">${numeric.toFixed(1)}</span>`;
+      return `<span style="color:${TmUtils.getColor(numeric, R5_THRESHOLDS5)};font-weight:700">${numeric.toFixed(1)}</span>`;
     };
     const loadSquadPlayers = async (squad) => {
       const players = await Promise.all(squad.rows.map(async (row) => {
@@ -44936,7 +44936,7 @@ ${names}`)) {
     var _a, _b;
     const { calculatePlayerR5: calculatePlayerR53, calculatePlayerREC: calculatePlayerREC3 } = TmLib;
     const { getColor: getColor6 } = TmUtils;
-    const { R5_THRESHOLDS: R5_THRESHOLDS6, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS3, POSITION_MAP: POSITION_MAP3 } = TmConst;
+    const { R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2, POSITION_MAP: POSITION_MAP3 } = TmConst;
     const badgeHtml7 = (opts, tone = "muted") => TmUI.badge({ size: "md", shape: "rounded", weight: "heavy", ...opts }, tone);
     const infoTable = document.querySelector("table.info_table.zebra");
     const existingCard = document.querySelector("#tmvp-player-card");
@@ -44968,7 +44968,7 @@ ${names}`)) {
                     <span class="tmpc-pos-name" style="color:${position.color}">${position.position}</span>
                     <span class="tmpc-pos-stat">
                         <span class="tmpc-pos-stat-lbl tmu-kicker">R5</span>
-                        <span class="tmpc-pos-stat-val tmu-tabular" style="color:${getColor6(position.r5, R5_THRESHOLDS6)}">${position.r5}</span>
+                        <span class="tmpc-pos-stat-val tmu-tabular" style="color:${getColor6(position.r5, R5_THRESHOLDS5)}">${position.r5}</span>
                     </span>
                     <span class="tmpc-pos-stat">
                         <span class="tmpc-pos-stat-lbl tmu-kicker">REC</span>
@@ -45000,7 +45000,7 @@ ${names}`)) {
                         <span class="tmpc-pos-name" style="color:${position.color}">${position.position}</span>
                         <span class="tmpc-pos-stat">
                             <span class="tmpc-pos-stat-lbl tmu-kicker">R5</span>
-                            <span class="tmpc-pos-stat-val tmu-tabular" style="color:${getColor6(positionR5, R5_THRESHOLDS6)}">${positionR5}</span>
+                            <span class="tmpc-pos-stat-val tmu-tabular" style="color:${getColor6(positionR5, R5_THRESHOLDS5)}">${positionR5}</span>
                         </span>
                         <span class="tmpc-pos-stat">
                             <span class="tmpc-pos-stat-lbl tmu-kicker">REC</span>
@@ -45059,7 +45059,7 @@ ${names}`)) {
                         </tm-row>
                         <tm-row data-justify="space-between">
                             <span class="tmu-stat-lbl">Routine</span>
-                            <span class="tmpc-val tmu-tabular" style="color:${getColor6(player.routine, RTN_THRESHOLDS3)}">${player.routine.toFixed(1)}</span>
+                            <span class="tmpc-val tmu-tabular" style="color:${getColor6(player.routine, RTN_THRESHOLDS2)}">${player.routine.toFixed(1)}</span>
                         </tm-row>
                     </div> 
                 </div>
@@ -46323,6 +46323,52 @@ ${names}`)) {
         }
         .tmtc-field-spacer {
             flex: 0 0 8%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 8px;
+        }
+        .tmtc-fob {
+            display: flex;
+            align-items: stretch;
+            width: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .tmtc-fob-formation,
+        .tmtc-fob-item {
+            flex: 1 1 25%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1px;
+            padding: 5px 4px;
+            background: rgba(0,0,0,0.42);
+        }
+        .tmtc-fob-formation:not(:last-child),
+        .tmtc-fob-item:not(:last-child) {
+            border-right: 1px solid rgba(255,255,255,0.07);
+        }
+        .tmtc-fob-formation {
+            font-size: var(--tmu-font-xs);
+            font-weight: 800;
+            color: rgba(255,255,255,0.88);
+            letter-spacing: .06em;
+        }
+        .tmtc-fob-sep { display: none; }
+        .tmtc-fob-label {
+            font-size: 9px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.30);
+            text-transform: uppercase;
+            letter-spacing: .08em;
+        }
+        .tmtc-fob-value {
+            font-size: var(--tmu-font-xs);
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
         }
         .tmtc-field-line {
             display: flex;
@@ -46761,7 +46807,7 @@ ${names}`)) {
   function mountTacticsLineup(container, data, opts = {}) {
     const { reserves = 0, national = 0, miniGameId = 0 } = opts;
     const { players_by_id = {} } = data;
-    const { R5_THRESHOLDS: R5_THRESHOLDS6, RTN_THRESHOLDS: RTN_THRESHOLDS3, REC_THRESHOLDS: REC_THRESHOLDS2 } = TmConst;
+    const { R5_THRESHOLDS: R5_THRESHOLDS5, RTN_THRESHOLDS: RTN_THRESHOLDS2, REC_THRESHOLDS: REC_THRESHOLDS2 } = TmConst;
     const assignment = { ...data.formation_assoc };
     for (const [role, pid] of Object.entries(data.formation_subs || {})) {
       if (!assignment[role] && pid) assignment[role] = pid;
@@ -46866,19 +46912,6 @@ ${names}`)) {
       return rows;
     };
     const body = container;
-    const statusBar = document.createElement("div");
-    statusBar.className = "tmtc-save-status";
-    body.appendChild(statusBar);
-    let statusTimer = null;
-    function showStatus(ok, msg) {
-      clearTimeout(statusTimer);
-      statusBar.className = "tmtc-save-status " + (ok ? "tmtc-save-ok" : "tmtc-save-err");
-      statusBar.textContent = msg;
-      statusTimer = setTimeout(() => {
-        statusBar.className = "tmtc-save-status";
-        statusBar.textContent = "";
-      }, 2500);
-    }
     const layout = document.createElement("div");
     layout.className = "tmtc-lineup-2col";
     body.appendChild(layout);
@@ -46897,6 +46930,56 @@ ${names}`)) {
     const topSpacer = document.createElement("div");
     topSpacer.className = "tmtc-field-spacer";
     fieldEl.appendChild(topSpacer);
+    const fieldOverlayBar = document.createElement("div");
+    fieldOverlayBar.className = "tmtc-fob";
+    topSpacer.appendChild(fieldOverlayBar);
+    const BADGE_ZONES_LU = [...FIELD_ZONES2].reverse().filter((z) => z.key !== "gk");
+    function getFormationStr() {
+      return BADGE_ZONES_LU.map((z) => z.cols.filter((pk) => pk && assignment[pk] && String(assignment[pk]) !== "0").length).filter((n) => n > 0).join("-") || "?";
+    }
+    function refreshFieldOverlay() {
+      var _a, _b;
+      const activeKeys = getOccupiedFieldKeys();
+      let totalR5 = 0, countR5 = 0, totalRtn = 0, countRtn = 0, totalAge = 0, countAge = 0;
+      for (const posKey2 of activeKeys) {
+        const pid = assignment[posKey2];
+        if (!pid || String(pid) === "0") continue;
+        const p = players_by_id[String(pid)];
+        if (!p) continue;
+        const posId = (_a = TmConst.POSITION_MAP[posKey2]) == null ? void 0 : _a.id;
+        if (((_b = p.allPositionRatings) == null ? void 0 : _b.length) && posId != null) {
+          const rating = p.allPositionRatings.find((r) => r.id === posId);
+          if (rating) {
+            totalR5 += parseFloat(rating.r5) || 0;
+            countR5++;
+          }
+        }
+        if (p.routine != null && Number(p.routine) > 0) {
+          totalRtn += parseFloat(p.routine);
+          countRtn++;
+        }
+        const age2 = p.ageMonths != null ? p.ageMonths / 12 : parseInt(p.age) || 0;
+        if (age2 > 0) {
+          totalAge += age2;
+          countAge++;
+        }
+      }
+      const gc2 = TmUtils.getColor;
+      const r5 = countR5 > 0 ? (totalR5 / countR5).toFixed(1) : null;
+      const rtn = countRtn > 0 ? (totalRtn / countRtn).toFixed(1) : null;
+      const age = countAge > 0 ? (totalAge / countAge).toFixed(1) : null;
+      const sep = `<span class="tmtc-fob-sep">\xB7</span>`;
+      const item = (label, value, color) => `<span class="tmtc-fob-item"><span class="tmtc-fob-label">${label}</span><span class="tmtc-fob-value" style="color:${color}">${value}</span></span>`;
+      fieldOverlayBar.innerHTML = [
+        `<span class="tmtc-fob-formation">${getFormationStr()}</span>`,
+        sep,
+        item("R5", r5 != null ? r5 : "\u2014", r5 ? gc2(parseFloat(r5), TmConst.R5_THRESHOLDS) : "var(--tmu-text-faint)"),
+        sep,
+        item("Rtn", rtn != null ? rtn : "\u2014", rtn ? gc2(parseFloat(rtn), TmConst.RTN_THRESHOLDS) : "var(--tmu-text-faint)"),
+        sep,
+        item("Age", age != null ? age : "\u2014", "var(--tmu-text-muted)")
+      ].join("");
+    }
     const slotEls = {};
     const benchSlotEls = {};
     let tblWrap = null;
@@ -47097,14 +47180,14 @@ ${names}`)) {
             align: "r",
             width: "40px",
             sortable: false,
-            render: (v, p) => p._isBenchPlaceholder ? "" : v != null ? `<span class="tmu-tabular" style="color:${gc(v, R5_THRESHOLDS6)};font-weight:700">${v}</span>` : `<span style="color:var(--tmu-text-dim)">\u2014</span>`
+            render: (v, p) => p._isBenchPlaceholder ? "" : v != null ? `<span class="tmu-tabular" style="color:${gc(v, R5_THRESHOLDS5)};font-weight:700">${v}</span>` : `<span style="color:var(--tmu-text-dim)">\u2014</span>`
           },
           {
             key: "routine",
             label: "Routine",
             align: "r",
             width: "42px",
-            render: (v, p) => p._isBenchPlaceholder ? "" : v != null && v > 0 ? `<span class="tmu-tabular" style="color:${gc(v, RTN_THRESHOLDS3)};font-weight:700">${Number(v).toFixed(1)}</span>` : `<span style="color:var(--tmu-text-dim)">\u2014</span>`
+            render: (v, p) => p._isBenchPlaceholder ? "" : v != null && v > 0 ? `<span class="tmu-tabular" style="color:${gc(v, RTN_THRESHOLDS2)};font-weight:700">${Number(v).toFixed(1)}</span>` : `<span style="color:var(--tmu-text-dim)">\u2014</span>`
           }
         ],
         emptyText: "No players."
@@ -47199,13 +47282,14 @@ ${names}`)) {
           showStatus(true, "Saved \u2713");
           notifyChange();
         } catch (e2) {
-          showStatus(false, "Save failed");
+          TmAlert.show({ message: "Save failed", tone: "error" });
         }
       });
       return wrap;
     }
     function refreshSquadTable() {
       tblWrap == null ? void 0 : tblWrap.refresh({ items: sortedPlayers() });
+      refreshFieldOverlay();
     }
     let dragState = null;
     function onFieldDragStart(e) {
@@ -47312,7 +47396,7 @@ ${names}`)) {
           showStatus(true, "Saved \u2713");
           notifyChange();
         } catch (e2) {
-          showStatus(false, "Save failed");
+          TmAlert.show({ message: "Save failed", tone: "error" });
         }
       });
     }
@@ -47356,7 +47440,7 @@ ${names}`)) {
           showStatus(true, "Saved \u2713");
           notifyChange();
         } catch (e2) {
-          showStatus(false, "Save failed");
+          TmAlert.show({ message: "Save failed", tone: "error" });
         }
       });
     }
@@ -47412,7 +47496,7 @@ ${names}`)) {
         showStatus(true, "Saved \u2713");
         notifyChange();
       } catch (e) {
-        showStatus(false, "Save failed");
+        TmAlert.show({ message: "Save failed", tone: "error" });
       }
     }
     const getAssignment = () => ({ ...assignment });
@@ -47475,10 +47559,6 @@ ${names}`)) {
   }
 
   // src/components/tactics/tm-tactics-panel.js
-  var BADGE_ZONES = [...TmConst.FIELD_ZONES].reverse().filter((z) => z.key !== "gk");
-  function getFormationName(assignment, activeKeys) {
-    return BADGE_ZONES.map((z) => z.cols.filter((pk) => pk && activeKeys.has(pk) && assignment[pk] && String(assignment[pk]) !== "0").length).filter((n) => n > 0).join("-") || "?";
-  }
   var DEF_KEYS = {
     1: ["dc"],
     2: ["dcl", "dcr"],
@@ -47541,35 +47621,6 @@ ${names}`)) {
     "4-1-3-2": buildPresetPositions(4, 1, 3, 0, 2)
   };
   var FORMATION_NAMES = Object.keys(FORMATION_PRESETS);
-  var gc2 = TmUtils.getColor;
-  var R5_THRESHOLDS5 = TmConst.R5_THRESHOLDS;
-  var RTN_THRESHOLDS2 = TmConst.RTN_THRESHOLDS;
-  function computeStats(assignment, activeKeys, players_by_id) {
-    var _a, _b;
-    let totalR5 = 0, countR5 = 0, totalRtn = 0, countRtn = 0;
-    for (const posKey2 of activeKeys) {
-      const pid = assignment[posKey2];
-      if (!pid || String(pid) === "0") continue;
-      const p = players_by_id[String(pid)];
-      if (!p) continue;
-      const posId = (_a = TmConst.POSITION_MAP[posKey2]) == null ? void 0 : _a.id;
-      if (((_b = p.allPositionRatings) == null ? void 0 : _b.length) && posId != null) {
-        const rating = p.allPositionRatings.find((r) => r.id === posId);
-        if (rating) {
-          totalR5 += parseFloat(rating.r5) || 0;
-          countR5++;
-        }
-      }
-      if (p.routine != null && Number(p.routine) > 0) {
-        totalRtn += parseFloat(p.routine) || 0;
-        countRtn++;
-      }
-    }
-    return {
-      avgR5: countR5 > 0 ? totalR5 / countR5 : null,
-      avgRtn: countRtn > 0 ? totalRtn / countRtn : null
-    };
-  }
   function pickBest11(activeKeys, players_by_id) {
     const activeSlots = [...activeKeys].map((pk) => {
       var _a;
@@ -47642,76 +47693,13 @@ ${names}`)) {
   function mountTacticsPanel(container, data, initialSettings, opts, lineupApi) {
     const { players_by_id = {} } = data;
     const { getAssignment, getActiveKeys, applyAssignment, subscribe } = lineupApi;
-    const fmWrap = document.createElement("div");
-    fmWrap.className = "tmtc-panel-row";
-    container.appendChild(fmWrap);
-    const fmBadge = document.createElement("span");
-    fmBadge.className = "tmtc-panel-fm-badge";
-    fmBadge.textContent = getFormationName(getAssignment(), getActiveKeys());
-    fmWrap.appendChild(fmBadge);
-    const ac = TmAutocomplete.autocomplete({
-      placeholder: "Change...",
-      size: "sm",
-      tone: "overlay",
-      density: "compact"
-    });
-    ac.style.flex = "1 1 0";
-    fmWrap.appendChild(ac);
-    function buildAcItems(filter) {
-      const q3 = (filter || "").trim().toLowerCase();
-      return FORMATION_NAMES.filter((n) => !q3 || n.includes(q3)).map((name) => TmAutocomplete.autocompleteItem({
-        label: name,
-        active: name === getFormationName(getAssignment(), getActiveKeys()),
-        onSelect: async () => {
-          ac.hideDrop();
-          ac.setValue("");
-          fmBadge.textContent = name;
-          const newActiveKeys = new Set(FORMATION_PRESETS[name].filter(Boolean));
-          const newAssignment = pickBest11(newActiveKeys, players_by_id);
-          await applyAssignment(newAssignment);
-          refreshStats();
-        }
-      }));
-    }
-    ac.inputEl.addEventListener("focus", () => ac.setItems(buildAcItems("")));
-    ac.inputEl.addEventListener("input", () => ac.setItems(buildAcItems(ac.inputEl.value)));
-    document.addEventListener("click", (e) => {
-      if (!ac.contains(e.target)) ac.hideDrop();
-    }, true);
-    const statsWrap = document.createElement("div");
-    statsWrap.className = "tmtc-panel-stats";
-    container.appendChild(statsWrap);
-    statsWrap.innerHTML = [
-      TmMetric.metric({ label: "Avg R5", value: "--", layout: "row", tone: "overlay", size: "sm", attrs: { "data-stat": "r5" } }),
-      TmMetric.metric({ label: "Avg Rtn", value: "--", layout: "row", tone: "overlay", size: "sm", attrs: { "data-stat": "rtn" } })
-    ].join("");
-    const r5El = statsWrap.querySelector('[data-stat="r5"]  .tmu-metric-value');
-    const rtnEl = statsWrap.querySelector('[data-stat="rtn"] .tmu-metric-value');
     function refreshStats() {
-      const st = computeStats(getAssignment(), getActiveKeys(), players_by_id);
-      if (st.avgR5 != null) {
-        r5El.textContent = st.avgR5.toFixed(1);
-        r5El.style.color = gc2(st.avgR5, R5_THRESHOLDS5);
-      } else {
-        r5El.textContent = "--";
-        r5El.style.color = "";
-      }
-      if (st.avgRtn != null) {
-        rtnEl.textContent = st.avgRtn.toFixed(1);
-        rtnEl.style.color = gc2(st.avgRtn, RTN_THRESHOLDS2);
-      } else {
-        rtnEl.textContent = "--";
-        rtnEl.style.color = "";
-      }
     }
-    subscribe(refreshStats);
     subscribe(() => {
-      fmBadge.textContent = getFormationName(getAssignment(), getActiveKeys());
     });
-    refreshStats();
     const pickBtn = TmButton.button({
       label: "Pick Best 11",
-      color: "lime",
+      color: "primary",
       size: "sm",
       block: true,
       onClick: async () => {
@@ -49686,7 +49674,7 @@ ${names}`)) {
     },
     /* attachTooltip(canvas, tipEl, getSeriesFn, chartInfoGetter) */
     attachTooltip(canvas, tipEl, getSeriesFn, chartInfoGetter) {
-      const { R5_THRESHOLDS: R5_THRESHOLDS6 } = TmConst;
+      const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
       const { getColor: getColor6 } = TmUtils;
       canvas.addEventListener("mousemove", (e) => {
         const info = chartInfoGetter();
@@ -49710,7 +49698,7 @@ ${names}`)) {
           const { s: s6, i } = best;
           const age = s6.ages[i], val = s6.values[i];
           const ay = Math.floor(age), am = Math.round((age - ay) * 12);
-          tipEl.innerHTML = `<span style="color:${s6.color}">\u25CF</span> <b>${s6.name}</b> <span style="color:${themeColor("--tmu-text-faint", "#6a9a58")}">(${s6.posLabel})</span><br><b>R5:</b> <span style="color:${getColor6(val, R5_THRESHOLDS6)}">${Number(val).toFixed(2)}</span> &nbsp; <b>Age:</b> ${ay}y ${am}m`;
+          tipEl.innerHTML = `<span style="color:${s6.color}">\u25CF</span> <b>${s6.name}</b> <span style="color:${themeColor("--tmu-text-faint", "#6a9a58")}">(${s6.posLabel})</span><br><b>R5:</b> <span style="color:${getColor6(val, R5_THRESHOLDS5)}">${Number(val).toFixed(2)}</span> &nbsp; <b>Age:</b> ${ay}y ${am}m`;
           tipEl.style.display = "block";
           const px = info.xS(age), py = info.yS(val);
           let tx = px - tipEl.offsetWidth / 2;
@@ -49899,7 +49887,7 @@ ${names}`)) {
   function initR5HistoryPage() {
     const $3 = window.jQuery;
     if (!$3) return;
-    const { R5_THRESHOLDS: R5_THRESHOLDS6 } = TmConst;
+    const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
     const POS_GROUPS = [
       { key: "all", label: "All", match: () => true },
       { key: "gk", label: "GK", match: (idx) => idx === 9 },
@@ -50293,7 +50281,7 @@ ${names}`)) {
                 <a class="tmrc-legend-name" href="https://trophymanager.com/players/${s6.pid}/" target="_blank" title="${s6.name}">${s6.name}</a>
                 <div class="tmrc-legend-pos" style="color:${posGroupColor(s6.posIdx)}">${s6.posLabel}</div>
                 <div class="tmrc-legend-age">${ageY}.${ageM}</div>
-                <div class="tmrc-legend-r5" style="color:${getColor6(lastR5, R5_THRESHOLDS6)}">${Number(lastR5).toFixed(1)}</div>
+                <div class="tmrc-legend-r5" style="color:${getColor6(lastR5, R5_THRESHOLDS5)}">${Number(lastR5).toFixed(1)}</div>
             </div>`;
       });
       container.innerHTML = h;
@@ -50381,9 +50369,9 @@ ${names}`)) {
       container.innerHTML = `
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Players:</span> <span class="tmrc-stat-val">${visibleSeries.length}</span></div>
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Total records:</span> <span class="tmrc-stat-val">${totalWeeks}</span></div>
-            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Avg R5:</span> <span class="tmrc-stat-val" style="color:${getColor6(avg2, R5_THRESHOLDS6)}">${avg2.toFixed(2)}</span></div>
-            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Best:</span> <span class="tmrc-stat-val" style="color:${getColor6(max, R5_THRESHOLDS6)}">${max.toFixed(2)}</span> <span style="color:var(--tmu-text-faint);font-size:var(--tmu-font-xs)">(${(best == null ? void 0 : best.name) || "?"})</span></div>
-            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Min:</span> <span class="tmrc-stat-val" style="color:${getColor6(min, R5_THRESHOLDS6)}">${min.toFixed(2)}</span></div>
+            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Avg R5:</span> <span class="tmrc-stat-val" style="color:${getColor6(avg2, R5_THRESHOLDS5)}">${avg2.toFixed(2)}</span></div>
+            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Best:</span> <span class="tmrc-stat-val" style="color:${getColor6(max, R5_THRESHOLDS5)}">${max.toFixed(2)}</span> <span style="color:var(--tmu-text-faint);font-size:var(--tmu-font-xs)">(${(best == null ? void 0 : best.name) || "?"})</span></div>
+            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Min:</span> <span class="tmrc-stat-val" style="color:${getColor6(min, R5_THRESHOLDS5)}">${min.toFixed(2)}</span></div>
         `;
     };
     const redrawChart = () => {

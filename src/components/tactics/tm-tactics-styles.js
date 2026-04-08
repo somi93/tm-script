@@ -110,6 +110,52 @@ export function injectTacticsStyles() {
         }
         .tmtc-field-spacer {
             flex: 0 0 8%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 8px;
+        }
+        .tmtc-fob {
+            display: flex;
+            align-items: stretch;
+            width: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .tmtc-fob-formation,
+        .tmtc-fob-item {
+            flex: 1 1 25%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1px;
+            padding: 5px 4px;
+            background: rgba(0,0,0,0.42);
+        }
+        .tmtc-fob-formation:not(:last-child),
+        .tmtc-fob-item:not(:last-child) {
+            border-right: 1px solid rgba(255,255,255,0.07);
+        }
+        .tmtc-fob-formation {
+            font-size: var(--tmu-font-xs);
+            font-weight: 800;
+            color: rgba(255,255,255,0.88);
+            letter-spacing: .06em;
+        }
+        .tmtc-fob-sep { display: none; }
+        .tmtc-fob-label {
+            font-size: 9px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.30);
+            text-transform: uppercase;
+            letter-spacing: .08em;
+        }
+        .tmtc-fob-value {
+            font-size: var(--tmu-font-xs);
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
         }
         .tmtc-field-line {
             display: flex;

@@ -1,21 +1,8 @@
-﻿import { TmAutocomplete } from '../shared/tm-autocomplete.js';
-import { TmButton } from '../shared/tm-button.js';
-import { TmMetric } from '../shared/tm-metric.js';
+﻿import { TmButton } from '../shared/tm-button.js';
 import { TmConst } from '../../lib/tm-constants.js';
-import { TmUtils } from '../../lib/tm-utils.js';
 import { mountTacticsSettings } from './tm-tactics-settings.js';
 
 'use strict';
-
-// Badge zones ordered DEF→FWD (FIELD_ZONES is FWD-first and includes GK — we reverse and skip GK)
-const BADGE_ZONES = [...TmConst.FIELD_ZONES].reverse().filter(z => z.key !== 'gk');
-
-function getFormationName(assignment, activeKeys) {
-    return BADGE_ZONES
-        .map(z => z.cols.filter(pk => pk && activeKeys.has(pk) && assignment[pk] && String(assignment[pk]) !== '0').length)
-        .filter(n => n > 0)
-        .join('-') || '?';
-}
 
 const DEF_KEYS = {
     1: ['dc'],
@@ -79,32 +66,6 @@ const FORMATION_PRESETS = {
     '4-1-3-2': buildPresetPositions(4, 1, 3, 0, 2),
 };
 const FORMATION_NAMES = Object.keys(FORMATION_PRESETS);
-
-const gc = TmUtils.getColor;
-const R5_THRESHOLDS = TmConst.R5_THRESHOLDS;
-const RTN_THRESHOLDS = TmConst.RTN_THRESHOLDS;
-
-function computeStats(assignment, activeKeys, players_by_id) {
-    let totalR5 = 0, countR5 = 0, totalRtn = 0, countRtn = 0;
-    for (const posKey of activeKeys) {
-        const pid = assignment[posKey];
-        if (!pid || String(pid) === '0') continue;
-        const p = players_by_id[String(pid)];
-        if (!p) continue;
-        const posId = TmConst.POSITION_MAP[posKey]?.id;
-        if (p.allPositionRatings?.length && posId != null) {
-            const rating = p.allPositionRatings.find(r => r.id === posId);
-            if (rating) { totalR5 += parseFloat(rating.r5) || 0; countR5++; }
-        }
-        if (p.routine != null && Number(p.routine) > 0) {
-            totalRtn += parseFloat(p.routine) || 0; countRtn++;
-        }
-    }
-    return {
-        avgR5: countR5 > 0 ? totalR5 / countR5 : null,
-        avgRtn: countRtn > 0 ? totalRtn / countRtn : null,
-    };
-}
 
 // pickBest11: receives Set<posKey> → returns { posKey: pid } for the optimal assignment
 function pickBest11(activeKeys, players_by_id) {
@@ -174,81 +135,14 @@ export function mountTacticsPanel(container, data, initialSettings, opts, lineup
     const { players_by_id = {} } = data;
     const { getAssignment, getActiveKeys, applyAssignment, subscribe } = lineupApi;
 
-    // Formation badge + autocomplete
-    const fmWrap = document.createElement('div');
-    fmWrap.className = 'tmtc-panel-row';
-    container.appendChild(fmWrap);
+    function refreshStats() {}
 
-    const fmBadge = document.createElement('span');
-    fmBadge.className = 'tmtc-panel-fm-badge';
-    fmBadge.textContent = getFormationName(getAssignment(), getActiveKeys());
-    fmWrap.appendChild(fmBadge);
-
-    const ac = TmAutocomplete.autocomplete({
-        placeholder: 'Change...',
-        size: 'sm',
-        tone: 'overlay',
-        density: 'compact',
-    });
-    ac.style.flex = '1 1 0';
-    fmWrap.appendChild(ac);
-
-    function buildAcItems(filter) {
-        const q = (filter || '').trim().toLowerCase();
-        return FORMATION_NAMES
-            .filter(n => !q || n.includes(q))
-            .map(name => TmAutocomplete.autocompleteItem({
-                label: name,
-                active: name === getFormationName(getAssignment(), getActiveKeys()),
-                onSelect: async () => {
-                    ac.hideDrop();
-                    ac.setValue('');
-                    fmBadge.textContent = name;
-                    const newActiveKeys = new Set(FORMATION_PRESETS[name].filter(Boolean));
-                    const newAssignment = pickBest11(newActiveKeys, players_by_id);
-                    await applyAssignment(newAssignment);
-                    refreshStats();
-                },
-            }));
-    }
-
-    ac.inputEl.addEventListener('focus', () => ac.setItems(buildAcItems('')));
-    ac.inputEl.addEventListener('input', () => ac.setItems(buildAcItems(ac.inputEl.value)));
-    document.addEventListener('click', e => { if (!ac.contains(e.target)) ac.hideDrop(); }, true);
-
-    // Stats
-    const statsWrap = document.createElement('div');
-    statsWrap.className = 'tmtc-panel-stats';
-    container.appendChild(statsWrap);
-
-    statsWrap.innerHTML = [
-        TmMetric.metric({ label: 'Avg R5', value: '--', layout: 'row', tone: 'overlay', size: 'sm', attrs: { 'data-stat': 'r5' } }),
-        TmMetric.metric({ label: 'Avg Rtn', value: '--', layout: 'row', tone: 'overlay', size: 'sm', attrs: { 'data-stat': 'rtn' } }),
-    ].join('');
-
-    const r5El = statsWrap.querySelector('[data-stat="r5"]  .tmu-metric-value');
-    const rtnEl = statsWrap.querySelector('[data-stat="rtn"] .tmu-metric-value');
-
-    function refreshStats() {
-        const st = computeStats(getAssignment(), getActiveKeys(), players_by_id);
-        if (st.avgR5 != null) {
-            r5El.textContent = st.avgR5.toFixed(1);
-            r5El.style.color = gc(st.avgR5, R5_THRESHOLDS);
-        } else { r5El.textContent = '--'; r5El.style.color = ''; }
-        if (st.avgRtn != null) {
-            rtnEl.textContent = st.avgRtn.toFixed(1);
-            rtnEl.style.color = gc(st.avgRtn, RTN_THRESHOLDS);
-        } else { rtnEl.textContent = '--'; rtnEl.style.color = ''; }
-    }
-
-    subscribe(refreshStats);
-    subscribe(() => { fmBadge.textContent = getFormationName(getAssignment(), getActiveKeys()); });
-    refreshStats();
+    subscribe(() => {});
 
     // Pick Best 11
     const pickBtn = TmButton.button({
         label: 'Pick Best 11',
-        color: 'lime',
+        color: 'primary',
         size: 'sm',
         block: true,
         onClick: async () => {

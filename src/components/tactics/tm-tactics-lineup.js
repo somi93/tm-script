@@ -2,6 +2,7 @@ import { TmPosition } from '../../lib/tm-position.js';
 import { TmTable } from '../shared/tm-table.js';
 import { TmConst } from '../../lib/tm-constants.js';
 import { TmUtils } from '../../lib/tm-utils.js';
+import { TmAlert } from '../shared/tm-alert.js';
 
 'use strict';
 
@@ -199,19 +200,6 @@ export function mountTacticsLineup(container, data, opts = {}) {
 
     const body = container;
 
-    // ── Save status bar ───────────────────────────────────────────────────
-    const statusBar = document.createElement('div');
-    statusBar.className = 'tmtc-save-status';
-    body.appendChild(statusBar);
-
-    let statusTimer = null;
-    function showStatus(ok, msg) {
-        clearTimeout(statusTimer);
-        statusBar.className = 'tmtc-save-status ' + (ok ? 'tmtc-save-ok' : 'tmtc-save-err');
-        statusBar.textContent = msg;
-        statusTimer = setTimeout(() => { statusBar.className = 'tmtc-save-status'; statusBar.textContent = ''; }, 2500);
-    }
-
     // ── 2-column layout (left: field+bench, right: squad) ────────────────
     const layout = document.createElement('div');
     layout.className = 'tmtc-lineup-2col';
@@ -241,6 +229,56 @@ export function mountTacticsLineup(container, data, opts = {}) {
     const topSpacer = document.createElement('div');
     topSpacer.className = 'tmtc-field-spacer';
     fieldEl.appendChild(topSpacer);
+
+    const fieldOverlayBar = document.createElement('div');
+    fieldOverlayBar.className = 'tmtc-fob';
+    topSpacer.appendChild(fieldOverlayBar);
+
+    // FIELD_ZONES is FWD-first; reverse and skip GK to build "4-4-2" style formation string
+    const BADGE_ZONES_LU = [...FIELD_ZONES].reverse().filter(z => z.key !== 'gk');
+    function getFormationStr() {
+        return BADGE_ZONES_LU
+            .map(z => z.cols.filter(pk => pk && assignment[pk] && String(assignment[pk]) !== '0').length)
+            .filter(n => n > 0)
+            .join('-') || '?';
+    }
+
+    function refreshFieldOverlay() {
+        const activeKeys = getOccupiedFieldKeys();
+        let totalR5 = 0, countR5 = 0, totalRtn = 0, countRtn = 0, totalAge = 0, countAge = 0;
+        for (const posKey of activeKeys) {
+            const pid = assignment[posKey];
+            if (!pid || String(pid) === '0') continue;
+            const p = players_by_id[String(pid)];
+            if (!p) continue;
+            const posId = TmConst.POSITION_MAP[posKey]?.id;
+            if (p.allPositionRatings?.length && posId != null) {
+                const rating = p.allPositionRatings.find(r => r.id === posId);
+                if (rating) { totalR5 += parseFloat(rating.r5) || 0; countR5++; }
+            }
+            if (p.routine != null && Number(p.routine) > 0) {
+                totalRtn += parseFloat(p.routine); countRtn++;
+            }
+            const age = (p.ageMonths != null) ? p.ageMonths / 12 : (parseInt(p.age) || 0);
+            if (age > 0) { totalAge += age; countAge++; }
+        }
+        const gc = TmUtils.getColor;
+        const r5  = countR5  > 0 ? (totalR5  / countR5).toFixed(1)  : null;
+        const rtn = countRtn > 0 ? (totalRtn / countRtn).toFixed(1) : null;
+        const age = countAge > 0 ? (totalAge / countAge).toFixed(1) : null;
+        const sep = `<span class="tmtc-fob-sep">·</span>`;
+        const item = (label, value, color) =>
+            `<span class="tmtc-fob-item"><span class="tmtc-fob-label">${label}</span><span class="tmtc-fob-value" style="color:${color}">${value}</span></span>`;
+        fieldOverlayBar.innerHTML = [
+            `<span class="tmtc-fob-formation">${getFormationStr()}</span>`,
+            sep,
+            item('R5',  r5  ?? '—', r5  ? gc(parseFloat(r5),  TmConst.R5_THRESHOLDS)  : 'var(--tmu-text-faint)'),
+            sep,
+            item('Rtn', rtn ?? '—', rtn ? gc(parseFloat(rtn), TmConst.RTN_THRESHOLDS) : 'var(--tmu-text-faint)'),
+            sep,
+            item('Age', age ?? '—', 'var(--tmu-text-muted)'),
+        ].join('');
+    }
 
     const slotEls      = {};   // posKey  → fieldSlotEl
     const benchSlotEls = {};   // roleKey → benchSlotEl
@@ -560,7 +598,7 @@ export function mountTacticsLineup(container, data, opts = {}) {
                 await postSave(buildAssocForSave(outPid), changed, reserves, national, miniGameId);
                 showStatus(true, 'Saved ✓');
                 notifyChange();
-            } catch { showStatus(false, 'Save failed'); }
+            } catch { TmAlert.show({ message: 'Save failed', tone: 'error' }); }
         });
 
         return wrap;
@@ -568,6 +606,7 @@ export function mountTacticsLineup(container, data, opts = {}) {
 
     function refreshSquadTable() {
         tblWrap?.refresh({ items: sortedPlayers() });
+        refreshFieldOverlay();
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -684,7 +723,7 @@ export function mountTacticsLineup(container, data, opts = {}) {
                 await postSave(buildAssocForSave(outPid), changed, reserves, national, miniGameId);
                 showStatus(true, 'Saved ✓');
                 notifyChange();
-            } catch { showStatus(false, 'Save failed'); }
+            } catch { TmAlert.show({ message: 'Save failed', tone: 'error' }); }
         });
     }
 
@@ -724,7 +763,7 @@ export function mountTacticsLineup(container, data, opts = {}) {
                 await postSave(buildAssocForSave(outPid), changed, reserves, national, miniGameId);
                 showStatus(true, 'Saved ✓');
                 notifyChange();
-            } catch { showStatus(false, 'Save failed'); }
+            } catch { TmAlert.show({ message: 'Save failed', tone: 'error' }); }
         });
     }
 
@@ -812,7 +851,7 @@ export function mountTacticsLineup(container, data, opts = {}) {
             await postSave(buildAssocForSave(outPid), changed, reserves, national, miniGameId);
             showStatus(true, 'Saved ✓');
             notifyChange();
-        } catch { showStatus(false, 'Save failed'); }
+        } catch { TmAlert.show({ message: 'Save failed', tone: 'error' }); }
     }
 
     /** Snapshot of the full current assignment { posKey|role → pid }. */
