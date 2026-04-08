@@ -7,21 +7,25 @@ export function injectTacticsStyles() {
         `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 420">`,
         `<rect x="0" y="0" width="280" height="420" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="2"/>`,
         // corner arcs
-        `<path d="M2,18 A16,16 0 0,1 18,2" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
-        `<path d="M262,2 A16,16 0 0,1 278,18" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
-        `<path d="M2,402 A16,16 0 0,0 18,418" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
-        `<path d="M262,418 A16,16 0 0,0 278,402" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+        `<path d="M2,18 A16,16 0 0,0 18,2" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+        `<path d="M262,2 A16,16 0 0,0 278,18" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+        `<path d="M2,402 A16,16 0 0,1 18,418" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+        `<path d="M262,418 A16,16 0 0,1 278,402" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
         // center line + circle
         `<line x1="2" y1="210" x2="278" y2="210" stroke="rgba(255,255,255,0.22)" stroke-width="1.5"/>`,
         `<circle cx="140" cy="210" r="52" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="1.5"/>`,
         `<circle cx="140" cy="210" r="3" fill="rgba(255,255,255,0.35)"/>`,
         // top penalty area + goal area
-        `<rect x="56" y="2" width="168" height="72" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
-        `<rect x="95" y="2" width="90" height="26" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+        `<path d="M56,2 L56,74 L224,74 L224,2" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+        `<line x1="95" y1="2" x2="95" y2="28" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+        `<line x1="95" y1="28" x2="185" y2="28" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+        `<line x1="185" y1="2" x2="185" y2="28" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
         `<circle cx="140" cy="68" r="2.5" fill="rgba(255,255,255,0.3)"/>`,
         // bottom penalty area + goal area
-        `<rect x="56" y="346" width="168" height="72" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
-        `<rect x="95" y="392" width="90" height="26" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+        `<path d="M56,418 L56,346 L224,346 L224,418" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+        `<line x1="95" y1="392" x2="95" y2="418" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+        `<line x1="95" y1="392" x2="185" y2="392" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+        `<line x1="185" y1="392" x2="185" y2="418" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
         `<circle cx="140" cy="352" r="2.5" fill="rgba(255,255,255,0.3)"/>`,
         `</svg>`,
     ].join('');
@@ -191,6 +195,7 @@ export function injectTacticsStyles() {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
             gap: 4px;
+            margin-bottom: var(--tmu-space-sm);
         }
         .tmtc-bench-section-head {
             grid-column: 1 / -1;
@@ -205,16 +210,21 @@ export function injectTacticsStyles() {
             padding: 3px 4px;
             border-radius: var(--tmu-space-sm);
             background: var(--tmu-surface-dark-soft);
-            border: 1px solid var(--tmu-border-faint);
+            border: 1px dashed var(--tmu-border-faint);
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 1px;
             min-height: 42px;
             text-align: center;
+            cursor: default;
         }
         .tmtc-bench-slot:hover {
             background: var(--tmu-surface-tab-hover);
+        }
+        .tmtc-bench-slot.has-player {
+            border-style: solid;
+            border-color: var(--tmu-border-embedded);
         }
         .tmtc-bench-role {
             font-size: var(--tmu-font-2xs);
@@ -239,6 +249,15 @@ export function injectTacticsStyles() {
             font-style: italic;
         }
 
+        .tmtc-row-bench-placeholder td {
+            opacity: .55;
+            font-style: italic;
+            cursor: default;
+        }
+        .tmtc-row-bench-placeholder.tmtc-drag-over td {
+            opacity: 1;
+            background: rgba(77,171,247,0.08);
+        }
         /* ── player list ── */
         .tmtc-filters {
             display: flex;
@@ -259,31 +278,15 @@ export function injectTacticsStyles() {
         }
 
         /* ── settings ── */
-        .tmtc-settings-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: var(--tmu-space-md);
-        }
-        .tmtc-setting-card {
-            padding: var(--tmu-space-md);
-            border-radius: var(--tmu-space-md);
-            background: var(--tmu-surface-item-dark);
-            border: 1px solid var(--tmu-border-soft-alpha);
+        .tmtc-settings-rows {
             display: flex;
             flex-direction: column;
             gap: var(--tmu-space-sm);
         }
-        .tmtc-setting-label {
-            font-size: var(--tmu-font-xs);
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .08em;
-            color: var(--tmu-text-panel-label);
-        }
-        .tmtc-setting-value {
-            font-size: var(--tmu-font-md);
-            font-weight: 800;
-            color: var(--tmu-text-strong);
+        .tmtc-setting-row {
+            flex-direction: column;
+            align-items: stretch;
+            gap: var(--tmu-space-xs);
         }
 
         /* ── orders table ── */
@@ -403,36 +406,90 @@ export function injectTacticsStyles() {
         .tmu-tbl tbody tr.tmtc-co-row-drag-over td { background: var(--tmu-primary-muted) !important; outline: 2px dashed var(--tmu-primary); }
 
         /* ── conditional orders dialog ── */
-        .tmtc-co-modal-body {
-            display: flex; gap: var(--tmu-space-md);
+        .tmtc-co-dialog-body {
+            display: flex; border-bottom: 1px solid var(--tmu-border-faint);
+        }
+        .tmtc-co-col {
+            flex: 1; min-width: 0;
             padding: var(--tmu-space-md);
-            border-bottom: 1px solid var(--tmu-border-faint);
-            flex-shrink: 0;
+            border-right: 1px solid var(--tmu-border-faint);
+            overflow-y: auto; max-height: 65vh;
         }
-        .tmtc-co-modal-section {
-            flex: 1; display: flex; flex-direction: column; gap: var(--tmu-space-xs);
-        }
-        .tmtc-co-modal-section-label {
+        .tmtc-co-col:last-child { border-right: none; }
+        .tmtc-co-col-label {
             font-size: var(--tmu-font-xs); font-weight: 700; text-transform: uppercase;
             letter-spacing: .06em; color: var(--tmu-text-faint);
+            padding-bottom: var(--tmu-space-xs);
+            border-bottom: 1px solid var(--tmu-border-faint);
+            margin-bottom: var(--tmu-space-sm);
         }
-        .tmtc-co-modal-params {
-            padding: var(--tmu-space-sm) var(--tmu-space-md);
+        .tmtc-co-radio-item {
+            border-radius: 6px;
+        }
+        .tmtc-co-radio-row {
+            display: flex; align-items: center; gap: 10px;
+            padding: 7px 8px; cursor: pointer; border-radius: 6px;
+            border: 1px solid transparent;
+            transition: background .1s, border-color .1s;
+        }
+        .tmtc-co-radio-row:hover { background: var(--tmu-surface-hover); border-color: var(--tmu-border-faint); }
+        .tmtc-co-radio-item.selected .tmtc-co-radio-row {
+            background: var(--tmu-primary-muted); border-color: var(--tmu-primary);
+        }
+        .tmtc-co-radio-input {
+            width: 15px; height: 15px; flex-shrink: 0;
+            accent-color: var(--tmu-primary); cursor: pointer;
+        }
+        .tmtc-co-radio-txt { font-size: var(--tmu-font-sm); color: var(--tmu-text-muted); line-height: 1.3; }
+        .tmtc-co-radio-item.selected .tmtc-co-radio-txt { font-weight: 700; color: var(--tmu-text-strong); }
+        .tmtc-co-radio-sub {
+            padding: var(--tmu-space-xs) var(--tmu-space-sm) var(--tmu-space-sm) 28px;
             display: flex; flex-direction: column; gap: var(--tmu-space-xs);
-            overflow-y: auto; flex: 1;
         }
+        .tmtc-co-radio-sub:empty { display: none; }
         .tmtc-co-param-label {
             font-size: var(--tmu-font-xs); font-weight: 600;
             color: var(--tmu-text-muted); margin-top: var(--tmu-space-xs);
         }
-        .tmtc-co-chips {
-            display: flex; flex-wrap: wrap; gap: 4px;
-        }
+        .tmtc-co-chips { display: flex; flex-wrap: wrap; gap: 4px; }
         .tmtc-co-modal-footer {
             display: flex; gap: var(--tmu-space-sm);
             padding: var(--tmu-space-sm) var(--tmu-space-md);
             border-top: 1px solid var(--tmu-border-faint);
             flex-shrink: 0;
+        }
+
+        /* ── analytics/formation panel (4th column) ── */
+        .tmtc-main-stats {
+            flex: 0 0 270px;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: var(--tmu-space-md);
+            overflow-y: auto;
+        }
+        .tmtc-panel-row {
+            display: flex;
+            align-items: center;
+            gap: var(--tmu-space-sm);
+        }
+        .tmtc-panel-fm-badge {
+            font-size: var(--tmu-font-xl);
+            font-weight: 900;
+            color: var(--tmu-text-strong);
+            letter-spacing: .03em;
+            white-space: nowrap;
+            flex-shrink: 0;
+            min-width: 72px;
+        }
+        .tmtc-panel-stats {
+            display: flex;
+            flex-direction: column;
+        }
+        .tmtc-panel-sep {
+            border: none;
+            border-top: 1px solid var(--tmu-border-soft-alpha);
+            margin: 0;
         }
     `;
     document.head.appendChild(s);

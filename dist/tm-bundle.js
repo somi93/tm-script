@@ -1657,35 +1657,60 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
   var player_exports = {};
   __export(player_exports, {
     AGE_THRESHOLDS: () => AGE_THRESHOLDS,
+    BENCH_LABELS: () => BENCH_LABELS,
+    BENCH_SLOTS: () => BENCH_SLOTS,
+    FIELD_ZONES: () => FIELD_ZONES,
     MIN_WAGE_FOR_TI: () => MIN_WAGE_FOR_TI,
     POSITION_MAP: () => POSITION_MAP,
+    SPECIAL_SLOTS: () => SPECIAL_SLOTS,
     WAGE_RATE: () => WAGE_RATE
   });
   var POSITION_MAP = {
-    gk: { id: 9, position: "GK", ordering: 0, color: "var(--tmu-success-strong)" },
-    dc: { id: 0, position: "DC", ordering: 1, color: "var(--tmu-info-dark)" },
-    dcl: { id: 0, position: "DCL", ordering: 1, color: "var(--tmu-info-dark)" },
-    dcr: { id: 0, position: "DCR", ordering: 1, color: "var(--tmu-info-dark)" },
-    dl: { id: 1, position: "DL", ordering: 2, color: "var(--tmu-info-dark)" },
-    dr: { id: 1, position: "DR", ordering: 2, color: "var(--tmu-info-dark)" },
-    dmc: { id: 2, position: "DMC", ordering: 3, color: "var(--tmu-warning)" },
-    dmcl: { id: 2, position: "DMCL", ordering: 3, color: "var(--tmu-warning)" },
-    dmcr: { id: 2, position: "DMCR", ordering: 3, color: "var(--tmu-warning)" },
-    dml: { id: 3, position: "DML", ordering: 4, color: "var(--tmu-warning)" },
-    dmr: { id: 3, position: "DMR", ordering: 4, color: "var(--tmu-warning)" },
-    mc: { id: 4, position: "MC", ordering: 5, color: "var(--tmu-warning)" },
-    mcl: { id: 4, position: "MCL", ordering: 5, color: "var(--tmu-warning)" },
-    mcr: { id: 4, position: "MCR", ordering: 5, color: "var(--tmu-warning)" },
-    ml: { id: 5, position: "ML", ordering: 6, color: "var(--tmu-warning)" },
-    mr: { id: 5, position: "MR", ordering: 6, color: "var(--tmu-warning)" },
-    omc: { id: 6, position: "OMC", ordering: 8, color: "var(--tmu-warning-soft)" },
-    omcl: { id: 6, position: "OMCL", ordering: 8, color: "var(--tmu-warning-soft)" },
-    omcr: { id: 6, position: "OMCR", ordering: 8, color: "var(--tmu-warning-soft)" },
-    oml: { id: 7, position: "OML", ordering: 7, color: "var(--tmu-warning-soft)" },
-    omr: { id: 7, position: "OMR", ordering: 7, color: "var(--tmu-warning-soft)" },
-    fc: { id: 8, position: "FC", ordering: 9, color: "var(--tmu-danger-deep)" },
-    fcl: { id: 8, position: "FCL", ordering: 9, color: "var(--tmu-danger-deep)" },
-    fcr: { id: 8, position: "FCR", ordering: 9, color: "var(--tmu-danger-deep)" }
+    gk: { id: 9, position: "GK", row: 0, col: 2, ordering: 0, color: "var(--tmu-success-strong)" },
+    dl: { id: 1, position: "DL", row: 1, col: 0, ordering: 2, color: "var(--tmu-info-dark)" },
+    dcl: { id: 0, position: "DCL", row: 1, col: 1, ordering: 1, color: "var(--tmu-info-dark)" },
+    dc: { id: 0, position: "DC", row: 1, col: 2, ordering: 1, color: "var(--tmu-info-dark)" },
+    dcr: { id: 0, position: "DCR", row: 1, col: 3, ordering: 1, color: "var(--tmu-info-dark)" },
+    dr: { id: 1, position: "DR", row: 1, col: 4, ordering: 2, color: "var(--tmu-info-dark)" },
+    dml: { id: 3, position: "DML", row: 2, col: 0, ordering: 4, color: "var(--tmu-warning)" },
+    dmcl: { id: 2, position: "DMCL", row: 2, col: 1, ordering: 3, color: "var(--tmu-warning)" },
+    dmc: { id: 2, position: "DMC", row: 2, col: 2, ordering: 3, color: "var(--tmu-warning)" },
+    dmcr: { id: 2, position: "DMCR", row: 2, col: 3, ordering: 3, color: "var(--tmu-warning)" },
+    dmr: { id: 3, position: "DMR", row: 2, col: 4, ordering: 4, color: "var(--tmu-warning)" },
+    ml: { id: 5, position: "ML", row: 3, col: 0, ordering: 6, color: "var(--tmu-warning)" },
+    mcl: { id: 4, position: "MCL", row: 3, col: 1, ordering: 5, color: "var(--tmu-warning)" },
+    mc: { id: 4, position: "MC", row: 3, col: 2, ordering: 5, color: "var(--tmu-warning)" },
+    mcr: { id: 4, position: "MCR", row: 3, col: 3, ordering: 5, color: "var(--tmu-warning)" },
+    mr: { id: 5, position: "MR", row: 3, col: 4, ordering: 6, color: "var(--tmu-warning)" },
+    oml: { id: 7, position: "OML", row: 4, col: 0, ordering: 7, color: "var(--tmu-warning-soft)" },
+    omcl: { id: 6, position: "OMCL", row: 4, col: 1, ordering: 8, color: "var(--tmu-warning-soft)" },
+    omc: { id: 6, position: "OMC", row: 4, col: 2, ordering: 8, color: "var(--tmu-warning-soft)" },
+    omcr: { id: 6, position: "OMCR", row: 4, col: 3, ordering: 8, color: "var(--tmu-warning-soft)" },
+    omr: { id: 7, position: "OMR", row: 4, col: 4, ordering: 7, color: "var(--tmu-warning-soft)" },
+    fcl: { id: 8, position: "FCL", row: 5, col: 1, ordering: 9, color: "var(--tmu-danger-deep)" },
+    fc: { id: 8, position: "FC", row: 5, col: 2, ordering: 9, color: "var(--tmu-danger-deep)" },
+    fcr: { id: 8, position: "FCR", row: 5, col: 3, ordering: 9, color: "var(--tmu-danger-deep)" }
+  };
+  var FIELD_ZONES = [
+    { key: "fwd", row: 5, cols: [null, "fcl", "fc", "fcr", null] },
+    { key: "om", row: 4, cols: ["oml", "omcl", "omc", "omcr", "omr"] },
+    { key: "mid", row: 3, cols: ["ml", "mcl", "mc", "mcr", "mr"] },
+    { key: "dm", row: 2, cols: ["dml", "dmcl", "dmc", "dmcr", "dmr"] },
+    { key: "def", row: 1, cols: ["dl", "dcl", "dc", "dcr", "dr"] },
+    { key: "gk", row: 0, cols: [null, null, "gk", null, null] }
+  ];
+  var BENCH_SLOTS = ["sub1", "sub2", "sub3", "sub4", "sub5"];
+  var SPECIAL_SLOTS = ["captain", "corner", "penalty", "freekick"];
+  var BENCH_LABELS = {
+    sub1: "GK",
+    sub2: "DEF",
+    sub3: "MID",
+    sub4: "Wing",
+    sub5: "FWD",
+    captain: "Captain",
+    corner: "Corner",
+    penalty: "Penalty",
+    freekick: "Free Kick"
   };
   var AGE_THRESHOLDS = [30, 28, 26, 24, 22, 20, 0];
   var WAGE_RATE = 15.8079;
@@ -8748,8 +8773,8 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     const showLastSeen = !!opts.lastSeen;
     const tiLabel = opts.tiLabel || "TI";
     const nameDecorator = typeof opts.nameDecorator === "function" ? opts.nameDecorator : null;
-    const gc2 = TmUtils.getColor;
-    const { R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2 } = TmConst;
+    const gc3 = TmUtils.getColor;
+    const { R5_THRESHOLDS: R5_THRESHOLDS6, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS3 } = TmConst;
     const AGE_THRESHOLDS2 = TmConst.AGE_THRESHOLDS;
     const cols = [
       posBarCol(),
@@ -8793,7 +8818,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
           var _a, _b, _c, _d;
           const yr = (_b = (_a = p.ageYears) != null ? _a : p.age) != null ? _b : 0;
           const mo = (_d = (_c = p.ageMonths) != null ? _c : p.months) != null ? _d : 0;
-          return `<span class="tmu-tabular" style="color:${gc2(yr + mo / 12, AGE_THRESHOLDS2)}">${yr}.${mo}</span>`;
+          return `<span class="tmu-tabular" style="color:${gc3(yr + mo / 12, AGE_THRESHOLDS2)}">${yr}.${mo}</span>`;
         }
       }
     ];
@@ -8808,13 +8833,13 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         key: "r5",
         label: "R5",
         align: "r",
-        render: (_, p) => p.r5 != null ? `<span class="tmu-tabular" style="color:${gc2(p.r5, R5_THRESHOLDS5)};font-weight:700">${p.r5}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
+        render: (_, p) => p.r5 != null ? `<span class="tmu-tabular" style="color:${gc3(p.r5, R5_THRESHOLDS6)};font-weight:700">${p.r5}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
       },
       {
         key: "rec",
         label: "REC",
         align: "r",
-        render: (_, p) => p.rec != null ? `<span class="tmu-tabular" style="color:${gc2(p.rec, REC_THRESHOLDS2)};font-weight:700">${p.rec}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
+        render: (_, p) => p.rec != null ? `<span class="tmu-tabular" style="color:${gc3(p.rec, REC_THRESHOLDS2)};font-weight:700">${p.rec}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
       },
       {
         key: "ti",
@@ -8824,14 +8849,14 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
           var _a, _b;
           return ((_a = a.ti) != null ? _a : -Infinity) - ((_b = b.ti) != null ? _b : -Infinity);
         },
-        render: (_, p) => p.ti != null ? `<span class="tmu-tabular" style="color:${gc2(p.ti, TI_THRESHOLDS2)}">${p.ti.toFixed ? p.ti.toFixed(1) : p.ti}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
+        render: (_, p) => p.ti != null ? `<span class="tmu-tabular" style="color:${gc3(p.ti, TI_THRESHOLDS2)}">${p.ti.toFixed ? p.ti.toFixed(1) : p.ti}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
       }
     );
     if (showRtn) cols.push({
       key: "routine",
       label: "RTN",
       align: "r",
-      render: (_, p) => p.routine != null ? `<span class="tmu-tabular" style="color:${gc2(p.routine, RTN_THRESHOLDS2)}">${p.routine.toFixed ? p.routine.toFixed(1) : p.routine}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
+      render: (_, p) => p.routine != null ? `<span class="tmu-tabular" style="color:${gc3(p.routine, RTN_THRESHOLDS3)}">${p.routine.toFixed ? p.routine.toFixed(1) : p.routine}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
     });
     if (showTimeleft) cols.push({
       key: "timeleft",
@@ -17564,7 +17589,7 @@ ${teamsTable.outerHTML}
   document.head.appendChild(styleEl);
   var renderHTML = (player) => {
     const { getColor: getColor6 } = TmUtils;
-    const { R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
+    const { R5_THRESHOLDS: R5_THRESHOLDS6, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
     const badgeHtml7 = (opts, tone = "muted") => TmUI.badge({ size: "sm", shape: "rounded", weight: "bold", ...opts }, tone);
     let h = '<div class="tmpt-header">';
     h += `<div><div class="tmpt-name">${player.name}</div>`;
@@ -17572,11 +17597,11 @@ ${teamsTable.outerHTML}
     h += `<div class="tmpt-pos">${(player.positions || []).map((pos) => pos.position).join(", ")}${noStr} \xB7 Age ${player.ageMonthsString}</div></div>`;
     h += '<div class="tmpt-badges">';
     if (player.r5 != null) {
-      h += badgeHtml7({ slot: `<span class="tmu-badge-label">R5</span><span class="tmu-badge-value" style="color:${getColor6(player.r5, R5_THRESHOLDS5)}">${player.r5}</span>` });
+      h += badgeHtml7({ slot: `<span class="tmu-badge-label">R5</span><span class="tmu-badge-value" style="color:${getColor6(player.r5, R5_THRESHOLDS6)}">${player.r5}</span>` });
     } else if (player.r5Range) {
       const { lo, hi } = player.r5Range;
       const rangeStr = lo != null && lo.toFixed(1) !== hi.toFixed(1) ? `${lo.toFixed(1)}\u2013${hi.toFixed(1)}` : `${hi.toFixed(1)}`;
-      h += badgeHtml7({ slot: `<span class="tmu-badge-label">R5</span><span class="tmu-badge-value" style="color:${getColor6(hi != null ? hi : 0, R5_THRESHOLDS5)}">${rangeStr}</span>` });
+      h += badgeHtml7({ slot: `<span class="tmu-badge-label">R5</span><span class="tmu-badge-value" style="color:${getColor6(hi != null ? hi : 0, R5_THRESHOLDS6)}">${rangeStr}</span>` });
     }
     if (player.ti != null)
       h += badgeHtml7({ slot: `<span class="tmu-badge-label">TI</span><span class="tmu-badge-value" style="color:${getColor6(player.ti, TI_THRESHOLDS2)}">${player.ti.toFixed(1)}</span>` });
@@ -18529,7 +18554,7 @@ ${teamsTable.outerHTML}
   // src/components/squad/tm-squad-table.js
   var buildSummary2 = (players) => {
     const { getColor: getColor6 } = TmUtils;
-    const { AGE_THRESHOLDS: AGE_THRESHOLDS2, REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS5, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
+    const { AGE_THRESHOLDS: AGE_THRESHOLDS2, REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS6, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
     const n = players.length;
     if (!n) return "";
     const avgR5 = players.reduce((s6, p) => s6 + Number(p.r5), 0) / n;
@@ -18540,7 +18565,7 @@ ${teamsTable.outerHTML}
     const avgTI = tiPlayers.length ? tiPlayers.reduce((s6, p) => s6 + p.ti, 0) / tiPlayers.length : 0;
     return TmSummaryStrip.render([
       { label: "Players", value: String(n) },
-      { label: "Avg R5", value: avgR5.toFixed(2), valueStyle: `color:${getColor6(avgR5, R5_THRESHOLDS5)}` },
+      { label: "Avg R5", value: avgR5.toFixed(2), valueStyle: `color:${getColor6(avgR5, R5_THRESHOLDS6)}` },
       { label: "Avg REC", value: avgRec.toFixed(2), valueStyle: `color:${getColor6(avgRec, REC_THRESHOLDS2)}` },
       ...tiPlayers.length ? [{ label: "Avg TI", value: avgTI.toFixed(1), valueStyle: `color:${getColor6(avgTI, TI_THRESHOLDS2)}` }] : [],
       { label: "Avg Age", value: avgAge.toFixed(1), valueStyle: `color:${getColor6(avgAge, AGE_THRESHOLDS2)}` },
@@ -24113,9 +24138,9 @@ ${teamsTable.outerHTML}
     return `<span class="tms-strong-val tmu-tabular" style="color:${clr3}">${ti.toFixed(1)}</span>`;
   }
   function fmtR5(r5) {
-    const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
+    const { R5_THRESHOLDS: R5_THRESHOLDS6 } = TmConst;
     if (r5 == null) return '<span class="tms-tip-pending">\u2026</span>';
-    const clr3 = getColor4(r5, R5_THRESHOLDS5);
+    const clr3 = getColor4(r5, R5_THRESHOLDS6);
     return `<span class="tms-strong-val tmu-tabular" style="color:${clr3}">${r5.toFixed(1)}</span>`;
   }
   function fmtAge(ageFloat) {
@@ -24130,11 +24155,11 @@ ${teamsTable.outerHTML}
   }
   var skillColor3 = TmUtils.skillColor;
   function fmtR5Range(lo, hi) {
-    const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
+    const { R5_THRESHOLDS: R5_THRESHOLDS6 } = TmConst;
     if (lo == null || hi == null) return '<span class="tms-tip-pending">\u2026</span>';
     const loFixed = lo.toFixed(1), hiFixed = hi.toFixed(1);
-    const clrLo = getColor4(lo, R5_THRESHOLDS5);
-    const clrHi = getColor4(hi, R5_THRESHOLDS5);
+    const clrLo = getColor4(lo, R5_THRESHOLDS6);
+    const clrHi = getColor4(hi, R5_THRESHOLDS6);
     if (loFixed === hiFixed)
       return `<span class="tms-range-wrap tmu-tabular"><span class="tms-strong-val tmu-tabular" style="color:${clrHi}">${hiFixed}</span></span>`;
     return `<span class="tms-range-wrap tmu-tabular"><span class="tms-range-val tmu-tabular" style="color:${clrLo}">${loFixed}</span><span class="tms-range-sep">\u2013</span><span class="tms-range-val tmu-tabular" style="color:${clrHi}">${hiFixed}</span></span>`;
@@ -24296,7 +24321,7 @@ ${teamsTable.outerHTML}
 </tr>`;
   }
   function adaptForTooltip2(p, tooltipCache2) {
-    const { R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
+    const { R5_THRESHOLDS: R5_THRESHOLDS6, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
     const tip = tooltipCache2[p.id];
     const gk = p._gk;
     const skillKeys = gk ? GK_SKILLS : OUTFIELD_SKILLS;
@@ -24337,7 +24362,7 @@ ${teamsTable.outerHTML}
       routine: null,
       note: p.txt || null,
       footerStats: [
-        { val: r5FooterDisp, lbl: "R5", color: r5FooterVal != null ? getColor4(r5FooterVal, R5_THRESHOLDS5) : "var(--tmu-text-faint)" },
+        { val: r5FooterDisp, lbl: "R5", color: r5FooterVal != null ? getColor4(r5FooterVal, R5_THRESHOLDS6) : "var(--tmu-text-faint)" },
         { val: recVal != null ? recVal.toFixed(2) : "\u2026", lbl: "Rec", color: recVal != null ? getColor4(recVal, REC_THRESHOLDS2) : "var(--tmu-text-faint)" },
         { val: ti != null ? ti.toFixed(1) : "\u2026", lbl: "TI", color: ti != null ? getColor4(ti, TI_THRESHOLDS2) : "var(--tmu-text-faint)" },
         { val: fmtNum(p.asi) || "\u2014", lbl: "ASI", color: "var(--tmu-text-strong)" },
@@ -26547,8 +26572,8 @@ ${teamsTable.outerHTML}
   ];
   var renderSkillTable = () => {
     const s6 = window.TmLeagueCtx;
-    const { skillData, skillSortCol, skillSortAsc, REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS5, AGE_THRESHOLDS: AGE_THRESHOLDS2, getColor: getColor6 } = s6;
-    const thresholds = { REC: REC_THRESHOLDS2, R5: R5_THRESHOLDS5, Age: AGE_THRESHOLDS2 };
+    const { skillData, skillSortCol, skillSortAsc, REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS6, AGE_THRESHOLDS: AGE_THRESHOLDS2, getColor: getColor6 } = s6;
+    const thresholds = { REC: REC_THRESHOLDS2, R5: R5_THRESHOLDS6, Age: AGE_THRESHOLDS2 };
     const decimals = { REC: 2, R5: 2, Age: 1 };
     const arrow = (key) => key === skillSortCol ? skillSortAsc ? " \u25B2" : " \u25BC" : "";
     const headerHtml = `
@@ -27921,7 +27946,7 @@ ${teamsTable.outerHTML}
     const STORAGE_KEY = "TM_LEAGUE_LINEUP_NUM_ROUNDS";
     const SKILL_NAMES_FIELD = TmConst.SKILL_DEFS_OUT.map((d) => d.label || d.key);
     const SKILL_NAMES_GK3 = TmConst.SKILL_DEFS_GK.map((d) => d.label || d.key);
-    const { REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS5, AGE_THRESHOLDS: AGE_THRESHOLDS2 } = TmConst;
+    const { REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS6, AGE_THRESHOLDS: AGE_THRESHOLDS2 } = TmConst;
     const htmlOf9 = (node) => (node == null ? void 0 : node.outerHTML) || "";
     const inputHtml5 = (opts) => htmlOf9(TmUI.input({ tone: "overlay", density: "regular", ...opts }));
     const appendHtml = (parent, html2) => {
@@ -28295,7 +28320,7 @@ ${teamsTable.outerHTML}
       SKILL_NAMES_FIELD,
       SKILL_NAMES_GK: SKILL_NAMES_GK3,
       REC_THRESHOLDS: REC_THRESHOLDS2,
-      R5_THRESHOLDS: R5_THRESHOLDS5,
+      R5_THRESHOLDS: R5_THRESHOLDS6,
       AGE_THRESHOLDS: AGE_THRESHOLDS2,
       // ── Coordinated state transitions ─────────────────────────────────────────────────────
       // Use these instead of direct property writes when multiple fields must change together.
@@ -32747,11 +32772,11 @@ ${teamsTable.outerHTML}
       target.innerHTML = "";
       target.appendChild(webglContent);
       webglContent.style.display = "block";
-      const gc2 = document.getElementById("gameContainer");
-      if (gc2) {
-        gc2.style.width = "100%";
-        gc2.style.height = "100%";
-        gc2.style.margin = "0";
+      const gc3 = document.getElementById("gameContainer");
+      if (gc3) {
+        gc3.style.width = "100%";
+        gc3.style.height = "100%";
+        gc3.style.margin = "0";
       }
       target.style.display = "block";
       const row = document.querySelector(".rnd-unity-row");
@@ -42816,7 +42841,7 @@ ${names}`)) {
     if (!routeMatch) return;
     const sourceRoot3 = (document.querySelector(".main_center") || main2).cloneNode(true);
     const STYLE_ID45 = "tmvu-national-teams-style";
-    const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
+    const { R5_THRESHOLDS: R5_THRESHOLDS6 } = TmConst;
     const CURRENT_SEASON2 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const cleanText22 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml29 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
@@ -43304,7 +43329,7 @@ ${names}`)) {
     const formatR5 = (value) => {
       if (!Number.isFinite(Number(value))) return '<span style="color:var(--tmu-text-faint)">\u2014</span>';
       const numeric = Number(value);
-      return `<span style="color:${TmUtils.getColor(numeric, R5_THRESHOLDS5)};font-weight:700">${numeric.toFixed(1)}</span>`;
+      return `<span style="color:${TmUtils.getColor(numeric, R5_THRESHOLDS6)};font-weight:700">${numeric.toFixed(1)}</span>`;
     };
     const loadSquadPlayers = async (squad) => {
       const players = await Promise.all(squad.rows.map(async (row) => {
@@ -44911,7 +44936,7 @@ ${names}`)) {
     var _a, _b;
     const { calculatePlayerR5: calculatePlayerR53, calculatePlayerREC: calculatePlayerREC3 } = TmLib;
     const { getColor: getColor6 } = TmUtils;
-    const { R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2, POSITION_MAP: POSITION_MAP3 } = TmConst;
+    const { R5_THRESHOLDS: R5_THRESHOLDS6, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS3, POSITION_MAP: POSITION_MAP3 } = TmConst;
     const badgeHtml7 = (opts, tone = "muted") => TmUI.badge({ size: "md", shape: "rounded", weight: "heavy", ...opts }, tone);
     const infoTable = document.querySelector("table.info_table.zebra");
     const existingCard = document.querySelector("#tmvp-player-card");
@@ -44943,7 +44968,7 @@ ${names}`)) {
                     <span class="tmpc-pos-name" style="color:${position.color}">${position.position}</span>
                     <span class="tmpc-pos-stat">
                         <span class="tmpc-pos-stat-lbl tmu-kicker">R5</span>
-                        <span class="tmpc-pos-stat-val tmu-tabular" style="color:${getColor6(position.r5, R5_THRESHOLDS5)}">${position.r5}</span>
+                        <span class="tmpc-pos-stat-val tmu-tabular" style="color:${getColor6(position.r5, R5_THRESHOLDS6)}">${position.r5}</span>
                     </span>
                     <span class="tmpc-pos-stat">
                         <span class="tmpc-pos-stat-lbl tmu-kicker">REC</span>
@@ -44975,7 +45000,7 @@ ${names}`)) {
                         <span class="tmpc-pos-name" style="color:${position.color}">${position.position}</span>
                         <span class="tmpc-pos-stat">
                             <span class="tmpc-pos-stat-lbl tmu-kicker">R5</span>
-                            <span class="tmpc-pos-stat-val tmu-tabular" style="color:${getColor6(positionR5, R5_THRESHOLDS5)}">${positionR5}</span>
+                            <span class="tmpc-pos-stat-val tmu-tabular" style="color:${getColor6(positionR5, R5_THRESHOLDS6)}">${positionR5}</span>
                         </span>
                         <span class="tmpc-pos-stat">
                             <span class="tmpc-pos-stat-lbl tmu-kicker">REC</span>
@@ -45034,7 +45059,7 @@ ${names}`)) {
                         </tm-row>
                         <tm-row data-justify="space-between">
                             <span class="tmu-stat-lbl">Routine</span>
-                            <span class="tmpc-val tmu-tabular" style="color:${getColor6(player.routine, RTN_THRESHOLDS2)}">${player.routine.toFixed(1)}</span>
+                            <span class="tmpc-val tmu-tabular" style="color:${getColor6(player.routine, RTN_THRESHOLDS3)}">${player.routine.toFixed(1)}</span>
                         </tm-row>
                     </div> 
                 </div>
@@ -46196,21 +46221,25 @@ ${names}`)) {
       `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 420">`,
       `<rect x="0" y="0" width="280" height="420" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="2"/>`,
       // corner arcs
-      `<path d="M2,18 A16,16 0 0,1 18,2" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
-      `<path d="M262,2 A16,16 0 0,1 278,18" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
-      `<path d="M2,402 A16,16 0 0,0 18,418" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
-      `<path d="M262,418 A16,16 0 0,0 278,402" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+      `<path d="M2,18 A16,16 0 0,0 18,2" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+      `<path d="M262,2 A16,16 0 0,0 278,18" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+      `<path d="M2,402 A16,16 0 0,1 18,418" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+      `<path d="M262,418 A16,16 0 0,1 278,402" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
       // center line + circle
       `<line x1="2" y1="210" x2="278" y2="210" stroke="rgba(255,255,255,0.22)" stroke-width="1.5"/>`,
       `<circle cx="140" cy="210" r="52" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="1.5"/>`,
       `<circle cx="140" cy="210" r="3" fill="rgba(255,255,255,0.35)"/>`,
       // top penalty area + goal area
-      `<rect x="56" y="2" width="168" height="72" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
-      `<rect x="95" y="2" width="90" height="26" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+      `<path d="M56,2 L56,74 L224,74 L224,2" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+      `<line x1="95" y1="2" x2="95" y2="28" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+      `<line x1="95" y1="28" x2="185" y2="28" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+      `<line x1="185" y1="2" x2="185" y2="28" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
       `<circle cx="140" cy="68" r="2.5" fill="rgba(255,255,255,0.3)"/>`,
       // bottom penalty area + goal area
-      `<rect x="56" y="346" width="168" height="72" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
-      `<rect x="95" y="392" width="90" height="26" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+      `<path d="M56,418 L56,346 L224,346 L224,418" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+      `<line x1="95" y1="392" x2="95" y2="418" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+      `<line x1="95" y1="392" x2="185" y2="392" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+      `<line x1="185" y1="392" x2="185" y2="418" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
       `<circle cx="140" cy="352" r="2.5" fill="rgba(255,255,255,0.3)"/>`,
       `</svg>`
     ].join("");
@@ -46379,6 +46408,7 @@ ${names}`)) {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
             gap: 4px;
+            margin-bottom: var(--tmu-space-sm);
         }
         .tmtc-bench-section-head {
             grid-column: 1 / -1;
@@ -46393,16 +46423,21 @@ ${names}`)) {
             padding: 3px 4px;
             border-radius: var(--tmu-space-sm);
             background: var(--tmu-surface-dark-soft);
-            border: 1px solid var(--tmu-border-faint);
+            border: 1px dashed var(--tmu-border-faint);
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 1px;
             min-height: 42px;
             text-align: center;
+            cursor: default;
         }
         .tmtc-bench-slot:hover {
             background: var(--tmu-surface-tab-hover);
+        }
+        .tmtc-bench-slot.has-player {
+            border-style: solid;
+            border-color: var(--tmu-border-embedded);
         }
         .tmtc-bench-role {
             font-size: var(--tmu-font-2xs);
@@ -46427,6 +46462,15 @@ ${names}`)) {
             font-style: italic;
         }
 
+        .tmtc-row-bench-placeholder td {
+            opacity: .55;
+            font-style: italic;
+            cursor: default;
+        }
+        .tmtc-row-bench-placeholder.tmtc-drag-over td {
+            opacity: 1;
+            background: rgba(77,171,247,0.08);
+        }
         /* \u2500\u2500 player list \u2500\u2500 */
         .tmtc-filters {
             display: flex;
@@ -46447,31 +46491,15 @@ ${names}`)) {
         }
 
         /* \u2500\u2500 settings \u2500\u2500 */
-        .tmtc-settings-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: var(--tmu-space-md);
-        }
-        .tmtc-setting-card {
-            padding: var(--tmu-space-md);
-            border-radius: var(--tmu-space-md);
-            background: var(--tmu-surface-item-dark);
-            border: 1px solid var(--tmu-border-soft-alpha);
+        .tmtc-settings-rows {
             display: flex;
             flex-direction: column;
             gap: var(--tmu-space-sm);
         }
-        .tmtc-setting-label {
-            font-size: var(--tmu-font-xs);
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .08em;
-            color: var(--tmu-text-panel-label);
-        }
-        .tmtc-setting-value {
-            font-size: var(--tmu-font-md);
-            font-weight: 800;
-            color: var(--tmu-text-strong);
+        .tmtc-setting-row {
+            flex-direction: column;
+            align-items: stretch;
+            gap: var(--tmu-space-xs);
         }
 
         /* \u2500\u2500 orders table \u2500\u2500 */
@@ -46591,64 +46619,107 @@ ${names}`)) {
         .tmu-tbl tbody tr.tmtc-co-row-drag-over td { background: var(--tmu-primary-muted) !important; outline: 2px dashed var(--tmu-primary); }
 
         /* \u2500\u2500 conditional orders dialog \u2500\u2500 */
-        .tmtc-co-modal-body {
-            display: flex; gap: var(--tmu-space-md);
+        .tmtc-co-dialog-body {
+            display: flex; border-bottom: 1px solid var(--tmu-border-faint);
+        }
+        .tmtc-co-col {
+            flex: 1; min-width: 0;
             padding: var(--tmu-space-md);
-            border-bottom: 1px solid var(--tmu-border-faint);
-            flex-shrink: 0;
+            border-right: 1px solid var(--tmu-border-faint);
+            overflow-y: auto; max-height: 65vh;
         }
-        .tmtc-co-modal-section {
-            flex: 1; display: flex; flex-direction: column; gap: var(--tmu-space-xs);
-        }
-        .tmtc-co-modal-section-label {
+        .tmtc-co-col:last-child { border-right: none; }
+        .tmtc-co-col-label {
             font-size: var(--tmu-font-xs); font-weight: 700; text-transform: uppercase;
             letter-spacing: .06em; color: var(--tmu-text-faint);
+            padding-bottom: var(--tmu-space-xs);
+            border-bottom: 1px solid var(--tmu-border-faint);
+            margin-bottom: var(--tmu-space-sm);
         }
-        .tmtc-co-modal-params {
-            padding: var(--tmu-space-sm) var(--tmu-space-md);
+        .tmtc-co-radio-item {
+            border-radius: 6px;
+        }
+        .tmtc-co-radio-row {
+            display: flex; align-items: center; gap: 10px;
+            padding: 7px 8px; cursor: pointer; border-radius: 6px;
+            border: 1px solid transparent;
+            transition: background .1s, border-color .1s;
+        }
+        .tmtc-co-radio-row:hover { background: var(--tmu-surface-hover); border-color: var(--tmu-border-faint); }
+        .tmtc-co-radio-item.selected .tmtc-co-radio-row {
+            background: var(--tmu-primary-muted); border-color: var(--tmu-primary);
+        }
+        .tmtc-co-radio-input {
+            width: 15px; height: 15px; flex-shrink: 0;
+            accent-color: var(--tmu-primary); cursor: pointer;
+        }
+        .tmtc-co-radio-txt { font-size: var(--tmu-font-sm); color: var(--tmu-text-muted); line-height: 1.3; }
+        .tmtc-co-radio-item.selected .tmtc-co-radio-txt { font-weight: 700; color: var(--tmu-text-strong); }
+        .tmtc-co-radio-sub {
+            padding: var(--tmu-space-xs) var(--tmu-space-sm) var(--tmu-space-sm) 28px;
             display: flex; flex-direction: column; gap: var(--tmu-space-xs);
-            overflow-y: auto; flex: 1;
         }
+        .tmtc-co-radio-sub:empty { display: none; }
         .tmtc-co-param-label {
             font-size: var(--tmu-font-xs); font-weight: 600;
             color: var(--tmu-text-muted); margin-top: var(--tmu-space-xs);
         }
-        .tmtc-co-chips {
-            display: flex; flex-wrap: wrap; gap: 4px;
-        }
+        .tmtc-co-chips { display: flex; flex-wrap: wrap; gap: 4px; }
         .tmtc-co-modal-footer {
             display: flex; gap: var(--tmu-space-sm);
             padding: var(--tmu-space-sm) var(--tmu-space-md);
             border-top: 1px solid var(--tmu-border-faint);
             flex-shrink: 0;
         }
+
+        /* \u2500\u2500 analytics/formation panel (4th column) \u2500\u2500 */
+        .tmtc-main-stats {
+            flex: 0 0 270px;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: var(--tmu-space-md);
+            overflow-y: auto;
+        }
+        .tmtc-panel-row {
+            display: flex;
+            align-items: center;
+            gap: var(--tmu-space-sm);
+        }
+        .tmtc-panel-fm-badge {
+            font-size: var(--tmu-font-xl);
+            font-weight: 900;
+            color: var(--tmu-text-strong);
+            letter-spacing: .03em;
+            white-space: nowrap;
+            flex-shrink: 0;
+            min-width: 72px;
+        }
+        .tmtc-panel-stats {
+            display: flex;
+            flex-direction: column;
+        }
+        .tmtc-panel-sep {
+            border: none;
+            border-top: 1px solid var(--tmu-border-soft-alpha);
+            margin: 0;
+        }
     `;
     document.head.appendChild(s6);
   }
 
   // src/components/tactics/tm-tactics-lineup.js
-  var LINES = [
-    { key: "fwd", label: "FWD", from: 21, to: 23 },
-    { key: "om", label: "OM", from: 16, to: 20 },
-    { key: "mid", label: "MID", from: 11, to: 15 },
-    { key: "dm", label: "DM", from: 6, to: 10 },
-    { key: "def", label: "DEF", from: 1, to: 5 },
-    { key: "gk", label: "GK", from: 0, to: 0 }
-  ];
-  var SUB_ROLES = ["sub1", "sub2", "sub3", "sub4", "sub5"];
-  var SPECIAL_ROLES = ["captain", "corner", "penalty", "freekick"];
-  var BENCH_ROLES = [...SUB_ROLES, ...SPECIAL_ROLES];
-  var BENCH_LABELS = {
-    sub1: "GK",
-    sub2: "DEF",
-    sub3: "MID",
-    sub4: "Wing",
-    sub5: "FWD",
-    captain: "Captain",
-    corner: "Corner",
-    penalty: "Penalty",
-    freekick: "Free Kick"
-  };
+  var FIELD_ZONES2 = TmConst.FIELD_ZONES;
+  var BENCH_SLOTS2 = TmConst.BENCH_SLOTS;
+  var SPECIAL_SLOTS2 = TmConst.SPECIAL_SLOTS;
+  var ALL_BENCH = [...BENCH_SLOTS2, ...SPECIAL_SLOTS2];
+  var BENCH_LABELS2 = TmConst.BENCH_LABELS;
+  var POSKEY_TO_ZONE = {};
+  for (const z of FIELD_ZONES2) {
+    for (const pk of z.cols) {
+      if (pk) POSKEY_TO_ZONE[pk] = z.key;
+    }
+  }
   function getTargetRanks(total, count) {
     if (count <= 0) return [];
     if (count >= total) return Array.from({ length: total }, (_, i) => i);
@@ -46660,19 +46731,6 @@ ${names}`)) {
       if (result.length < count && c + r < total) result.push(c + r);
     }
     return result.sort((a, b) => a - b);
-  }
-  function lineKeyForPosIndex(posIndex) {
-    var _a;
-    if (posIndex == null) return null;
-    return ((_a = LINES.find((l) => posIndex >= l.from && posIndex <= l.to)) == null ? void 0 : _a.key) || null;
-  }
-  function getVisualCols(count, rowKey) {
-    if (rowKey === "gk") return [2];
-    if (rowKey === "fwd") {
-      return [void 0, [2], [1, 3], [1, 2, 3]][count] || [1, 2, 3];
-    }
-    const maps = [void 0, [2], [1, 3], [1, 2, 3], [0, 1, 3, 4], [0, 1, 2, 3, 4]];
-    return maps[count] || [0, 1, 2, 3, 4];
   }
   var escHtml = (v) => String(v != null ? v : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   var recStars = (r) => {
@@ -46701,54 +46759,54 @@ ${names}`)) {
   }
   function mountTacticsLineup(container, data, opts = {}) {
     const { reserves = 0, national = 0, miniGameId = 0 } = opts;
-    const { players_by_id = {}, positions = [] } = data;
-    const { R5_THRESHOLDS: R5_THRESHOLDS5, RTN_THRESHOLDS: RTN_THRESHOLDS2, REC_THRESHOLDS: REC_THRESHOLDS2 } = TmConst;
-    const fieldByPos = { ...data.formation_by_pos };
-    const assoc = { ...data.formation_assoc };
-    const getFieldPosIndex = (pid) => {
-      if (!pid) return null;
+    const { players_by_id = {} } = data;
+    const { R5_THRESHOLDS: R5_THRESHOLDS6, RTN_THRESHOLDS: RTN_THRESHOLDS3, REC_THRESHOLDS: REC_THRESHOLDS2 } = TmConst;
+    const assignment = { ...data.formation_assoc };
+    for (const [role, pid] of Object.entries(data.formation_subs || {})) {
+      if (!assignment[role] && pid) assignment[role] = pid;
+    }
+    const getOccupiedFieldKeys = () => new Set(
+      Object.keys(assignment).filter(
+        (pk) => TmConst.POSITION_MAP[pk] != null && assignment[pk] && String(assignment[pk]) !== "0"
+      )
+    );
+    const getFieldPosKey = (pid) => {
       const s6 = String(pid);
-      for (const [idx, id] of Object.entries(fieldByPos)) {
-        if (id != null && String(id) === s6) return Number(idx);
+      for (const [pk, id] of Object.entries(assignment)) {
+        if (ALL_BENCH.includes(pk)) continue;
+        if (id != null && String(id) === s6) return pk;
       }
       return null;
     };
     const getBenchRole = (pid) => {
-      if (!pid) return null;
       const s6 = String(pid);
-      return BENCH_ROLES.find((r) => assoc[r] != null && String(assoc[r]) === s6) || null;
+      return BENCH_SLOTS2.find((r) => assignment[r] != null && String(assignment[r]) === s6) || null;
     };
-    const isOnField = (pid) => getFieldPosIndex(pid) !== null || getBenchRole(pid) !== null;
-    const buildAssocForSave = () => Object.fromEntries(Object.entries(assoc).filter(([, v]) => v != null && String(v) !== "" && String(v) !== "0"));
-    const getFormationSortKey = (pid) => {
-      const s6 = String(pid);
-      for (const [idx, id] of Object.entries(fieldByPos)) {
-        if (id != null && String(id) === s6) return Number(idx);
+    const getSortKey = (pid) => {
+      const pk = getFieldPosKey(pid);
+      if (pk) {
+        for (let zi = 0; zi < FIELD_ZONES2.length; zi++) {
+          const ci = FIELD_ZONES2[zi].cols.indexOf(pk);
+          if (ci >= 0) return (FIELD_ZONES2.length - 1 - zi) * 5 + ci;
+        }
       }
-      const si = ["sub1", "sub2", "sub3", "sub4", "sub5"].findIndex((r) => assoc[r] != null && String(assoc[r]) === s6);
+      const si = BENCH_SLOTS2.findIndex((r) => assignment[r] != null && String(assignment[r]) === String(pid));
       if (si >= 0) return 100 + si;
       return 999;
     };
-    const getFormationPos = (pid) => {
-      const s6 = String(pid);
-      for (const [idx, id] of Object.entries(fieldByPos)) {
-        if (id != null && String(id) === s6) return String(positions[idx] || "").toLowerCase() || null;
-      }
-      for (const sub of ["sub1", "sub2", "sub3", "sub4", "sub5"]) {
-        if (assoc[sub] != null && String(assoc[sub]) === s6) return sub;
-      }
-      return null;
-    };
-    let _firstSubPid = null, _firstOutPid = null;
+    const buildAssocForSave = () => Object.fromEntries(Object.entries(assignment).filter(([, v]) => v != null && String(v) !== "" && String(v) !== "0"));
+    const changeListeners = [];
+    const notifyChange = () => changeListeners.forEach((fn) => fn());
     const sortedPlayers = () => {
       var _a, _b, _c, _d;
       const rows = Object.values(data.players || {}).map((p) => {
         var _a2, _b2, _c2;
-        const fmPos = getFormationPos(p.player_id);
-        const posStr = fmPos && !BENCH_LABELS[fmPos] ? fmPos : ((_a2 = String(p.favposition || "").split(",")[0]) == null ? void 0 : _a2.trim()) || "";
+        const fmPosKey = getFieldPosKey(p.player_id);
+        const benchRole = !fmPosKey ? getBenchRole(p.player_id) : null;
+        const posStr = fmPosKey ? fmPosKey : ((_a2 = String(p.favposition || "").split(",")[0]) == null ? void 0 : _a2.trim().toLowerCase()) || "";
         let _fmR5 = null, _fmRec = null;
         if ((_b2 = p.allPositionRatings) == null ? void 0 : _b2.length) {
-          const posId = (_c2 = TmConst.POSITION_MAP[posStr.toLowerCase()]) == null ? void 0 : _c2.id;
+          const posId = (_c2 = TmConst.POSITION_MAP[posStr]) == null ? void 0 : _c2.id;
           const rating = posId != null ? p.allPositionRatings.find((r) => r.id === posId) : null;
           if (rating) {
             _fmR5 = parseFloat(rating.r5);
@@ -46757,14 +46815,43 @@ ${names}`)) {
         }
         return {
           ...p,
-          _fmOrder: getFormationSortKey(p.player_id),
-          _fmPos: fmPos,
+          _fmOrder: getSortKey(p.player_id),
+          _fmPosKey: fmPosKey,
+          _benchRole: benchRole,
           _fmR5,
           _fmRec
         };
       }).sort((a, b) => a._fmOrder - b._fmOrder);
-      _firstSubPid = (_b = (_a = rows.find((p) => SUB_ROLES.some((r) => assoc[r] != null && String(assoc[r]) === String(p.player_id)))) == null ? void 0 : _a.player_id) != null ? _b : null;
-      _firstOutPid = (_d = (_c = rows.find((p) => getFieldPosIndex(p.player_id) === null && getBenchRole(p.player_id) === null)) == null ? void 0 : _c.player_id) != null ? _d : null;
+      _firstSubPid = (_b = (_a = rows.find((p) => BENCH_SLOTS2.some((r) => assignment[r] != null && String(assignment[r]) === String(p.player_id)))) == null ? void 0 : _a.player_id) != null ? _b : null;
+      _firstOutPid = (_d = (_c = rows.find((p) => getFieldPosKey(p.player_id) === null && getBenchRole(p.player_id) === null)) == null ? void 0 : _c.player_id) != null ? _d : null;
+      BENCH_SLOTS2.forEach((role, idx) => {
+        if (assignment[role] == null)
+          rows.push({
+            _isBenchPlaceholder: true,
+            _benchRole: role,
+            _fmOrder: 100 + idx,
+            player_id: `_bench_${role}`,
+            no: "",
+            name: "",
+            lastname: "",
+            rec_sort: null,
+            _fmR5: null,
+            _fmRec: null,
+            routine: null
+          });
+      });
+      rows.sort((a, b) => a._fmOrder - b._fmOrder);
+      let _ms = false, _mo = false;
+      for (const r of rows) {
+        if (!_ms && r._fmOrder >= 100) {
+          r._needsSep = true;
+          _ms = true;
+        }
+        if (!_mo && r._fmOrder >= 999) {
+          r._needsSep = true;
+          _mo = true;
+        }
+      }
       return rows;
     };
     const body = container;
@@ -46791,69 +46878,75 @@ ${names}`)) {
     const squadCol = document.createElement("div");
     squadCol.className = "tmtc-squad-col";
     if (!externalSquadContainer) layout.appendChild(squadCol);
-    const benchCol = document.createElement("div");
-    benchCol.className = "tmtc-bench-col";
-    const slotEls = {};
-    const benchSlotEls = {};
-    let tblWrap = null;
+    const specialRolesCol = document.createElement("div");
+    specialRolesCol.className = "tmtc-bench-col";
     const fieldEl = document.createElement("div");
     fieldEl.className = "tmtc-field";
     fieldCol.appendChild(fieldEl);
     const topSpacer = document.createElement("div");
     topSpacer.className = "tmtc-field-spacer";
     fieldEl.appendChild(topSpacer);
-    for (const line of LINES) {
-      const indices = [];
-      for (let i = line.from; i <= line.to; i++) {
-        if (positions[i]) indices.push(i);
-      }
-      if (!indices.length) continue;
-      const section = document.createElement("div");
-      section.className = "tmtc-field-line";
-      fieldEl.appendChild(section);
-      const lineEl = document.createElement("div");
-      lineEl.className = "tmtc-line";
-      section.appendChild(lineEl);
-      const activeCols = getVisualCols(indices.length, line.key);
-      for (let col = 0; col < 5; col++) {
-        const activeIdx = activeCols.indexOf(col);
-        if (activeIdx !== -1 && indices[activeIdx] !== void 0) {
-          const slotEl = makeFieldSlot(indices[activeIdx]);
-          slotEls[indices[activeIdx]] = slotEl;
-          lineEl.appendChild(slotEl);
-        } else {
-          const spacer = document.createElement("div");
-          spacer.className = "tmtc-slot-spacer";
-          lineEl.appendChild(spacer);
+    const slotEls = {};
+    const benchSlotEls = {};
+    let tblWrap = null;
+    function buildField() {
+      while (fieldEl.lastChild !== topSpacer) fieldEl.removeChild(fieldEl.lastChild);
+      for (const k of Object.keys(slotEls)) delete slotEls[k];
+      for (const zone of FIELD_ZONES2) {
+        const section = document.createElement("div");
+        section.className = "tmtc-field-line";
+        fieldEl.appendChild(section);
+        const lineEl = document.createElement("div");
+        lineEl.className = "tmtc-line";
+        section.appendChild(lineEl);
+        for (const posKey2 of zone.cols) {
+          if (!posKey2) {
+            const sp = document.createElement("div");
+            sp.className = "tmtc-slot-spacer";
+            lineEl.appendChild(sp);
+          } else {
+            const slotEl = makeFieldSlot(posKey2);
+            slotEls[posKey2] = slotEl;
+            lineEl.appendChild(slotEl);
+          }
         }
       }
     }
-    for (const role of SUB_ROLES) {
-      benchSlotEls[role] = makeBenchSlot(role);
+    function normalizeZone(zoneKey, changed) {
+      const zone = FIELD_ZONES2.find((z) => z.key === zoneKey);
+      if (!zone) return;
+      const centerPks = [zone.cols[1], zone.cols[2], zone.cols[3]].filter((pk) => pk != null);
+      if (!centerPks.length) return;
+      const occupied = centerPks.filter((pk) => assignment[pk] != null && String(assignment[pk]) !== "0");
+      if (!occupied.length) return;
+      const targetRanks = getTargetRanks(centerPks.length, occupied.length);
+      const targetPks = targetRanks.map((r) => centerPks[r]);
+      if (occupied.every((pk, i) => pk === targetPks[i])) return;
+      const pids = occupied.map((pk) => String(assignment[pk]));
+      for (const pk of occupied) assignment[pk] = null;
+      for (let i = 0; i < pids.length; i++) {
+        assignment[targetPks[i]] = pids[i];
+        if (changed) changed[pids[i]] = targetPks[i];
+      }
+      for (const pk of centerPks) {
+        const pid = assignment[pk];
+        if (slotEls[pk]) renderFieldSlot(slotEls[pk], pid ? players_by_id[pid] || null : null, pk);
+      }
     }
-    for (const role of SPECIAL_ROLES) {
-      benchSlotEls[role] = makeBenchSlot(role);
-    }
-    tblWrap = buildSquadTable();
-    (externalSquadContainer || squadCol).appendChild(tblWrap);
-    function makeFieldSlot(posIndex) {
-      const posKey2 = String(positions[posIndex] || "");
-      const pid = fieldByPos[posIndex];
+    function makeFieldSlot(posKey2) {
+      const pid = assignment[posKey2];
       const player = pid ? players_by_id[pid] || null : null;
       const slotEl = document.createElement("div");
       slotEl.className = "tmtc-slot";
-      slotEl.dataset.posIndex = posIndex;
       slotEl.dataset.posKey = posKey2;
       renderFieldSlot(slotEl, player, posKey2);
-      setupDropTarget(slotEl, posIndex, posKey2);
+      setupDropTarget(slotEl, posKey2);
       return slotEl;
     }
     function renderFieldSlot(slotEl, player, posKey2) {
-      const pi = slotEl.dataset.posIndex;
-      const pk = slotEl.dataset.posKey;
+      if (!slotEl) return;
       slotEl.innerHTML = "";
-      slotEl.dataset.posIndex = pi;
-      slotEl.dataset.posKey = pk;
+      slotEl.dataset.posKey = posKey2;
       slotEl.classList.toggle("tmtc-slot-empty", !player);
       if (player) {
         slotEl.setAttribute("draggable", "true");
@@ -46876,14 +46969,15 @@ ${names}`)) {
       const el2 = document.createElement("div");
       el2.className = "tmtc-bench-slot";
       el2.dataset.role = role;
-      const pid = assoc[role];
+      const pid = assignment[role];
       const player = pid ? players_by_id[pid] || null : null;
-      renderBenchSlot(el2, player, BENCH_LABELS[role] || role);
+      renderBenchSlot(el2, player, BENCH_LABELS2[role] || role);
       setupBenchDropTarget(el2, role);
       return el2;
     }
     function renderBenchSlot(el2, player, label) {
       el2.innerHTML = "";
+      el2.classList.toggle("has-player", !!player);
       const roleEl = document.createElement("span");
       roleEl.className = "tmtc-bench-role";
       roleEl.textContent = label;
@@ -46909,12 +47003,12 @@ ${names}`)) {
         sortKey: "_fmOrder",
         sortDir: 1,
         density: "tight",
-        rowAttrs: (p) => ({ draggable: "true", "data-player-id": p.player_id }),
+        rowAttrs: (p) => p._isBenchPlaceholder ? { "data-bench-role": p._benchRole } : { draggable: "true", "data-player-id": p.player_id },
         rowCls: (p) => {
-          const pid = String(p.player_id);
-          const sep = pid === String(_firstSubPid) || pid === String(_firstOutPid) ? " tmtc-row-sep" : "";
-          if (getFieldPosIndex(p.player_id) !== null) return "tmtc-row-on-field" + sep;
-          if (getBenchRole(p.player_id) !== null) return "tmtc-row-on-bench" + sep;
+          const sep = p._needsSep ? " tmtc-row-sep" : "";
+          if (p._isBenchPlaceholder) return "tmtc-row-bench-placeholder" + sep;
+          if (getFieldPosKey(p.player_id)) return "tmtc-row-on-field" + sep;
+          if (getBenchRole(p.player_id)) return "tmtc-row-on-bench" + sep;
           return "tmtc-row-out" + sep;
         },
         headers: [
@@ -46926,8 +47020,9 @@ ${names}`)) {
             thCls: "tmtc-pb-cell",
             render: (_, p) => {
               var _a, _b;
-              const pos = p._fmPos && !BENCH_LABELS[p._fmPos] ? p._fmPos : ((_a = String(p.favposition || "").split(",")[0]) == null ? void 0 : _a.trim()) || "";
-              const color = ((_b = TmConst.POSITION_MAP[pos.toLowerCase()]) == null ? void 0 : _b.color) || "var(--tmu-text-dim)";
+              if (p._isBenchPlaceholder) return '<span class="tmtc-pb-inner" style="background:var(--tmu-border-soft-alpha)"></span>';
+              const posStr = (p._fmPosKey || ((_a = String(p.favposition || "").split(",")[0]) == null ? void 0 : _a.trim()) || "").toLowerCase();
+              const color = ((_b = TmConst.POSITION_MAP[posStr]) == null ? void 0 : _b.color) || "var(--tmu-text-dim)";
               return `<span class="tmtc-pb-inner" style="background:${color}"></span>`;
             }
           },
@@ -46937,36 +47032,43 @@ ${names}`)) {
             align: "r",
             width: "28px",
             sortable: false,
-            render: (v) => `<span style="color:var(--tmu-text-muted);font-variant-numeric:tabular-nums">${escHtml(v)}</span>`
+            render: (v, p) => p._isBenchPlaceholder ? "" : `<span style="color:var(--tmu-text-muted);font-variant-numeric:tabular-nums">${escHtml(v)}</span>`
           },
           {
-            key: "_fmPos",
+            key: "_fmPosKey",
             label: "Pos",
             align: "c",
             width: "68px",
             sortable: false,
             render: (v, p) => {
               var _a;
+              if (p._isBenchPlaceholder)
+                return `<span class="tmtc-sub-badge" style="opacity:.5">${escHtml(BENCH_LABELS2[p._benchRole] || p._benchRole)}</span>`;
+              if (p._benchRole)
+                return `<span class="tmtc-sub-badge">${escHtml(BENCH_LABELS2[p._benchRole] || p._benchRole)}</span>`;
               if (!v) {
                 const pos = ((_a = String((p == null ? void 0 : p.favposition) || "").split(",")[0]) == null ? void 0 : _a.trim()) || "";
                 if (!pos) return "";
                 return `<span style="opacity:0.45;filter:grayscale(1)">${TmPosition.chip([pos])}</span>`;
               }
-              if (BENCH_LABELS[v]) return `<span class="tmtc-sub-badge">${escHtml(BENCH_LABELS[v])}</span>`;
               return TmPosition.chip([v.toUpperCase()]);
             }
           },
           {
             key: "name",
             label: "Player",
-            render: (_, p) => `<a href="/players/${p.player_id}/" style="color:var(--tmu-text-inverse);text-decoration:none;font-weight:600" onclick="event.stopPropagation()">${escHtml(p.lastname || p.name || "")}</a>`
+            render: (_, p) => {
+              if (p._isBenchPlaceholder) return '<span style="color:var(--tmu-text-disabled);font-style:italic">drop player here</span>';
+              return `<a href="/players/${p.player_id}/" style="color:var(--tmu-text-inverse);text-decoration:none;font-weight:600" onclick="event.stopPropagation()">${escHtml(p.lastname || p.name || "")}</a>`;
+            }
           },
           {
             key: "rec_sort",
             label: "\u2605",
             align: "c",
             width: "44px",
-            render: (v) => {
+            render: (v, p) => {
+              if (p._isBenchPlaceholder) return "";
               const n = Math.min(Math.round(Number(v) || 0), 5);
               return n ? `<span style="color:var(--tmu-warning);font-size:var(--tmu-font-2xs)">${"\u2605".repeat(n)}</span>` : "\u2014";
             }
@@ -46977,7 +47079,7 @@ ${names}`)) {
             align: "r",
             width: "40px",
             sortable: false,
-            render: (v) => v != null ? `<span class="tmu-tabular" style="color:${gc(v, REC_THRESHOLDS2)};font-weight:700">${v.toFixed(2)}</span>` : `<span style="color:var(--tmu-text-dim)">\u2014</span>`
+            render: (v, p) => p._isBenchPlaceholder ? "" : v != null ? `<span class="tmu-tabular" style="color:${gc(v, REC_THRESHOLDS2)};font-weight:700">${v.toFixed(2)}</span>` : `<span style="color:var(--tmu-text-dim)">\u2014</span>`
           },
           {
             key: "_fmR5",
@@ -46985,14 +47087,14 @@ ${names}`)) {
             align: "r",
             width: "40px",
             sortable: false,
-            render: (v) => v != null ? `<span class="tmu-tabular" style="color:${gc(v, R5_THRESHOLDS5)};font-weight:700">${v}</span>` : `<span style="color:var(--tmu-text-dim)">\u2014</span>`
+            render: (v, p) => p._isBenchPlaceholder ? "" : v != null ? `<span class="tmu-tabular" style="color:${gc(v, R5_THRESHOLDS6)};font-weight:700">${v}</span>` : `<span style="color:var(--tmu-text-dim)">\u2014</span>`
           },
           {
             key: "routine",
             label: "Routine",
             align: "r",
             width: "42px",
-            render: (v) => v != null && v > 0 ? `<span class="tmu-tabular" style="color:${gc(v, RTN_THRESHOLDS2)};font-weight:700">${Number(v).toFixed(1)}</span>` : `<span style="color:var(--tmu-text-dim)">\u2014</span>`
+            render: (v, p) => p._isBenchPlaceholder ? "" : v != null && v > 0 ? `<span class="tmu-tabular" style="color:${gc(v, RTN_THRESHOLDS3)};font-weight:700">${Number(v).toFixed(1)}</span>` : `<span style="color:var(--tmu-text-dim)">\u2014</span>`
           }
         ],
         emptyText: "No players."
@@ -47006,7 +47108,88 @@ ${names}`)) {
         e.dataTransfer.effectAllowed = "move";
         e.dataTransfer.setData("text/plain", pid);
         tr.classList.add("tmtc-drag-source");
-        fieldEl.classList.add("is-dragging");
+        if (getFieldPosKey(pid)) fieldEl.classList.add("is-dragging");
+      });
+      let _hovRow = null;
+      const _setHovRow = (tr) => {
+        if (_hovRow === tr) return;
+        if (_hovRow) _hovRow.classList.remove("tmtc-drag-over");
+        _hovRow = tr;
+        if (tr) tr.classList.add("tmtc-drag-over");
+      };
+      wrap.addEventListener("dragover", (e) => {
+        if (!dragState) return;
+        const tr = e.target.closest("tr[data-bench-role], tr[data-player-id]");
+        if (tr) {
+          e.preventDefault();
+          _setHovRow(tr);
+        }
+      });
+      wrap.addEventListener("dragleave", (e) => {
+        if (_hovRow && !wrap.contains(e.relatedTarget)) _setHovRow(null);
+      });
+      wrap.addEventListener("drop", async (e) => {
+        _setHovRow(null);
+        const benchTr = e.target.closest("tr[data-bench-role]");
+        const playerTr = !benchTr && e.target.closest("tr[data-player-id]");
+        if (!benchTr && !playerTr) return;
+        e.preventDefault();
+        clearDragVisuals();
+        const ds = dragState;
+        dragState = null;
+        if (!ds) return;
+        const { pid } = ds;
+        const player = players_by_id[pid];
+        if (!player) return;
+        const changed = {};
+        if (benchTr) {
+          const roleKey = benchTr.dataset.benchRole;
+          const prevPid = assignment[roleKey] ? String(assignment[roleKey]) : null;
+          if (prevPid === String(pid)) {
+            refreshSquadTable();
+            return;
+          }
+          clearSourceOldSpot(ds, changed);
+          if (prevPid) backfillDisplaced(prevPid, ds, changed);
+          assignment[roleKey] = pid;
+          changed[pid] = roleKey;
+          renderBenchSlot(benchSlotEls[roleKey], player, BENCH_LABELS2[roleKey] || roleKey);
+          if (ds.fromPosKey) normalizeZone(POSKEY_TO_ZONE[ds.fromPosKey], changed);
+        } else {
+          const targetPid = playerTr.dataset.playerId;
+          if (!targetPid || targetPid === String(pid)) {
+            refreshSquadTable();
+            return;
+          }
+          const targetPosKey = getFieldPosKey(targetPid);
+          const targetBenchRole = !targetPosKey ? getBenchRole(targetPid) : null;
+          if (targetPosKey) {
+            clearSourceOldSpot(ds, changed);
+            backfillDisplaced(targetPid, ds, changed);
+            assignment[targetPosKey] = pid;
+            changed[pid] = targetPosKey;
+            renderFieldSlot(slotEls[targetPosKey], player, targetPosKey);
+            for (const zone of FIELD_ZONES2) normalizeZone(zone.key, changed);
+          } else if (targetBenchRole && BENCH_SLOTS2.includes(targetBenchRole)) {
+            clearSourceOldSpot(ds, changed);
+            backfillDisplaced(targetPid, ds, changed);
+            assignment[targetBenchRole] = pid;
+            changed[pid] = targetBenchRole;
+            renderBenchSlot(benchSlotEls[targetBenchRole], player, BENCH_LABELS2[targetBenchRole] || targetBenchRole);
+            for (const zone of FIELD_ZONES2) normalizeZone(zone.key, changed);
+          } else {
+            refreshSquadTable();
+            return;
+          }
+        }
+        refreshSquadTable();
+        try {
+          await postSave(buildAssocForSave(), changed, reserves, national, miniGameId);
+          showStatus(true, "Saved \u2713");
+          notifyChange();
+        } catch (e2) {
+          showStatus(false, "Save failed");
+        }
       });
       return wrap;
     }
@@ -47016,13 +47199,12 @@ ${names}`)) {
     let dragState = null;
     function onFieldDragStart(e) {
       const pid = e.currentTarget.dataset.playerId;
-      const posIndex = Number(e.currentTarget.dataset.posIndex);
-      const posKey2 = String(e.currentTarget.dataset.posKey || "");
+      const posKey2 = e.currentTarget.dataset.posKey;
       if (!pid) {
         e.preventDefault();
         return;
       }
-      dragState = { pid, fromType: "field", fromPosIndex: posIndex, fromPosKey: posKey2 };
+      dragState = { pid, fromType: "field", fromPosKey: posKey2 };
       e.dataTransfer.effectAllowed = "move";
       e.dataTransfer.setData("text/plain", pid);
       e.currentTarget.classList.add("tmtc-drag-source");
@@ -47041,67 +47223,44 @@ ${names}`)) {
       e.dataTransfer.effectAllowed = "move";
       e.dataTransfer.setData("text/plain", pid);
       e.currentTarget.classList.add("tmtc-drag-source");
-      fieldEl.classList.add("is-dragging");
     }
-    function clearSourceOldSpot(pid, fromType, fromPosIndex, fromPosKey, fromRoleKey) {
-      if (fromType === "field") {
-        fieldByPos[fromPosIndex] = null;
-        if (fromPosKey) assoc[fromPosKey] = null;
-        renderFieldSlot(slotEls[fromPosIndex], null, fromPosKey);
+    function clearSourceOldSpot(ds, changed) {
+      const { pid, fromType, fromPosKey, fromRoleKey } = ds;
+      if (fromType === "field" && fromPosKey) {
+        assignment[fromPosKey] = null;
+        if (slotEls[fromPosKey]) renderFieldSlot(slotEls[fromPosKey], null, fromPosKey);
       } else if (fromType === "bench" && fromRoleKey) {
-        assoc[fromRoleKey] = null;
-        renderBenchSlot(benchSlotEls[fromRoleKey], null, BENCH_LABELS[fromRoleKey] || fromRoleKey);
+        assignment[fromRoleKey] = null;
+        renderBenchSlot(benchSlotEls[fromRoleKey], null, BENCH_LABELS2[fromRoleKey] || fromRoleKey);
       } else if (fromType === "sidebar") {
-        const oldFieldIdx = getFieldPosIndex(pid);
-        if (oldFieldIdx !== null) {
-          const oldPk = String(positions[oldFieldIdx] || "");
-          fieldByPos[oldFieldIdx] = null;
-          if (oldPk) assoc[oldPk] = null;
-          renderFieldSlot(slotEls[oldFieldIdx], null, oldPk);
+        const oldPk = getFieldPosKey(pid);
+        if (oldPk) {
+          assignment[oldPk] = null;
+          if (slotEls[oldPk]) renderFieldSlot(slotEls[oldPk], null, oldPk);
+          ds.fromPosKey = oldPk;
         }
         const oldRole = getBenchRole(pid);
         if (oldRole) {
-          assoc[oldRole] = null;
-          renderBenchSlot(benchSlotEls[oldRole], null, BENCH_LABELS[oldRole] || oldRole);
+          assignment[oldRole] = null;
+          renderBenchSlot(benchSlotEls[oldRole], null, BENCH_LABELS2[oldRole] || oldRole);
         }
       }
     }
-    function normalizeField(changed, affectedLineKeys) {
-      for (const line of LINES) {
-        if (affectedLineKeys && !affectedLineKeys.has(line.key)) continue;
-        const allIndices = [];
-        for (let i = line.from; i <= line.to; i++) {
-          if (positions[i]) allIndices.push(i);
-        }
-        if (!allIndices.length) continue;
-        const N = allIndices.length;
-        const centerRanks = N <= 3 ? Array.from({ length: N }, (_, i) => i) : N === 4 ? [1, 2] : [1, 2, 3];
-        const centerIndices = centerRanks.map((r) => allIndices[r]);
-        const occupiedCenters = centerIndices.filter((i) => fieldByPos[i] != null && String(fieldByPos[i]) !== "0").sort((a, b) => allIndices.indexOf(a) - allIndices.indexOf(b));
-        const count = occupiedCenters.length;
-        if (count === 0) continue;
-        const targetRanks = getTargetRanks(centerIndices.length, count);
-        const targetCenterIndices = targetRanks.map((r) => centerIndices[r]);
-        if (occupiedCenters.every((idx, j) => idx === targetCenterIndices[j])) continue;
-        const pids = occupiedCenters.map((i) => String(fieldByPos[i]));
-        for (const idx of occupiedCenters) {
-          const pk = String(positions[idx] || "");
-          fieldByPos[idx] = null;
-          if (pk) assoc[pk] = null;
-          if (slotEls[idx]) renderFieldSlot(slotEls[idx], null, pk);
-        }
-        for (let j = 0; j < pids.length; j++) {
-          const pid = pids[j];
-          const targetIdx = targetCenterIndices[j];
-          const pk = String(positions[targetIdx] || "");
-          fieldByPos[targetIdx] = pid;
-          if (pk) assoc[pk] = pid;
-          if (changed) changed[pid] = pk || String(targetIdx);
-          if (slotEls[targetIdx]) renderFieldSlot(slotEls[targetIdx], players_by_id[pid] || null, pk);
-        }
+    function backfillDisplaced(displacedPid, ds, changed) {
+      const { fromType, fromPosKey, fromRoleKey } = ds;
+      if (fromType === "field" && fromPosKey) {
+        assignment[fromPosKey] = displacedPid;
+        if (slotEls[fromPosKey]) renderFieldSlot(slotEls[fromPosKey], players_by_id[displacedPid] || null, fromPosKey);
+        changed[displacedPid] = fromPosKey;
+      } else if (fromType === "bench" && fromRoleKey) {
+        assignment[fromRoleKey] = displacedPid;
+        renderBenchSlot(benchSlotEls[fromRoleKey], players_by_id[displacedPid] || null, BENCH_LABELS2[fromRoleKey] || fromRoleKey);
+        changed[displacedPid] = fromRoleKey;
+      } else {
+        changed[displacedPid] = "out";
       }
     }
-    function setupDropTarget(slotEl, posIndex, posKey2) {
+    function setupDropTarget(slotEl, posKey2) {
       let n = 0;
       slotEl.addEventListener("dragenter", (e) => {
         e.preventDefault();
@@ -47122,47 +47281,24 @@ ${names}`)) {
         const ds = dragState;
         dragState = null;
         if (!ds) return;
-        const { pid, fromType, fromPosIndex, fromPosKey, fromRoleKey } = ds;
+        const { pid } = ds;
         const player = players_by_id[pid];
         if (!player) return;
-        const prevPid = fieldByPos[posIndex] ? String(fieldByPos[posIndex]) : null;
+        const prevPid = assignment[posKey2] ? String(assignment[posKey2]) : null;
         if (prevPid === String(pid)) return;
+        if (!prevPid && ds.fromType !== "field") return;
         const changed = {};
-        const affectedLines = /* @__PURE__ */ new Set();
-        affectedLines.add(lineKeyForPosIndex(posIndex));
-        if (fromType === "field" && fromPosIndex != null) affectedLines.add(lineKeyForPosIndex(fromPosIndex));
-        if (fromType === "sidebar") {
-          const oldIdx = getFieldPosIndex(pid);
-          if (oldIdx !== null) affectedLines.add(lineKeyForPosIndex(oldIdx));
-        }
-        affectedLines.delete(null);
-        clearSourceOldSpot(pid, fromType, fromPosIndex, fromPosKey, fromRoleKey);
-        if (prevPid) {
-          const prevP = players_by_id[prevPid];
-          if (prevP) {
-            if (fromType === "field") {
-              fieldByPos[fromPosIndex] = prevPid;
-              if (fromPosKey) assoc[fromPosKey] = prevPid;
-              changed[prevPid] = fromPosKey || String(fromPosIndex);
-              renderFieldSlot(slotEls[fromPosIndex], prevP, fromPosKey);
-            } else if (fromType === "bench" && fromRoleKey) {
-              assoc[fromRoleKey] = prevPid;
-              renderBenchSlot(benchSlotEls[fromRoleKey], prevP, BENCH_LABELS[fromRoleKey] || fromRoleKey);
-              changed[prevPid] = fromRoleKey;
-            } else {
-              changed[prevPid] = "out";
-            }
-          }
-        }
-        fieldByPos[posIndex] = pid;
-        if (posKey2) assoc[posKey2] = pid;
-        changed[pid] = posKey2 || String(posIndex);
+        clearSourceOldSpot(ds, changed);
+        if (prevPid) backfillDisplaced(prevPid, ds, changed);
+        assignment[posKey2] = pid;
+        changed[pid] = posKey2;
         renderFieldSlot(slotEl, player, posKey2);
-        normalizeField(changed, affectedLines);
+        for (const zone of FIELD_ZONES2) normalizeZone(zone.key, changed);
         refreshSquadTable();
         try {
           await postSave(buildAssocForSave(), changed, reserves, national, miniGameId);
           showStatus(true, "Saved \u2713");
+          notifyChange();
         } catch (e2) {
           showStatus(false, "Save failed");
         }
@@ -47189,41 +47325,23 @@ ${names}`)) {
         const ds = dragState;
         dragState = null;
         if (!ds) return;
-        const { pid, fromType, fromPosIndex, fromPosKey, fromRoleKey } = ds;
+        const { pid } = ds;
         const player = players_by_id[pid];
         if (!player) return;
-        const prevPid = assoc[roleKey] ? String(assoc[roleKey]) : null;
+        const prevPid = assignment[roleKey] ? String(assignment[roleKey]) : null;
         if (prevPid === String(pid)) return;
         const changed = {};
-        clearSourceOldSpot(pid, fromType, fromPosIndex, fromPosKey, fromRoleKey);
-        if (prevPid) {
-          const prevP = players_by_id[prevPid];
-          if (prevP) {
-            if (fromType === "field" && fromPosIndex != null) {
-              fieldByPos[fromPosIndex] = prevPid;
-              if (fromPosKey) assoc[fromPosKey] = prevPid;
-              changed[prevPid] = fromPosKey || String(fromPosIndex);
-              renderFieldSlot(slotEls[fromPosIndex], prevP, fromPosKey);
-            } else if (fromType === "bench" && fromRoleKey) {
-              assoc[fromRoleKey] = prevPid;
-              renderBenchSlot(benchSlotEls[fromRoleKey], prevP, BENCH_LABELS[fromRoleKey] || fromRoleKey);
-              changed[prevPid] = fromRoleKey;
-            } else {
-              changed[prevPid] = "out";
-            }
-          }
-        }
-        assoc[roleKey] = pid;
+        clearSourceOldSpot(ds, changed);
+        if (prevPid) backfillDisplaced(prevPid, ds, changed);
+        assignment[roleKey] = pid;
         changed[pid] = roleKey;
-        renderBenchSlot(el2, player, BENCH_LABELS[roleKey] || roleKey);
-        const affectedLines = /* @__PURE__ */ new Set();
-        if (fromType === "field" && fromPosIndex != null) affectedLines.add(lineKeyForPosIndex(fromPosIndex));
-        affectedLines.delete(null);
-        if (affectedLines.size) normalizeField(changed, affectedLines);
+        renderBenchSlot(el2, player, BENCH_LABELS2[roleKey] || roleKey);
+        for (const zone of FIELD_ZONES2) normalizeZone(zone.key, changed);
         refreshSquadTable();
         try {
           await postSave(buildAssocForSave(), changed, reserves, national, miniGameId);
           showStatus(true, "Saved \u2713");
+          notifyChange();
         } catch (e2) {
           showStatus(false, "Save failed");
         }
@@ -47237,11 +47355,59 @@ ${names}`)) {
       dragState = null;
       clearDragVisuals();
     });
-    return { refresh: refreshSquadTable };
+    buildField();
+    for (const role of BENCH_SLOTS2) {
+      benchSlotEls[role] = makeBenchSlot(role);
+    }
+    const specialHead = document.createElement("div");
+    specialHead.className = "tmtc-bench-section-head";
+    specialHead.textContent = "Roles";
+    specialRolesCol.appendChild(specialHead);
+    for (const role of SPECIAL_SLOTS2) {
+      benchSlotEls[role] = makeBenchSlot(role);
+      specialRolesCol.appendChild(benchSlotEls[role]);
+    }
+    fieldCol.appendChild(specialRolesCol);
+    const squadTarget = externalSquadContainer || squadCol;
+    tblWrap = buildSquadTable();
+    squadTarget.appendChild(tblWrap);
+    async function applyAssignment(newAssignment) {
+      for (const pk of getOccupiedFieldKeys()) assignment[pk] = null;
+      const touchesBench = BENCH_SLOTS2.some((r) => r in newAssignment);
+      if (touchesBench) for (const role of BENCH_SLOTS2) assignment[role] = null;
+      const changed = {};
+      for (const [key, pid] of Object.entries(newAssignment)) {
+        if (!pid) continue;
+        assignment[key] = pid;
+        changed[String(pid)] = key;
+      }
+      buildField();
+      for (const [role, el2] of Object.entries(benchSlotEls)) {
+        const pid = assignment[role];
+        renderBenchSlot(el2, pid ? players_by_id[pid] || null : null, BENCH_LABELS2[role] || role);
+      }
+      refreshSquadTable();
+      try {
+        await postSave(buildAssocForSave(), changed, reserves, national, miniGameId);
+        showStatus(true, "Saved \u2713");
+        notifyChange();
+      } catch (e) {
+        showStatus(false, "Save failed");
+      }
+    }
+    const getAssignment = () => ({ ...assignment });
+    const getActiveKeys = () => getOccupiedFieldKeys();
+    const subscribe = (fn) => {
+      changeListeners.push(fn);
+      return () => {
+        const i = changeListeners.indexOf(fn);
+        if (i >= 0) changeListeners.splice(i, 1);
+      };
+    };
+    return { refresh: refreshSquadTable, applyAssignment, getAssignment, getActiveKeys, subscribe };
   }
 
   // src/components/tactics/tm-tactics-settings.js
-  var escHtml2 = (v) => String(v != null ? v : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   var MENTALITY_LABELS = { 1: "Very Defensive", 2: "Defensive", 3: "Slightly Defensive", 4: "Normal", 5: "Slightly Attacking", 6: "Attacking", 7: "Very Attacking" };
   var STYLE_LABELS = { 1: "Balanced", 2: "Direct", 3: "Wings", 4: "Short Passing", 5: "Long Balls", 6: "Through Balls" };
   var FOCUS_LABELS = { 1: "Balanced", 2: "Left", 3: "Central", 4: "Right" };
@@ -47258,60 +47424,336 @@ ${names}`)) {
   }
   function mountTacticsSettings(container, initialValues = {}, opts = {}) {
     const { reserves = 0, national = 0, miniGameId = 0 } = opts;
-    const refs = TmSectionCard.mount(container, {
-      title: "Advanced Settings",
-      icon: "\u2699\uFE0F",
-      titleMode: "body",
-      cardVariant: "soft",
-      bodyClass: "tmu-stack tmu-stack-density-tight"
-    });
-    const body = refs.body;
-    const grid = document.createElement("div");
-    grid.className = "tmtc-settings-grid";
-    body.appendChild(grid);
-    function buildSettingCard({ label, labelsMap, saveKey, current }) {
-      const valueText = labelsMap[current] || "\u2014";
-      const card = document.createElement("div");
-      card.className = "tmtc-setting-card";
-      card.innerHTML = `
-            <div class="tmtc-setting-label">${escHtml2(label)}</div>
-            <div class="tmtc-setting-value" data-setting-val="${saveKey}">${escHtml2(valueText)}</div>
-        `;
+    const wrap = document.createElement("div");
+    wrap.className = "tmtc-settings-rows";
+    container.appendChild(wrap);
+    function buildRow({ label, labelsMap, saveKey, current }) {
+      const row = document.createElement("div");
+      row.className = "tmu-field tmtc-setting-row";
+      const lbl = document.createElement("span");
+      lbl.className = "tmu-field-label";
+      lbl.textContent = label;
+      row.appendChild(lbl);
       const sel = document.createElement("select");
-      sel.style.cssText = "background:var(--tmu-surface-dark-mid);color:var(--tmu-text-main);border:1px solid var(--tmu-border-embedded);border-radius:var(--tmu-space-sm);padding:var(--tmu-space-xs) var(--tmu-space-sm);font-size:var(--tmu-font-sm);width:100%;margin-top:var(--tmu-space-xs);";
-      for (const [val, lbl] of Object.entries(labelsMap)) {
+      sel.className = "tmu-input tmu-input-tone-overlay tmu-input-density-compact tmu-input-full";
+      for (const [val, text] of Object.entries(labelsMap)) {
         const opt = document.createElement("option");
         opt.value = val;
-        opt.textContent = lbl;
+        opt.textContent = text;
         if (Number(val) === current) opt.selected = true;
         sel.appendChild(opt);
       }
       sel.addEventListener("change", () => {
-        const newVal = parseInt(sel.value, 10);
-        const valEl = card.querySelector(`[data-setting-val="${saveKey}"]`);
-        if (valEl) valEl.textContent = labelsMap[newVal] || String(newVal);
-        saveSetting(saveKey, newVal, reserves, national, miniGameId);
+        saveSetting(saveKey, parseInt(sel.value, 10), reserves, national, miniGameId);
       });
-      card.appendChild(sel);
-      return card;
+      row.appendChild(sel);
+      return row;
     }
-    grid.appendChild(buildSettingCard({ label: "Mentality", labelsMap: MENTALITY_LABELS, saveKey: "mentality", current: Number(initialValues.mentality) || 4 }));
-    grid.appendChild(buildSettingCard({ label: "Attacking Style", labelsMap: STYLE_LABELS, saveKey: "attacking", current: Number(initialValues.style) || 1 }));
-    grid.appendChild(buildSettingCard({ label: "Focus Side", labelsMap: FOCUS_LABELS, saveKey: "focus", current: Number(initialValues.focus) || 1 }));
+    wrap.appendChild(buildRow({ label: "Mentality", labelsMap: MENTALITY_LABELS, saveKey: "mentality", current: Number(initialValues.mentality) || 4 }));
+    wrap.appendChild(buildRow({ label: "Style", labelsMap: STYLE_LABELS, saveKey: "attacking", current: Number(initialValues.style) || 1 }));
+    wrap.appendChild(buildRow({ label: "Focus", labelsMap: FOCUS_LABELS, saveKey: "focus", current: Number(initialValues.focus) || 1 }));
+  }
+
+  // src/components/tactics/tm-tactics-panel.js
+  var BADGE_ZONES = [...TmConst.FIELD_ZONES].reverse().filter((z) => z.key !== "gk");
+  function getFormationName(assignment, activeKeys) {
+    return BADGE_ZONES.map((z) => z.cols.filter((pk) => pk && activeKeys.has(pk) && assignment[pk] && String(assignment[pk]) !== "0").length).filter((n) => n > 0).join("-") || "?";
+  }
+  var DEF_KEYS = {
+    1: ["dc"],
+    2: ["dcl", "dcr"],
+    3: ["dcl", "dc", "dcr"],
+    4: ["dl", "dcl", "dcr", "dr"],
+    5: ["dl", "dcl", "dc", "dcr", "dr"]
+  };
+  var DM_KEYS = {
+    1: ["dmc"],
+    2: ["dmcl", "dmcr"],
+    3: ["dml", "dmc", "dmr"],
+    4: ["dml", "dmcl", "dmcr", "dmr"],
+    5: ["dml", "dmcl", "dmc", "dmcr", "dmr"]
+  };
+  var MID_KEYS = {
+    1: ["mc"],
+    2: ["mcl", "mcr"],
+    3: ["mcl", "mc", "mcr"],
+    4: ["ml", "mcl", "mcr", "mr"],
+    5: ["ml", "mcl", "mc", "mcr", "mr"]
+  };
+  var OM_KEYS = {
+    1: ["omc"],
+    2: ["omcl", "omcr"],
+    3: ["oml", "omc", "omr"],
+    4: ["oml", "omcl", "omcr", "omr"],
+    5: ["oml", "omcl", "omc", "omcr", "omr"]
+  };
+  var FWD_KEYS = {
+    1: ["fc"],
+    2: ["fcl", "fcr"],
+    3: ["fcl", "fc", "fcr"]
+  };
+  function buildPresetPositions(nDef, nDm, nMid, nOm, nFwd) {
+    const pos = new Array(24).fill(null);
+    pos[0] = "gk";
+    const set = (start3, keys) => (keys || []).forEach((k, i) => {
+      pos[start3 + i] = k;
+    });
+    set(1, DEF_KEYS[nDef]);
+    set(6, DM_KEYS[nDm]);
+    set(11, MID_KEYS[nMid]);
+    set(16, OM_KEYS[nOm]);
+    set(21, FWD_KEYS[nFwd]);
+    return pos;
+  }
+  var FORMATION_PRESETS = {
+    "4-4-2": buildPresetPositions(4, 0, 4, 0, 2),
+    "4-3-3": buildPresetPositions(4, 0, 3, 0, 3),
+    "4-2-3-1": buildPresetPositions(4, 2, 0, 3, 1),
+    "4-5-1": buildPresetPositions(4, 0, 5, 0, 1),
+    "4-1-4-1": buildPresetPositions(4, 1, 4, 0, 1),
+    "4-3-2-1": buildPresetPositions(4, 0, 3, 2, 1),
+    "4-2-2-2": buildPresetPositions(4, 2, 2, 0, 2),
+    "4-1-2-3": buildPresetPositions(4, 1, 2, 0, 3),
+    "3-5-2": buildPresetPositions(3, 0, 5, 0, 2),
+    "3-4-3": buildPresetPositions(3, 0, 4, 0, 3),
+    "5-3-2": buildPresetPositions(5, 0, 3, 0, 2),
+    "5-4-1": buildPresetPositions(5, 0, 4, 0, 1),
+    "4-1-3-2": buildPresetPositions(4, 1, 3, 0, 2)
+  };
+  var FORMATION_NAMES = Object.keys(FORMATION_PRESETS);
+  var gc2 = TmUtils.getColor;
+  var R5_THRESHOLDS5 = TmConst.R5_THRESHOLDS;
+  var RTN_THRESHOLDS2 = TmConst.RTN_THRESHOLDS;
+  function computeStats(assignment, activeKeys, players_by_id) {
+    var _a, _b;
+    let totalR5 = 0, countR5 = 0, totalRtn = 0, countRtn = 0;
+    for (const posKey2 of activeKeys) {
+      const pid = assignment[posKey2];
+      if (!pid || String(pid) === "0") continue;
+      const p = players_by_id[String(pid)];
+      if (!p) continue;
+      const posId = (_a = TmConst.POSITION_MAP[posKey2]) == null ? void 0 : _a.id;
+      if (((_b = p.allPositionRatings) == null ? void 0 : _b.length) && posId != null) {
+        const rating = p.allPositionRatings.find((r) => r.id === posId);
+        if (rating) {
+          totalR5 += parseFloat(rating.r5) || 0;
+          countR5++;
+        }
+      }
+      if (p.routine != null && Number(p.routine) > 0) {
+        totalRtn += parseFloat(p.routine) || 0;
+        countRtn++;
+      }
+    }
+    return {
+      avgR5: countR5 > 0 ? totalR5 / countR5 : null,
+      avgRtn: countRtn > 0 ? totalRtn / countRtn : null
+    };
+  }
+  function pickBest11(activeKeys, players_by_id) {
+    const activeSlots = [...activeKeys].map((pk) => {
+      var _a;
+      return { posKey: pk, posId: (_a = TmConst.POSITION_MAP[pk]) == null ? void 0 : _a.id };
+    }).filter((s6) => s6.posId != null);
+    console.log("[pickBest11] activeKeys:", activeKeys);
+    console.log("[pickBest11] activeSlots:", activeSlots);
+    const players = Object.values(players_by_id).filter((p2) => {
+      var _a;
+      return (p2 == null ? void 0 : p2.player_id) && ((_a = p2.allPositionRatings) == null ? void 0 : _a.length);
+    });
+    const n = activeSlots.length;
+    if (!players.length || !n) return {};
+    const profit = players.map(
+      (p2) => activeSlots.map(({ posId }) => {
+        const r = p2.allPositionRatings.find((rt) => rt.id === posId);
+        return r ? parseFloat(r.r5) || 0 : 0;
+      })
+    );
+    const m = players.length;
+    const maxV = profit.reduce((mx, row) => Math.max(mx, ...row), 0) + 1;
+    const getCost = (i, j) => j < n ? maxV - profit[i][j] : 0;
+    const INF = 1e15;
+    const u = new Float64Array(m + 1);
+    const v = new Float64Array(m + 1);
+    const p = new Int32Array(m + 1);
+    const way = new Int32Array(m + 1);
+    for (let i = 1; i <= m; i++) {
+      p[0] = i;
+      let j0 = 0;
+      const minval = new Float64Array(m + 1).fill(INF);
+      const used = new Uint8Array(m + 1);
+      do {
+        used[j0] = 1;
+        const i0 = p[j0];
+        let delta = INF, j1 = 0;
+        for (let j = 1; j <= m; j++) {
+          if (!used[j]) {
+            const cur = getCost(i0 - 1, j - 1) - u[i0] - v[j];
+            if (cur < minval[j]) {
+              minval[j] = cur;
+              way[j] = j0;
+            }
+            if (minval[j] < delta) {
+              delta = minval[j];
+              j1 = j;
+            }
+          }
+        }
+        for (let j = 0; j <= m; j++) {
+          if (used[j]) {
+            u[p[j]] += delta;
+            v[j] -= delta;
+          } else minval[j] -= delta;
+        }
+        j0 = j1;
+      } while (p[j0] !== 0);
+      for (; j0; ) {
+        const j1 = way[j0];
+        p[j0] = p[j1];
+        j0 = j1;
+      }
+    }
+    const result = {};
+    for (let j = 1; j <= n; j++) {
+      result[activeSlots[j - 1].posKey] = players[p[j] - 1].player_id;
+    }
+    return result;
+  }
+  function mountTacticsPanel(container, data, initialSettings, opts, lineupApi) {
+    const { players_by_id = {} } = data;
+    const { getAssignment, getActiveKeys, applyAssignment, subscribe } = lineupApi;
+    const fmWrap = document.createElement("div");
+    fmWrap.className = "tmtc-panel-row";
+    container.appendChild(fmWrap);
+    const fmBadge = document.createElement("span");
+    fmBadge.className = "tmtc-panel-fm-badge";
+    fmBadge.textContent = getFormationName(getAssignment(), getActiveKeys());
+    fmWrap.appendChild(fmBadge);
+    const ac = TmAutocomplete.autocomplete({
+      placeholder: "Change...",
+      size: "sm",
+      tone: "overlay",
+      density: "compact"
+    });
+    ac.style.flex = "1 1 0";
+    fmWrap.appendChild(ac);
+    function buildAcItems(filter) {
+      const q3 = (filter || "").trim().toLowerCase();
+      return FORMATION_NAMES.filter((n) => !q3 || n.includes(q3)).map((name) => TmAutocomplete.autocompleteItem({
+        label: name,
+        active: name === getFormationName(getAssignment(), getActiveKeys()),
+        onSelect: async () => {
+          ac.hideDrop();
+          ac.setValue("");
+          fmBadge.textContent = name;
+          const newActiveKeys = new Set(FORMATION_PRESETS[name].filter(Boolean));
+          const newAssignment = pickBest11(newActiveKeys, players_by_id);
+          await applyAssignment(newAssignment);
+          refreshStats();
+        }
+      }));
+    }
+    ac.inputEl.addEventListener("focus", () => ac.setItems(buildAcItems("")));
+    ac.inputEl.addEventListener("input", () => ac.setItems(buildAcItems(ac.inputEl.value)));
+    document.addEventListener("click", (e) => {
+      if (!ac.contains(e.target)) ac.hideDrop();
+    }, true);
+    const statsWrap = document.createElement("div");
+    statsWrap.className = "tmtc-panel-stats";
+    container.appendChild(statsWrap);
+    statsWrap.innerHTML = [
+      TmMetric.metric({ label: "Avg R5", value: "--", layout: "row", tone: "overlay", size: "sm", attrs: { "data-stat": "r5" } }),
+      TmMetric.metric({ label: "Avg Rtn", value: "--", layout: "row", tone: "overlay", size: "sm", attrs: { "data-stat": "rtn" } })
+    ].join("");
+    const r5El = statsWrap.querySelector('[data-stat="r5"]  .tmu-metric-value');
+    const rtnEl = statsWrap.querySelector('[data-stat="rtn"] .tmu-metric-value');
+    function refreshStats() {
+      const st = computeStats(getAssignment(), getActiveKeys(), players_by_id);
+      if (st.avgR5 != null) {
+        r5El.textContent = st.avgR5.toFixed(1);
+        r5El.style.color = gc2(st.avgR5, R5_THRESHOLDS5);
+      } else {
+        r5El.textContent = "--";
+        r5El.style.color = "";
+      }
+      if (st.avgRtn != null) {
+        rtnEl.textContent = st.avgRtn.toFixed(1);
+        rtnEl.style.color = gc2(st.avgRtn, RTN_THRESHOLDS2);
+      } else {
+        rtnEl.textContent = "--";
+        rtnEl.style.color = "";
+      }
+    }
+    subscribe(refreshStats);
+    subscribe(() => {
+      fmBadge.textContent = getFormationName(getAssignment(), getActiveKeys());
+    });
+    refreshStats();
+    const pickBtn = TmButton.button({
+      label: "Pick Best 11",
+      color: "lime",
+      size: "sm",
+      block: true,
+      onClick: async () => {
+        pickBtn.disabled = true;
+        const currentAssignment = getAssignment();
+        const currentActiveKeys = new Set(
+          Object.keys(currentAssignment).filter(
+            (pk) => TmConst.POSITION_MAP[pk] != null && currentAssignment[pk] && String(currentAssignment[pk]) !== "0"
+          )
+        );
+        console.log("Current active keys before picking best 11:", currentActiveKeys);
+        const newFBP = pickBest11(currentActiveKeys, players_by_id);
+        if (Object.keys(newFBP).length) {
+          const usedPids = new Set(Object.values(newFBP).map(String));
+          const DEF_POS = /* @__PURE__ */ new Set(["dl", "dcl", "dc", "dcr", "dr"]);
+          const MID_POS = /* @__PURE__ */ new Set(["dmc", "dmcl", "dmcr", "mc", "mcl", "mcr", "omc", "omcl", "omcr"]);
+          const WING_POS = /* @__PURE__ */ new Set(["dml", "dmr", "ml", "mr", "oml", "omr"]);
+          const FWD_POS = /* @__PURE__ */ new Set(["fc", "fcl", "fcr"]);
+          const avail = Object.values(players_by_id).filter((p) => (p == null ? void 0 : p.player_id) && !usedPids.has(String(p.player_id))).map((p) => {
+            var _a;
+            const fav = String(p.favposition || "").split(",")[0].trim().toLowerCase();
+            const r5 = ((_a = p.allPositionRatings) == null ? void 0 : _a.length) ? Math.max(0, ...p.allPositionRatings.map((r) => parseFloat(r.r5) || 0)) : parseFloat(p.rec_sort) || 0;
+            return { pid: p.player_id, fav, r5 };
+          }).sort((a, b) => b.r5 - a.r5);
+          const pickBestSub = (posSet) => {
+            const hit = avail.find((a) => !usedPids.has(String(a.pid)) && posSet.has(a.fav));
+            if (!hit) return null;
+            usedPids.add(String(hit.pid));
+            return hit.pid;
+          };
+          const newAssignment = { ...newFBP };
+          newAssignment.sub1 = pickBestSub(/* @__PURE__ */ new Set(["gk"]));
+          newAssignment.sub2 = pickBestSub(DEF_POS);
+          newAssignment.sub3 = pickBestSub(MID_POS);
+          newAssignment.sub4 = pickBestSub(WING_POS);
+          newAssignment.sub5 = pickBestSub(FWD_POS);
+          await applyAssignment(newAssignment);
+          refreshStats();
+        }
+        pickBtn.disabled = false;
+      }
+    });
+    container.appendChild(pickBtn);
+    const hr = document.createElement("hr");
+    hr.className = "tmtc-panel-sep";
+    container.appendChild(hr);
+    mountTacticsSettings(container, initialSettings, opts);
+    return { refreshStats };
   }
 
   // src/components/tactics/tm-tactics-orders.js
-  var escHtml3 = (v) => String(v != null ? v : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  var escHtml2 = (v) => String(v != null ? v : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   var EVENT_LABELS = { 1: "Minute", 2: "Injury", 3: "Yellow Card", 4: "Red Card", 5: "Goal Scored" };
   var CONDITION_LABELS = { 1: "Winning", 2: "Draw", 3: "Losing", 4: "Any" };
   var ORDER_LABELS = { 1: "Substitution", 2: "Change Mentality", 3: "Change Style", 4: "Change Position" };
   var POSITIONS = ["GK", "DC", "DCL", "DCR", "DL", "DR", "DMC", "DMCL", "DMCR", "DML", "DMR", "MC", "MCL", "MCR", "ML", "MR", "OMC", "OMCL", "OMCR", "OML", "OMR", "FC", "FCL", "FCR"];
-  var SUB_ROLES2 = ["sub1", "sub2", "sub3", "sub4", "sub5"];
+  var SUB_ROLES = ["sub1", "sub2", "sub3", "sub4", "sub5"];
   function actionCell(typeLabel, value) {
     if (!typeLabel) return '<span style="color:var(--tmu-text-disabled)">\u2014</span>';
     return `<div class="tmtc-order-action-cell">
-        <span class="tmtc-order-action-type">${escHtml3(typeLabel)}</span>
-        ${value ? `<span class="tmtc-order-action-val">${escHtml3(String(value))}</span>` : ""}
+        <span class="tmtc-order-action-type">${escHtml2(typeLabel)}</span>
+        ${value ? `<span class="tmtc-order-action-val">${escHtml2(String(value))}</span>` : ""}
     </div>`;
   }
   function eventPar(eventId, parVal, players_by_id) {
@@ -47337,7 +47779,7 @@ ${names}`)) {
     const formation_by_pos = data.formation_by_pos || {};
     const formation_assoc = data.formation_assoc || {};
     const fieldPlayers = Object.values(formation_by_pos).filter(Boolean).map(String).map((pid) => players_by_id[pid]).filter(Boolean);
-    const benchPlayers = SUB_ROLES2.map((r) => formation_assoc[r]).filter(Boolean).map(String).map((pid) => players_by_id[pid]).filter(Boolean);
+    const benchPlayers = SUB_ROLES.map((r) => formation_assoc[r]).filter(Boolean).map(String).map((pid) => players_by_id[pid]).filter(Boolean);
     const state5 = {
       COND_ORDER_NUM: co.COND_ORDER_NUM,
       EVENT_ID: Number(co.EVENT_ID) || 0,
@@ -47404,51 +47846,32 @@ ${names}`)) {
       el2.textContent = text;
       return el2;
     }
-    function renderParams(container) {
-      container.innerHTML = "";
-      if (state5.EVENT_ID === 1) {
-        container.appendChild(lbl("Minute:"));
-        container.appendChild(minuteGroup());
-      } else if (state5.EVENT_ID === 2 || state5.EVENT_ID === 3 || state5.EVENT_ID === 4) {
-        container.appendChild(lbl("Player:"));
-        container.appendChild(playerGroup(fieldPlayers, () => state5.EVENT_PAR, (v) => {
-          state5.EVENT_PAR = v;
-        }, true));
-      }
-      if (state5.COND_ID === 1) {
-        container.appendChild(lbl("Winning by (goals):"));
-        container.appendChild(goalDiffGroup(() => state5.COND_PAR, (v) => {
-          state5.COND_PAR = v;
-        }));
-      } else if (state5.COND_ID === 3) {
-        container.appendChild(lbl("Losing by (goals):"));
-        container.appendChild(goalDiffGroup(() => state5.COND_PAR, (v) => {
-          state5.COND_PAR = v;
-        }));
-      }
-      if (state5.ORDER_ID === 1) {
-        container.appendChild(lbl("Player out:"));
-        container.appendChild(playerGroup(fieldPlayers, () => state5.ORDER_PAR1, (v) => {
+    function renderOrderSub(id) {
+      if (id === 1) {
+        const w = document.createElement("div");
+        w.appendChild(lbl("Player out:"));
+        w.appendChild(playerGroup(fieldPlayers, () => state5.ORDER_PAR1, (v) => {
           state5.ORDER_PAR1 = v;
         }));
-        container.appendChild(lbl("Player in:"));
-        container.appendChild(playerGroup(benchPlayers, () => state5.ORDER_PAR2, (v) => {
+        w.appendChild(lbl("Player in:"));
+        w.appendChild(playerGroup(benchPlayers, () => state5.ORDER_PAR2, (v) => {
           state5.ORDER_PAR2 = v;
         }));
-      } else if (state5.ORDER_ID === 2) {
-        container.appendChild(chipGroup(MENTALITY_MAP_LONG, () => state5.ORDER_PAR1, (v) => {
+        return w;
+      }
+      if (id === 2) return chipGroup(MENTALITY_MAP_LONG, () => state5.ORDER_PAR1, (v) => {
+        state5.ORDER_PAR1 = v;
+      });
+      if (id === 3) return chipGroup(STYLE_MAP, () => state5.ORDER_PAR1, (v) => {
+        state5.ORDER_PAR1 = v;
+      });
+      if (id === 4) {
+        const w = document.createElement("div");
+        w.appendChild(lbl("Player:"));
+        w.appendChild(playerGroup(fieldPlayers, () => state5.ORDER_PAR1, (v) => {
           state5.ORDER_PAR1 = v;
         }));
-      } else if (state5.ORDER_ID === 3) {
-        container.appendChild(chipGroup(STYLE_MAP, () => state5.ORDER_PAR1, (v) => {
-          state5.ORDER_PAR1 = v;
-        }));
-      } else if (state5.ORDER_ID === 4) {
-        container.appendChild(lbl("Player:"));
-        container.appendChild(playerGroup(fieldPlayers, () => state5.ORDER_PAR1, (v) => {
-          state5.ORDER_PAR1 = v;
-        }));
-        container.appendChild(lbl("New position:"));
+        w.appendChild(lbl("New position:"));
         const posEl = document.createElement("div");
         posEl.className = "tmtc-co-chips";
         POSITIONS.forEach((pos) => posEl.appendChild(
@@ -47456,46 +47879,130 @@ ${names}`)) {
             state5.ORDER_PAR3 = pos.toLowerCase();
           }, posEl)
         ));
-        container.appendChild(posEl);
+        w.appendChild(posEl);
+        return w;
       }
+      return null;
+    }
+    function radioSection(header, map, getVal, onSelect, buildSub) {
+      const col = document.createElement("div");
+      col.className = "tmtc-co-col";
+      col.appendChild(Object.assign(document.createElement("div"), { className: "tmtc-co-col-label", textContent: header }));
+      const groupName = "tmtc-co-rg-" + Math.random().toString(36).slice(2);
+      const entries = Object.entries(map);
+      const itemEls = [];
+      for (const [id, label] of entries) {
+        const numId = Number(id);
+        const isSelected = getVal() === numId;
+        const item = document.createElement("div");
+        item.className = "tmtc-co-radio-item" + (isSelected ? " selected" : "");
+        const lbl2 = document.createElement("label");
+        lbl2.className = "tmtc-co-radio-row";
+        const radio = document.createElement("input");
+        radio.type = "radio";
+        radio.name = groupName;
+        radio.className = "tmtc-co-radio-input";
+        radio.checked = isSelected;
+        lbl2.appendChild(radio);
+        lbl2.appendChild(Object.assign(document.createElement("span"), { className: "tmtc-co-radio-txt", textContent: label }));
+        item.appendChild(lbl2);
+        const sub = document.createElement("div");
+        sub.className = "tmtc-co-radio-sub";
+        if (isSelected) {
+          const built = buildSub(numId);
+          if (built) sub.appendChild(built);
+        }
+        item.appendChild(sub);
+        radio.addEventListener("change", () => {
+          if (!radio.checked) return;
+          onSelect(numId);
+          itemEls.forEach((el2, i) => {
+            const isNow = Number(entries[i][0]) === numId;
+            el2.classList.toggle("selected", isNow);
+            const elSub = el2.querySelector(".tmtc-co-radio-sub");
+            elSub.innerHTML = "";
+            if (isNow) {
+              const built = buildSub(numId);
+              if (built) elSub.appendChild(built);
+            }
+          });
+        });
+        col.appendChild(item);
+        itemEls.push(item);
+      }
+      return col;
     }
     function render18() {
       const content = document.createElement("div");
       const body = document.createElement("div");
-      body.className = "tmtc-co-modal-body";
-      const paramArea = document.createElement("div");
-      paramArea.className = "tmtc-co-modal-params";
-      const evSec = document.createElement("div");
-      evSec.className = "tmtc-co-modal-section";
-      evSec.appendChild(Object.assign(document.createElement("div"), { className: "tmtc-co-modal-section-label", textContent: "When" }));
-      evSec.appendChild(chipGroup(EVENT_LABELS, () => state5.EVENT_ID, (v) => {
-        state5.EVENT_ID = v;
-        state5.EVENT_PAR = 0;
-        renderParams(paramArea);
-      }));
-      body.appendChild(evSec);
-      const condSec = document.createElement("div");
-      condSec.className = "tmtc-co-modal-section";
-      condSec.appendChild(Object.assign(document.createElement("div"), { className: "tmtc-co-modal-section-label", textContent: "If score is" }));
-      condSec.appendChild(chipGroup(CONDITION_LABELS, () => state5.COND_ID, (v) => {
-        state5.COND_ID = v;
-        state5.COND_PAR = 0;
-        renderParams(paramArea);
-      }));
-      body.appendChild(condSec);
-      const ordSec = document.createElement("div");
-      ordSec.className = "tmtc-co-modal-section";
-      ordSec.appendChild(Object.assign(document.createElement("div"), { className: "tmtc-co-modal-section-label", textContent: "Then" }));
-      ordSec.appendChild(chipGroup(ORDER_LABELS, () => state5.ORDER_ID, (v) => {
-        state5.ORDER_ID = v;
-        state5.ORDER_PAR1 = 0;
-        state5.ORDER_PAR2 = 0;
-        state5.ORDER_PAR3 = "";
-        renderParams(paramArea);
-      }));
-      body.appendChild(ordSec);
+      body.className = "tmtc-co-dialog-body";
+      body.appendChild(radioSection(
+        "When",
+        EVENT_LABELS,
+        () => state5.EVENT_ID,
+        (v) => {
+          state5.EVENT_ID = v;
+          state5.EVENT_PAR = 0;
+        },
+        (id) => {
+          if (id === 1) {
+            const w = document.createElement("div");
+            w.appendChild(lbl("Minute:"));
+            w.appendChild(minuteGroup());
+            return w;
+          }
+          if (id === 2 || id === 3 || id === 4) {
+            const w = document.createElement("div");
+            w.appendChild(lbl("Player:"));
+            w.appendChild(playerGroup(fieldPlayers, () => state5.EVENT_PAR, (v) => {
+              state5.EVENT_PAR = v;
+            }, true));
+            return w;
+          }
+          return null;
+        }
+      ));
+      body.appendChild(radioSection(
+        "If score is",
+        CONDITION_LABELS,
+        () => state5.COND_ID,
+        (v) => {
+          state5.COND_ID = v;
+          state5.COND_PAR = 0;
+        },
+        (id) => {
+          if (id === 1) {
+            const w = document.createElement("div");
+            w.appendChild(lbl("Winning by:"));
+            w.appendChild(goalDiffGroup(() => state5.COND_PAR, (v) => {
+              state5.COND_PAR = v;
+            }));
+            return w;
+          }
+          if (id === 3) {
+            const w = document.createElement("div");
+            w.appendChild(lbl("Losing by:"));
+            w.appendChild(goalDiffGroup(() => state5.COND_PAR, (v) => {
+              state5.COND_PAR = v;
+            }));
+            return w;
+          }
+          return null;
+        }
+      ));
+      body.appendChild(radioSection(
+        "Then",
+        ORDER_LABELS,
+        () => state5.ORDER_ID,
+        (v) => {
+          state5.ORDER_ID = v;
+          state5.ORDER_PAR1 = 0;
+          state5.ORDER_PAR2 = 0;
+          state5.ORDER_PAR3 = "";
+        },
+        renderOrderSub
+      ));
       content.appendChild(body);
-      content.appendChild(paramArea);
       const footer = document.createElement("div");
       footer.className = "tmtc-co-modal-footer";
       footer.appendChild(TmButton.button({ label: "Save", color: "primary", size: "sm", onClick: save }));
@@ -47519,10 +48026,9 @@ ${names}`)) {
       const handle = TmModal.open({
         title: `Conditional Order #${Number(co.COND_ORDER_NUM) + 1}`,
         contentEl: content,
-        maxWidth: "min(680px, 96vw)"
+        maxWidth: "min(900px, 96vw)"
       });
       destroy = handle.destroy;
-      renderParams(paramArea);
     }
     async function save() {
       const payload = new URLSearchParams({
@@ -47694,7 +48200,7 @@ ${names}`)) {
     return res.json();
   }
   async function initTacticsPage(main2) {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     if (!/^\/tactics(?:\/reserves)?\/?$/i.test(window.location.pathname)) return;
     if (!main2 || !main2.isConnected) return;
     if (mountedMain5 === main2 && ((_a = main2.querySelector(".tmtc-page")) == null ? void 0 : _a.isConnected)) return;
@@ -47745,26 +48251,42 @@ ${names}`)) {
     leftPanel.className = "tmtc-main-left";
     const midPanel = document.createElement("div");
     midPanel.className = "tmtc-main-mid";
+    const statsPanel = document.createElement("div");
+    statsPanel.className = "tmtc-main-stats";
     const rightPanel = document.createElement("div");
     rightPanel.className = "tmtc-main-right";
     mainGrid.appendChild(leftPanel);
     mainGrid.appendChild(midPanel);
+    mainGrid.appendChild(statsPanel);
     mainGrid.appendChild(rightPanel);
-    const { refresh: refreshLineup } = mountTacticsLineup(leftPanel, data, { ...opts, squadContainer: midPanel });
-    mountTacticsSettings(rightPanel, initialSettings, opts);
+    const lineupApi = mountTacticsLineup(leftPanel, data, { ...opts, squadContainer: midPanel });
+    const panelApi = mountTacticsPanel(statsPanel, data, initialSettings, opts, lineupApi);
     mountTacticsOrders(rightPanel, data, opts);
-    let refreshTimer2 = null;
+    await TmPlayerDB.init();
+    for (const p of Object.values(players_by_id)) {
+      const DBPlayer = TmPlayerDB.get(p.player_id);
+      if (DBPlayer) TmPlayerService.normalizePlayer(p, DBPlayer, { skipSync: true });
+    }
+    lineupApi.refresh();
+    panelApi.refreshStats();
+    let refreshTimer2 = null, panelTimer = null;
     const scheduleRefresh = () => {
       clearTimeout(refreshTimer2);
-      refreshTimer2 = setTimeout(refreshLineup, 50);
+      refreshTimer2 = setTimeout(lineupApi.refresh, 50);
+    };
+    const schedulePanelRefresh = () => {
+      clearTimeout(panelTimer);
+      panelTimer = setTimeout(panelApi.refreshStats, 100);
     };
     for (const p of Object.values(players_by_id)) {
+      if ((_e = p.allPositionRatings) == null ? void 0 : _e.length) continue;
       TmPlayerService.fetchPlayerTooltip(p.player_id).then((tooltipData) => {
         if (!(tooltipData == null ? void 0 : tooltipData.player)) return;
         const np = tooltipData.player;
         p.allPositionRatings = np.allPositionRatings;
         p.routine = np.routine;
         scheduleRefresh();
+        schedulePanelRefresh();
       }).catch(() => {
       });
     }
@@ -49135,7 +49657,7 @@ ${names}`)) {
     },
     /* attachTooltip(canvas, tipEl, getSeriesFn, chartInfoGetter) */
     attachTooltip(canvas, tipEl, getSeriesFn, chartInfoGetter) {
-      const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
+      const { R5_THRESHOLDS: R5_THRESHOLDS6 } = TmConst;
       const { getColor: getColor6 } = TmUtils;
       canvas.addEventListener("mousemove", (e) => {
         const info = chartInfoGetter();
@@ -49159,7 +49681,7 @@ ${names}`)) {
           const { s: s6, i } = best;
           const age = s6.ages[i], val = s6.values[i];
           const ay = Math.floor(age), am = Math.round((age - ay) * 12);
-          tipEl.innerHTML = `<span style="color:${s6.color}">\u25CF</span> <b>${s6.name}</b> <span style="color:${themeColor("--tmu-text-faint", "#6a9a58")}">(${s6.posLabel})</span><br><b>R5:</b> <span style="color:${getColor6(val, R5_THRESHOLDS5)}">${Number(val).toFixed(2)}</span> &nbsp; <b>Age:</b> ${ay}y ${am}m`;
+          tipEl.innerHTML = `<span style="color:${s6.color}">\u25CF</span> <b>${s6.name}</b> <span style="color:${themeColor("--tmu-text-faint", "#6a9a58")}">(${s6.posLabel})</span><br><b>R5:</b> <span style="color:${getColor6(val, R5_THRESHOLDS6)}">${Number(val).toFixed(2)}</span> &nbsp; <b>Age:</b> ${ay}y ${am}m`;
           tipEl.style.display = "block";
           const px = info.xS(age), py = info.yS(val);
           let tx = px - tipEl.offsetWidth / 2;
@@ -49348,7 +49870,7 @@ ${names}`)) {
   function initR5HistoryPage() {
     const $3 = window.jQuery;
     if (!$3) return;
-    const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
+    const { R5_THRESHOLDS: R5_THRESHOLDS6 } = TmConst;
     const POS_GROUPS = [
       { key: "all", label: "All", match: () => true },
       { key: "gk", label: "GK", match: (idx) => idx === 9 },
@@ -49742,7 +50264,7 @@ ${names}`)) {
                 <a class="tmrc-legend-name" href="https://trophymanager.com/players/${s6.pid}/" target="_blank" title="${s6.name}">${s6.name}</a>
                 <div class="tmrc-legend-pos" style="color:${posGroupColor(s6.posIdx)}">${s6.posLabel}</div>
                 <div class="tmrc-legend-age">${ageY}.${ageM}</div>
-                <div class="tmrc-legend-r5" style="color:${getColor6(lastR5, R5_THRESHOLDS5)}">${Number(lastR5).toFixed(1)}</div>
+                <div class="tmrc-legend-r5" style="color:${getColor6(lastR5, R5_THRESHOLDS6)}">${Number(lastR5).toFixed(1)}</div>
             </div>`;
       });
       container.innerHTML = h;
@@ -49830,9 +50352,9 @@ ${names}`)) {
       container.innerHTML = `
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Players:</span> <span class="tmrc-stat-val">${visibleSeries.length}</span></div>
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Total records:</span> <span class="tmrc-stat-val">${totalWeeks}</span></div>
-            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Avg R5:</span> <span class="tmrc-stat-val" style="color:${getColor6(avg2, R5_THRESHOLDS5)}">${avg2.toFixed(2)}</span></div>
-            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Best:</span> <span class="tmrc-stat-val" style="color:${getColor6(max, R5_THRESHOLDS5)}">${max.toFixed(2)}</span> <span style="color:var(--tmu-text-faint);font-size:var(--tmu-font-xs)">(${(best == null ? void 0 : best.name) || "?"})</span></div>
-            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Min:</span> <span class="tmrc-stat-val" style="color:${getColor6(min, R5_THRESHOLDS5)}">${min.toFixed(2)}</span></div>
+            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Avg R5:</span> <span class="tmrc-stat-val" style="color:${getColor6(avg2, R5_THRESHOLDS6)}">${avg2.toFixed(2)}</span></div>
+            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Best:</span> <span class="tmrc-stat-val" style="color:${getColor6(max, R5_THRESHOLDS6)}">${max.toFixed(2)}</span> <span style="color:var(--tmu-text-faint);font-size:var(--tmu-font-xs)">(${(best == null ? void 0 : best.name) || "?"})</span></div>
+            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Min:</span> <span class="tmrc-stat-val" style="color:${getColor6(min, R5_THRESHOLDS6)}">${min.toFixed(2)}</span></div>
         `;
     };
     const redrawChart = () => {

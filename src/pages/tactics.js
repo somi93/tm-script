@@ -1,9 +1,10 @@
 import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmPlayerService } from '../services/player.js';
+import { TmPlayerDB } from '../lib/tm-playerdb.js';
 import { injectTacticsStyles } from '../components/tactics/tm-tactics-styles.js';
 import { mountTacticsLineup } from '../components/tactics/tm-tactics-lineup.js';
-import { mountTacticsSettings } from '../components/tactics/tm-tactics-settings.js';
+import { mountTacticsPanel } from '../components/tactics/tm-tactics-panel.js';
 import { mountTacticsOrders } from '../components/tactics/tm-tactics-orders.js';
 
 'use strict';
@@ -93,7 +94,7 @@ export async function initTacticsPage(main) {
 
     host.innerHTML = '';
 
-    // ── 3-column layout: field | players | settings+orders ───────────────
+    // ── 4-column layout: field | players | panel (formation+stats+settings) | orders ─
     const mainGrid = document.createElement('div');
     mainGrid.className = 'tmtc-main-grid';
     host.appendChild(mainGrid);
@@ -102,27 +103,42 @@ export async function initTacticsPage(main) {
     leftPanel.className  = 'tmtc-main-left';
     const midPanel   = document.createElement('div');
     midPanel.className   = 'tmtc-main-mid';
+    const statsPanel = document.createElement('div');
+    statsPanel.className = 'tmtc-main-stats';
     const rightPanel = document.createElement('div');
     rightPanel.className = 'tmtc-main-right';
 
     mainGrid.appendChild(leftPanel);
     mainGrid.appendChild(midPanel);
+    mainGrid.appendChild(statsPanel);
     mainGrid.appendChild(rightPanel);
 
-    const { refresh: refreshLineup } = mountTacticsLineup(leftPanel, data, { ...opts, squadContainer: midPanel });
-    mountTacticsSettings(rightPanel, initialSettings, opts);
+    const lineupApi = mountTacticsLineup(leftPanel, data, { ...opts, squadContainer: midPanel });
+    const panelApi  = mountTacticsPanel(statsPanel, data, initialSettings, opts, lineupApi);
     mountTacticsOrders(rightPanel, data, opts);
 
-    // Fetch tooltip (normalizes skills → allPositionRatings, routine) for each squad player
-    let refreshTimer = null;
-    const scheduleRefresh = () => { clearTimeout(refreshTimer); refreshTimer = setTimeout(refreshLineup, 50); };
+    // Phase 1: normalize from local DB instantly (no network, shows R5 immediately for known players)
+    await TmPlayerDB.init();
     for (const p of Object.values(players_by_id)) {
+        const DBPlayer = TmPlayerDB.get(p.player_id);
+        if (DBPlayer) TmPlayerService.normalizePlayer(p, DBPlayer, { skipSync: true });
+    }
+    lineupApi.refresh();
+    panelApi.refreshStats();
+
+    // Phase 2: fetch tooltip only for players not yet enriched from DB
+    let refreshTimer = null, panelTimer = null;
+    const scheduleRefresh      = () => { clearTimeout(refreshTimer); refreshTimer = setTimeout(lineupApi.refresh,       50);  };
+    const schedulePanelRefresh = () => { clearTimeout(panelTimer);   panelTimer   = setTimeout(panelApi.refreshStats, 100); };
+    for (const p of Object.values(players_by_id)) {
+        if (p.allPositionRatings?.length) continue; // already enriched from DB
         TmPlayerService.fetchPlayerTooltip(p.player_id).then(tooltipData => {
             if (!tooltipData?.player) return;
             const np = tooltipData.player;
             p.allPositionRatings = np.allPositionRatings;
             p.routine = np.routine;
             scheduleRefresh();
+            schedulePanelRefresh();
         }).catch(() => {});
     }
 }

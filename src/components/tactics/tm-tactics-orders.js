@@ -129,86 +129,149 @@ function showOrderDialog(co, data, opts, onSaved) {
         return el;
     }
 
-    function renderParams(container) {
-        container.innerHTML = '';
-        if (state.EVENT_ID === 1) {
-            container.appendChild(lbl("Minute:"));
-            container.appendChild(minuteGroup());
-        } else if (state.EVENT_ID === 2 || state.EVENT_ID === 3 || state.EVENT_ID === 4) {
-            container.appendChild(lbl("Player:"));
-            container.appendChild(playerGroup(fieldPlayers, () => state.EVENT_PAR, v => { state.EVENT_PAR = v; }, true));
+    function renderOrderSub(id) {
+        if (id === 1) {
+            const w = document.createElement('div');
+            w.appendChild(lbl('Player out:'));
+            w.appendChild(playerGroup(fieldPlayers, () => state.ORDER_PAR1, v => { state.ORDER_PAR1 = v; }));
+            w.appendChild(lbl('Player in:'));
+            w.appendChild(playerGroup(benchPlayers, () => state.ORDER_PAR2, v => { state.ORDER_PAR2 = v; }));
+            return w;
         }
-        if (state.COND_ID === 1) {
-            container.appendChild(lbl("Winning by (goals):"));
-            container.appendChild(goalDiffGroup(() => state.COND_PAR, v => { state.COND_PAR = v; }));
-        } else if (state.COND_ID === 3) {
-            container.appendChild(lbl("Losing by (goals):"));
-            container.appendChild(goalDiffGroup(() => state.COND_PAR, v => { state.COND_PAR = v; }));
-        }
-        if (state.ORDER_ID === 1) {
-            container.appendChild(lbl("Player out:"));
-            container.appendChild(playerGroup(fieldPlayers, () => state.ORDER_PAR1, v => { state.ORDER_PAR1 = v; }));
-            container.appendChild(lbl("Player in:"));
-            container.appendChild(playerGroup(benchPlayers, () => state.ORDER_PAR2, v => { state.ORDER_PAR2 = v; }));
-        } else if (state.ORDER_ID === 2) {
-            container.appendChild(chipGroup(MENTALITY_MAP_LONG, () => state.ORDER_PAR1, v => { state.ORDER_PAR1 = v; }));
-        } else if (state.ORDER_ID === 3) {
-            container.appendChild(chipGroup(STYLE_MAP, () => state.ORDER_PAR1, v => { state.ORDER_PAR1 = v; }));
-        } else if (state.ORDER_ID === 4) {
-            container.appendChild(lbl("Player:"));
-            container.appendChild(playerGroup(fieldPlayers, () => state.ORDER_PAR1, v => { state.ORDER_PAR1 = v; }));
-            container.appendChild(lbl("New position:"));
+        if (id === 2) return chipGroup(MENTALITY_MAP_LONG, () => state.ORDER_PAR1, v => { state.ORDER_PAR1 = v; });
+        if (id === 3) return chipGroup(STYLE_MAP, () => state.ORDER_PAR1, v => { state.ORDER_PAR1 = v; });
+        if (id === 4) {
+            const w = document.createElement('div');
+            w.appendChild(lbl('Player:'));
+            w.appendChild(playerGroup(fieldPlayers, () => state.ORDER_PAR1, v => { state.ORDER_PAR1 = v; }));
+            w.appendChild(lbl('New position:'));
             const posEl = document.createElement('div');
             posEl.className = 'tmtc-co-chips';
             POSITIONS.forEach(pos => posEl.appendChild(
                 pickBtn(pos, state.ORDER_PAR3 === pos.toLowerCase(), () => { state.ORDER_PAR3 = pos.toLowerCase(); }, posEl)
             ));
-            container.appendChild(posEl);
+            w.appendChild(posEl);
+            return w;
         }
+        return null;
+    }
+
+    function radioSection(header, map, getVal, onSelect, buildSub) {
+        const col = document.createElement('div');
+        col.className = 'tmtc-co-col';
+        col.appendChild(Object.assign(document.createElement('div'), { className: 'tmtc-co-col-label', textContent: header }));
+
+        const groupName = 'tmtc-co-rg-' + Math.random().toString(36).slice(2);
+        const entries = Object.entries(map);
+        const itemEls = [];
+
+        for (const [id, label] of entries) {
+            const numId = Number(id);
+            const isSelected = getVal() === numId;
+
+            const item = document.createElement('div');
+            item.className = 'tmtc-co-radio-item' + (isSelected ? ' selected' : '');
+
+            const lbl = document.createElement('label');
+            lbl.className = 'tmtc-co-radio-row';
+
+            const radio = document.createElement('input');
+            radio.type = 'radio';
+            radio.name = groupName;
+            radio.className = 'tmtc-co-radio-input';
+            radio.checked = isSelected;
+            lbl.appendChild(radio);
+            lbl.appendChild(Object.assign(document.createElement('span'), { className: 'tmtc-co-radio-txt', textContent: label }));
+            item.appendChild(lbl);
+
+            const sub = document.createElement('div');
+            sub.className = 'tmtc-co-radio-sub';
+            if (isSelected) {
+                const built = buildSub(numId);
+                if (built) sub.appendChild(built);
+            }
+            item.appendChild(sub);
+
+            radio.addEventListener('change', () => {
+                if (!radio.checked) return;
+                onSelect(numId);
+                itemEls.forEach((el, i) => {
+                    const isNow = Number(entries[i][0]) === numId;
+                    el.classList.toggle('selected', isNow);
+                    const elSub = el.querySelector('.tmtc-co-radio-sub');
+                    elSub.innerHTML = '';
+                    if (isNow) {
+                        const built = buildSub(numId);
+                        if (built) elSub.appendChild(built);
+                    }
+                });
+            });
+
+            col.appendChild(item);
+            itemEls.push(item);
+        }
+        return col;
     }
 
     function render() {
         const content = document.createElement('div');
 
         const body = document.createElement('div');
-        body.className = 'tmtc-co-modal-body';
-
-        const paramArea = document.createElement('div');
-        paramArea.className = 'tmtc-co-modal-params';
+        body.className = 'tmtc-co-dialog-body';
 
         // WHEN
-        const evSec = document.createElement('div');
-        evSec.className = 'tmtc-co-modal-section';
-        evSec.appendChild(Object.assign(document.createElement('div'), { className: 'tmtc-co-modal-section-label', textContent: 'When' }));
-        evSec.appendChild(chipGroup(EVENT_LABELS, () => state.EVENT_ID, v => {
-            state.EVENT_ID = v; state.EVENT_PAR = 0; renderParams(paramArea);
-        }));
-        body.appendChild(evSec);
+        body.appendChild(radioSection('When', EVENT_LABELS,
+            () => state.EVENT_ID,
+            v => { state.EVENT_ID = v; state.EVENT_PAR = 0; },
+            id => {
+                if (id === 1) {
+                    const w = document.createElement('div');
+                    w.appendChild(lbl('Minute:'));
+                    w.appendChild(minuteGroup());
+                    return w;
+                }
+                if (id === 2 || id === 3 || id === 4) {
+                    const w = document.createElement('div');
+                    w.appendChild(lbl('Player:'));
+                    w.appendChild(playerGroup(fieldPlayers, () => state.EVENT_PAR, v => { state.EVENT_PAR = v; }, true));
+                    return w;
+                }
+                return null;
+            }
+        ));
 
-        // IF
-        const condSec = document.createElement('div');
-        condSec.className = 'tmtc-co-modal-section';
-        condSec.appendChild(Object.assign(document.createElement('div'), { className: 'tmtc-co-modal-section-label', textContent: 'If score is' }));
-        condSec.appendChild(chipGroup(CONDITION_LABELS, () => state.COND_ID, v => {
-            state.COND_ID = v; state.COND_PAR = 0; renderParams(paramArea);
-        }));
-        body.appendChild(condSec);
+        // IF SCORE IS
+        body.appendChild(radioSection('If score is', CONDITION_LABELS,
+            () => state.COND_ID,
+            v => { state.COND_ID = v; state.COND_PAR = 0; },
+            id => {
+                if (id === 1) {
+                    const w = document.createElement('div');
+                    w.appendChild(lbl('Winning by:'));
+                    w.appendChild(goalDiffGroup(() => state.COND_PAR, v => { state.COND_PAR = v; }));
+                    return w;
+                }
+                if (id === 3) {
+                    const w = document.createElement('div');
+                    w.appendChild(lbl('Losing by:'));
+                    w.appendChild(goalDiffGroup(() => state.COND_PAR, v => { state.COND_PAR = v; }));
+                    return w;
+                }
+                return null;
+            }
+        ));
 
         // THEN
-        const ordSec = document.createElement('div');
-        ordSec.className = 'tmtc-co-modal-section';
-        ordSec.appendChild(Object.assign(document.createElement('div'), { className: 'tmtc-co-modal-section-label', textContent: 'Then' }));
-        ordSec.appendChild(chipGroup(ORDER_LABELS, () => state.ORDER_ID, v => {
-            state.ORDER_ID = v; state.ORDER_PAR1 = 0; state.ORDER_PAR2 = 0; state.ORDER_PAR3 = ''; renderParams(paramArea);
-        }));
-        body.appendChild(ordSec);
+        body.appendChild(radioSection('Then', ORDER_LABELS,
+            () => state.ORDER_ID,
+            v => { state.ORDER_ID = v; state.ORDER_PAR1 = 0; state.ORDER_PAR2 = 0; state.ORDER_PAR3 = ''; },
+            renderOrderSub
+        ));
 
         content.appendChild(body);
-        content.appendChild(paramArea);
 
         const footer = document.createElement('div');
         footer.className = 'tmtc-co-modal-footer';
-
         footer.appendChild(TmButton.button({ label: 'Save', color: 'primary', size: 'sm', onClick: save }));
         footer.appendChild(TmButton.button({
             label: 'Clear', color: 'danger', size: 'sm',
@@ -224,11 +287,9 @@ function showOrderDialog(co, data, opts, onSaved) {
         const handle = TmModal.open({
             title: `Conditional Order #${Number(co.COND_ORDER_NUM) + 1}`,
             contentEl: content,
-            maxWidth: 'min(680px, 96vw)',
+            maxWidth: 'min(900px, 96vw)',
         });
         destroy = handle.destroy;
-
-        renderParams(paramArea);
     }
 
     async function save() {
