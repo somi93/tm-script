@@ -61,6 +61,7 @@ const PAGES = [
     'cup',
     'international-cup',
     'international-cup-coefficients',
+    'international-cup-statistics',
     'finances',
     'finances-maintenance',
     'finances-wages',

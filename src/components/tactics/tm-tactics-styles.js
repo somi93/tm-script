@@ -38,7 +38,18 @@ export function injectTacticsStyles() {
         body:has(.tmtc-page) .tmvu-main {
             width: calc(100% - 24px) !important;
             max-width: none !important;
-            overflow: hidden;
+            overflow-x: clip !important;
+            overflow-y: visible !important;
+        }
+        body:has(.tmtc-page) .tmvu-main * {
+            --sticky-unblock: 1;
+        }
+        /* Ensure nothing between body and field-col sets overflow-y */
+        body:has(.tmtc-page) .tmu-page-section-stack,
+        body:has(.tmtc-page) .tmtc-main-grid,
+        body:has(.tmtc-page) .tmtc-main-left,
+        body:has(.tmtc-page) .tmtc-lineup-2col {
+            overflow: visible;
         }
 
         /* ── page layout ── */
@@ -54,7 +65,7 @@ export function injectTacticsStyles() {
         .tmtc-main-grid {
             display: flex;
             gap: var(--tmu-space-md);
-            align-items: flex-start;
+            align-items: stretch;
         }
         .tmtc-main-left {
             flex: 0 0 auto;
@@ -76,9 +87,8 @@ export function injectTacticsStyles() {
         .tmtc-lineup-2col {
             display: flex;
             gap: var(--tmu-space-md);
-            align-items: stretch;
-            flex: 1 1 0;
-            min-height: 0;
+            align-items: flex-start;
+            height: 100%;
         }
         .tmtc-field-col {
             flex: 0 0 auto;
@@ -87,6 +97,9 @@ export function injectTacticsStyles() {
             flex-direction: column;
             align-items: flex-start;
             gap: var(--tmu-space-sm);
+            position: sticky;
+            top: 160px;
+            align-self: flex-start;
         }
         .tmtc-squad-col {
             flex: 1 1 0;
@@ -334,6 +347,65 @@ export function injectTacticsStyles() {
             flex-direction: column;
             align-items: stretch;
             gap: var(--tmu-space-xs);
+        }
+
+        /* ── special roles list ── */
+        .tmtc-roles-section {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin-top: var(--tmu-space-xs);
+        }
+        .tmtc-role-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--tmu-space-sm);
+            padding: 4px var(--tmu-space-sm);
+            border-radius: var(--tmu-space-xs);
+            background: var(--tmu-surface-dark-soft);
+            border: 1px solid var(--tmu-border-faint);
+            min-height: 30px;
+        }
+        .tmtc-role-label {
+            font-size: var(--tmu-font-xs);
+            font-weight: 600;
+            color: var(--tmu-text-panel-label);
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            flex-shrink: 0;
+        }
+        .tmtc-role-slot {
+            flex: 1 1 0;
+            min-width: 0;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .tmtc-role-slot.tmtc-drag-over {
+            outline: 2px dashed var(--tmu-info) !important;
+            outline-offset: -2px;
+            border-radius: var(--tmu-space-xs);
+            background: rgba(77,171,247,0.10) !important;
+        }
+        .tmtc-role-chip {
+            font-size: var(--tmu-font-xs);
+            font-weight: 700;
+            color: var(--tmu-text-inverse);
+            background: var(--tmu-surface-overlay);
+            border: 1px solid var(--tmu-border-soft);
+            border-radius: var(--tmu-space-xs);
+            padding: 2px 8px;
+            cursor: grab;
+            user-select: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 120px;
+        }
+        .tmtc-role-chip:active { cursor: grabbing; }
+        .tmtc-role-empty {
+            font-size: var(--tmu-font-xs);
+            color: var(--tmu-text-faint);
         }
 
         /* ── orders table ── */

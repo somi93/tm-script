@@ -35,6 +35,7 @@ import { initFreeProPage } from '../pages/free-pro.js';
 import { initDonationsPage } from '../pages/donations.js';
 import { initUserGuidePage } from '../pages/user-guide.js';
 import { initInternationalCupCoefficientsPage } from '../pages/international-cup-coefficients.js';
+import { initInternationalCupStatisticsPage } from '../pages/international-cup-statistics.js';
 import { initDbInspectPage } from '../pages/dbinspect.js';
 import { initDbRepairPage } from '../pages/dbrepair.js';
 import { initNationalTeamsRankingsPage } from '../pages/national-teams-rankings.js';
@@ -738,6 +739,9 @@ function initCurrentPage() {
     }
     if (/^\/international-cup\/coefficients/i.test(currentPath)) {
         initInternationalCupCoefficientsPage(main);
+    }
+    if (/^\/statistics\/international-cup\//i.test(currentPath)) {
+        initInternationalCupStatisticsPage(main);
     }
     if (/^\/123/.test(currentPath)) {
         initDbInspectPage(main);

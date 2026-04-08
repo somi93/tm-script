@@ -72,8 +72,6 @@ function pickBest11(activeKeys, players_by_id) {
     const activeSlots = [...activeKeys]
         .map(pk => ({ posKey: pk, posId: TmConst.POSITION_MAP[pk]?.id }))
         .filter(s => s.posId != null);
-    console.log('[pickBest11] activeKeys:', activeKeys);
-    console.log('[pickBest11] activeSlots:', activeSlots);
     const players = Object.values(players_by_id).filter(p => p?.player_id && p.allPositionRatings?.length);
     const n = activeSlots.length;
     if (!players.length || !n) return {};
@@ -129,6 +127,67 @@ function pickBest11(activeKeys, players_by_id) {
         result[activeSlots[j - 1].posKey] = players[p[j] - 1].player_id;
     }
     return result;
+}
+
+// Zones ordered FWD→DEF (skip GK), paired with their key tables and slot maxes.
+// These match FIELD_ZONES order (FIELD_ZONES[0]=fwd, ..., FIELD_ZONES[4]=def).
+const OUTFIELD_ZONE_DEFS = [
+    { keys: FWD_KEYS, max: 3 },
+    { keys: OM_KEYS,  max: 5 },
+    { keys: MID_KEYS, max: 5 },
+    { keys: DM_KEYS,  max: 5 },
+    { keys: DEF_KEYS, max: 5 },
+];
+
+function computeAssignmentR5(assignment, players_by_id) {
+    let total = 0;
+    for (const [posKey, pid] of Object.entries(assignment)) {
+        if (!pid) continue;
+        const p = players_by_id[String(pid)];
+        const posId = TmConst.POSITION_MAP[posKey]?.id;
+        if (!p?.allPositionRatings || posId == null) continue;
+        const r = p.allPositionRatings.find(rt => rt.id === posId);
+        if (r) total += parseFloat(r.r5) || 0;
+    }
+    return total;
+}
+
+// Enumerate all valid zone distributions summing to 10, run Hungarian for each,
+// return the assignment with highest total R5.
+function findBestR5Formation(players_by_id, gkPid) {
+    // Exclude GK from the candidate pool
+    const outfieldById = {};
+    for (const [id, p] of Object.entries(players_by_id)) {
+        if (String(p?.player_id) !== String(gkPid)) outfieldById[id] = p;
+    }
+
+    let bestR5 = -Infinity;
+    let bestAssignment = null;
+
+    function enumerate(zoneIdx, remaining, counts) {
+        if (zoneIdx === OUTFIELD_ZONE_DEFS.length) {
+            if (remaining !== 0) return;
+            const activeKeys = new Set();
+            for (let i = 0; i < OUTFIELD_ZONE_DEFS.length; i++) {
+                if (counts[i] > 0) for (const pk of (OUTFIELD_ZONE_DEFS[i].keys[counts[i]] || [])) activeKeys.add(pk);
+            }
+            if (activeKeys.size !== 10) return;
+            const assignment = pickBest11(activeKeys, outfieldById);
+            if (Object.keys(assignment).length < 10) return;
+            const r5 = computeAssignmentR5(assignment, outfieldById);
+            if (r5 > bestR5) { bestR5 = r5; bestAssignment = assignment; }
+            return;
+        }
+        const max = Math.min(OUTFIELD_ZONE_DEFS[zoneIdx].max, remaining);
+        for (let n = 0; n <= max; n++) {
+            counts.push(n);
+            enumerate(zoneIdx + 1, remaining - n, counts);
+            counts.pop();
+        }
+    }
+
+    enumerate(0, 10, []);
+    return bestAssignment || {};
 }
 
 export function mountTacticsPanel(container, data, initialSettings, opts, lineupApi) {
@@ -213,13 +272,72 @@ export function mountTacticsPanel(container, data, initialSettings, opts, lineup
     });
     container.appendChild(pickBtn);
 
+    const bestFmBtn = TmButton.button({
+        label: 'Best R5 Formation',
+        color: 'secondary',
+        size: 'sm',
+        block: true,
+        onClick: async () => {
+            bestFmBtn.disabled = true;
+            const currentAssignment = getAssignment();
+            const gkPid = currentAssignment['gk'];
+            const newFBP = findBestR5Formation(players_by_id, gkPid);
+            if (Object.keys(newFBP).length) {
+                if (gkPid) newFBP['gk'] = gkPid;
+                const usedPids = new Set(Object.values(newFBP).map(String));
+
+                const DEF_POS  = new Set(['dl', 'dcl', 'dc', 'dcr', 'dr']);
+                const MID_POS  = new Set(['dmc', 'dmcl', 'dmcr', 'mc', 'mcl', 'mcr', 'omc', 'omcl', 'omcr']);
+                const WING_POS = new Set(['dml', 'dmr', 'ml', 'mr', 'oml', 'omr']);
+                const FWD_POS  = new Set(['fc', 'fcl', 'fcr']);
+
+                const avail = Object.values(players_by_id)
+                    .filter(p => p?.player_id && !usedPids.has(String(p.player_id)))
+                    .map(p => {
+                        const r5 = p.allPositionRatings?.length
+                            ? Math.max(0, ...p.allPositionRatings.map(r => parseFloat(r.r5) || 0))
+                            : (parseFloat(p.rec_sort) || 0);
+                        const favPositions = new Set(
+                            String(p.favposition || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean)
+                        );
+                        return { pid: p.player_id, favPositions, ratings: p.allPositionRatings || [], r5 };
+                    })
+                    .sort((a, b) => b.r5 - a.r5);
+
+                const pickBestSub = (posSet) => {
+                    const posIds = new Set(
+                        [...posSet].map(pk => TmConst.POSITION_MAP[pk]?.id).filter(id => id != null)
+                    );
+                    const hit = avail.find(a => {
+                        if (usedPids.has(String(a.pid))) return false;
+                        if (a.ratings.length) return a.ratings.some(r => posIds.has(r.id) && (parseFloat(r.r5) || 0) > 0);
+                        return [...a.favPositions].some(fp => posSet.has(fp));
+                    });
+                    if (!hit) return null;
+                    usedPids.add(String(hit.pid));
+                    return hit.pid;
+                };
+
+                newFBP.sub1 = pickBestSub(new Set(['gk']));
+                newFBP.sub2 = pickBestSub(DEF_POS);
+                newFBP.sub3 = pickBestSub(MID_POS);
+                newFBP.sub4 = pickBestSub(WING_POS);
+                newFBP.sub5 = pickBestSub(FWD_POS);
+                await applyAssignment(newFBP);
+                refreshStats();
+            }
+            bestFmBtn.disabled = false;
+        },
+    });
+    container.appendChild(bestFmBtn);
+
     // Separator
     const hr = document.createElement('hr');
     hr.className = 'tmtc-panel-sep';
     container.appendChild(hr);
 
     // Settings (mentality / style / focus)
-    mountTacticsSettings(container, initialSettings, opts);
+    mountTacticsSettings(container, initialSettings, opts, lineupApi);
 
     return { refreshStats };
 }

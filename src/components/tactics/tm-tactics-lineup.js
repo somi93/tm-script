@@ -263,7 +263,7 @@ export function mountTacticsLineup(container, data, opts = {}) {
             if (age > 0) { totalAge += age; countAge++; }
         }
         const gc = TmUtils.getColor;
-        const r5  = countR5  > 0 ? (totalR5  / countR5).toFixed(1)  : null;
+        const r5  = countR5  > 0 ? (totalR5  / countR5).toFixed(2) : null;
         const rtn = countRtn > 0 ? (totalRtn / countRtn).toFixed(1) : null;
         const age = countAge > 0 ? (totalAge / countAge).toFixed(1) : null;
         const sep = `<span class="tmtc-fob-sep">·</span>`;
@@ -516,8 +516,8 @@ export function mountTacticsLineup(container, data, opts = {}) {
             e.dataTransfer.effectAllowed = 'move';
             e.dataTransfer.setData('text/plain', pid);
             tr.classList.add('tmtc-drag-source');
-            // Show ghost slots only if this player is already on the field
-            if (getFieldPosKey(pid)) fieldEl.classList.add('is-dragging');
+            // Show empty field slots: always if player is already on field, or if field has room for one more
+            if (getFieldPosKey(pid) || getOccupiedFieldKeys().size < 11) fieldEl.classList.add('is-dragging');
         });
 
         // Delegated dragover/drop for bench-placeholder rows and player rows
@@ -596,7 +596,7 @@ export function mountTacticsLineup(container, data, opts = {}) {
             try {
                 const outPid = Object.keys(changed).find(p => changed[p] === 'out') || null;
                 await postSave(buildAssocForSave(outPid), changed, reserves, national, miniGameId);
-                showStatus(true, 'Saved ✓');
+                TmAlert.show({ message: 'Saved', tone: 'success' });
                 notifyChange();
             } catch { TmAlert.show({ message: 'Save failed', tone: 'error' }); }
         });
@@ -701,8 +701,9 @@ export function mountTacticsLineup(container, data, opts = {}) {
             const prevPid = assignment[posKey] ? String(assignment[posKey]) : null;
             if (prevPid === String(pid)) return; // same slot, no-op
 
-            // Empty slots only accept players already on the field (prevents adding a 12th player)
-            if (!prevPid && ds.fromType !== 'field') return;
+            // Empty slots only accept players already on the field (prevents adding a 12th player).
+            // If the slot is empty AND the source is not from the field, only block when the field is already full (11).
+            if (!prevPid && ds.fromType !== 'field' && getOccupiedFieldKeys().size >= 11) return;
 
             const changed = {};
 
@@ -721,7 +722,7 @@ export function mountTacticsLineup(container, data, opts = {}) {
             try {
                 const outPid = Object.keys(changed).find(p => changed[p] === 'out') || null;
                 await postSave(buildAssocForSave(outPid), changed, reserves, national, miniGameId);
-                showStatus(true, 'Saved ✓');
+                TmAlert.show({ message: 'Saved', tone: 'success' });
                 notifyChange();
             } catch { TmAlert.show({ message: 'Save failed', tone: 'error' }); }
         });
@@ -761,7 +762,7 @@ export function mountTacticsLineup(container, data, opts = {}) {
             try {
                 const outPid = Object.keys(changed).find(p => changed[p] === 'out') || null;
                 await postSave(buildAssocForSave(outPid), changed, reserves, national, miniGameId);
-                showStatus(true, 'Saved ✓');
+                TmAlert.show({ message: 'Saved', tone: 'success' });
                 notifyChange();
             } catch { TmAlert.show({ message: 'Save failed', tone: 'error' }); }
         });
@@ -781,21 +782,14 @@ export function mountTacticsLineup(container, data, opts = {}) {
 
     buildField();
 
-    // Sub slots — in-memory only; displayed as placeholder rows in the squad table
+    // Sub slots
     for (const role of BENCH_SLOTS) {
         benchSlotEls[role] = makeBenchSlot(role);
     }
-
-    // Special roles (captain/corner/penalty/freekick) — rendered below the pitch
-    const specialHead = document.createElement('div');
-    specialHead.className   = 'tmtc-bench-section-head';
-    specialHead.textContent = 'Roles';
-    specialRolesCol.appendChild(specialHead);
+    // Special role slots created on demand via mountSpecialRoles()
     for (const role of SPECIAL_SLOTS) {
         benchSlotEls[role] = makeBenchSlot(role);
-        specialRolesCol.appendChild(benchSlotEls[role]);
     }
-    fieldCol.appendChild(specialRolesCol);
 
     const squadTarget = externalSquadContainer || squadCol;
     tblWrap = buildSquadTable();
@@ -849,7 +843,7 @@ export function mountTacticsLineup(container, data, opts = {}) {
         try {
             const outPid = Object.keys(changed).find(p => changed[p] === 'out') || null;
             await postSave(buildAssocForSave(outPid), changed, reserves, national, miniGameId);
-            showStatus(true, 'Saved ✓');
+            TmAlert.show({ message: 'Saved', tone: 'success' });
             notifyChange();
         } catch { TmAlert.show({ message: 'Save failed', tone: 'error' }); }
     }
@@ -866,5 +860,99 @@ export function mountTacticsLineup(container, data, opts = {}) {
         return () => { const i = changeListeners.indexOf(fn); if (i >= 0) changeListeners.splice(i, 1); };
     };
 
-    return { refresh: refreshSquadTable, applyAssignment, getAssignment, getActiveKeys, subscribe };
+    // Mount special roles (captain/corner/penalty/freekick) into an external container
+    // as drag-drop list items. Called by mountTacticsSettings.
+    function mountSpecialRoles(target) {
+        const ROLE_LABELS = { captain: 'Captain', corner: 'Corners', penalty: 'Penalty', freekick: 'Free Kick' };
+        for (const role of SPECIAL_SLOTS) {
+            const row = document.createElement('div');
+            row.className = 'tmtc-role-row';
+            row.dataset.role = role;
+
+            const lbl = document.createElement('span');
+            lbl.className = 'tmtc-role-label';
+            lbl.textContent = ROLE_LABELS[role] || role;
+            row.appendChild(lbl);
+
+            const slot = document.createElement('div');
+            slot.className = 'tmtc-role-slot';
+            slot.dataset.role = role;
+            row.appendChild(slot);
+
+            // Render current player or empty
+            const renderSlot = () => {
+                const pid = assignment[role];
+                const p = pid ? players_by_id[String(pid)] : null;
+                slot.innerHTML = '';
+                if (p) {
+                    const chip = document.createElement('span');
+                    chip.className = 'tmtc-role-chip';
+                    chip.setAttribute('draggable', 'true');
+                    chip.dataset.playerId = p.player_id;
+                    chip.textContent = p.lastname || p.name || '';
+                    chip.addEventListener('dragstart', e => {
+                        dragState = { pid: String(p.player_id), fromType: 'bench', fromRoleKey: role };
+                        e.dataTransfer.effectAllowed = 'move';
+                        e.dataTransfer.setData('text/plain', String(p.player_id));
+                        chip.classList.add('tmtc-drag-source');
+                    });
+                    slot.appendChild(chip);
+                } else {
+                    const empty = document.createElement('span');
+                    empty.className = 'tmtc-role-empty';
+                    empty.textContent = '—';
+                    slot.appendChild(empty);
+                }
+            };
+
+            renderSlot();
+
+            // Drop target
+            let _n = 0;
+            slot.addEventListener('dragenter', e => { e.preventDefault(); if (++_n === 1) slot.classList.add('tmtc-drag-over'); });
+            slot.addEventListener('dragleave', () => { if (--_n <= 0) { _n = 0; slot.classList.remove('tmtc-drag-over'); } });
+            slot.addEventListener('dragover',  e => e.preventDefault());
+            slot.addEventListener('drop', async e => {
+                e.preventDefault();
+                _n = 0; slot.classList.remove('tmtc-drag-over');
+                const ds = dragState; dragState = null;
+                clearDragVisuals();
+                if (!ds) return;
+                const { pid } = ds;
+                const player = players_by_id[pid];
+                if (!player) return;
+                const prevPid = assignment[role] ? String(assignment[role]) : null;
+                if (prevPid === String(pid)) return;
+                const changed = {};
+                // Special roles are additive — player stays on field/bench, only role assignment changes.
+                // Do NOT call clearSourceOldSpot (that would remove them from their field slot).
+                // Just clear the previous holder of this role slot (don't backfill them anywhere).
+                if (prevPid) {
+                    changed[prevPid] = 'out';
+                }
+                assignment[role] = pid;
+                changed[pid] = role;
+                refreshSquadTable();
+                // re-render all role slots
+                for (const r of SPECIAL_SLOTS) {
+                    target.querySelector(`[data-role="${r}"] .tmtc-role-slot`)?.dispatchEvent(new CustomEvent('_refresh'));
+                }
+                try {
+                    const outPid = Object.keys(changed).find(p => changed[p] === 'out') || null;
+                    await postSave(buildAssocForSave(outPid), changed, reserves, national, miniGameId);
+                    TmAlert.show({ message: 'Saved', tone: 'success' });
+                    notifyChange();
+                } catch { TmAlert.show({ message: 'Save failed', tone: 'error' }); }
+            });
+
+            // Listen for internal refresh events
+            slot.addEventListener('_refresh', renderSlot);
+            // Also refresh when assignment changes via subscribe
+            changeListeners.push(renderSlot);
+
+            target.appendChild(row);
+        }
+    }
+
+    return { refresh: refreshSquadTable, applyAssignment, getAssignment, getActiveKeys, subscribe, mountSpecialRoles };
 }

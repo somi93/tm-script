@@ -30,7 +30,7 @@ const CSS = `
     border: 1px solid transparent;
     animation: tmu-alert-in 0.2s ease;
 }
-.tmu-alert-success { background: var(--tmu-success-fill); color: var(--tmu-text-accent-soft); border-color: var(--tmu-border-success); }
+.tmu-alert-success { background: var(--tmu-success); color: var(--tmu-text-inverse); border-color: transparent; }
 .tmu-alert-error   { background: var(--tmu-danger-fill);  color: var(--tmu-danger);           border-color: var(--tmu-border-danger); }
 .tmu-alert-info    { background: var(--tmu-surface-card-soft); color: var(--tmu-text-main);   border-color: var(--tmu-border-soft); }
 .tmu-alert-warning { background: var(--tmu-surface-card-soft); color: var(--tmu-warning);     border-color: var(--tmu-border-soft); }

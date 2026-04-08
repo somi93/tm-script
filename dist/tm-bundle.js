@@ -3237,7 +3237,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     border: 1px solid transparent;
     animation: tmu-alert-in 0.2s ease;
 }
-.tmu-alert-success { background: var(--tmu-success-fill); color: var(--tmu-text-accent-soft); border-color: var(--tmu-border-success); }
+.tmu-alert-success { background: var(--tmu-success); color: var(--tmu-text-inverse); border-color: transparent; }
 .tmu-alert-error   { background: var(--tmu-danger-fill);  color: var(--tmu-danger);           border-color: var(--tmu-border-danger); }
 .tmu-alert-info    { background: var(--tmu-surface-card-soft); color: var(--tmu-text-main);   border-color: var(--tmu-border-soft); }
 .tmu-alert-warning { background: var(--tmu-surface-card-soft); color: var(--tmu-warning);     border-color: var(--tmu-border-soft); }
@@ -25709,6 +25709,155 @@ ${teamsTable.outerHTML}
     }
   };
 
+  // src/components/shared/tm-player-stats-browser.js
+  var _clean = (v) => String(v != null ? v : "").replace(/\s+/g, " ").trim();
+  function parsePlayerStatsHtml(html2, teamIdx) {
+    const doc = new DOMParser().parseFromString(html2, "text/html");
+    const tab = doc.getElementById(`tab${teamIdx}`) || (teamIdx === 0 ? doc.querySelector(".tab_container") : null);
+    if (!tab) return [];
+    const rows = [];
+    tab.querySelectorAll("tbody tr").forEach((tr, i) => {
+      var _a, _b, _c, _d;
+      const tds = tr.querySelectorAll("td");
+      if (tds.length < 3) return;
+      const playerTd = tds[0];
+      const playerA = playerTd.querySelector("a");
+      const flagImg = playerTd.querySelector("img");
+      const clubA = tds[1].querySelector("a");
+      const playerId = playerA ? playerA.getAttribute("player_link") || (((_a = playerA.getAttribute("href")) == null ? void 0 : _a.match(/\/players\/(\d+)/)) || [])[1] || "" : "";
+      const clubId2 = clubA ? clubA.getAttribute("club_link") || (((_b = clubA.getAttribute("href")) == null ? void 0 : _b.match(/\/club\/(\d+)/)) || [])[1] || "" : "";
+      rows.push({
+        rank: i + 1,
+        name: _clean(playerA ? playerA.textContent : playerTd.textContent),
+        playerId,
+        flagHtml: flagImg ? flagImg.outerHTML : "",
+        clubName: _clean(clubA ? clubA.textContent : (_d = (_c = tds[1]) == null ? void 0 : _c.textContent) != null ? _d : ""),
+        clubId: clubId2,
+        val: parseFloat(tds[tds.length - 1].textContent.trim()) || 0,
+        isMe: tr.classList.contains("highlighted_row")
+      });
+    });
+    return rows;
+  }
+  var PLAYER_STAT_DEFS = [
+    ["goals", "Goals"],
+    ["assists", "Assists"],
+    ["productivity", "Productivity"],
+    ["rating", "Rating"],
+    ["cards", "Cards"],
+    ["man-of-the-match", "MoM"]
+  ];
+  var PLAYER_COL_LABELS = {
+    goals: "Goals",
+    assists: "Assists",
+    productivity: "Pts",
+    rating: "Rating",
+    cards: "Cards",
+    "man-of-the-match": "MoM"
+  };
+  if (!document.getElementById("tmu-psb-style")) {
+    const s6 = document.createElement("style");
+    s6.id = "tmu-psb-style";
+    s6.textContent = `.tmu-psb-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--tmu-space-sm);padding:var(--tmu-space-sm) 0;border-bottom:1px solid var(--tmu-border-soft-alpha-strong);margin-bottom:var(--tmu-space-sm)}.tmu-psb-btns,.tmu-psb-team{display:flex;flex-wrap:wrap;gap:var(--tmu-space-xs)}.tmu-psb-rank{color:var(--tmu-text-dim);width:28px;text-align:right;padding-right:var(--tmu-space-sm)!important}.tmu-psb-player a{color:var(--tmu-text-main);text-decoration:none}.tmu-psb-player a:hover{color:var(--tmu-accent)}.tmu-psb-val{text-align:right!important;font-weight:700;color:var(--tmu-text-strong)}.tmu-psb-me{background:var(--tmu-success-fill-faint)!important;box-shadow:inset 3px 0 0 var(--tmu-success)}.tmu-psb-me .tmu-psb-player a{color:var(--tmu-accent)}.tmu-psb-me .tmu-psb-val{color:var(--tmu-success)}`;
+    document.head.appendChild(s6);
+  }
+  function mountPlayerStatsBrowser(container, {
+    statDefs = [],
+    initialStat,
+    initialTeam = 0,
+    showTeamToggle = true,
+    teamLabels = ["Main", "U21"],
+    fetchFn,
+    colLabel = {},
+    onChange
+  } = {}) {
+    var _a, _b;
+    if (!container || !fetchFn) return;
+    let activeStat = (_b = initialStat != null ? initialStat : (_a = statDefs[0]) == null ? void 0 : _a[0]) != null ? _b : "";
+    let activeTeam = initialTeam;
+    const tableWrap = document.createElement("div");
+    const refresh = () => {
+      const bar = document.createElement("div");
+      bar.className = "tmu-psb-bar";
+      const btns = document.createElement("div");
+      btns.className = "tmu-psb-btns";
+      statDefs.forEach(
+        ([key, label]) => btns.appendChild(TmButton.button({ color: "secondary", size: "xs", label, active: key === activeStat, attrs: { "data-stat": key } }))
+      );
+      bar.appendChild(btns);
+      if (showTeamToggle && teamLabels.length > 1) {
+        const teamEl = document.createElement("div");
+        teamEl.className = "tmu-psb-team";
+        teamLabels.forEach(
+          (label, i) => teamEl.appendChild(TmButton.button({ color: "secondary", size: "xs", label, active: i === activeTeam, attrs: { "data-team": String(i) } }))
+        );
+        bar.appendChild(teamEl);
+      }
+      bar.addEventListener("click", (e) => {
+        const sb = e.target.closest("[data-stat]"), tb = e.target.closest("[data-team]");
+        if (sb) {
+          activeStat = sb.dataset.stat;
+          onChange == null ? void 0 : onChange(activeStat, activeTeam);
+          refresh();
+        } else if (tb) {
+          activeTeam = +tb.dataset.team;
+          onChange == null ? void 0 : onChange(activeStat, activeTeam);
+          refresh();
+        }
+      });
+      const existing = container.querySelector(".tmu-psb-bar");
+      if (existing) container.replaceChild(bar, existing);
+      else {
+        container.innerHTML = "";
+        container.appendChild(bar);
+        container.appendChild(tableWrap);
+      }
+      const stat = activeStat, team = activeTeam;
+      tableWrap.innerHTML = TmUI.loading("Loading\u2026");
+      fetchFn(stat, team, (rows) => {
+        var _a2;
+        if (activeStat !== stat || activeTeam !== team) return;
+        tableWrap.innerHTML = "";
+        if (!(rows == null ? void 0 : rows.length)) {
+          tableWrap.innerHTML = TmUI.empty("No player stats data");
+          return;
+        }
+        const label = typeof colLabel === "function" ? colLabel(stat) : (_a2 = colLabel[stat]) != null ? _a2 : stat;
+        const enriched = rows.map((r) => {
+          var _a3;
+          return { ...r, _sortVals: [r.rank, r.name, (_a3 = r.clubName) != null ? _a3 : "", r.val] };
+        });
+        tableWrap.appendChild(TmTable.table({
+          cls: "tmu-tbl",
+          items: enriched,
+          groupHeaders: [{ cells: [
+            { label: "#", key: "sort-0", cls: "r", style: "width:40px" },
+            { label: "Player", key: "sort-1" },
+            { label: "Club", key: "sort-2" },
+            { label, key: "sort-3", cls: "r" }
+          ] }],
+          sortDefs: {
+            "sort-0": { defaultSortDir: -1, sort: (a, b) => (a._sortVals[0] || 0) - (b._sortVals[0] || 0) },
+            "sort-1": { defaultSortDir: 1, sort: (a, b) => String(a._sortVals[1]).localeCompare(String(b._sortVals[1])) },
+            "sort-2": { defaultSortDir: 1, sort: (a, b) => String(a._sortVals[2]).localeCompare(String(b._sortVals[2])) },
+            "sort-3": { defaultSortDir: -1, sort: (a, b) => (parseFloat(a._sortVals[3]) || 0) - (parseFloat(b._sortVals[3]) || 0) }
+          },
+          renderRowsHtml: (data) => data.map((r) => {
+            var _a3, _b2;
+            return `
+                    <tr class="${r.isMe ? "tmu-psb-me" : ""}">
+                        <td class="tmu-psb-rank r">${r.rank}</td>
+                        <td class="tmu-psb-player">${(_a3 = r.flagHtml) != null ? _a3 : ""}<a href="/players/${r.playerId}/" target="_blank">${r.name}</a></td>
+                        <td>${r.clubId ? `<a href="/club/${r.clubId}/" target="_blank" style="color:inherit;text-decoration:none">${r.clubName}</a>` : (_b2 = r.clubName) != null ? _b2 : ""}</td>
+                        <td class="tmu-psb-val r">${r.val}</td>
+                    </tr>`;
+          }).join("")
+        }));
+      });
+    };
+    refresh();
+  }
+
   // src/components/league/tm-league-stats.js
   if (!document.getElementById("tsa-league-stats-style")) {
     const _s3 = document.createElement("style");
@@ -25754,29 +25903,13 @@ ${teamsTable.outerHTML}
     possession: ["Home %", "Away %", "Avg %"],
     cards: ["Yellow", "Red", "Total"]
   };
-  var parsePlayerStats = (html2, teamIdx) => {
-    const doc = new DOMParser().parseFromString(html2, "text/html");
-    const tab = doc.getElementById(teamIdx === 0 ? "tab0" : "tab1");
-    if (!tab) return [];
-    const rows = [];
-    tab.querySelectorAll("tbody tr").forEach((tr, i) => {
-      const tds = tr.querySelectorAll("td");
-      if (tds.length < 3) return;
-      const playerA = tds[0].querySelector("a[player_link]");
-      const clubA = tds[1].querySelector("a[club_link]");
-      const valText = tds[tds.length - 1].textContent.trim();
-      rows.push({
-        rank: i + 1,
-        name: playerA ? playerA.textContent.trim() : tds[0].textContent.trim(),
-        playerId: playerA ? playerA.getAttribute("player_link") : "",
-        clubName: clubA ? clubA.textContent.trim() : "",
-        clubId: clubA ? clubA.getAttribute("club_link") : "",
-        val: parseFloat(valText) || 0,
-        isMe: tr.classList.contains("highlighted_row")
-      });
-    });
-    return rows;
-  };
+  var CLUB_STAT_DEFS = [
+    ["goals", "Goals"],
+    ["attendance", "Attendance"],
+    ["injuries", "Injuries"],
+    ["possession", "Possession"],
+    ["cards", "Cards"]
+  ];
   var fetchPlayerStats = (stat, season, teamIdx, onDone) => {
     const s6 = window.TmLeagueCtx;
     const key = `${stat}|${season}|${teamIdx}`;
@@ -25786,7 +25919,7 @@ ${teamsTable.outerHTML}
     }
     const seasonStr = season ? `${season}/` : "";
     window.fetch(`/statistics/league/${s6.panelCountry}/${s6.panelDivision}/${s6.panelGroup}/players/${stat}/${seasonStr}`).then((r) => r.text()).then((html2) => {
-      const rows = parsePlayerStats(html2, teamIdx);
+      const rows = parsePlayerStatsHtml(html2, teamIdx);
       s6.statsCache[key] = rows;
       onDone(rows);
     }).catch(() => onDone(null));
@@ -25904,143 +26037,83 @@ ${teamsTable.outerHTML}
     const container = document.getElementById("tsa-stats-content");
     if (!container) return;
     const season = s6.displayedSeason !== null ? s6.displayedSeason : typeof SESSION !== "undefined" ? SESSION.season : null;
-    const playerStatDefs = [
-      ["goals", "Goals"],
-      ["assists", "Assists"],
-      ["productivity", "Productivity"],
-      ["rating", "Rating"],
-      ["cards", "Cards"],
-      ["man-of-the-match", "MoM"]
-    ];
-    const clubStatDefs = [
-      ["goals", "Goals"],
-      ["attendance", "Attendance"],
-      ["injuries", "Injuries"],
-      ["possession", "Possession"],
-      ["cards", "Cards"]
-    ];
-    const playerColLabels = {
-      goals: "Goals",
-      assists: "Assists",
-      productivity: "Pts",
-      rating: "Rating",
-      cards: "Cards",
-      "man-of-the-match": "MoM"
-    };
     const isPlayers = s6.statsMode === "players";
-    const statDefs = isPlayers ? playerStatDefs : clubStatDefs;
-    const curStat = isPlayers ? s6.statsStatType : s6.statsClubStat;
-    const modeBtns = `
-            <div>
-                ${buttonHtml9({ cls: "tsa-stat-mode-btn", label: "Players", active: isPlayers })}
-                ${buttonHtml9({ cls: "tsa-stat-mode-btn", label: "Clubs", active: !isPlayers })}
-            </div>`;
-    const statBtns = statDefs.map(([k, v]) => buttonHtml9({ cls: "tsa-stat-btn", label: v, active: curStat === k })).join("");
-    const teamToggle = isPlayers ? `
-            <div class="tsa-stat-team-btns">
-                ${buttonHtml9({ cls: "tsa-stat-team-btn", label: "Main", active: s6.statsTeamType === 0 })}
-                ${buttonHtml9({ cls: "tsa-stat-team-btn", label: "U21", active: s6.statsTeamType === 1 })}
-            </div>` : "";
     container.innerHTML = `
-            <div class="tsa-stats-bar">${modeBtns}</div>
-            <div class="tsa-stats-bar">
-                <div class="tsa-stat-btns">${statBtns}</div>
-                ${teamToggle}
+        <div class="tsa-stats-bar">
+            <div>
+                ${buttonHtml9({ cls: "tsa-stat-mode-btn", label: "Players", active: isPlayers, attrs: { "data-mode": "players" } })}
+                ${buttonHtml9({ cls: "tsa-stat-mode-btn", label: "Clubs", active: !isPlayers, attrs: { "data-mode": "clubs" } })}
             </div>
-            <div id="tsa-stats-table-wrap">${TmUI.loading("Loading\u2026")}</div>
-        `;
-    const modeButtons = container.querySelectorAll(".tsa-stat-mode-btn");
-    if (modeButtons[0]) modeButtons[0].dataset.mode = "players";
-    if (modeButtons[1]) modeButtons[1].dataset.mode = "clubs";
-    container.querySelectorAll(".tsa-stat-btn").forEach((btn, index) => {
-      var _a;
-      btn.dataset.stat = ((_a = statDefs[index]) == null ? void 0 : _a[0]) || "";
+        </div>
+        <div id="tsa-stats-content-inner"></div>
+    `;
+    container.querySelector(".tsa-stats-bar").addEventListener("click", (e) => {
+      const btn = e.target.closest(".tsa-stat-mode-btn[data-mode]");
+      if (btn) {
+        s6.statsMode = btn.dataset.mode;
+        renderPlayerStatsTab();
+      }
     });
-    container.querySelectorAll(".tsa-stat-team-btn").forEach((btn, index) => {
-      btn.dataset.team = String(index);
-    });
-    container.onclick = (event) => {
-      const modeButton = event.target.closest(".tsa-stat-mode-btn[data-mode]");
-      if (modeButton && container.contains(modeButton)) {
-        s6.statsMode = modeButton.dataset.mode;
-        renderPlayerStatsTab();
-        return;
-      }
-      const statButton = event.target.closest(".tsa-stat-btn[data-stat]");
-      if (statButton && container.contains(statButton)) {
-        if (isPlayers) s6.statsStatType = statButton.dataset.stat;
-        else s6.statsClubStat = statButton.dataset.stat;
-        renderPlayerStatsTab();
-        return;
-      }
-      const teamButton = event.target.closest(".tsa-stat-team-btn[data-team]");
-      if (teamButton && container.contains(teamButton)) {
-        s6.statsTeamType = parseInt(teamButton.dataset.team, 10);
-        renderPlayerStatsTab();
-      }
-    };
+    const inner = document.getElementById("tsa-stats-content-inner");
+    if (!inner) return;
     if (isPlayers) {
-      fetchPlayerStats(s6.statsStatType, season, s6.statsTeamType, (rows) => {
-        const wrap = document.getElementById("tsa-stats-table-wrap");
-        if (!wrap) return;
-        if (!rows || !rows.length) {
-          wrap.innerHTML = TmUI.empty("No player stats data");
-          return;
+      mountPlayerStatsBrowser(inner, {
+        statDefs: PLAYER_STAT_DEFS,
+        initialStat: s6.statsStatType,
+        initialTeam: s6.statsTeamType,
+        fetchFn: (stat, team, cb) => fetchPlayerStats(stat, season, team, cb),
+        colLabel: PLAYER_COL_LABELS,
+        onChange: (stat, team) => {
+          s6.statsStatType = stat;
+          s6.statsTeamType = team;
         }
-        const colLabel = playerColLabels[s6.statsStatType] || "Value";
-        const enriched = rows.map((r) => ({ ...r, _sortVals: [r.rank, r.name, r.clubName, r.val] }));
-        const buildRowsHtml = (data) => data.map((r) => `
-                    <tr class="${r.isMe ? "tsa-stats-me" : ""}">
-                        <td class="tsa-stats-rank">${r.rank}</td>
-                        <td class="tsa-stats-name"><a href="/players/${r.playerId}/" target="_blank">${r.name}</a></td>
-                        <td>${r.clubName}</td>
-                        <td class="tsa-stats-val">${r.val}</td>
-                    </tr>`).join("");
-        TmLeagueTable.mountSortable(wrap, {
-          headerRows: [[
-            { label: "#", sortIndex: 0, style: "text-align:right" },
-            { label: "Player", sortIndex: 1, style: "text-align:left" },
-            { label: "Club", sortIndex: 2, style: "text-align:left" },
-            { label: colLabel, sortIndex: 3, className: "tsa-stats-val", style: "text-align:right" }
-          ]],
-          getRows: () => enriched,
-          renderRows: buildRowsHtml
-        });
       });
-    } else {
-      fetchClubStats(s6.statsClubStat, season, (rows) => {
-        const wrap = document.getElementById("tsa-stats-table-wrap");
-        if (!wrap) return;
-        if (!rows || !rows.length) {
-          wrap.innerHTML = TmUI.empty("No club stats data");
-          return;
-        }
-        const cols = CLUB_STAT_COLS[s6.statsClubStat] || [];
-        const enriched = rows.map((r) => ({ ...r, _sortVals: [0, r.clubName, ...r.vals] }));
-        enriched.sort((a, b) => (parseFloat(b._sortVals[2]) || 0) - (parseFloat(a._sortVals[2]) || 0));
-        enriched.forEach((r, i) => {
-          r._rank = i + 1;
-          r._sortVals[0] = i + 1;
-        });
-        const buildRowsHtml = (data) => data.map((r, i) => {
-          const valCells = r.vals.map((v) => `<td class="tsa-stats-val">${v}</td>`).join("");
-          return `<tr class="${r.isMe ? "tsa-stats-me" : ""}">
-                        <td class="tsa-stats-rank">${i + 1}</td>
-                        <td class="tsa-stats-name"><a href="/club/${r.clubId}/" target="_blank">${r.clubName}</a></td>
-                        ${valCells}
-                    </tr>`;
-        }).join("");
-        TmLeagueTable.mountSortable(wrap, {
-          headerRows: [[
-            { label: "#", sortIndex: 0, style: "text-align:right" },
-            { label: "Club", sortIndex: 1, style: "text-align:left" },
-            ...cols.map((label, index) => ({ label, sortIndex: index + 2, className: "tsa-stats-val", style: "text-align:right" }))
-          ]],
-          getRows: () => enriched,
-          renderRows: buildRowsHtml
-        });
-      });
+      return;
     }
+    const curStat = s6.statsClubStat;
+    inner.innerHTML = `
+        <div class="tsa-stats-bar">
+            <div class="tsa-stat-btns">
+                ${CLUB_STAT_DEFS.map(([k, v]) => buttonHtml9({ cls: "tsa-stat-btn", label: v, active: curStat === k, attrs: { "data-stat": k } })).join("")}
+            </div>
+        </div>
+        <div id="tsa-stats-table-wrap">${TmUI.loading("Loading\u2026")}</div>
+    `;
+    inner.querySelector(".tsa-stats-bar").addEventListener("click", (e) => {
+      const btn = e.target.closest(".tsa-stat-btn[data-stat]");
+      if (btn) {
+        s6.statsClubStat = btn.dataset.stat;
+        renderPlayerStatsTab();
+      }
+    });
+    fetchClubStats(s6.statsClubStat, season, (rows) => {
+      const wrap = document.getElementById("tsa-stats-table-wrap");
+      if (!wrap) return;
+      if (!(rows == null ? void 0 : rows.length)) {
+        wrap.innerHTML = TmUI.empty("No club stats data");
+        return;
+      }
+      const cols = CLUB_STAT_COLS[s6.statsClubStat] || [];
+      const enriched = rows.map((r) => ({ ...r, _sortVals: [0, r.clubName, ...r.vals] }));
+      enriched.sort((a, b) => (parseFloat(b._sortVals[2]) || 0) - (parseFloat(a._sortVals[2]) || 0));
+      enriched.forEach((r, i) => {
+        r._sortVals[0] = i + 1;
+      });
+      TmLeagueTable.mountSortable(wrap, {
+        headerRows: [[
+          { label: "#", sortIndex: 0, style: "text-align:right" },
+          { label: "Club", sortIndex: 1, style: "text-align:left" },
+          ...cols.map((label, i) => ({ label, sortIndex: i + 2, className: "tsa-stats-val", style: "text-align:right" }))
+        ]],
+        getRows: () => enriched,
+        renderRows: (data) => data.map((r, i) => `
+                <tr class="${r.isMe ? "tsa-stats-me" : ""}">
+                    <td class="tsa-stats-rank">${i + 1}</td>
+                    <td class="tsa-stats-name"><a href="/club/${r.clubId}/" target="_blank">${r.clubName}</a></td>
+                    ${r.vals.map((v) => `<td class="tsa-stats-val">${v}</td>`).join("")}
+                </tr>`).join("")
+      });
+    });
   };
   var renderTransfersTab = () => {
     const s6 = window.TmLeagueCtx;
@@ -28061,7 +28134,7 @@ ${teamsTable.outerHTML}
     let statsMode = "players";
     let statsClubStat = "goals";
     let transfersView = "bought";
-    let statsCache = {};
+    let statsCache2 = {};
     const ctx = window.TmLeagueCtx = {
       // eslint-disable-line no-unused-vars
       // ── League identity (set by tm-league.user.js; reset on navigation) ──
@@ -28298,7 +28371,7 @@ ${teamsTable.outerHTML}
         transfersView = v;
       },
       get statsCache() {
-        return statsCache;
+        return statsCache2;
       },
       // only mutated
       // Functions — lazy getters (defined later in IIFE; called only from events/timers)
@@ -33492,10 +33565,14 @@ ${teamsTable.outerHTML}
       const mainColumn5 = document.createElement("section");
       if (mainClass) mainColumn5.className = mainClass;
       mainNodes.filter(Boolean).forEach((node) => mainColumn5.appendChild(node));
-      const sideColumn = document.createElement("aside");
-      if (sideClass) sideColumn.className = sideClass;
-      sideNodes.filter(Boolean).forEach((node) => sideColumn.appendChild(node));
-      main2.append(mainColumn5, sideColumn);
+      let sideColumn = null;
+      if (sideNodes.filter(Boolean).length) {
+        sideColumn = document.createElement("aside");
+        if (sideClass) sideColumn.className = sideClass;
+        sideNodes.filter(Boolean).forEach((node) => sideColumn.appendChild(node));
+      }
+      main2.append(mainColumn5);
+      if (sideColumn) main2.append(sideColumn);
       TmMatchRow.enhance(main2, { season });
       return { mainColumn: mainColumn5, sideColumn };
     }
@@ -33822,7 +33899,7 @@ ${teamsTable.outerHTML}
         `;
       document.head.appendChild(style);
     };
-    const cleanText22 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const cleanText23 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const htmlOf9 = (node) => node ? node.outerHTML : "";
     const extractClubId4 = (node) => {
       if (!node) return "";
@@ -33852,11 +33929,11 @@ ${teamsTable.outerHTML}
       const awayAnchor = awayCell == null ? void 0 : awayCell.querySelector('a[club_link], a[href*="/club/"]');
       if (!homeAnchor || !awayAnchor) return null;
       const scoreAnchor = scoreCell == null ? void 0 : scoreCell.querySelector('a[match_link], [match_link], a[href*="/matches/"]');
-      const scoreText = cleanText22((scoreCell == null ? void 0 : scoreCell.textContent) || "");
+      const scoreText = cleanText23((scoreCell == null ? void 0 : scoreCell.textContent) || "");
       const matchId = extractMatchId(scoreAnchor);
       const scoreHref = matchId ? `/matches/${matchId}/` : "";
       return {
-        roundLabel: cleanText22((roundCell == null ? void 0 : roundCell.textContent) || roundLabel),
+        roundLabel: cleanText23((roundCell == null ? void 0 : roundCell.textContent) || roundLabel),
         matchId,
         scoreText: scoreText || "\u2014",
         scoreHref,
@@ -33865,12 +33942,12 @@ ${teamsTable.outerHTML}
         isHighlight: row.classList.contains("highlighted_row_done") || !!row.querySelector(".highlight_td"),
         home: {
           id: extractClubId4(homeAnchor),
-          name: cleanText22(homeAnchor.textContent) || cleanText22((homeCell == null ? void 0 : homeCell.textContent) || ""),
+          name: cleanText23(homeAnchor.textContent) || cleanText23((homeCell == null ? void 0 : homeCell.textContent) || ""),
           href: homeAnchor.getAttribute("href") || "#"
         },
         away: {
           id: extractClubId4(awayAnchor),
-          name: cleanText22(awayAnchor.textContent) || cleanText22((awayCell == null ? void 0 : awayCell.textContent) || ""),
+          name: cleanText23(awayAnchor.textContent) || cleanText23((awayCell == null ? void 0 : awayCell.textContent) || ""),
           href: awayAnchor.getAttribute("href") || "#"
         }
       };
@@ -33882,7 +33959,7 @@ ${teamsTable.outerHTML}
         return [{
           type: "link",
           href: node.getAttribute("href") || "#",
-          label: cleanText22(node.textContent),
+          label: cleanText23(node.textContent),
           icon: /cup/i.test(node.textContent) ? "\u{1F3C6}" : /fixture/i.test(node.textContent) ? "\u{1F4C5}" : /stat/i.test(node.textContent) ? "\u{1F4CA}" : /history/i.test(node.textContent) ? "\u{1F4DC}" : "\u{1F4CB}"
         }];
       });
@@ -33896,14 +33973,14 @@ ${teamsTable.outerHTML}
       const changeLink = box.querySelector(".box_sub_header a.float_right");
       const emblem = box.querySelector(".align_center img");
       const roundLink = box.querySelector('.align_center a[href*="/fixtures/cup/"]');
-      const roundText = cleanText22(((_a = box.querySelector(".align_center")) == null ? void 0 : _a.textContent) || "");
+      const roundText = cleanText23(((_a = box.querySelector(".align_center")) == null ? void 0 : _a.textContent) || "");
       const progressHeading = Array.from(box.querySelectorAll("h3")).find((node) => /progress/i.test(node.textContent || ""));
       const progressStd = progressHeading == null ? void 0 : progressHeading.nextElementSibling;
       const progressRows = Array.from((progressStd == null ? void 0 : progressStd.querySelectorAll("table tr")) || []).map((row) => {
         var _a2;
         const cells = row.querySelectorAll("td");
         return {
-          round: cleanText22(((_a2 = cells[0]) == null ? void 0 : _a2.textContent) || ""),
+          round: cleanText23(((_a2 = cells[0]) == null ? void 0 : _a2.textContent) || ""),
           homeHtml: cells[1] ? cells[1].innerHTML : "",
           scoreHtml: cells[2] ? cells[2].innerHTML : "",
           awayHtml: cells[3] ? cells[3].innerHTML : "",
@@ -33926,13 +34003,13 @@ ${teamsTable.outerHTML}
         competitionHtml = clone.innerHTML.trim();
       }
       return {
-        clubName: cleanText22((clubLink == null ? void 0 : clubLink.textContent) || "Cup"),
+        clubName: cleanText23((clubLink == null ? void 0 : clubLink.textContent) || "Cup"),
         clubHref: (clubLink == null ? void 0 : clubLink.getAttribute("href")) || "#",
         changeHtml: htmlOf9(changeLink),
         competitionHtml,
         emblemSrc: (emblem == null ? void 0 : emblem.getAttribute("src")) || "",
         currentRoundHref: (roundLink == null ? void 0 : roundLink.getAttribute("href")) || "",
-        currentRoundLabel: cleanText22((roundLink == null ? void 0 : roundLink.textContent) || ""),
+        currentRoundLabel: cleanText23((roundLink == null ? void 0 : roundLink.textContent) || ""),
         roundText,
         progressRows,
         sponsorHtml
@@ -33946,7 +34023,7 @@ ${teamsTable.outerHTML}
       let currentTitle = "";
       Array.from(((_a = secondBox.querySelector(".box_body")) == null ? void 0 : _a.children) || []).forEach((node) => {
         if (node.tagName === "H3") {
-          currentTitle = cleanText22(node.textContent);
+          currentTitle = cleanText23(node.textContent);
           return;
         }
         if (!currentTitle || !node.classList.contains("std")) return;
@@ -33973,7 +34050,7 @@ ${teamsTable.outerHTML}
         return {
           imageSrc: ((_a = node.querySelector("img")) == null ? void 0 : _a.getAttribute("src")) || "",
           clubHtml: (clubAnchor == null ? void 0 : clubAnchor.outerHTML) || "",
-          leagueText: cleanText22(clone.textContent || "")
+          leagueText: cleanText23(clone.textContent || "")
         };
       });
       const paragraphs = Array.from(box.querySelectorAll(".std p")).map((node) => node.outerHTML);
@@ -34994,7 +35071,7 @@ ${teamsTable.outerHTML}
     const sourceRoot3 = document.querySelector(".main_center") || main2;
     const STYLE_ID45 = "tmvu-international-cup-overview-style";
     const CURRENT_SEASON2 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
-    const cleanText22 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const cleanText23 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml29 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const htmlOf9 = (node) => node ? node.outerHTML : "";
     const stripShadow = (root) => {
@@ -35205,7 +35282,7 @@ ${teamsTable.outerHTML}
     const parseMenu10 = () => Array.from(sourceRoot3.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
       if (node.tagName === "HR") return [{ type: "separator" }];
       if (node.tagName !== "A") return [];
-      const label = cleanText22(node.textContent);
+      const label = cleanText23(node.textContent);
       const href = node.getAttribute("href") || "#";
       let icon = "\u{1F3C6}";
       if (/coeff/i.test(label)) icon = "\u2211";
@@ -35216,11 +35293,11 @@ ${teamsTable.outerHTML}
       var _a, _b, _c;
       const options = Array.from(sourceRoot3.querySelectorAll("#change_league option")).map((option) => ({
         id: String(option.value || ""),
-        label: cleanText22(option.textContent)
+        label: cleanText23(option.textContent)
       })).filter((option) => option.id && option.label);
       const selectedId = ((_a = window.location.pathname.match(/^\/international-cup\/(\d+)\/?$/i)) == null ? void 0 : _a[1]) || ((_b = options.find((option) => {
         var _a2;
-        return option.label === cleanText22((_a2 = sourceRoot3.querySelector(".box_sub_header .large")) == null ? void 0 : _a2.textContent);
+        return option.label === cleanText23((_a2 = sourceRoot3.querySelector(".box_sub_header .large")) == null ? void 0 : _a2.textContent);
       })) == null ? void 0 : _b.id) || ((_c = options[0]) == null ? void 0 : _c.id) || "";
       return { options, selectedId };
     };
@@ -35228,7 +35305,7 @@ ${teamsTable.outerHTML}
       var _a;
       const box = sourceRoot3.querySelector(".column2_a > .box");
       const subHeader = box == null ? void 0 : box.querySelector(".box_sub_header");
-      const tournamentName = cleanText22(((_a = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _a.textContent) || "International Cup");
+      const tournamentName = cleanText23(((_a = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _a.textContent) || "International Cup");
       return { box, tournamentName };
     };
     const parseContentSections = (box) => {
@@ -35239,7 +35316,7 @@ ${teamsTable.outerHTML}
       Array.from(body.children).forEach((node) => {
         if (node.classList.contains("box_shadow") || node.classList.contains("box_sub_header") || node.id === "change_league") return;
         if (node.tagName === "H3") {
-          current = { title: cleanText22(node.textContent), nodes: [] };
+          current = { title: cleanText23(node.textContent), nodes: [] };
           sections2.push(current);
           return;
         }
@@ -35276,10 +35353,10 @@ ${teamsTable.outerHTML}
       if (!homeAnchor || !awayAnchor) return null;
       const matchDateNode = item.querySelector(".match_date");
       const scoreAnchor = item.querySelector('.match_result a[match_link], .match_result a[href*="/matches/"]');
-      const scoreText = cleanText22(((_a = item.querySelector(".match_result")) == null ? void 0 : _a.textContent) || "\u2014");
+      const scoreText = cleanText23(((_a = item.querySelector(".match_result")) == null ? void 0 : _a.textContent) || "\u2014");
       const matchId = extractMatchId(scoreAnchor);
       const scoreHref = matchId ? `/matches/${matchId}/` : "";
-      const dateLabel = cleanText22(
+      const dateLabel = cleanText23(
         (matchDateNode == null ? void 0 : matchDateNode.getAttribute("tooltip")) || (matchDateNode == null ? void 0 : matchDateNode.getAttribute("title")) || (matchDateNode == null ? void 0 : matchDateNode.textContent) || ""
       );
       return {
@@ -35292,13 +35369,13 @@ ${teamsTable.outerHTML}
         isHighlight: false,
         home: {
           id: extractClubId4(homeAnchor),
-          name: cleanText22(homeAnchor.textContent),
+          name: cleanText23(homeAnchor.textContent),
           href: homeAnchor.getAttribute("href") || "#",
           flagHtml: extractCountryFlagHtml(item.querySelector(".hometeam"))
         },
         away: {
           id: extractClubId4(awayAnchor),
-          name: cleanText22(awayAnchor.textContent),
+          name: cleanText23(awayAnchor.textContent),
           href: awayAnchor.getAttribute("href") || "#",
           flagHtml: extractCountryFlagHtml(item.querySelector(".awayteam"))
         }
@@ -35308,7 +35385,7 @@ ${teamsTable.outerHTML}
       var _a;
       const box = sourceRoot3.querySelector(".column3_a .box");
       if (!box) return null;
-      const title = cleanText22(((_a = box.querySelector(".box_head h2")) == null ? void 0 : _a.textContent) || "Tournament Notes");
+      const title = cleanText23(((_a = box.querySelector(".box_head h2")) == null ? void 0 : _a.textContent) || "Tournament Notes");
       const body = stripShadow(box.querySelector(".box_body"));
       const winners = Array.from((body == null ? void 0 : body.querySelectorAll('.align_center[style*="display: inline-block"]')) || []).map((node) => {
         var _a2;
@@ -35318,7 +35395,7 @@ ${teamsTable.outerHTML}
         return {
           imageSrc: ((_a2 = node.querySelector("img")) == null ? void 0 : _a2.getAttribute("src")) || "",
           clubHtml: (clubAnchor == null ? void 0 : clubAnchor.outerHTML) || "",
-          leagueText: cleanText22(clone.textContent || "")
+          leagueText: cleanText23(clone.textContent || "")
         };
       });
       body == null ? void 0 : body.querySelectorAll('.align_center[style*="display: inline-block"]').forEach((node) => node.remove());
@@ -38744,7 +38821,7 @@ ${names}`)) {
     const CURRENT_SEASON2 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const coefficientTierBreakIndexes = [];
     let activeCoefficientGroup = null;
-    const cleanText22 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const cleanText23 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const htmlOf9 = (node) => node ? node.outerHTML : "";
     const COEFFICIENT_GROUPS = [
       { slug: "fita", label: "FITA (Global)", overviewIds: ["1", "2", "3", "4", "5", "6"], matchIds: [], aliases: ["fita", "global", "world", "globalno"], hasQualificationTiers: false },
@@ -38753,7 +38830,7 @@ ${names}`)) {
       { slug: "fata", label: "FATA", overviewIds: ["5", "6"], matchIds: ["5", "6"], aliases: ["fata", "liberty", "americana"], hasQualificationTiers: true }
     ];
     const findCoefficientGroup = (value) => {
-      const normalized = cleanText22(value).toLowerCase();
+      const normalized = cleanText23(value).toLowerCase();
       if (!normalized) return null;
       return COEFFICIENT_GROUPS.find((group) => normalized === group.slug || group.matchIds.includes(normalized) || normalized.includes(group.slug) || normalized.includes(group.label.toLowerCase()) || group.aliases.some((alias) => normalized.includes(alias)));
     };
@@ -39006,7 +39083,7 @@ ${names}`)) {
     const parseMenu10 = (tournamentState2) => Array.from(sourceRoot3.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
       if (node.tagName === "HR") return [{ type: "separator" }];
       if (node.tagName !== "A") return [];
-      const label = cleanText22(node.textContent);
+      const label = cleanText23(node.textContent);
       const href = node.getAttribute("href") || "#";
       const resolvedHref = /coeff/i.test(label) ? `/international-cup/coefficients/${tournamentState2.selectedId}/` : href;
       let icon = "\u{1F3C6}";
@@ -39034,7 +39111,7 @@ ${names}`)) {
       var _a;
       const box = sourceRoot3.querySelector(".column2_a > .box");
       const subHeader = box == null ? void 0 : box.querySelector(".box_sub_header");
-      const tournamentName = cleanText22(((_a = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _a.textContent) || "International Cup");
+      const tournamentName = cleanText23(((_a = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _a.textContent) || "International Cup");
       return { box, tournamentName };
     };
     const normalizeCoefficientTable = (table2, label) => {
@@ -39059,7 +39136,7 @@ ${names}`)) {
           const countryAnchor = countryCell == null ? void 0 : countryCell.querySelector('a.country_link[href*="/national-teams/"]');
           const href = (countryAnchor == null ? void 0 : countryAnchor.getAttribute("href")) || "";
           const code = ((_a = href.match(/\/national-teams\/([^/]+)\//)) == null ? void 0 : _a[1]) || "";
-          const qualifies = cleanText22(((_b = cells[2]) == null ? void 0 : _b.textContent) || "");
+          const qualifies = cleanText23(((_b = cells[2]) == null ? void 0 : _b.textContent) || "");
           if (shouldApplyQualificationTiers && index > 0 && qualifies && previousQualifies && qualifies !== previousQualifies) {
             coefficientTierBreakIndexes.push(index);
           }
@@ -39080,7 +39157,7 @@ ${names}`)) {
     const parseCoefficientTabs = (box) => {
       const labels = /* @__PURE__ */ new Map();
       box == null ? void 0 : box.querySelectorAll(".tabs [set_active]").forEach((tab) => {
-        labels.set(tab.getAttribute("set_active"), cleanText22(tab.textContent) || "Tab");
+        labels.set(tab.getAttribute("set_active"), cleanText23(tab.textContent) || "Tab");
       });
       return Array.from((box == null ? void 0 : box.querySelectorAll(".tab_container > div[id]")) || []).map((panel, index) => {
         const label = labels.get(panel.id) || `Tab ${index + 1}`;
@@ -39183,7 +39260,7 @@ ${names}`)) {
       return host;
     };
     const parseCellSortValue = (cell) => {
-      const text = cleanText22((cell == null ? void 0 : cell.textContent) || "");
+      const text = cleanText23((cell == null ? void 0 : cell.textContent) || "");
       if (!text || text === "\u2014") return { type: "empty", value: "" };
       const normalizedNumber = text.replace(/,/g, "");
       if (/^-?\d+(?:\.\d+)?$/.test(normalizedNumber)) {
@@ -39248,7 +39325,7 @@ ${names}`)) {
             flushPendingBlankCells();
           }
           cells.push({
-            label: cleanText22(entry.cell.textContent),
+            label: cleanText23(entry.cell.textContent),
             colspan: entry.colspan,
             rowspan: entry.rowspan
           });
@@ -39262,7 +39339,7 @@ ${names}`)) {
     const buildSortableTableFromNative = (table2) => {
       var _a, _b, _c;
       if (!table2) return null;
-      const tableLabel = cleanText22(table2.dataset.tmvuTableLabel || "");
+      const tableLabel = cleanText23(table2.dataset.tmvuTableLabel || "");
       const headerRows = Array.from(table2.querySelectorAll("tr")).filter((row) => row.querySelectorAll("th").length);
       if (!headerRows.length) return null;
       const { matrix, totalColumns } = buildHeaderMatrix(headerRows);
@@ -39274,7 +39351,7 @@ ${names}`)) {
           if (!entry) continue;
           const { cell } = entry;
           return {
-            label: cleanText22(cell.textContent),
+            label: cleanText23(cell.textContent),
             align: getCellAlign(cell)
           };
         }
@@ -39316,12 +39393,12 @@ ${names}`)) {
             const value = Number(item[`col${index}`]);
             return Number.isFinite(value) ? value : 0;
           });
-          if (currentWindowIndex >= 0 && !cleanText22(item.__html[currentWindowIndex] || "")) {
+          if (currentWindowIndex >= 0 && !cleanText23(item.__html[currentWindowIndex] || "")) {
             const currentWindowValue = yearValues.slice(0, -1).reduce((sum, value) => sum + value, 0);
             item[`col${currentWindowIndex}`] = currentWindowValue;
             item.__html[currentWindowIndex] = formatTableNumber(currentWindowValue);
           }
-          if (rollingWindowIndex >= 0 && !cleanText22(item.__html[rollingWindowIndex] || "")) {
+          if (rollingWindowIndex >= 0 && !cleanText23(item.__html[rollingWindowIndex] || "")) {
             const rollingWindowValue = yearValues.slice(1).reduce((sum, value) => sum + value, 0);
             item[`col${rollingWindowIndex}`] = rollingWindowValue;
             item.__html[rollingWindowIndex] = formatTableNumber(rollingWindowValue);
@@ -39371,7 +39448,7 @@ ${names}`)) {
     };
     const formatCoefficientValue = (value) => Number.isFinite(value) ? value.toFixed(3) : "\u2014";
     const findCoefficientPanel = (root, labelPattern) => {
-      const tab = Array.from(root.querySelectorAll("[data-tab-target]")).find((node) => labelPattern.test(cleanText22(node.textContent)));
+      const tab = Array.from(root.querySelectorAll("[data-tab-target]")).find((node) => labelPattern.test(cleanText23(node.textContent)));
       const panelId = (tab == null ? void 0 : tab.getAttribute("data-tab-target")) || "";
       return panelId ? root.querySelector(`[data-tab-panel="${panelId}"]`) : null;
     };
@@ -39380,14 +39457,14 @@ ${names}`)) {
       const perYearTable = perYearPanel == null ? void 0 : perYearPanel.querySelector("table");
       if (!perYearTable) return;
       const allRows = Array.from(perYearTable.querySelectorAll("tr"));
-      const seasonGroupHeader = Array.from(perYearTable.querySelectorAll("th")).find((node) => /season/i.test(cleanText22(node.textContent)));
-      const numericHeaderRow = allRows.find((row) => Array.from(row.querySelectorAll("th")).some((node) => /^\d+$/.test(cleanText22(node.textContent))));
-      const seasonHeaders = Array.from((numericHeaderRow == null ? void 0 : numericHeaderRow.querySelectorAll("th")) || []).filter((node) => /^\d+$/.test(cleanText22(node.textContent)));
-      const totalHeader = Array.from(perYearTable.querySelectorAll("th")).find((node) => /total|\d+\s*-\s*\d+/i.test(cleanText22(node.textContent)));
-      const nextSeason = CURRENT_SEASON2 ? String(CURRENT_SEASON2) : seasonHeaders.length ? String(Math.max(...seasonHeaders.map((node) => Number(cleanText22(node.textContent)) || 0)) + 1) : "Current";
-      const currentStart = seasonHeaders[0] ? cleanText22(seasonHeaders[0].textContent) : "";
-      const currentEnd = seasonHeaders.length ? cleanText22(seasonHeaders[seasonHeaders.length - 1].textContent) : "";
-      const rollingStart = seasonHeaders[1] ? cleanText22(seasonHeaders[1].textContent) : "";
+      const seasonGroupHeader = Array.from(perYearTable.querySelectorAll("th")).find((node) => /season/i.test(cleanText23(node.textContent)));
+      const numericHeaderRow = allRows.find((row) => Array.from(row.querySelectorAll("th")).some((node) => /^\d+$/.test(cleanText23(node.textContent))));
+      const seasonHeaders = Array.from((numericHeaderRow == null ? void 0 : numericHeaderRow.querySelectorAll("th")) || []).filter((node) => /^\d+$/.test(cleanText23(node.textContent)));
+      const totalHeader = Array.from(perYearTable.querySelectorAll("th")).find((node) => /total|\d+\s*-\s*\d+/i.test(cleanText23(node.textContent)));
+      const nextSeason = CURRENT_SEASON2 ? String(CURRENT_SEASON2) : seasonHeaders.length ? String(Math.max(...seasonHeaders.map((node) => Number(cleanText23(node.textContent)) || 0)) + 1) : "Current";
+      const currentStart = seasonHeaders[0] ? cleanText23(seasonHeaders[0].textContent) : "";
+      const currentEnd = seasonHeaders.length ? cleanText23(seasonHeaders[seasonHeaders.length - 1].textContent) : "";
+      const rollingStart = seasonHeaders[1] ? cleanText23(seasonHeaders[1].textContent) : "";
       const currentLabel = currentStart && currentEnd ? `${currentStart}-${currentEnd}` : "Current";
       const rollingLabel = rollingStart && /^\d+$/.test(nextSeason) ? `${rollingStart}-${nextSeason}` : "Recent 5";
       if (seasonGroupHeader && !seasonGroupHeader.dataset.tmvuCurrentSeasonGroup) {
@@ -39423,7 +39500,7 @@ ${names}`)) {
         const countryCell = cells[1];
         const totalCell = cells[cells.length - 1];
         const seasonCells = cells.slice(2, -1);
-        const seasonValues = seasonCells.map((cell) => parseFloat(cleanText22(cell.textContent)) || 0);
+        const seasonValues = seasonCells.map((cell) => parseFloat(cleanText23(cell.textContent)) || 0);
         const countryKey = getCountryKeyFromNode(countryCell);
         const currentValue = (_a = countryPoints[countryKey]) == null ? void 0 : _a.average;
         const currentCell = document.createElement("td");
@@ -39460,7 +39537,7 @@ ${names}`)) {
       var _a;
       const box = sourceRoot3.querySelector(".column3_a .box");
       if (!box) return null;
-      const title = cleanText22(((_a = box.querySelector(".box_head h2")) == null ? void 0 : _a.textContent) || "Tournament Notes");
+      const title = cleanText23(((_a = box.querySelector(".box_head h2")) == null ? void 0 : _a.textContent) || "Tournament Notes");
       const body = stripShadow(box.querySelector(".box_body"));
       return {
         title,
@@ -39505,6 +39582,110 @@ ${names}`)) {
   function initInternationalCupCoefficientsPage(main2) {
     if (!main2 || !main2.isConnected) return;
     mountInternationalCupCoefficientsPage(main2);
+  }
+
+  // src/components/shared/tm-international-cup-statistics-page.js
+  var MENU_ITEMS = [
+    { label: "International cup", href: "/international-cup/1/" },
+    { label: "Coefficients", href: "/international-cup/coefficients/1/" },
+    { label: "Statistics", href: "/statistics/international-cup/1/", active: true }
+  ];
+  var cleanText20 = (v) => String(v != null ? v : "").replace(/\s+/g, " ").trim();
+  var statsCache = {};
+  var fetchPlayerStats2 = (tourney, stat, season, teamIdx, onDone) => {
+    const seasonStr = season ? `${season}/` : "";
+    const key = `${tourney}|${stat}|${season}|${teamIdx}`;
+    if (statsCache[key]) {
+      onDone(statsCache[key]);
+      return;
+    }
+    window.fetch(`/statistics/international-cup/${tourney}/players/${stat}/${seasonStr}`).then((r) => r.text()).then((html2) => {
+      const rows = parsePlayerStatsHtml(html2, teamIdx);
+      statsCache[key] = rows;
+      onDone(rows);
+    }).catch(() => onDone(null));
+  };
+  function mountInternationalCupStatisticsPage(main2) {
+    var _a, _b, _c, _d, _e, _f, _g, _h;
+    if (!main2) main2 = document.querySelector(".tmvu-main");
+    if (!main2) return;
+    const sourceRoot3 = document.querySelector(".main_center") || main2;
+    const cleanOpts = (sel) => sel ? Array.from(sel.options).map((o) => ({ value: o.value, label: cleanText20(o.textContent), selected: o.selected })) : [];
+    const tourneyOpts = cleanOpts(sourceRoot3.querySelector("#tourney_number"));
+    const seasonOpts = cleanOpts(sourceRoot3.querySelector("#stats_season"));
+    let activeTourney = (_d = (_c = (_a = tourneyOpts.find((o) => o.selected)) == null ? void 0 : _a.value) != null ? _c : (_b = tourneyOpts[0]) == null ? void 0 : _b.value) != null ? _d : "1";
+    let activeSeason = (_h = (_g = (_e = seasonOpts.find((o) => o.selected)) == null ? void 0 : _e.value) != null ? _g : (_f = seasonOpts[0]) == null ? void 0 : _f.value) != null ? _h : "";
+    const buildSelect = (opts, current, onChange) => {
+      const sel = document.createElement("select");
+      sel.className = "tmu-input tmu-input-tone-overlay tmu-input-density-compact";
+      opts.forEach((o) => {
+        const opt = document.createElement("option");
+        opt.value = o.value;
+        opt.textContent = o.label;
+        if (o.value === current) opt.selected = true;
+        sel.appendChild(opt);
+      });
+      sel.addEventListener("change", () => onChange(sel.value));
+      return sel;
+    };
+    const bodyEl = document.createElement("div");
+    let browserWrap = null;
+    const remountBrowser = () => {
+      if (!browserWrap) return;
+      browserWrap.innerHTML = "";
+      mountPlayerStatsBrowser(browserWrap, {
+        statDefs: PLAYER_STAT_DEFS,
+        initialStat: "goals",
+        initialTeam: 0,
+        fetchFn: (stat, team, cb) => fetchPlayerStats2(activeTourney, stat, activeSeason, team, cb),
+        colLabel: PLAYER_COL_LABELS
+      });
+    };
+    const filtersRow = document.createElement("div");
+    filtersRow.style.cssText = "display:flex;flex-wrap:wrap;gap:var(--tmu-space-sm);align-items:center;margin-bottom:var(--tmu-space-md);";
+    const addFilter = (label, opts, current, onChange) => {
+      if (!opts.length) return;
+      const lbl = document.createElement("label");
+      lbl.textContent = label;
+      lbl.style.cssText = "font-size:var(--tmu-font-xs);font-weight:600;color:var(--tmu-text-panel-label);text-transform:uppercase;letter-spacing:.06em;";
+      filtersRow.appendChild(lbl);
+      filtersRow.appendChild(buildSelect(opts, current, onChange));
+    };
+    if (tourneyOpts.length > 1) {
+      addFilter("Tournament", tourneyOpts, activeTourney, (v) => {
+        activeTourney = v;
+        remountBrowser();
+      });
+    }
+    addFilter("Season", seasonOpts, activeSeason, (v) => {
+      activeSeason = v;
+      remountBrowser();
+    });
+    if (filtersRow.children.length) bodyEl.appendChild(filtersRow);
+    browserWrap = document.createElement("div");
+    bodyEl.appendChild(browserWrap);
+    const cardHost = document.createElement("div");
+    const refs = TmSectionCard.mount(cardHost, {
+      title: "Player Statistics",
+      bodyClass: "tmvu-icup-stats-body"
+    });
+    if (refs == null ? void 0 : refs.body) refs.body.appendChild(bodyEl);
+    TmTournamentPage.mount(main2, {
+      pageClass: "tmvu-icup-page tmvu-icup-page-statistics",
+      menuItems: MENU_ITEMS,
+      currentHref: window.location.pathname,
+      mainClass: "tmvu-icup-main",
+      sideClass: "tmvu-icup-side",
+      mainNodes: [cardHost],
+      sideNodes: []
+    });
+    remountBrowser();
+  }
+
+  // src/pages/international-cup-statistics.js
+  function initInternationalCupStatisticsPage(main2) {
+    if (!main2 || !main2.isConnected) return;
+    mountInternationalCupStatisticsPage(main2);
   }
 
   // src/components/dbinspect/tm-dbinspect-styles.js
@@ -41037,7 +41218,7 @@ ${names}`)) {
     if (!main2 || !main2.isConnected) return;
     const sourceRoot3 = (document.querySelector(".main_center") || main2).cloneNode(true);
     const STYLE_ID45 = "tmvu-national-teams-rankings-style";
-    const cleanText22 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const cleanText23 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml29 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const injectStyles34 = () => {
       if (document.getElementById(STYLE_ID45)) return;
@@ -41108,7 +41289,7 @@ ${names}`)) {
     const parseMenu10 = () => Array.from(sourceRoot3.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
       if (node.tagName === "HR") return [{ type: "separator" }];
       if (node.tagName !== "A") return [];
-      const label = cleanText22(node.textContent);
+      const label = cleanText23(node.textContent);
       return [{
         type: "link",
         href: node.getAttribute("href") || "#",
@@ -41122,7 +41303,7 @@ ${names}`)) {
       box.querySelectorAll(".tabs [set_active]").forEach((tab) => {
         const id = tab.getAttribute("set_active") || "";
         if (!id) return;
-        labelById.set(id, cleanText22(tab.textContent) || "Tab");
+        labelById.set(id, cleanText23(tab.textContent) || "Tab");
       });
       return Array.from(box.querySelectorAll(".tab_container > div[id]")).map((panel, index) => {
         const table2 = panel.querySelector("table");
@@ -41138,9 +41319,9 @@ ${names}`)) {
       var _a, _b;
       const box = sourceRoot3.querySelector(".column2_a > .box");
       if (!box) return null;
-      const title = cleanText22(((_a = box.querySelector(".box_head h2")) == null ? void 0 : _a.textContent) || "National Team Rankings");
+      const title = cleanText23(((_a = box.querySelector(".box_head h2")) == null ? void 0 : _a.textContent) || "National Team Rankings");
       const subHeader = box.querySelector(".box_sub_header");
-      const region = cleanText22(((_b = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _b.textContent) || "Region");
+      const region = cleanText23(((_b = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _b.textContent) || "Region");
       const changeNode = subHeader == null ? void 0 : subHeader.querySelector(".faux_link");
       const panels = parsePanels(box);
       return {
@@ -41234,11 +41415,11 @@ ${names}`)) {
     { key: "reasons", label: "Reasons" },
     { key: "sources", label: "Sources" }
   ];
-  var cleanText20 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-  var lowerText = (value) => cleanText20(value).toLowerCase();
+  var cleanText21 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var lowerText = (value) => cleanText21(value).toLowerCase();
   var escapeHtml28 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   function normalizeCountryCode2(value) {
-    const raw = cleanText20(value);
+    const raw = cleanText21(value);
     if (!raw) return "";
     const bracketMatch = raw.match(/^\[([a-z]{2,3})\]$/i);
     if (bracketMatch) return lowerText(bracketMatch[1]);
@@ -41678,17 +41859,17 @@ ${names}`)) {
   function extractClubId3(anchor) {
     var _a;
     if (!anchor) return "";
-    const attrId = cleanText20(anchor.getAttribute("club_link"));
+    const attrId = cleanText21(anchor.getAttribute("club_link"));
     if (attrId) return attrId;
-    const href = cleanText20(anchor.getAttribute("href"));
+    const href = cleanText21(anchor.getAttribute("href"));
     return ((_a = href.match(/\/club\/(\d+)\//)) == null ? void 0 : _a[1]) || "";
   }
   function extractPlayerId2(anchor) {
     var _a;
     if (!anchor) return "";
-    const attrId = cleanText20(anchor.getAttribute("player_link"));
+    const attrId = cleanText21(anchor.getAttribute("player_link"));
     if (attrId) return attrId;
-    const href = cleanText20(anchor.getAttribute("href"));
+    const href = cleanText21(anchor.getAttribute("href"));
     return ((_a = href.match(/\/players\/(\d+)\//)) == null ? void 0 : _a[1]) || "";
   }
   function extractCountryCodeFromNode(node) {
@@ -41696,7 +41877,7 @@ ${names}`)) {
     if (!node) return "";
     const anchor = ((_a = node.matches) == null ? void 0 : _a.call(node, 'a.country_link[href*="/national-teams/"], a[href*="/national-teams/"]')) ? node : (_b = node.querySelector) == null ? void 0 : _b.call(node, 'a.country_link[href*="/national-teams/"], a[href*="/national-teams/"]');
     if (anchor) {
-      const href = cleanText20(anchor.getAttribute("href"));
+      const href = cleanText21(anchor.getAttribute("href"));
       const hrefCode = normalizeCountryCode2(href);
       if (hrefCode) return hrefCode;
       const classCode = normalizeCountryCode2(anchor.innerHTML);
@@ -41733,9 +41914,9 @@ ${names}`)) {
   }
   function normalizeDivisionGroups(divisions = []) {
     return divisions.flatMap((item) => {
-      const division = cleanText20(item == null ? void 0 : item.division);
+      const division = cleanText21(item == null ? void 0 : item.division);
       const groups = Math.max(1, Number(item == null ? void 0 : item.groups) || 1);
-      const name = cleanText20(item == null ? void 0 : item.name) || `Division ${division}`;
+      const name = cleanText21(item == null ? void 0 : item.name) || `Division ${division}`;
       if (!division) return [];
       return Array.from({ length: groups }, (_, index) => ({
         division,
@@ -41852,7 +42033,7 @@ ${names}`)) {
       if (!hasBanned && !hasInactive) return;
       const existing = map.get(clubId2) || {
         clubId: clubId2,
-        clubName: cleanText20(clubAnchor.textContent) || `Club ${clubId2}`,
+        clubName: cleanText21(clubAnchor.textContent) || `Club ${clubId2}`,
         division: groupCtx.division,
         group: groupCtx.group,
         statuses: /* @__PURE__ */ new Set()
@@ -41893,7 +42074,7 @@ ${names}`)) {
         if (!passesRecommendation) return;
         console.log("[NT Save][Transfer History Pass]", {
           playerId,
-          playerName: cleanText20(playerAnchor.textContent),
+          playerName: cleanText21(playerAnchor.textContent),
           country: playerCountryCode,
           seasonScanned: season,
           transferType: type,
@@ -41906,9 +42087,9 @@ ${names}`)) {
         });
         items.push({
           playerId,
-          playerName: cleanText20(playerAnchor.textContent),
+          playerName: cleanText21(playerAnchor.textContent),
           clubId: clubId2,
-          clubName: cleanText20(clubAnchor.textContent),
+          clubName: cleanText21(clubAnchor.textContent),
           transferType: type,
           division: groupCtx.division,
           group: groupCtx.group,
@@ -41982,16 +42163,16 @@ ${names}`)) {
   function buildCandidateRecord(player, club, clubId2 = "", clubName2 = "") {
     var _a;
     return {
-      playerId: cleanText20((player == null ? void 0 : player.player_id) || (player == null ? void 0 : player.id)),
-      name: cleanText20((player == null ? void 0 : player.name) || (player == null ? void 0 : player.player_name)) || "Unknown player",
+      playerId: cleanText21((player == null ? void 0 : player.player_id) || (player == null ? void 0 : player.id)),
+      name: cleanText21((player == null ? void 0 : player.name) || (player == null ? void 0 : player.player_name)) || "Unknown player",
       country: resolvePlayerCountryCode(player),
       age: Number(player == null ? void 0 : player.age) || 0,
       months: Number((_a = player == null ? void 0 : player.months) != null ? _a : player == null ? void 0 : player.month) || 0,
       asi: TmUtils.parseNum((player == null ? void 0 : player.skill_index) || (player == null ? void 0 : player.asi)),
       r5: computeCandidateR5(player),
-      position: cleanText20((player == null ? void 0 : player.favposition) || (player == null ? void 0 : player.fp) || (player == null ? void 0 : player.favorite_position)),
-      clubId: cleanText20(clubId2 || (player == null ? void 0 : player.club_id) || (club == null ? void 0 : club.id)),
-      clubName: cleanText20(clubName2 || (player == null ? void 0 : player.club_name) || (club == null ? void 0 : club.club_name)) || "Unknown club",
+      position: cleanText21((player == null ? void 0 : player.favposition) || (player == null ? void 0 : player.fp) || (player == null ? void 0 : player.favorite_position)),
+      clubId: cleanText21(clubId2 || (player == null ? void 0 : player.club_id) || (club == null ? void 0 : club.id)),
+      clubName: cleanText21(clubName2 || (player == null ? void 0 : player.club_name) || (club == null ? void 0 : club.club_name)) || "Unknown club",
       clubCreated: lowerText(club == null ? void 0 : club.created),
       sources: [],
       reasons: []
@@ -42257,7 +42438,7 @@ ${names}`)) {
   }
   function setStatus(state5, html2) {
     if (state5.statusEl) state5.statusEl.innerHTML = html2;
-    if (state5.miniStatusEl) state5.miniStatusEl.textContent = cleanText20(html2.replace(/<[^>]+>/g, " "));
+    if (state5.miniStatusEl) state5.miniStatusEl.textContent = cleanText21(html2.replace(/<[^>]+>/g, " "));
   }
   function setProgress(state5, { phase = "", current = 0, total = 0, note = "", unitLabel = "" } = {}) {
     var _a, _b;
@@ -42403,7 +42584,7 @@ ${names}`)) {
     return state5.tooltipCache.get(playerId);
   }
   async function getTooltipCandidateBatch(state5, playerIds = [], batchSize = 10) {
-    const uniqueIds = [...new Set(playerIds.map((id) => cleanText20(id)).filter(Boolean))];
+    const uniqueIds = [...new Set(playerIds.map((id) => cleanText21(id)).filter(Boolean))];
     const results = /* @__PURE__ */ new Map();
     for (let index = 0; index < uniqueIds.length; index += batchSize) {
       const batchIds = uniqueIds.slice(index, index + batchSize);
@@ -42425,7 +42606,7 @@ ${names}`)) {
     return state5.clubPageCache.get(clubId2);
   }
   async function getClubPageBatch(state5, clubIds = [], batchSize = 10) {
-    const uniqueIds = [...new Set(clubIds.map((id) => cleanText20(id)).filter(Boolean))];
+    const uniqueIds = [...new Set(clubIds.map((id) => cleanText21(id)).filter(Boolean))];
     const results = /* @__PURE__ */ new Map();
     for (let index = 0; index < uniqueIds.length; index += batchSize) {
       const batchIds = uniqueIds.slice(index, index + batchSize);
@@ -42554,7 +42735,7 @@ ${names}`)) {
         const club = tooltipData == null ? void 0 : tooltipData.club;
         if (!player || !matchesTargetCountry(player, state5.countryCode)) return "";
         if (lowerText(club == null ? void 0 : club.created) === "inactive") return "";
-        return cleanText20((club == null ? void 0 : club.id) || (player == null ? void 0 : player.club_id) || (club == null ? void 0 : club.club_id));
+        return cleanText21((club == null ? void 0 : club.id) || (player == null ? void 0 : player.club_id) || (club == null ? void 0 : club.club_id));
       }).filter(Boolean);
       setStatus(state5, `<strong>Inspecting players</strong> ${batchStart + 1}-${Math.min(batchStart + batch.length, transferCandidates.length)}/${transferCandidates.length} \xB7 fetching club batch`);
       const clubPageMap = await getClubPageBatch(state5, clubIdsToCheck, 10);
@@ -42611,7 +42792,7 @@ ${names}`)) {
           continue;
         }
         const clubId2 = record.clubId;
-        const clubHtml = clubPageMap.get(cleanText20(clubId2)) || null;
+        const clubHtml = clubPageMap.get(cleanText21(clubId2)) || null;
         if (hasClubBannedBadge(clubHtml)) {
           record.reasons.push("club banned");
           const { changed } = upsertCandidate(state5.results, record);
@@ -42655,7 +42836,7 @@ ${names}`)) {
       const squadPlayers = Array.isArray(squadData == null ? void 0 : squadData.post) ? squadData.post : [];
       const squadPlayersMissingCountry = squadPlayers.filter((squadPlayer) => {
         const countryCode = resolvePlayerCountryCode(squadPlayer);
-        return !countryCode && cleanText20(squadPlayer.id || squadPlayer.player_id);
+        return !countryCode && cleanText21(squadPlayer.id || squadPlayer.player_id);
       });
       const squadTooltipMap = await getTooltipCandidateBatch(
         state5,
@@ -42666,7 +42847,7 @@ ${names}`)) {
         let countryCode = resolvePlayerCountryCode(squadPlayer);
         let tooltipData = null;
         if (!countryCode) {
-          tooltipData = squadTooltipMap.get(cleanText20(squadPlayer.id || squadPlayer.player_id)) || null;
+          tooltipData = squadTooltipMap.get(cleanText21(squadPlayer.id || squadPlayer.player_id)) || null;
           countryCode = resolvePlayerCountryCode(tooltipData == null ? void 0 : tooltipData.player);
         }
         if (countryCode !== normalizeCountryCode2(state5.countryCode)) continue;
@@ -42843,7 +43024,7 @@ ${names}`)) {
     const STYLE_ID45 = "tmvu-national-teams-style";
     const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
     const CURRENT_SEASON2 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
-    const cleanText22 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const cleanText23 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml29 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml10 = (opts) => TmUI.metric(opts);
     const decodeHtmlEntities = (value) => {
@@ -43182,7 +43363,7 @@ ${names}`)) {
     const parseMenu10 = () => Array.from(sourceRoot3.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
       if (node.tagName === "HR") return [{ type: "separator" }];
       if (node.tagName !== "A") return [];
-      const label = cleanText22(node.textContent);
+      const label = cleanText23(node.textContent);
       return [{
         type: "link",
         href: node.getAttribute("href") || "#",
@@ -43193,7 +43374,7 @@ ${names}`)) {
     });
     const parseFactTable = (table2) => Array.from((table2 == null ? void 0 : table2.querySelectorAll("tr")) || []).map((row) => {
       var _a, _b;
-      const label = cleanText22(((_a = row.querySelector("th")) == null ? void 0 : _a.textContent) || "");
+      const label = cleanText23(((_a = row.querySelector("th")) == null ? void 0 : _a.textContent) || "");
       const valueCell = row.querySelector("td:last-child");
       const valueHtml = ((_b = valueCell == null ? void 0 : valueCell.innerHTML) == null ? void 0 : _b.trim()) || "";
       if (!label || !valueHtml) return null;
@@ -43219,7 +43400,7 @@ ${names}`)) {
       const logoSrc = ((_a = overviewTable == null ? void 0 : overviewTable.querySelector('img[src*="/pics/nt_logos/"]')) == null ? void 0 : _a.getAttribute("src")) || "";
       const facts = parseFactTable(overviewTable);
       const sections = Array.from(box.querySelectorAll("h3")).map((heading) => {
-        const title = cleanText22(heading.textContent);
+        const title = cleanText23(heading.textContent);
         const body = heading.nextElementSibling;
         if (!body || !body.classList.contains("std")) return null;
         const factTable = body.querySelector("table.zebra:not(.group_table):not(.fixtures_table)");
@@ -43239,8 +43420,8 @@ ${names}`)) {
       const countryInfoSection = sections.find((section) => section.type === "facts");
       const uetaChampionsCup = (countryInfoSection == null ? void 0 : countryInfoSection.items.find((item) => /ueta champions cup spots/i.test(item.label))) || null;
       return {
-        countryName: cleanText22((countryNode == null ? void 0 : countryNode.textContent) || "National Team"),
-        countryHtml: (countryNode == null ? void 0 : countryNode.innerHTML) || escapeHtml29(cleanText22((countryNode == null ? void 0 : countryNode.textContent) || "National Team")),
+        countryName: cleanText23((countryNode == null ? void 0 : countryNode.textContent) || "National Team"),
+        countryHtml: (countryNode == null ? void 0 : countryNode.innerHTML) || escapeHtml29(cleanText23((countryNode == null ? void 0 : countryNode.textContent) || "National Team")),
         changeHtml: (changeLink == null ? void 0 : changeLink.outerHTML) || "",
         logoSrc,
         facts,
@@ -43256,7 +43437,7 @@ ${names}`)) {
         const flagHtml = countryAnchor ? countryAnchor.innerHTML : flagEl ? flagEl.outerHTML : "";
         return {
           id: "",
-          name: cleanText22((teamAnchor == null ? void 0 : teamAnchor.textContent) || cell.textContent || ""),
+          name: cleanText23((teamAnchor == null ? void 0 : teamAnchor.textContent) || cell.textContent || ""),
           href: (teamAnchor == null ? void 0 : teamAnchor.getAttribute("href")) || "#",
           flagHtml
         };
@@ -43270,7 +43451,7 @@ ${names}`)) {
         const resultCell = cells[2];
         const matchHref = ((_a = resultCell.querySelector("a")) == null ? void 0 : _a.getAttribute("href")) || "";
         const matchId = ((_b = matchHref.match(/\/(?:matches\/nt|matches)\/(\d+)\//)) == null ? void 0 : _b[1]) || "";
-        const scoreText = cleanText22(resultCell.textContent || "vs") || "vs";
+        const scoreText = cleanText23(resultCell.textContent || "vs") || "vs";
         return {
           matchId,
           season: CURRENT_SEASON2,
@@ -43292,7 +43473,7 @@ ${names}`)) {
         const icon = row.children[0];
         const content = row.children[1];
         const subtle = content == null ? void 0 : content.querySelector(".subtle");
-        const season = cleanText22((subtle == null ? void 0 : subtle.textContent) || "");
+        const season = cleanText23((subtle == null ? void 0 : subtle.textContent) || "");
         if (subtle) subtle.remove();
         return {
           iconStyle: (icon == null ? void 0 : icon.getAttribute("style")) || "",
@@ -43313,8 +43494,8 @@ ${names}`)) {
         const playerId = playerAnchor.getAttribute("player_link") || ((_b = (_a2 = playerAnchor.getAttribute("href")) == null ? void 0 : _a2.match(/\/players\/(\d+)\//)) == null ? void 0 : _b[1]) || "";
         return {
           playerId: String(playerId),
-          number: cleanText22(cells[0].textContent),
-          name: decodeHtmlEntities(cleanText22(playerAnchor.textContent)),
+          number: cleanText23(cells[0].textContent),
+          name: decodeHtmlEntities(cleanText23(playerAnchor.textContent)),
           href: playerAnchor.getAttribute("href") || "#"
         };
       }).filter((row) => row && row.playerId);
@@ -43477,7 +43658,7 @@ ${names}`)) {
       });
       TmNationalTeamsNtSave.mount({
         navEl: sideMenuEl,
-        countryCode: routeMatch[1] || cleanText22(((_b = window.SESSION) == null ? void 0 : _b.country) || ""),
+        countryCode: routeMatch[1] || cleanText23(((_b = window.SESSION) == null ? void 0 : _b.country) || ""),
         currentSeason: CURRENT_SEASON2
       });
       const mainColumn5 = document.createElement("section");
@@ -46251,7 +46432,18 @@ ${names}`)) {
         body:has(.tmtc-page) .tmvu-main {
             width: calc(100% - 24px) !important;
             max-width: none !important;
-            overflow: hidden;
+            overflow-x: clip !important;
+            overflow-y: visible !important;
+        }
+        body:has(.tmtc-page) .tmvu-main * {
+            --sticky-unblock: 1;
+        }
+        /* Ensure nothing between body and field-col sets overflow-y */
+        body:has(.tmtc-page) .tmu-page-section-stack,
+        body:has(.tmtc-page) .tmtc-main-grid,
+        body:has(.tmtc-page) .tmtc-main-left,
+        body:has(.tmtc-page) .tmtc-lineup-2col {
+            overflow: visible;
         }
 
         /* \u2500\u2500 page layout \u2500\u2500 */
@@ -46267,7 +46459,7 @@ ${names}`)) {
         .tmtc-main-grid {
             display: flex;
             gap: var(--tmu-space-md);
-            align-items: flex-start;
+            align-items: stretch;
         }
         .tmtc-main-left {
             flex: 0 0 auto;
@@ -46289,9 +46481,8 @@ ${names}`)) {
         .tmtc-lineup-2col {
             display: flex;
             gap: var(--tmu-space-md);
-            align-items: stretch;
-            flex: 1 1 0;
-            min-height: 0;
+            align-items: flex-start;
+            height: 100%;
         }
         .tmtc-field-col {
             flex: 0 0 auto;
@@ -46300,6 +46491,9 @@ ${names}`)) {
             flex-direction: column;
             align-items: flex-start;
             gap: var(--tmu-space-sm);
+            position: sticky;
+            top: 160px;
+            align-self: flex-start;
         }
         .tmtc-squad-col {
             flex: 1 1 0;
@@ -46547,6 +46741,65 @@ ${names}`)) {
             flex-direction: column;
             align-items: stretch;
             gap: var(--tmu-space-xs);
+        }
+
+        /* \u2500\u2500 special roles list \u2500\u2500 */
+        .tmtc-roles-section {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin-top: var(--tmu-space-xs);
+        }
+        .tmtc-role-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--tmu-space-sm);
+            padding: 4px var(--tmu-space-sm);
+            border-radius: var(--tmu-space-xs);
+            background: var(--tmu-surface-dark-soft);
+            border: 1px solid var(--tmu-border-faint);
+            min-height: 30px;
+        }
+        .tmtc-role-label {
+            font-size: var(--tmu-font-xs);
+            font-weight: 600;
+            color: var(--tmu-text-panel-label);
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            flex-shrink: 0;
+        }
+        .tmtc-role-slot {
+            flex: 1 1 0;
+            min-width: 0;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .tmtc-role-slot.tmtc-drag-over {
+            outline: 2px dashed var(--tmu-info) !important;
+            outline-offset: -2px;
+            border-radius: var(--tmu-space-xs);
+            background: rgba(77,171,247,0.10) !important;
+        }
+        .tmtc-role-chip {
+            font-size: var(--tmu-font-xs);
+            font-weight: 700;
+            color: var(--tmu-text-inverse);
+            background: var(--tmu-surface-overlay);
+            border: 1px solid var(--tmu-border-soft);
+            border-radius: var(--tmu-space-xs);
+            padding: 2px 8px;
+            cursor: grab;
+            user-select: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 120px;
+        }
+        .tmtc-role-chip:active { cursor: grabbing; }
+        .tmtc-role-empty {
+            font-size: var(--tmu-font-xs);
+            color: var(--tmu-text-faint);
         }
 
         /* \u2500\u2500 orders table \u2500\u2500 */
@@ -46965,7 +47218,7 @@ ${names}`)) {
         }
       }
       const gc2 = TmUtils.getColor;
-      const r5 = countR5 > 0 ? (totalR5 / countR5).toFixed(1) : null;
+      const r5 = countR5 > 0 ? (totalR5 / countR5).toFixed(2) : null;
       const rtn = countRtn > 0 ? (totalRtn / countRtn).toFixed(1) : null;
       const age = countAge > 0 ? (totalAge / countAge).toFixed(1) : null;
       const sep = `<span class="tmtc-fob-sep">\xB7</span>`;
@@ -47201,7 +47454,7 @@ ${names}`)) {
         e.dataTransfer.effectAllowed = "move";
         e.dataTransfer.setData("text/plain", pid);
         tr.classList.add("tmtc-drag-source");
-        if (getFieldPosKey(pid)) fieldEl.classList.add("is-dragging");
+        if (getFieldPosKey(pid) || getOccupiedFieldKeys().size < 11) fieldEl.classList.add("is-dragging");
       });
       let _hovRow = null;
       const _setHovRow = (tr) => {
@@ -47279,7 +47532,7 @@ ${names}`)) {
         try {
           const outPid = Object.keys(changed).find((p) => changed[p] === "out") || null;
           await postSave(buildAssocForSave(outPid), changed, reserves, national, miniGameId);
-          showStatus(true, "Saved \u2713");
+          TmAlert.show({ message: "Saved", tone: "success" });
           notifyChange();
         } catch (e2) {
           TmAlert.show({ message: "Save failed", tone: "error" });
@@ -47381,7 +47634,7 @@ ${names}`)) {
         if (!player) return;
         const prevPid = assignment[posKey2] ? String(assignment[posKey2]) : null;
         if (prevPid === String(pid)) return;
-        if (!prevPid && ds.fromType !== "field") return;
+        if (!prevPid && ds.fromType !== "field" && getOccupiedFieldKeys().size >= 11) return;
         const changed = {};
         clearSourceOldSpot(ds, changed);
         if (prevPid) backfillDisplaced(prevPid, ds, changed);
@@ -47393,7 +47646,7 @@ ${names}`)) {
         try {
           const outPid = Object.keys(changed).find((p) => changed[p] === "out") || null;
           await postSave(buildAssocForSave(outPid), changed, reserves, national, miniGameId);
-          showStatus(true, "Saved \u2713");
+          TmAlert.show({ message: "Saved", tone: "success" });
           notifyChange();
         } catch (e2) {
           TmAlert.show({ message: "Save failed", tone: "error" });
@@ -47437,7 +47690,7 @@ ${names}`)) {
         try {
           const outPid = Object.keys(changed).find((p) => changed[p] === "out") || null;
           await postSave(buildAssocForSave(outPid), changed, reserves, national, miniGameId);
-          showStatus(true, "Saved \u2713");
+          TmAlert.show({ message: "Saved", tone: "success" });
           notifyChange();
         } catch (e2) {
           TmAlert.show({ message: "Save failed", tone: "error" });
@@ -47456,15 +47709,9 @@ ${names}`)) {
     for (const role of BENCH_SLOTS2) {
       benchSlotEls[role] = makeBenchSlot(role);
     }
-    const specialHead = document.createElement("div");
-    specialHead.className = "tmtc-bench-section-head";
-    specialHead.textContent = "Roles";
-    specialRolesCol.appendChild(specialHead);
     for (const role of SPECIAL_SLOTS2) {
       benchSlotEls[role] = makeBenchSlot(role);
-      specialRolesCol.appendChild(benchSlotEls[role]);
     }
-    fieldCol.appendChild(specialRolesCol);
     const squadTarget = externalSquadContainer || squadCol;
     tblWrap = buildSquadTable();
     squadTarget.appendChild(tblWrap);
@@ -47493,7 +47740,7 @@ ${names}`)) {
       try {
         const outPid = Object.keys(changed).find((p) => changed[p] === "out") || null;
         await postSave(buildAssocForSave(outPid), changed, reserves, national, miniGameId);
-        showStatus(true, "Saved \u2713");
+        TmAlert.show({ message: "Saved", tone: "success" });
         notifyChange();
       } catch (e) {
         TmAlert.show({ message: "Save failed", tone: "error" });
@@ -47508,7 +47755,96 @@ ${names}`)) {
         if (i >= 0) changeListeners.splice(i, 1);
       };
     };
-    return { refresh: refreshSquadTable, applyAssignment, getAssignment, getActiveKeys, subscribe };
+    function mountSpecialRoles(target) {
+      const ROLE_LABELS = { captain: "Captain", corner: "Corners", penalty: "Penalty", freekick: "Free Kick" };
+      for (const role of SPECIAL_SLOTS2) {
+        const row = document.createElement("div");
+        row.className = "tmtc-role-row";
+        row.dataset.role = role;
+        const lbl = document.createElement("span");
+        lbl.className = "tmtc-role-label";
+        lbl.textContent = ROLE_LABELS[role] || role;
+        row.appendChild(lbl);
+        const slot = document.createElement("div");
+        slot.className = "tmtc-role-slot";
+        slot.dataset.role = role;
+        row.appendChild(slot);
+        const renderSlot = () => {
+          const pid = assignment[role];
+          const p = pid ? players_by_id[String(pid)] : null;
+          slot.innerHTML = "";
+          if (p) {
+            const chip = document.createElement("span");
+            chip.className = "tmtc-role-chip";
+            chip.setAttribute("draggable", "true");
+            chip.dataset.playerId = p.player_id;
+            chip.textContent = p.lastname || p.name || "";
+            chip.addEventListener("dragstart", (e) => {
+              dragState = { pid: String(p.player_id), fromType: "bench", fromRoleKey: role };
+              e.dataTransfer.effectAllowed = "move";
+              e.dataTransfer.setData("text/plain", String(p.player_id));
+              chip.classList.add("tmtc-drag-source");
+            });
+            slot.appendChild(chip);
+          } else {
+            const empty = document.createElement("span");
+            empty.className = "tmtc-role-empty";
+            empty.textContent = "\u2014";
+            slot.appendChild(empty);
+          }
+        };
+        renderSlot();
+        let _n = 0;
+        slot.addEventListener("dragenter", (e) => {
+          e.preventDefault();
+          if (++_n === 1) slot.classList.add("tmtc-drag-over");
+        });
+        slot.addEventListener("dragleave", () => {
+          if (--_n <= 0) {
+            _n = 0;
+            slot.classList.remove("tmtc-drag-over");
+          }
+        });
+        slot.addEventListener("dragover", (e) => e.preventDefault());
+        slot.addEventListener("drop", async (e) => {
+          var _a;
+          e.preventDefault();
+          _n = 0;
+          slot.classList.remove("tmtc-drag-over");
+          const ds = dragState;
+          dragState = null;
+          clearDragVisuals();
+          if (!ds) return;
+          const { pid } = ds;
+          const player = players_by_id[pid];
+          if (!player) return;
+          const prevPid = assignment[role] ? String(assignment[role]) : null;
+          if (prevPid === String(pid)) return;
+          const changed = {};
+          if (prevPid) {
+            changed[prevPid] = "out";
+          }
+          assignment[role] = pid;
+          changed[pid] = role;
+          refreshSquadTable();
+          for (const r of SPECIAL_SLOTS2) {
+            (_a = target.querySelector(`[data-role="${r}"] .tmtc-role-slot`)) == null ? void 0 : _a.dispatchEvent(new CustomEvent("_refresh"));
+          }
+          try {
+            const outPid = Object.keys(changed).find((p) => changed[p] === "out") || null;
+            await postSave(buildAssocForSave(outPid), changed, reserves, national, miniGameId);
+            TmAlert.show({ message: "Saved", tone: "success" });
+            notifyChange();
+          } catch (e2) {
+            TmAlert.show({ message: "Save failed", tone: "error" });
+          }
+        });
+        slot.addEventListener("_refresh", renderSlot);
+        changeListeners.push(renderSlot);
+        target.appendChild(row);
+      }
+    }
+    return { refresh: refreshSquadTable, applyAssignment, getAssignment, getActiveKeys, subscribe, mountSpecialRoles };
   }
 
   // src/components/tactics/tm-tactics-settings.js
@@ -47526,36 +47862,67 @@ ${names}`)) {
       body: new URLSearchParams(body).toString()
     });
   }
-  function mountTacticsSettings(container, initialValues = {}, opts = {}) {
+  function mountTacticsSettings(container, initialValues = {}, opts = {}, lineupApi = null) {
     const { reserves = 0, national = 0, miniGameId = 0 } = opts;
     const wrap = document.createElement("div");
     wrap.className = "tmtc-settings-rows";
     container.appendChild(wrap);
     function buildRow({ label, labelsMap, saveKey, current }) {
+      var _a;
       const row = document.createElement("div");
       row.className = "tmu-field tmtc-setting-row";
       const lbl = document.createElement("span");
       lbl.className = "tmu-field-label";
       lbl.textContent = label;
       row.appendChild(lbl);
-      const sel = document.createElement("select");
-      sel.className = "tmu-input tmu-input-tone-overlay tmu-input-density-compact tmu-input-full";
-      for (const [val, text] of Object.entries(labelsMap)) {
-        const opt = document.createElement("option");
-        opt.value = val;
-        opt.textContent = text;
-        if (Number(val) === current) opt.selected = true;
-        sel.appendChild(opt);
-      }
-      sel.addEventListener("change", () => {
-        saveSetting(saveKey, parseInt(sel.value, 10), reserves, national, miniGameId);
+      let currentVal = current;
+      const ac = TmAutocomplete.autocomplete({
+        value: (_a = labelsMap[currentVal]) != null ? _a : "",
+        placeholder: "Select\u2026",
+        tone: "overlay",
+        density: "compact",
+        size: "full",
+        grow: true,
+        autocomplete: "off"
       });
-      row.appendChild(sel);
+      const makeItems = (query = "") => {
+        const q3 = query.trim().toLowerCase();
+        return Object.entries(labelsMap).filter(([, text]) => !q3 || text.toLowerCase().includes(q3)).map(([val, text]) => TmAutocomplete.autocompleteItem({
+          label: text,
+          active: Number(val) === currentVal,
+          onSelect: () => {
+            currentVal = Number(val);
+            ac.setValue(text);
+            ac.hideDrop();
+            saveSetting(saveKey, currentVal, reserves, national, miniGameId);
+          }
+        }));
+      };
+      ac.inputEl.addEventListener("focus", () => {
+        ac.setItems(makeItems(""));
+      });
+      ac.inputEl.addEventListener("input", () => {
+        ac.setItems(makeItems(ac.inputEl.value));
+      });
+      ac.inputEl.addEventListener("blur", () => {
+        setTimeout(() => {
+          var _a2;
+          ac.hideDrop();
+          ac.setValue((_a2 = labelsMap[currentVal]) != null ? _a2 : "");
+        }, 200);
+      });
+      row.appendChild(ac);
       return row;
     }
     wrap.appendChild(buildRow({ label: "Mentality", labelsMap: MENTALITY_LABELS, saveKey: "mentality", current: Number(initialValues.mentality) || 4 }));
     wrap.appendChild(buildRow({ label: "Style", labelsMap: STYLE_LABELS, saveKey: "attacking", current: Number(initialValues.style) || 1 }));
     wrap.appendChild(buildRow({ label: "Focus", labelsMap: FOCUS_LABELS, saveKey: "focus", current: Number(initialValues.focus) || 1 }));
+    if (lineupApi == null ? void 0 : lineupApi.mountSpecialRoles) {
+      const rolesSection = document.createElement("div");
+      rolesSection.className = "tmtc-roles-section";
+      wrap.appendChild(rolesSection);
+      lineupApi.mountSpecialRoles(rolesSection);
+    }
   }
 
   // src/components/tactics/tm-tactics-panel.js
@@ -47626,8 +47993,6 @@ ${names}`)) {
       var _a;
       return { posKey: pk, posId: (_a = TmConst.POSITION_MAP[pk]) == null ? void 0 : _a.id };
     }).filter((s6) => s6.posId != null);
-    console.log("[pickBest11] activeKeys:", activeKeys);
-    console.log("[pickBest11] activeSlots:", activeSlots);
     const players = Object.values(players_by_id).filter((p2) => {
       var _a;
       return (p2 == null ? void 0 : p2.player_id) && ((_a = p2.allPositionRatings) == null ? void 0 : _a.length);
@@ -47689,6 +48054,60 @@ ${names}`)) {
       result[activeSlots[j - 1].posKey] = players[p[j] - 1].player_id;
     }
     return result;
+  }
+  var OUTFIELD_ZONE_DEFS = [
+    { keys: FWD_KEYS, max: 3 },
+    { keys: OM_KEYS, max: 5 },
+    { keys: MID_KEYS, max: 5 },
+    { keys: DM_KEYS, max: 5 },
+    { keys: DEF_KEYS, max: 5 }
+  ];
+  function computeAssignmentR5(assignment, players_by_id) {
+    var _a;
+    let total = 0;
+    for (const [posKey2, pid] of Object.entries(assignment)) {
+      if (!pid) continue;
+      const p = players_by_id[String(pid)];
+      const posId = (_a = TmConst.POSITION_MAP[posKey2]) == null ? void 0 : _a.id;
+      if (!(p == null ? void 0 : p.allPositionRatings) || posId == null) continue;
+      const r = p.allPositionRatings.find((rt) => rt.id === posId);
+      if (r) total += parseFloat(r.r5) || 0;
+    }
+    return total;
+  }
+  function findBestR5Formation(players_by_id, gkPid) {
+    const outfieldById = {};
+    for (const [id, p] of Object.entries(players_by_id)) {
+      if (String(p == null ? void 0 : p.player_id) !== String(gkPid)) outfieldById[id] = p;
+    }
+    let bestR5 = -Infinity;
+    let bestAssignment = null;
+    function enumerate(zoneIdx, remaining, counts) {
+      if (zoneIdx === OUTFIELD_ZONE_DEFS.length) {
+        if (remaining !== 0) return;
+        const activeKeys = /* @__PURE__ */ new Set();
+        for (let i = 0; i < OUTFIELD_ZONE_DEFS.length; i++) {
+          if (counts[i] > 0) for (const pk of OUTFIELD_ZONE_DEFS[i].keys[counts[i]] || []) activeKeys.add(pk);
+        }
+        if (activeKeys.size !== 10) return;
+        const assignment = pickBest11(activeKeys, outfieldById);
+        if (Object.keys(assignment).length < 10) return;
+        const r5 = computeAssignmentR5(assignment, outfieldById);
+        if (r5 > bestR5) {
+          bestR5 = r5;
+          bestAssignment = assignment;
+        }
+        return;
+      }
+      const max = Math.min(OUTFIELD_ZONE_DEFS[zoneIdx].max, remaining);
+      for (let n = 0; n <= max; n++) {
+        counts.push(n);
+        enumerate(zoneIdx + 1, remaining - n, counts);
+        counts.pop();
+      }
+    }
+    enumerate(0, 10, []);
+    return bestAssignment || {};
   }
   function mountTacticsPanel(container, data, initialSettings, opts, lineupApi) {
     const { players_by_id = {} } = data;
@@ -47757,10 +48176,63 @@ ${names}`)) {
       }
     });
     container.appendChild(pickBtn);
+    const bestFmBtn = TmButton.button({
+      label: "Best R5 Formation",
+      color: "secondary",
+      size: "sm",
+      block: true,
+      onClick: async () => {
+        bestFmBtn.disabled = true;
+        const currentAssignment = getAssignment();
+        const gkPid = currentAssignment["gk"];
+        const newFBP = findBestR5Formation(players_by_id, gkPid);
+        if (Object.keys(newFBP).length) {
+          if (gkPid) newFBP["gk"] = gkPid;
+          const usedPids = new Set(Object.values(newFBP).map(String));
+          const DEF_POS = /* @__PURE__ */ new Set(["dl", "dcl", "dc", "dcr", "dr"]);
+          const MID_POS = /* @__PURE__ */ new Set(["dmc", "dmcl", "dmcr", "mc", "mcl", "mcr", "omc", "omcl", "omcr"]);
+          const WING_POS = /* @__PURE__ */ new Set(["dml", "dmr", "ml", "mr", "oml", "omr"]);
+          const FWD_POS = /* @__PURE__ */ new Set(["fc", "fcl", "fcr"]);
+          const avail = Object.values(players_by_id).filter((p) => (p == null ? void 0 : p.player_id) && !usedPids.has(String(p.player_id))).map((p) => {
+            var _a;
+            const r5 = ((_a = p.allPositionRatings) == null ? void 0 : _a.length) ? Math.max(0, ...p.allPositionRatings.map((r) => parseFloat(r.r5) || 0)) : parseFloat(p.rec_sort) || 0;
+            const favPositions = new Set(
+              String(p.favposition || "").split(",").map((s6) => s6.trim().toLowerCase()).filter(Boolean)
+            );
+            return { pid: p.player_id, favPositions, ratings: p.allPositionRatings || [], r5 };
+          }).sort((a, b) => b.r5 - a.r5);
+          const pickBestSub = (posSet) => {
+            const posIds = new Set(
+              [...posSet].map((pk) => {
+                var _a;
+                return (_a = TmConst.POSITION_MAP[pk]) == null ? void 0 : _a.id;
+              }).filter((id) => id != null)
+            );
+            const hit = avail.find((a) => {
+              if (usedPids.has(String(a.pid))) return false;
+              if (a.ratings.length) return a.ratings.some((r) => posIds.has(r.id) && (parseFloat(r.r5) || 0) > 0);
+              return [...a.favPositions].some((fp) => posSet.has(fp));
+            });
+            if (!hit) return null;
+            usedPids.add(String(hit.pid));
+            return hit.pid;
+          };
+          newFBP.sub1 = pickBestSub(/* @__PURE__ */ new Set(["gk"]));
+          newFBP.sub2 = pickBestSub(DEF_POS);
+          newFBP.sub3 = pickBestSub(MID_POS);
+          newFBP.sub4 = pickBestSub(WING_POS);
+          newFBP.sub5 = pickBestSub(FWD_POS);
+          await applyAssignment(newFBP);
+          refreshStats();
+        }
+        bestFmBtn.disabled = false;
+      }
+    });
+    container.appendChild(bestFmBtn);
     const hr = document.createElement("hr");
     hr.className = "tmtc-panel-sep";
     container.appendChild(hr);
-    mountTacticsSettings(container, initialSettings, opts);
+    mountTacticsSettings(container, initialSettings, opts, lineupApi);
     return { refreshStats };
   }
 
@@ -48311,7 +48783,7 @@ ${names}`)) {
 
   // src/layouts/app-shell.js
   var IMPORT_PATH = "/import/";
-  function cleanText21(value) {
+  function cleanText22(value) {
     return String(value || "").replace(/\s+/g, " ").trim();
   }
   function normalizeHref(href) {
@@ -48334,7 +48806,7 @@ ${names}`)) {
   }
   function isUsefulLink(anchor) {
     const href = normalizeHref(anchor.getAttribute("href") || "");
-    const label = cleanText21(anchor.textContent);
+    const label = cleanText22(anchor.textContent);
     if (!href || !label) return false;
     if (href.includes("/logout")) return false;
     return true;
@@ -48345,7 +48817,7 @@ ${names}`)) {
       const id = anchor.getAttribute("top_menu") || "";
       const href = normalizeHref(anchor.getAttribute("href") || "");
       if (!href) return;
-      const meta = getHeaderGroupMeta(id, cleanText21(anchor.getAttribute("title")) || href);
+      const meta = getHeaderGroupMeta(id, cleanText22(anchor.getAttribute("title")) || href);
       groups.push({
         id,
         href,
@@ -48361,7 +48833,7 @@ ${names}`)) {
         if (!isUsefulLink(anchor)) return;
         group.children.push({
           href: normalizeHref(anchor.getAttribute("href") || ""),
-          label: cleanText21(anchor.textContent)
+          label: cleanText22(anchor.textContent)
         });
       });
       group.children = dedupeChildren(group.children);
@@ -48390,7 +48862,7 @@ ${names}`)) {
     var _a, _b;
     const session = window.SESSION || {};
     const clubId2 = String(session.main_id || session.club_id || "").trim();
-    const clubName2 = cleanText21(
+    const clubName2 = cleanText22(
       session.main_name || session.clubname || session.club_name || ((_a = document.querySelector('a[href*="/club/"]')) == null ? void 0 : _a.textContent) || "TrophyManager"
     );
     return {
@@ -48981,6 +49453,9 @@ ${names}`)) {
     }
     if (/^\/international-cup\/coefficients/i.test(currentPath)) {
       initInternationalCupCoefficientsPage(main2);
+    }
+    if (/^\/statistics\/international-cup\//i.test(currentPath)) {
+      initInternationalCupStatisticsPage(main2);
     }
     if (/^\/123/.test(currentPath)) {
       initDbInspectPage(main2);

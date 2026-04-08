@@ -1,4 +1,4 @@
-import { TmInput } from '../shared/tm-input.js';
+import { TmAutocomplete } from '../shared/tm-autocomplete.js';
 
 'use strict';
 
@@ -17,7 +17,7 @@ async function saveSetting(saveKey, value, reserves, national, miniGameId) {
     });
 }
 
-export function mountTacticsSettings(container, initialValues = {}, opts = {}) {
+export function mountTacticsSettings(container, initialValues = {}, opts = {}, lineupApi = null) {
     const { reserves = 0, national = 0, miniGameId = 0 } = opts;
 
     const wrap = document.createElement('div');
@@ -33,23 +33,61 @@ export function mountTacticsSettings(container, initialValues = {}, opts = {}) {
         lbl.textContent = label;
         row.appendChild(lbl);
 
-        const sel = document.createElement('select');
-        sel.className = 'tmu-input tmu-input-tone-overlay tmu-input-density-compact tmu-input-full';
-        for (const [val, text] of Object.entries(labelsMap)) {
-            const opt = document.createElement('option');
-            opt.value  = val;
-            opt.textContent = text;
-            if (Number(val) === current) opt.selected = true;
-            sel.appendChild(opt);
-        }
-        sel.addEventListener('change', () => {
-            saveSetting(saveKey, parseInt(sel.value, 10), reserves, national, miniGameId);
+        let currentVal = current;
+
+        const ac = TmAutocomplete.autocomplete({
+            value: labelsMap[currentVal] ?? '',
+            placeholder: 'Select…',
+            tone: 'overlay',
+            density: 'compact',
+            size: 'full',
+            grow: true,
+            autocomplete: 'off',
         });
-        row.appendChild(sel);
+
+        const makeItems = (query = '') => {
+            const q = query.trim().toLowerCase();
+            return Object.entries(labelsMap)
+                .filter(([, text]) => !q || text.toLowerCase().includes(q))
+                .map(([val, text]) => TmAutocomplete.autocompleteItem({
+                    label: text,
+                    active: Number(val) === currentVal,
+                    onSelect: () => {
+                        currentVal = Number(val);
+                        ac.setValue(text);
+                        ac.hideDrop();
+                        saveSetting(saveKey, currentVal, reserves, national, miniGameId);
+                    },
+                }));
+        };
+
+        ac.inputEl.addEventListener('focus', () => {
+            ac.setItems(makeItems(''));
+        });
+        ac.inputEl.addEventListener('input', () => {
+            ac.setItems(makeItems(ac.inputEl.value));
+        });
+        ac.inputEl.addEventListener('blur', () => {
+            // Delay so mousedown on item fires first
+            setTimeout(() => {
+                ac.hideDrop();
+                // Restore label if user typed something invalid
+                ac.setValue(labelsMap[currentVal] ?? '');
+            }, 200);
+        });
+
+        row.appendChild(ac);
         return row;
     }
 
     wrap.appendChild(buildRow({ label: 'Mentality',   labelsMap: MENTALITY_LABELS, saveKey: 'mentality', current: Number(initialValues.mentality) || 4 }));
     wrap.appendChild(buildRow({ label: 'Style',       labelsMap: STYLE_LABELS,    saveKey: 'attacking', current: Number(initialValues.style)     || 1 }));
     wrap.appendChild(buildRow({ label: 'Focus',       labelsMap: FOCUS_LABELS,    saveKey: 'focus',     current: Number(initialValues.focus)      || 1 }));
+
+    if (lineupApi?.mountSpecialRoles) {
+        const rolesSection = document.createElement('div');
+        rolesSection.className = 'tmtc-roles-section';
+        wrap.appendChild(rolesSection);
+        lineupApi.mountSpecialRoles(rolesSection);
+    }
 }

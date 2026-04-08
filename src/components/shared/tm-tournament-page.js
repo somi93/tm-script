@@ -30,11 +30,15 @@ export const TmTournamentPage = {
         if (mainClass) mainColumn.className = mainClass;
         mainNodes.filter(Boolean).forEach(node => mainColumn.appendChild(node));
 
-        const sideColumn = document.createElement('aside');
-        if (sideClass) sideColumn.className = sideClass;
-        sideNodes.filter(Boolean).forEach(node => sideColumn.appendChild(node));
+        let sideColumn = null;
+        if (sideNodes.filter(Boolean).length) {
+            sideColumn = document.createElement('aside');
+            if (sideClass) sideColumn.className = sideClass;
+            sideNodes.filter(Boolean).forEach(node => sideColumn.appendChild(node));
+        }
 
-        main.append(mainColumn, sideColumn);
+        main.append(mainColumn);
+        if (sideColumn) main.append(sideColumn);
         TmMatchRow.enhance(main, { season });
 
         return { mainColumn, sideColumn };
