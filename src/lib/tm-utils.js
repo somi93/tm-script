@@ -39,6 +39,12 @@ const posLabel = (pos) => TmPosition.label(pos);
 /* Round a number to 2 decimal places, returning a string (e.g. 3.1 → "3.10") */
 const fix2 = v => (Math.round(v * 100) / 100).toFixed(2);
 
+/* Format an R5 value to exactly 2 decimal places, returning an empty fallback when invalid */
+const formatR5 = (v, fallback = '-') => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n.toFixed(2) : fallback;
+};
+
 /* Format a large number with M/B/k suffix (for coins, ASI, wages: 1234567 → "1.2M") */
 const fmtCoins = (n) => {
     if (n == null || isNaN(n) || n === 0) return '-';
@@ -171,5 +177,5 @@ const r5Color = (() => {
     };
 })();
 
-export const TmUtils = { getColor, parseNum, ageToMonths, monthsToAge, classifyPosition, posLabel, fix2, fmtCoins, ratingColor, r5Color, toggleSort, skillColor, skillEff, getMainContainer, getMainContainers };
+export const TmUtils = { getColor, parseNum, ageToMonths, monthsToAge, classifyPosition, posLabel, fix2, formatR5, fmtCoins, ratingColor, r5Color, toggleSort, skillColor, skillEff, getMainContainer, getMainContainers };
 

@@ -7,6 +7,7 @@ import { TMLeagueService } from './league.js';
 import { TmQuickmatchService } from './quickmatch.js';
 import { TmScoutsService } from './scouts.js';
 import { TmShortlistService } from './shortlist.js';
+import { TmTacticsService } from './tactics.js';
 import { TmTrainingService } from './training.js';
 import { TmMessagesService } from './messages.js';
 import { TmNationalTeamsService } from './national-teams.js';
@@ -22,6 +23,7 @@ export const TmApi = {
     ...TmQuickmatchService,
     ...TmScoutsService,
     ...TmShortlistService,
+    ...TmTacticsService,
     ...TmTrainingService,
     ...TmMessagesService,
     ...TmNationalTeamsService,

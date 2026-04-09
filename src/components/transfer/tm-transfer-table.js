@@ -73,7 +73,7 @@ function fmtR5(r5) {
     const { R5_THRESHOLDS } = TmConst;
     if (r5 == null) return '<span class="tms-tip-pending">…</span>';
     const clr = getColor(r5, R5_THRESHOLDS);
-    return `<span class="tms-strong-val tmu-tabular" style="color:${clr}">${r5.toFixed(1)}</span>`;
+    return `<span class="tms-strong-val tmu-tabular" style="color:${clr}">${TmUtils.formatR5(r5)}</span>`;
 }
 
 function fmtAge(ageFloat) {
@@ -93,7 +93,7 @@ const skillColor = TmUtils.skillColor;
 function fmtR5Range(lo, hi) {
     const { R5_THRESHOLDS } = TmConst;
     if (lo == null || hi == null) return '<span class="tms-tip-pending">…</span>';
-    const loFixed = lo.toFixed(1), hiFixed = hi.toFixed(1);
+    const loFixed = TmUtils.formatR5(lo), hiFixed = TmUtils.formatR5(hi);
     const clrLo = getColor(lo, R5_THRESHOLDS);
     const clrHi = getColor(hi, R5_THRESHOLDS);
     if (loFixed === hiFixed)
@@ -314,11 +314,11 @@ function adaptForTooltip(p, tooltipCache) {
     const r5Hi = tip ? tip.r5Hi : null;
     const ti = tip ? tip.ti : null;
     const r5FooterVal = r5 ?? r5Hi;
-    const r5FooterDisp = r5 != null ? r5.toFixed(1)
+    const r5FooterDisp = r5 != null ? TmUtils.formatR5(r5)
         : r5Hi != null
-            ? (r5Lo != null && r5Lo.toFixed(1) !== r5Hi.toFixed(1)
-                ? r5Lo.toFixed(1) + '\u2013' + r5Hi.toFixed(1)
-                : r5Hi.toFixed(1))
+            ? (r5Lo != null && TmUtils.formatR5(r5Lo) !== TmUtils.formatR5(r5Hi)
+                ? TmUtils.formatR5(r5Lo) + '\u2013' + TmUtils.formatR5(r5Hi)
+                : TmUtils.formatR5(r5Hi))
             : '\u2026';
 
     return {

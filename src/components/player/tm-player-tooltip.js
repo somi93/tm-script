@@ -68,11 +68,13 @@ const CSS = `
 
         h += '<div class="tmpt-badges">';
         if (player.r5 != null) {
-            h += badgeHtml({ slot: `<span class="tmu-badge-label">R5</span><span class="tmu-badge-value" style="color:${getColor(player.r5, R5_THRESHOLDS)}">${player.r5}</span>` });
+            h += badgeHtml({ slot: `<span class="tmu-badge-label">R5</span><span class="tmu-badge-value" style="color:${getColor(player.r5, R5_THRESHOLDS)}">${TmUtils.formatR5(player.r5)}</span>` });
         } else if (player.r5Range) {
             const { lo, hi } = player.r5Range;
-            const rangeStr = lo != null && lo.toFixed(1) !== hi.toFixed(1)
-                ? `${lo.toFixed(1)}–${hi.toFixed(1)}` : `${hi.toFixed(1)}`;
+            const loStr = TmUtils.formatR5(lo, '');
+            const hiStr = TmUtils.formatR5(hi, '');
+            const rangeStr = lo != null && loStr !== hiStr
+                ? `${loStr}–${hiStr}` : hiStr;
             h += badgeHtml({ slot: `<span class="tmu-badge-label">R5</span><span class="tmu-badge-value" style="color:${getColor(hi ?? 0, R5_THRESHOLDS)}">${rangeStr}</span>` });
         }
         if (player.ti != null)

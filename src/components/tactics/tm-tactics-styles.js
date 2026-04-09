@@ -81,6 +81,12 @@ export function injectTacticsStyles() {
         .tmtc-main-right {
             flex: 0 0 400px;
             min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: var(--tmu-space-sm);
+        }
+        .tmtc-orders-host {
+            min-width: 0;
         }
 
         /* ── formation grid ── */
@@ -224,8 +230,9 @@ export function injectTacticsStyles() {
         .tmtc-slot-no {
             font-size: var(--tmu-font-xs);
             font-weight: 700;
-            color: var(--tmu-text-faint);
+            color: color-mix(in srgb, var(--tmu-text-faint) 70%, white);
             font-variant-numeric: tabular-nums;
+            letter-spacing: .02em;
         }
         .tmtc-slot-name {
             font-size: var(--tmu-font-xs);
@@ -239,9 +246,68 @@ export function injectTacticsStyles() {
         .tmtc-slot-pos {
             font-key: var(--tmu-font-2xs);
         }
+        .tmtc-slot-meta {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            min-height: 12px;
+        }
         .tmtc-slot-rec {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .tmtc-rec-stars {
+            display: inline-flex;
+            align-items: center;
+            letter-spacing: .4px;
+        }
+        .tmtc-rec-stars-sm {
+            font-size: 10px;
+        }
+        .tmtc-rec-stars-xs {
+            font-size: 9px;
+        }
+        .tmtc-slot-rec-empty {
             font-size: var(--tmu-font-2xs);
-            color: var(--tmu-warning);
+            color: var(--tmu-text-dim);
+        }
+        .tmtc-slot-rtn {
+            font-size: 10px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            line-height: 1.1;
+            letter-spacing: .02em;
+        }
+        .tmtc-slot-mood {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 14px;
+            height: 14px;
+            border-radius: 999px;
+            font-size: 10px;
+            line-height: 1;
+            border: 1px solid rgba(255,255,255,0.42);
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.22);
+            transform: translateY(-1px);
+        }
+        .tmtc-slot-mood-1 {
+            background: #f3db78;
+            color: #624800;
+        }
+        .tmtc-slot-mood-2 {
+            background: #ebb95e;
+            color: #6a3d00;
+        }
+        .tmtc-slot-mood-3 {
+            background: #ee8e57;
+            color: #641d00;
+        }
+        .tmtc-slot-mood-4 {
+            background: #df5948;
+            color: #ffffff;
         }
         .tmtc-slot-poskey {
             font-size: var(--tmu-font-2xs);
@@ -428,6 +494,17 @@ export function injectTacticsStyles() {
         .tmtc-order-action-val {
             font-size: var(--tmu-font-xs);
             color: var(--tmu-text-main);
+        }
+        .tmtc-orders-switch {
+            margin-bottom: 0;
+        }
+        .tmtc-orders-switch .tmu-tabs {
+            width: 100%;
+            border: 1px solid var(--tmu-border-soft-alpha-strong);
+            border-radius: var(--tmu-space-md);
+            overflow: hidden;
+            background: var(--tmu-surface-card-soft);
+            box-shadow: none;
         }
 
         /* ── ghost placeholders: only visible during drag ── */

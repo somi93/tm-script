@@ -517,7 +517,7 @@ export function initNationalTeamsPage(main) {
     const formatR5 = (value) => {
         if (!Number.isFinite(Number(value))) return '<span style="color:var(--tmu-text-faint)">—</span>';
         const numeric = Number(value);
-        return `<span style="color:${TmUtils.getColor(numeric, R5_THRESHOLDS)};font-weight:700">${numeric.toFixed(1)}</span>`;
+        return `<span style="color:${TmUtils.getColor(numeric, R5_THRESHOLDS)};font-weight:700">${TmUtils.formatR5(numeric)}</span>`;
     };
 
     const loadSquadPlayers = async (squad) => {

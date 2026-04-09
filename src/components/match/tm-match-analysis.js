@@ -153,11 +153,11 @@ export const TmMatchAnalysis = {
             const isOverall = line === 'ALL';
 
             html += `<div class="rnd-an-strength-row"${isOverall ? ' style="padding:var(--tmu-space-sm) var(--tmu-space-xl);border-top:1px solid var(--tmu-border-soft-alpha)"' : ''}>`;
-            html += `<span class="rnd-an-str-val home${hLead}" style="color:${getColor(hR5, R5_THRESHOLDS)}">${hR5.toFixed(1)}</span>`;
+            html += `<span class="rnd-an-str-val home${hLead}" style="color:${getColor(hR5, R5_THRESHOLDS)}">${TmUtils.formatR5(hR5)}</span>`;
             html += `<div class="rnd-an-str-bar"><div class="rnd-an-str-fill home" style="width:${hPct}%"></div></div>`;
             html += `<span class="rnd-an-str-label">${isOverall ? '⭐ ' : ''}${lineLabels[line]}</span>`;
             html += `<div class="rnd-an-str-bar"><div class="rnd-an-str-fill away" style="width:${aPct}%"></div></div>`;
-            html += `<span class="rnd-an-str-val away${aLead}" style="color:${getColor(aR5, R5_THRESHOLDS)}">${aR5.toFixed(1)}</span>`;
+            html += `<span class="rnd-an-str-val away${aLead}" style="color:${getColor(aR5, R5_THRESHOLDS)}">${TmUtils.formatR5(aR5)}</span>`;
             html += '</div>';
         });
         html += '</div>';
@@ -188,7 +188,7 @@ export const TmMatchAnalysis = {
                     </div>
                 </div>
                 <span class="rnd-an-key-r5" style="color:${getColor(p.r5, R5_THRESHOLDS)}">
-                ${p.r5}
+                ${TmUtils.formatR5(p.r5)}
                 </span>
                 </div>`;
             });
@@ -218,16 +218,16 @@ export const TmMatchAnalysis = {
             {
                 icon: '⭐',
                 label: 'Starting XI R5',
-                homeValue: safeTeams.home.avgR5.toFixed(1),
-                awayValue: safeTeams.away.avgR5.toFixed(1),
+                homeValue: TmUtils.formatR5(safeTeams.home.avgR5),
+                awayValue: TmUtils.formatR5(safeTeams.away.avgR5),
                 homeColor: getColor(safeTeams.home.avgR5, R5_THRESHOLDS),
                 awayColor: getColor(safeTeams.away.avgR5, R5_THRESHOLDS),
             },
             {
                 icon: '🪑',
                 label: 'Bench Avg R5',
-                homeValue: safeTeams.home.subsR5.toFixed(1),
-                awayValue: safeTeams.away.subsR5.toFixed(1),
+                homeValue: TmUtils.formatR5(safeTeams.home.subsR5),
+                awayValue: TmUtils.formatR5(safeTeams.away.subsR5),
                 homeColor: getColor(safeTeams.home.subsR5, R5_THRESHOLDS),
                 awayColor: getColor(safeTeams.away.subsR5, R5_THRESHOLDS),
             },

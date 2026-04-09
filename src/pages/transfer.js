@@ -69,7 +69,7 @@ export function initTransferPage(main) {
             if (tooltipCache[p.id] && !tooltipCache[p.id].estimated) continue;
             const est = TmTransferService.estimateTransferPlayer(p);
             if (est) {
-                console.log(`[TMS] ${p.name_js || p.name} | age ${p.age} | routineMax ${est.routineMax.toFixed(1)} | R5: ${est.r5Lo != null ? est.r5Lo.toFixed(1) : '?'}-${est.r5Hi != null ? est.r5Hi.toFixed(1) : '?'} | Rec: ${est.recCalc != null ? est.recCalc.toFixed(2) : '?'}`);
+                console.log(`[TMS] ${p.name_js || p.name} | age ${p.age} | routineMax ${est.routineMax.toFixed(1)} | R5: ${est.r5Lo != null ? TmUtils.formatR5(est.r5Lo) : '?'}-${est.r5Hi != null ? TmUtils.formatR5(est.r5Hi) : '?'} | Rec: ${est.recCalc != null ? est.recCalc.toFixed(2) : '?'}`);
                 tooltipCache[p.id] = {
                     estimated: true,
                     r5Lo: est.r5Lo, r5Hi: est.r5Hi,

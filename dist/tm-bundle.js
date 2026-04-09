@@ -2232,6 +2232,10 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
   var classifyPosition = (pos) => TmPosition.group(pos || "");
   var posLabel = (pos) => TmPosition.label(pos);
   var fix2 = (v) => (Math.round(v * 100) / 100).toFixed(2);
+  var formatR5 = (v, fallback = "-") => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n.toFixed(2) : fallback;
+  };
   var fmtCoins = (n) => {
     if (n == null || isNaN(n) || n === 0) return "-";
     if (n >= 1e9) return (n / 1e9).toFixed(2) + "B";
@@ -2361,7 +2365,7 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
       return color;
     };
   })();
-  var TmUtils = { getColor, parseNum, ageToMonths, monthsToAge, classifyPosition, posLabel, fix2, fmtCoins, ratingColor, r5Color, toggleSort, skillColor, skillEff, getMainContainer, getMainContainers };
+  var TmUtils = { getColor, parseNum, ageToMonths, monthsToAge, classifyPosition, posLabel, fix2, formatR5, fmtCoins, ratingColor, r5Color, toggleSort, skillColor, skillEff, getMainContainer, getMainContainers };
 
   // src/components/shared/tm-skill.js
   var TmSkill = {
@@ -5302,18 +5306,28 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       player.routine = parseFloat(player.rutine || player.routine) || 0;
       player.isGK = String(player.favposition || "").split(",")[0].trim().toLowerCase() === "gk";
     },
+    _pickBestDbRecord(player, DBRecord) {
+      const records = DBRecord == null ? void 0 : DBRecord.records;
+      if (!records) return null;
+      const exact = records[player.ageMonthsString] || null;
+      if (exact) return exact;
+      const currentAgeMonths = Number(player.ageMonths);
+      const entries = Object.entries(records).filter(([, record]) => record && Array.isArray(record.skills) && record.skills.length).map(([ageKey, record]) => ({ ageKey, ageMonths: TmUtils.ageToMonths(ageKey), record })).sort((a, b) => a.ageMonths - b.ageMonths);
+      if (!entries.length) return null;
+      const latestAtOrBeforeCurrent = [...entries].reverse().find((entry) => entry.ageMonths <= currentAgeMonths);
+      return (latestAtOrBeforeCurrent == null ? void 0 : latestAtOrBeforeCurrent.record) || entries[entries.length - 1].record || null;
+    },
     /**
      * Resolves a player's skills array from one of three sources (in priority order):
-     *   1. IndexedDB record for the player's current age key
+     *   1. IndexedDB record for the player's current age key, or the nearest earlier DB record
      *   2. Tooltip-API rich objects (already { key, value } shaped)
      *   3. Squad-API flat numeric fields on the player object
      * Returns an array of skill objects matching the given defs.
      */
     _resolveSkills(player, defs, DBRecord) {
-      var _a;
-      const ageKey = player.ageMonthsString;
-      if (DBRecord && ((_a = DBRecord.records) == null ? void 0 : _a[ageKey])) {
-        const skills = DBRecord.records[ageKey].skills;
+      const bestRecord = this._pickBestDbRecord(player, DBRecord);
+      if (bestRecord == null ? void 0 : bestRecord.skills) {
+        const skills = bestRecord.skills;
         return defs.map((def) => {
           const raw = skills[def.id];
           const v = typeof raw === "object" && raw !== null ? raw.value : raw;
@@ -5322,16 +5336,16 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       }
       if (player.skills && Array.isArray(player.skills) && typeof player.skills[0] === "object" && "key" in player.skills[0]) {
         return defs.map((def) => {
-          var _a2;
+          var _a;
           const sk = player.skills.find((s6) => s6.key === def.key || def.key2 && s6.key === def.key2);
-          const raw = (_a2 = sk == null ? void 0 : sk.value) != null ? _a2 : 0;
+          const raw = (_a = sk == null ? void 0 : sk.value) != null ? _a : 0;
           const value = typeof raw === "string" && raw.includes("star") ? raw.includes("silver") ? 19 : 20 : parseFloat(raw) || 0;
           return { ...def, value };
         });
       }
       return defs.map((def) => {
-        var _a2;
-        const raw = (_a2 = player[def.key]) != null ? _a2 : player[def.key.replace(/_/g, "")];
+        var _a;
+        const raw = (_a = player[def.key]) != null ? _a : player[def.key.replace(/_/g, "")];
         return { ...def, value: parseFloat(raw) || 0 };
       });
     },
@@ -5367,12 +5381,13 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
      * @returns {object} the same player, mutated
      */
     normalizePlayer(player, DBPlayer, { skipSync = false } = {}) {
-      var _a, _b;
+      var _a;
       const shouldSync = !skipSync;
       this._parseScalars(player);
       if (shouldSync) this._migratePlayerMeta(player, DBPlayer);
       const defs = player.isGK ? TmConst.SKILL_DEFS_GK : TmConst.SKILL_DEFS_OUT;
       player.skills = this._resolveSkills(player, defs, DBPlayer);
+      const initialDbRecord = this._pickBestDbRecord(player, DBPlayer);
       const applyPositions = (currentRecord = null) => {
         const calcSkills = (currentRecord == null ? void 0 : currentRecord.skills) ? this._toNumericSkills(currentRecord.skills) : this._toNumericSkills(player.skills);
         const calcPlayer = {
@@ -5399,15 +5414,14 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       const syncPromise = shouldSync ? (_a = TmSync) == null ? void 0 : _a.syncPlayerStore(player, DBPlayer) : null;
       if (syncPromise instanceof Promise) {
         syncPromise.then((updatedDB) => {
-          var _a2;
-          const curRec = (_a2 = updatedDB == null ? void 0 : updatedDB.records) == null ? void 0 : _a2[player.ageMonthsString];
+          const curRec = this._pickBestDbRecord(player, updatedDB);
           if (!(curRec == null ? void 0 : curRec.skills)) return;
           player.skills = this._resolveSkills(player, defs, updatedDB);
           applyPositions(curRec);
           window.dispatchEvent(new CustomEvent("tm:player-synced", { detail: { id: player.id, player } }));
         });
       }
-      applyPositions(((_b = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _b[player.ageMonthsString]) || null);
+      applyPositions(initialDbRecord);
       player.name = player.player_name || player.name;
       return player;
     }
@@ -6318,6 +6332,54 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     }
   };
 
+  // src/services/tactics.js
+  var sanitizeSkills = (player) => {
+    if (!Array.isArray(player == null ? void 0 : player.skills)) return;
+    player.skills = player.skills.filter((skill) => skill && typeof skill === "object");
+  };
+  var TmTacticsService = {
+    fetchTacticsRaw(reserves, national, miniGameId) {
+      return _dedup(
+        `tactics:get:${reserves}:${national}:${miniGameId}`,
+        () => _post("/ajax/tactics_get.ajax.php", { reserves, national, miniGameId })
+      );
+    },
+    async fetchTactics(reserves, national, miniGameId, { clubId: clubId2 = "" } = {}) {
+      let dbReady = true;
+      try {
+        await TmPlayerDB.init();
+      } catch (error) {
+        dbReady = false;
+        _logError("TacticsService DB init", error);
+      }
+      const data = await this.fetchTacticsRaw(reserves, national, miniGameId);
+      if (!data) return null;
+      const players = {};
+      const players_by_id = {};
+      for (const [key, rawPlayer] of Object.entries(data.players || {})) {
+        if (!rawPlayer) continue;
+        const player = { ...rawPlayer };
+        const playerId = String(player.player_id || player.id || "").trim();
+        if (clubId2 && !player.club_id) player.club_id = clubId2;
+        sanitizeSkills(player);
+        const DBPlayer = dbReady && playerId ? TmPlayerDB.get(playerId) : null;
+        TmPlayerService.normalizePlayer(player, DBPlayer, { skipSync: true });
+        players[key] = player;
+        if (playerId) players_by_id[playerId] = player;
+      }
+      return {
+        ...data,
+        players,
+        players_by_id,
+        formation: data.formation || {},
+        formation_by_pos: data.formation_by_pos || {},
+        formation_subs: data.formation_subs || {},
+        formation_assoc: data.formation_assoc || {},
+        positions: data.positions || []
+      };
+    }
+  };
+
   // src/services/training.js
   var TRAINING_SKILL_NAMES = {
     strength: "Strength",
@@ -6682,6 +6744,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     ...TmQuickmatchService,
     ...TmScoutsService,
     ...TmShortlistService,
+    ...TmTacticsService,
     ...TmTrainingService,
     ...TmMessagesService,
     ...TmNationalTeamsService,
@@ -13597,6 +13660,7 @@ order:initial
   var STYLE_ID27 = "tmvu-quickmatch-style";
   var QUICKMATCH_HOME_RE = /^\/quickmatch\/?$/i;
   var QUICKMATCH_STANDINGS_RE = /^\/quickmatch\/complete-standings(?:\/[^/]+)?\/?$/i;
+  var QUICKMATCH_LATEST_RE = /^\/quickmatch\/latest-matches\/?$/i;
   var HASH_TO_TAB = { "#ranked": "ranked", "#show": "show", "#friendly": "friendly" };
   var TAB_TO_HASH = { ranked: "#ranked", show: "#show", friendly: "#friendly" };
   var RANKED_MODES = [
@@ -13630,6 +13694,7 @@ order:initial
   };
   var getRouteMode = (pathname = window.location.pathname) => {
     if (QUICKMATCH_STANDINGS_RE.test(pathname)) return "standings";
+    if (QUICKMATCH_LATEST_RE.test(pathname)) return "latest";
     if (QUICKMATCH_HOME_RE.test(pathname)) return "home";
     return "";
   };
@@ -13741,6 +13806,10 @@ order:initial
     });
     return (best == null ? void 0 : best.box) || null;
   };
+  var findCellByLinkPatterns = (cells, patterns = []) => cells.find((cell) => {
+    const hrefs = Array.from((cell == null ? void 0 : cell.querySelectorAll("a[href]")) || []).map((link) => link.getAttribute("href") || "");
+    return hrefs.some((href) => patterns.some((pattern) => pattern.test(href)));
+  }) || null;
   var parseCompleteStandingsData = () => {
     var _a;
     const contentBox = findStandingsContentBox();
@@ -13775,7 +13844,14 @@ order:initial
       const clubLink = clubCell == null ? void 0 : clubCell.querySelector("a[href]");
       const clubLabel = cleanText11((clubLink == null ? void 0 : clubLink.textContent) || (clubCell == null ? void 0 : clubCell.textContent) || "Club");
       const clubHtml = buildLinkHtml((clubLink == null ? void 0 : clubLink.getAttribute("href")) || "", clubLabel, "tmvu-qm-standings-link");
-      const countryCell = cells[countryIndex];
+      const statsCell = findCellByLinkPatterns(cells, [/\/statistics\/club\//i]) || cells[statsIndex] || null;
+      const leagueCell = findCellByLinkPatterns(cells, [/\/league\//i, /\/league(?!-stats)/i]) || cells[leagueIndex] || null;
+      const countryCell = cells.find((cell, cellIndex) => {
+        if (!cell || cell === clubCell || cell === leagueCell || cell === statsCell) return false;
+        if (cellIndex !== countryIndex && !extractFlagCode(cell)) return false;
+        const hrefs = Array.from(cell.querySelectorAll("a[href]")).map((link) => link.getAttribute("href") || "");
+        return hrefs.length === 0 || hrefs.some((href) => !/\/club\/|\/league\/|\/statistics\/club\//i.test(href));
+      }) || cells[countryIndex] || null;
       const countryCode = extractFlagCode(countryCell);
       const countryLabel = cleanText11((countryCell == null ? void 0 : countryCell.textContent) || "").replace(/^[-–]\s*/, "");
       const countryLink = ((_c = countryCell == null ? void 0 : countryCell.querySelector("a[href]")) == null ? void 0 : _c.getAttribute("href")) || "";
@@ -13784,11 +13860,9 @@ order:initial
         countryLabel ? `<span>${escapeHtml15(countryLabel)}</span>` : ""
       ].filter(Boolean).join(" ");
       const countryHtml = countryInner ? countryLink ? `<a class="tmvu-qm-standings-country" href="${escapeAttr(countryLink)}">${countryInner}</a>` : `<span class="tmvu-qm-standings-country">${countryInner}</span>` : "";
-      const leagueCell = cells[leagueIndex];
       const leagueLink = leagueCell == null ? void 0 : leagueCell.querySelector("a[href]");
       const leagueLabel = cleanText11((leagueLink == null ? void 0 : leagueLink.textContent) || (leagueCell == null ? void 0 : leagueCell.textContent) || "");
       const leagueHtml = leagueLabel ? buildLinkHtml((leagueLink == null ? void 0 : leagueLink.getAttribute("href")) || "", leagueLabel, "tmvu-qm-standings-link") : "";
-      const statsCell = cells[statsIndex];
       const statsLink = statsCell == null ? void 0 : statsCell.querySelector("a[href]");
       const statsLabel = cleanText11((statsLink == null ? void 0 : statsLink.textContent) || (statsCell == null ? void 0 : statsCell.textContent) || "Open");
       const statsHtml = statsLink ? `<a class="tmvu-qm-standings-stats" href="${escapeAttr(statsLink.getAttribute("href") || "")}">${escapeHtml15(statsLabel || "Open")}</a>` : escapeHtml15(statsLabel);
@@ -13810,6 +13884,15 @@ order:initial
       title,
       rows,
       regionAction
+    };
+  };
+  var parseLatestMatchesData = () => {
+    const contentBox = sourceRoot2.querySelector(".column2_a > .box, .column2 > .box");
+    const title = "Latest Matches";
+    const byMonth = parseQmLatestMatchesHtml(sourceRoot2.innerHTML || "");
+    return {
+      title,
+      byMonth
     };
   };
   var parseQmLatestMatchesHtml = (html2) => {
@@ -14090,7 +14173,7 @@ order:initial
 
             .tmvu-qm-standings-table th:nth-child(2),
             .tmvu-qm-standings-table td:nth-child(2) {
-                width: 5.5rem;
+                min-width: 16rem;
             }
 
             @media (max-width: 960px) {
@@ -14118,6 +14201,7 @@ order:initial
       rankedLoading: false,
       rankedRows: [],
       completeStandings: routeMode === "standings" ? parseCompleteStandingsData() : null,
+      latestMatches: routeMode === "latest" ? parseLatestMatchesData() : null,
       completeStandingsHref: parseCompleteStandingsHref(),
       showGroups,
       activeShowGroup: ((_a = showGroups[0]) == null ? void 0 : _a.key) || "",
@@ -14300,12 +14384,6 @@ order:initial
           render: (value) => String(value)
         },
         {
-          key: "rating",
-          label: "Rating",
-          align: "r",
-          render: (value) => String(value)
-        },
-        {
           key: "clubHtml",
           label: "Club",
           sortable: false,
@@ -14324,11 +14402,10 @@ order:initial
           render: (_, row) => row.leagueHtml || ""
         },
         {
-          key: "statsHtml",
-          label: "Statistics",
-          sortable: false,
+          key: "rating",
+          label: "Pts",
           align: "r",
-          render: (value) => value
+          render: (value) => String(value)
         }
       ],
       rowCls: (row) => row._rowClass || ""
@@ -14400,6 +14477,57 @@ order:initial
       return;
     }
     refs.body.appendChild(buildCompleteStandingsTable());
+    container.appendChild(card);
+  };
+  var mountLatestMatchesContent = (container) => {
+    var _a, _b;
+    const card = document.createElement("div");
+    const refs = TmSectionCard.mount(card, {
+      title: ((_a = state2.latestMatches) == null ? void 0 : _a.title) || "Latest Ranked Matches",
+      icon: "\u{1F552}",
+      titleMode: "body",
+      cardVariant: "flatpanel",
+      hostClass: "tmvu-qm-card-host",
+      bodyClass: "tmvu-qm-standings-wrap"
+    });
+    const byMonth = ((_b = state2.latestMatches) == null ? void 0 : _b.byMonth) || null;
+    if (!byMonth) {
+      refs.body.innerHTML = TmUI.empty("No recent quickmatch games found.", true);
+      container.appendChild(card);
+      return;
+    }
+    const monthKeys = Object.keys(byMonth).sort();
+    let activeMonthKey = monthKeys[monthKeys.length - 1] || "";
+    const renderMonth = () => {
+      var _a2;
+      refs.body.innerHTML = "";
+      if (monthKeys.length > 1) {
+        const tabs = TmUI.tabs({
+          items: monthKeys.map((key) => ({ key, label: byMonth[key].label })),
+          active: activeMonthKey,
+          onChange: (key) => {
+            activeMonthKey = key;
+            renderMonth();
+          },
+          stretch: true
+        });
+        tabs.classList.add("tmvu-qm-subtabs");
+        refs.body.appendChild(tabs);
+      }
+      const matches = ((_a2 = byMonth[activeMonthKey]) == null ? void 0 : _a2.matches) || [];
+      if (!matches.length) {
+        refs.body.insertAdjacentHTML("beforeend", TmUI.empty("No recent quickmatch games found.", true));
+        return;
+      }
+      const groups = TmFixturesList.fromMatches(matches);
+      const listWrap = document.createElement("div");
+      listWrap.className = "tmcf-month-content";
+      listWrap.innerHTML = TmFixturesList.render(groups, { linkUpcoming: true });
+      refs.body.appendChild(listWrap);
+      TmFixturesList.bindHover(listWrap);
+      TmFixturesList.bindRowNav(listWrap);
+    };
+    renderMonth();
     container.appendChild(card);
   };
   var mountRankedContent = (container) => {
@@ -14634,6 +14762,12 @@ order:initial
       mainColumn.appendChild(content2);
       return;
     }
+    if (state2.routeMode === "latest") {
+      const content2 = document.createElement("div");
+      mountLatestMatchesContent(content2);
+      mainColumn.appendChild(content2);
+      return;
+    }
     mainColumn.appendChild(renderHero3());
     const tabs = TmUI.tabs({
       items: [
@@ -14659,6 +14793,7 @@ order:initial
     if (!nativeMain) return;
     if (routeMode === "home" && !nativeMain.querySelector(".column1 .content_menu, #match_type_ranked, #match_type_show, #match_type_friendly")) return;
     if (routeMode === "standings" && !nativeMain.querySelector(".column1 .content_menu, .column2_a > .box table, .column2 > .box table")) return;
+    if (routeMode === "latest" && !nativeMain.querySelector(".column1 .content_menu, .column2_a > .box table.zebra, .column2 > .box table.zebra")) return;
     if (mountedMain === main2 && mountedPath === window.location.pathname && (mainColumn == null ? void 0 : mainColumn.isConnected)) return;
     mountedMain = main2;
     mountedPath = window.location.pathname;
@@ -14680,7 +14815,7 @@ order:initial
     mainColumn = main2.querySelector(".tmvu-qm-main");
     if (!mainColumn) return;
     mainColumn.innerHTML = TmUI.loading("Loading quickmatch...");
-    if (routeMode === "standings") {
+    if (routeMode === "standings" || routeMode === "latest") {
       renderPage2();
       return;
     }
@@ -14703,9 +14838,10 @@ order:initial
 .tmu-stars{line-height:1}
 .tmu-star-full{color:var(--tmu-warning)}
 .tmu-star-half{background:linear-gradient(90deg,var(--tmu-warning) 50%,var(--tmu-border-embedded) 50%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.tmu-star-empty{color:var(--tmu-border-embedded)}
+.tmu-star-empty{color:var(--tmu-warning)}
 .tmu-star-green{color:var(--tmu-success)}
 .tmu-star-green-half{background:linear-gradient(90deg,var(--tmu-success) 50%,var(--tmu-border-embedded) 50%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.tmu-star-green-empty{color:var(--tmu-success)}
 .tmu-star-split{background:linear-gradient(90deg,var(--tmu-warning) 50%,var(--tmu-success) 50%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 `;
   function injectStyles20(target = document.head) {
@@ -14738,7 +14874,7 @@ order:initial
     let html2 = "";
     for (let index = 0; index < fullStars; index += 1) html2 += '<span class="tmu-star-full">\u2605</span>';
     if (hasHalfStar) html2 += '<span class="tmu-star-half">\u2605</span>';
-    for (let index = 0; index < emptyStars; index += 1) html2 += '<span class="tmu-star-empty">\u2605</span>';
+    for (let index = 0; index < emptyStars; index += 1) html2 += '<span class="tmu-star-empty">\u2606</span>';
     return wrapStars(html2, cls);
   }
   function green(value, cls = "") {
@@ -14751,7 +14887,7 @@ order:initial
     let html2 = "";
     for (let index = 0; index < fullStars; index += 1) html2 += '<span class="tmu-star-green">\u2605</span>';
     if (hasHalfStar) html2 += '<span class="tmu-star-green-half">\u2605</span>';
-    for (let index = 0; index < emptyStars; index += 1) html2 += '<span class="tmu-star-empty">\u2605</span>';
+    for (let index = 0; index < emptyStars; index += 1) html2 += '<span class="tmu-star-green-empty">\u2606</span>';
     return wrapStars(html2, cls);
   }
   function combined(current, potential, cls = "") {
@@ -14766,7 +14902,7 @@ order:initial
       else if (index - 0.5 <= currentValue && currentValue < index) html2 += potentialValue >= index ? '<span class="tmu-star-split">\u2605</span>' : '<span class="tmu-star-half">\u2605</span>';
       else if (index <= potentialValue) html2 += '<span class="tmu-star-green">\u2605</span>';
       else if (index - 0.5 <= potentialValue && potentialValue < index) html2 += '<span class="tmu-star-green-half">\u2605</span>';
-      else html2 += '<span class="tmu-star-empty">\u2605</span>';
+      else html2 += '<span class="tmu-star-green-empty">\u2606</span>';
     }
     return wrapStars(html2, cls);
   }
@@ -18661,10 +18797,12 @@ ${teamsTable.outerHTML}
     h += `<div class="tmpt-pos">${(player.positions || []).map((pos) => pos.position).join(", ")}${noStr} \xB7 Age ${player.ageMonthsString}</div></div>`;
     h += '<div class="tmpt-badges">';
     if (player.r5 != null) {
-      h += badgeHtml7({ slot: `<span class="tmu-badge-label">R5</span><span class="tmu-badge-value" style="color:${getColor6(player.r5, R5_THRESHOLDS5)}">${player.r5}</span>` });
+      h += badgeHtml7({ slot: `<span class="tmu-badge-label">R5</span><span class="tmu-badge-value" style="color:${getColor6(player.r5, R5_THRESHOLDS5)}">${TmUtils.formatR5(player.r5)}</span>` });
     } else if (player.r5Range) {
       const { lo, hi } = player.r5Range;
-      const rangeStr = lo != null && lo.toFixed(1) !== hi.toFixed(1) ? `${lo.toFixed(1)}\u2013${hi.toFixed(1)}` : `${hi.toFixed(1)}`;
+      const loStr = TmUtils.formatR5(lo, "");
+      const hiStr = TmUtils.formatR5(hi, "");
+      const rangeStr = lo != null && loStr !== hiStr ? `${loStr}\u2013${hiStr}` : hiStr;
       h += badgeHtml7({ slot: `<span class="tmu-badge-label">R5</span><span class="tmu-badge-value" style="color:${getColor6(hi != null ? hi : 0, R5_THRESHOLDS5)}">${rangeStr}</span>` });
     }
     if (player.ti != null)
@@ -25054,7 +25192,7 @@ ${teamsTable.outerHTML}
     const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
     if (r5 == null) return '<span class="tms-tip-pending">\u2026</span>';
     const clr3 = getColor4(r5, R5_THRESHOLDS5);
-    return `<span class="tms-strong-val tmu-tabular" style="color:${clr3}">${r5.toFixed(1)}</span>`;
+    return `<span class="tms-strong-val tmu-tabular" style="color:${clr3}">${TmUtils.formatR5(r5)}</span>`;
   }
   function fmtAge(ageFloat) {
     const years = Math.floor(ageFloat);
@@ -25070,7 +25208,7 @@ ${teamsTable.outerHTML}
   function fmtR5Range(lo, hi) {
     const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
     if (lo == null || hi == null) return '<span class="tms-tip-pending">\u2026</span>';
-    const loFixed = lo.toFixed(1), hiFixed = hi.toFixed(1);
+    const loFixed = TmUtils.formatR5(lo), hiFixed = TmUtils.formatR5(hi);
     const clrLo = getColor4(lo, R5_THRESHOLDS5);
     const clrHi = getColor4(hi, R5_THRESHOLDS5);
     if (loFixed === hiFixed)
@@ -25259,7 +25397,7 @@ ${teamsTable.outerHTML}
     const r5Hi = tip ? tip.r5Hi : null;
     const ti = tip ? tip.ti : null;
     const r5FooterVal = r5 != null ? r5 : r5Hi;
-    const r5FooterDisp = r5 != null ? r5.toFixed(1) : r5Hi != null ? r5Lo != null && r5Lo.toFixed(1) !== r5Hi.toFixed(1) ? r5Lo.toFixed(1) + "\u2013" + r5Hi.toFixed(1) : r5Hi.toFixed(1) : "\u2026";
+    const r5FooterDisp = r5 != null ? TmUtils.formatR5(r5) : r5Hi != null ? r5Lo != null && TmUtils.formatR5(r5Lo) !== TmUtils.formatR5(r5Hi) ? TmUtils.formatR5(r5Lo) + "\u2013" + TmUtils.formatR5(r5Hi) : TmUtils.formatR5(r5Hi) : "\u2026";
     return {
       name: p.name || String(p.id),
       positions,
@@ -25336,7 +25474,7 @@ ${teamsTable.outerHTML}
         if (tooltipCache2[p.id] && !tooltipCache2[p.id].estimated) continue;
         const est = TmTransferService.estimateTransferPlayer(p);
         if (est) {
-          console.log(`[TMS] ${p.name_js || p.name} | age ${p.age} | routineMax ${est.routineMax.toFixed(1)} | R5: ${est.r5Lo != null ? est.r5Lo.toFixed(1) : "?"}-${est.r5Hi != null ? est.r5Hi.toFixed(1) : "?"} | Rec: ${est.recCalc != null ? est.recCalc.toFixed(2) : "?"}`);
+          console.log(`[TMS] ${p.name_js || p.name} | age ${p.age} | routineMax ${est.routineMax.toFixed(1)} | R5: ${est.r5Lo != null ? TmUtils.formatR5(est.r5Lo) : "?"}-${est.r5Hi != null ? TmUtils.formatR5(est.r5Hi) : "?"} | Rec: ${est.recCalc != null ? est.recCalc.toFixed(2) : "?"}`);
           tooltipCache2[p.id] = {
             estimated: true,
             r5Lo: est.r5Lo,
@@ -29557,11 +29695,11 @@ ${teamsTable.outerHTML}
         const aLead = aR5 > hR5 ? " leading" : "";
         const isOverall = line === "ALL";
         html2 += `<div class="rnd-an-strength-row"${isOverall ? ' style="padding:var(--tmu-space-sm) var(--tmu-space-xl);border-top:1px solid var(--tmu-border-soft-alpha)"' : ""}>`;
-        html2 += `<span class="rnd-an-str-val home${hLead}" style="color:${getColor5(hR5, R5_THRESHOLDS4)}">${hR5.toFixed(1)}</span>`;
+        html2 += `<span class="rnd-an-str-val home${hLead}" style="color:${getColor5(hR5, R5_THRESHOLDS4)}">${TmUtils.formatR5(hR5)}</span>`;
         html2 += `<div class="rnd-an-str-bar"><div class="rnd-an-str-fill home" style="width:${hPct}%"></div></div>`;
         html2 += `<span class="rnd-an-str-label">${isOverall ? "\u2B50 " : ""}${lineLabels[line]}</span>`;
         html2 += `<div class="rnd-an-str-bar"><div class="rnd-an-str-fill away" style="width:${aPct}%"></div></div>`;
-        html2 += `<span class="rnd-an-str-val away${aLead}" style="color:${getColor5(aR5, R5_THRESHOLDS4)}">${aR5.toFixed(1)}</span>`;
+        html2 += `<span class="rnd-an-str-val away${aLead}" style="color:${getColor5(aR5, R5_THRESHOLDS4)}">${TmUtils.formatR5(aR5)}</span>`;
         html2 += "</div>";
       });
       html2 += "</div>";
@@ -29585,7 +29723,7 @@ ${teamsTable.outerHTML}
                     </div>
                 </div>
                 <span class="rnd-an-key-r5" style="color:${getColor5(p.r5, R5_THRESHOLDS4)}">
-                ${p.r5}
+                ${TmUtils.formatR5(p.r5)}
                 </span>
                 </div>`;
         });
@@ -29613,16 +29751,16 @@ ${teamsTable.outerHTML}
         {
           icon: "\u2B50",
           label: "Starting XI R5",
-          homeValue: safeTeams.home.avgR5.toFixed(1),
-          awayValue: safeTeams.away.avgR5.toFixed(1),
+          homeValue: TmUtils.formatR5(safeTeams.home.avgR5),
+          awayValue: TmUtils.formatR5(safeTeams.away.avgR5),
           homeColor: getColor5(safeTeams.home.avgR5, R5_THRESHOLDS4),
           awayColor: getColor5(safeTeams.away.avgR5, R5_THRESHOLDS4)
         },
         {
           icon: "\u{1FA91}",
           label: "Bench Avg R5",
-          homeValue: safeTeams.home.subsR5.toFixed(1),
-          awayValue: safeTeams.away.subsR5.toFixed(1),
+          homeValue: TmUtils.formatR5(safeTeams.home.subsR5),
+          awayValue: TmUtils.formatR5(safeTeams.away.subsR5),
           homeColor: getColor5(safeTeams.home.subsR5, R5_THRESHOLDS4),
           awayColor: getColor5(safeTeams.away.subsR5, R5_THRESHOLDS4)
         }
@@ -45733,10 +45871,10 @@ ${names}`)) {
       const months = Number((_a = player == null ? void 0 : player.months) != null ? _a : player == null ? void 0 : player.month) || 0;
       return `${years}.${String(months).padStart(2, "0")}`;
     };
-    const formatR5 = (value) => {
+    const formatR52 = (value) => {
       if (!Number.isFinite(Number(value))) return '<span style="color:var(--tmu-text-faint)">\u2014</span>';
       const numeric = Number(value);
-      return `<span style="color:${TmUtils.getColor(numeric, R5_THRESHOLDS5)};font-weight:700">${numeric.toFixed(1)}</span>`;
+      return `<span style="color:${TmUtils.getColor(numeric, R5_THRESHOLDS5)};font-weight:700">${TmUtils.formatR5(numeric)}</span>`;
     };
     const loadSquadPlayers = async (squad) => {
       const players = await Promise.all(squad.rows.map(async (row) => {
@@ -45750,7 +45888,7 @@ ${names}`)) {
             name: decodeHtmlEntities(player.name || row.name),
             age: formatAge3(player),
             posHtml: TmPosition.chip(player.positions || []),
-            r5Html: formatR5(player.r5)
+            r5Html: formatR52(player.r5)
           };
         } catch (e) {
           return null;
@@ -48695,6 +48833,12 @@ ${names}`)) {
         .tmtc-main-right {
             flex: 0 0 400px;
             min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: var(--tmu-space-sm);
+        }
+        .tmtc-orders-host {
+            min-width: 0;
         }
 
         /* \u2500\u2500 formation grid \u2500\u2500 */
@@ -48838,8 +48982,9 @@ ${names}`)) {
         .tmtc-slot-no {
             font-size: var(--tmu-font-xs);
             font-weight: 700;
-            color: var(--tmu-text-faint);
+            color: color-mix(in srgb, var(--tmu-text-faint) 70%, white);
             font-variant-numeric: tabular-nums;
+            letter-spacing: .02em;
         }
         .tmtc-slot-name {
             font-size: var(--tmu-font-xs);
@@ -48853,9 +48998,68 @@ ${names}`)) {
         .tmtc-slot-pos {
             font-key: var(--tmu-font-2xs);
         }
+        .tmtc-slot-meta {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            min-height: 12px;
+        }
         .tmtc-slot-rec {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .tmtc-rec-stars {
+            display: inline-flex;
+            align-items: center;
+            letter-spacing: .4px;
+        }
+        .tmtc-rec-stars-sm {
+            font-size: 10px;
+        }
+        .tmtc-rec-stars-xs {
+            font-size: 9px;
+        }
+        .tmtc-slot-rec-empty {
             font-size: var(--tmu-font-2xs);
-            color: var(--tmu-warning);
+            color: var(--tmu-text-dim);
+        }
+        .tmtc-slot-rtn {
+            font-size: 10px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            line-height: 1.1;
+            letter-spacing: .02em;
+        }
+        .tmtc-slot-mood {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 14px;
+            height: 14px;
+            border-radius: 999px;
+            font-size: 10px;
+            line-height: 1;
+            border: 1px solid rgba(255,255,255,0.42);
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.22);
+            transform: translateY(-1px);
+        }
+        .tmtc-slot-mood-1 {
+            background: #f3db78;
+            color: #624800;
+        }
+        .tmtc-slot-mood-2 {
+            background: #ebb95e;
+            color: #6a3d00;
+        }
+        .tmtc-slot-mood-3 {
+            background: #ee8e57;
+            color: #641d00;
+        }
+        .tmtc-slot-mood-4 {
+            background: #df5948;
+            color: #ffffff;
         }
         .tmtc-slot-poskey {
             font-size: var(--tmu-font-2xs);
@@ -49042,6 +49246,17 @@ ${names}`)) {
         .tmtc-order-action-val {
             font-size: var(--tmu-font-xs);
             color: var(--tmu-text-main);
+        }
+        .tmtc-orders-switch {
+            margin-bottom: 0;
+        }
+        .tmtc-orders-switch .tmu-tabs {
+            width: 100%;
+            border: 1px solid var(--tmu-border-soft-alpha-strong);
+            border-radius: var(--tmu-space-md);
+            overflow: hidden;
+            background: var(--tmu-surface-card-soft);
+            box-shadow: none;
         }
 
         /* \u2500\u2500 ghost placeholders: only visible during drag \u2500\u2500 */
@@ -49235,6 +49450,13 @@ ${names}`)) {
       if (pk) POSKEY_TO_ZONE[pk] = z.key;
     }
   }
+  var LINE_PENALTIES = {
+    1: { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4 },
+    2: { 1: 1, 2: 0, 3: 1, 4: 2, 5: 3 },
+    3: { 1: 2, 2: 1, 3: 0, 4: 1, 5: 2 },
+    4: { 1: 3, 2: 2, 3: 1, 4: 0, 5: 1 },
+    5: { 1: 4, 2: 3, 3: 2, 4: 1, 5: 0 }
+  };
   function getTargetRanks(total, count) {
     if (count <= 0) return [];
     if (count >= total) return Array.from({ length: total }, (_, i) => i);
@@ -49248,10 +49470,6 @@ ${names}`)) {
     return result.sort((a, b) => a - b);
   }
   var escHtml = (v) => String(v != null ? v : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  var recStars = (r) => {
-    const n = Math.min(Math.round(Number(r) || 0), 5);
-    return n ? "\u2605".repeat(n) : "";
-  };
   var gc = TmUtils.getColor;
   function encodeNested(obj, prefix = "") {
     const parts = [];
@@ -49322,22 +49540,75 @@ ${names}`)) {
     };
     const changeListeners = [];
     const notifyChange = () => changeListeners.forEach((fn) => fn());
+    const adaptTooltipPlayer = (player) => {
+      if (!player) return null;
+      return {
+        ...player,
+        name: player.name || player.lastname || String(player.player_id || ""),
+        rec: player._fmRec != null ? player._fmRec : player.rec,
+        r5: player._fmR5 != null ? player._fmR5 : player.r5,
+        routine: Number.isFinite(parseFloat(player.routine)) ? parseFloat(player.routine) : null
+      };
+    };
+    const parseFavPositions = (player) => String((player == null ? void 0 : player.favposition) || (player == null ? void 0 : player.fp) || "").split(",").map((pos) => pos.trim().toLowerCase()).filter(Boolean);
+    const getPositionRating = (player, posKey2) => {
+      var _a, _b;
+      const positionId = (_a = TmConst.POSITION_MAP[String(posKey2 || "").toLowerCase()]) == null ? void 0 : _a.id;
+      if (positionId == null || !((_b = player == null ? void 0 : player.allPositionRatings) == null ? void 0 : _b.length)) return null;
+      return player.allPositionRatings.find((rating) => rating.id === positionId) || null;
+    };
+    const getSlotRecommendation = (player, posKey2) => {
+      const rating = getPositionRating(player, posKey2);
+      if ((rating == null ? void 0 : rating.rec) != null) {
+        const score = parseFloat(rating.rec);
+        if (Number.isFinite(score)) return Math.round(score * 100) / 100;
+      }
+      const fallback = parseFloat(player == null ? void 0 : player.rec_sort);
+      return Number.isFinite(fallback) ? fallback : null;
+    };
+    const getSlotDisplayRating = (player, posKey2) => {
+      const rating = getPositionRating(player, posKey2);
+      if ((rating == null ? void 0 : rating.r5) != null) {
+        const score = parseFloat(rating.r5);
+        if (Number.isFinite(score)) return TmUtils.formatR5(score, "\u2014");
+      }
+      return "\u2014";
+    };
+    const getSlotRoutineDisplay = (player) => {
+      const routine = parseFloat(player == null ? void 0 : player.routine);
+      return Number.isFinite(routine) && routine > 0 ? routine.toFixed(1) : "\u2014";
+    };
+    const getMoodPenalty = (player, posKey2) => {
+      var _a, _b;
+      const placed = TmConst.POSITION_MAP[String(posKey2 || "").toLowerCase()];
+      if (!placed) return 0;
+      const favEntries = parseFavPositions(player).map((favKey) => TmConst.POSITION_MAP[favKey] || null).filter(Boolean);
+      if (!favEntries.length) return 0;
+      if (placed.row === 0) return favEntries.some((entry) => entry.row === 0) ? 0 : 4;
+      if (favEntries.some((entry) => entry.row === 0)) return 4;
+      const placedSide = placed.col === 0 ? "L" : placed.col === 4 ? "R" : "C";
+      let bestPenalty = 4;
+      for (const fav of favEntries) {
+        const favSide = fav.col === 0 ? "L" : fav.col === 4 ? "R" : "C";
+        let penalty = 0;
+        if (favSide !== placedSide) {
+          penalty += favSide === "C" || placedSide === "C" ? 2 : 1;
+        }
+        penalty += (_b = (_a = LINE_PENALTIES[placed.row]) == null ? void 0 : _a[fav.row]) != null ? _b : 4;
+        bestPenalty = Math.min(bestPenalty, Math.min(penalty, 4));
+      }
+      return bestPenalty;
+    };
     const sortedPlayers = () => {
       var _a, _b, _c, _d;
       const rows = Object.values(data.players || {}).map((p) => {
-        var _a2, _b2, _c2;
+        var _a2;
         const fmPosKey = getFieldPosKey(p.player_id);
         const benchRole = !fmPosKey ? getBenchRole(p.player_id) : null;
         const posStr = fmPosKey ? fmPosKey : ((_a2 = String(p.favposition || "").split(",")[0]) == null ? void 0 : _a2.trim().toLowerCase()) || "";
-        let _fmR5 = null, _fmRec = null;
-        if ((_b2 = p.allPositionRatings) == null ? void 0 : _b2.length) {
-          const posId = (_c2 = TmConst.POSITION_MAP[posStr]) == null ? void 0 : _c2.id;
-          const rating = posId != null ? p.allPositionRatings.find((r) => r.id === posId) : null;
-          if (rating) {
-            _fmR5 = parseFloat(rating.r5);
-            _fmRec = Math.round((parseFloat(rating.rec) || 0) * 100) / 100;
-          }
-        }
+        const rating = getPositionRating(p, posStr);
+        const _fmR5 = (rating == null ? void 0 : rating.r5) != null ? parseFloat(rating.r5) : null;
+        const _fmRec = getSlotRecommendation(p, posStr);
         return {
           ...p,
           _fmOrder: getSortKey(p.player_id),
@@ -49390,6 +49661,34 @@ ${names}`)) {
     const squadCol = document.createElement("div");
     squadCol.className = "tmtc-squad-col";
     if (!externalSquadContainer) layout.appendChild(squadCol);
+    let hoverTooltipTimer = null;
+    const clearPlayerTooltip = () => {
+      clearTimeout(hoverTooltipTimer);
+      TmPlayerTooltip.hide();
+    };
+    const bindTooltipDelegation = (host) => {
+      if (!host || host.dataset.tmtcTooltipBound === "1") return;
+      host.dataset.tmtcTooltipBound = "1";
+      host.addEventListener("mouseover", (event) => {
+        const hoverEl = event.target.closest(".tmtc-slot[data-player-id], .tmtc-bench-inner[data-player-id], tr[data-player-id]");
+        if (!hoverEl || !host.contains(hoverEl) || hoverEl.contains(event.relatedTarget)) return;
+        const playerId = hoverEl.dataset.playerId || "";
+        const player = adaptTooltipPlayer(players_by_id[String(playerId)] || null);
+        if (!player) return;
+        const anchor = hoverEl.matches("tr[data-player-id]") ? hoverEl.querySelector('a[href*="/players/"]') || hoverEl : hoverEl;
+        clearPlayerTooltip();
+        hoverTooltipTimer = setTimeout(() => {
+          TmPlayerTooltip.show(anchor, player);
+        }, 80);
+      });
+      host.addEventListener("mouseout", (event) => {
+        const hoverEl = event.target.closest(".tmtc-slot[data-player-id], .tmtc-bench-inner[data-player-id], tr[data-player-id]");
+        if (!hoverEl || !host.contains(hoverEl) || hoverEl.contains(event.relatedTarget)) return;
+        clearPlayerTooltip();
+      });
+    };
+    bindTooltipDelegation(layout);
+    bindTooltipDelegation(externalSquadContainer || squadCol);
     const specialRolesCol = document.createElement("div");
     specialRolesCol.className = "tmtc-bench-col";
     const fieldEl = document.createElement("div");
@@ -49515,11 +49814,19 @@ ${names}`)) {
         slotEl.dataset.playerId = player.player_id;
         slotEl.removeEventListener("dragstart", onFieldDragStart);
         slotEl.addEventListener("dragstart", onFieldDragStart);
+        const slotRec = getSlotRecommendation(player, posKey2);
+        const slotRating = getSlotDisplayRating(player, posKey2);
+        const slotRoutine = getSlotRoutineDisplay(player);
+        const moodPenalty = getMoodPenalty(player, posKey2);
         slotEl.innerHTML = `
-                <span class="tmtc-slot-no">${escHtml(player.no || "")}</span>
+                <span class="tmtc-slot-no">${escHtml(slotRating)}</span>
                 <span class="tmtc-slot-name">${escHtml(player.lastname || player.name || "")}</span>
                 ${TmPosition.chip([posKey2 || ""])}
-                <span class="tmtc-slot-rec">${recStars(player.rec_sort)}</span>
+                <span class="tmtc-slot-meta">
+                    <span class="tmtc-slot-rec">${TmStars.recommendation(slotRec, "tmtc-rec-stars tmtc-rec-stars-sm") || '<span class="tmtc-slot-rec-empty">\u2014</span>'}</span>
+                    ${moodPenalty > 0 ? `<span class="tmtc-slot-mood tmtc-slot-mood-${moodPenalty}" title="Out of natural position">\u2639</span>` : ""}
+                </span>
+                <span class="tmtc-slot-rtn" style="color:${slotRoutine !== "\u2014" ? gc(Number(slotRoutine), RTN_THRESHOLDS2) : "var(--tmu-text-dim)"}">${slotRoutine}</span>
             `;
       } else {
         slotEl.removeAttribute("draggable");
@@ -49627,11 +49934,11 @@ ${names}`)) {
             key: "rec_sort",
             label: "\u2605",
             align: "c",
-            width: "44px",
+            width: "58px",
             render: (v, p) => {
               if (p._isBenchPlaceholder) return "";
-              const n = Math.min(Math.round(Number(v) || 0), 5);
-              return n ? `<span style="color:var(--tmu-warning);font-size:var(--tmu-font-2xs)">${"\u2605".repeat(n)}</span>` : "\u2014";
+              const starValue = p._fmRec != null ? p._fmRec : v;
+              return TmStars.recommendation(starValue, "tmtc-rec-stars tmtc-rec-stars-sm") || "\u2014";
             }
           },
           {
@@ -49648,7 +49955,7 @@ ${names}`)) {
             align: "r",
             width: "40px",
             sortable: false,
-            render: (v, p) => p._isBenchPlaceholder ? "" : v != null ? `<span class="tmu-tabular" style="color:${gc(v, R5_THRESHOLDS5)};font-weight:700">${v}</span>` : `<span style="color:var(--tmu-text-dim)">\u2014</span>`
+            render: (v, p) => p._isBenchPlaceholder ? "" : v != null ? `<span class="tmu-tabular" style="color:${gc(v, R5_THRESHOLDS5)};font-weight:700">${TmUtils.formatR5(v)}</span>` : `<span style="color:var(--tmu-text-dim)">\u2014</span>`
           },
           {
             key: "routine",
@@ -49756,6 +50063,14 @@ ${names}`)) {
       return wrap;
     }
     function refreshSquadTable() {
+      for (const [posKey2, slotEl] of Object.entries(slotEls)) {
+        const pid = assignment[posKey2];
+        renderFieldSlot(slotEl, pid ? players_by_id[String(pid)] || null : null, posKey2);
+      }
+      for (const [role, slotEl] of Object.entries(benchSlotEls)) {
+        const pid = assignment[role];
+        renderBenchSlot(slotEl, pid ? players_by_id[String(pid)] || null : null, BENCH_LABELS2[role] || role);
+      }
       tblWrap == null ? void 0 : tblWrap.refresh({ items: sortedPlayers() });
       refreshFieldOverlay();
     }
@@ -50487,6 +50802,8 @@ ${names}`)) {
     const players_by_id = data.players_by_id || {};
     const formation_by_pos = data.formation_by_pos || {};
     const formation_assoc = data.formation_assoc || {};
+    const activePositions = [...new Set(Object.keys(formation_by_pos).map((pos) => String(pos || "").toUpperCase()).filter((pos) => POSITIONS.includes(pos)))];
+    const positionOptions = activePositions.length ? activePositions.sort((a, b) => POSITIONS.indexOf(a) - POSITIONS.indexOf(b)) : POSITIONS;
     const fieldPlayers = Object.values(formation_by_pos).filter(Boolean).map(String).map((pid) => players_by_id[pid]).filter(Boolean);
     const benchPlayers = SUB_ROLES.map((r) => formation_assoc[r]).filter(Boolean).map(String).map((pid) => players_by_id[pid]).filter(Boolean);
     const state5 = {
@@ -50499,6 +50816,10 @@ ${names}`)) {
       ORDER_PAR1: co.ORDER_PAR1 || 0,
       ORDER_PAR2: co.ORDER_PAR2 || 0,
       ORDER_PAR3: co.ORDER_PAR3 || ""
+    };
+    const getFieldPositionForPlayer = (pid) => {
+      var _a, _b;
+      return ((_b = (_a = Object.entries(formation_by_pos).find(([, playerId]) => String(playerId) === String(pid))) == null ? void 0 : _a[0]) == null ? void 0 : _b.toLowerCase()) || "";
     };
     let destroy;
     function pickBtn(label, isActive, onPick, container) {
@@ -50531,6 +50852,14 @@ ${names}`)) {
       players.forEach((p) => mkBtn(p.lastname || p.name || p.player_id, p.player_id));
       return el2;
     }
+    function positionGroup(getCurrent, onPick, options = positionOptions) {
+      const el2 = document.createElement("div");
+      el2.className = "tmtc-co-chips";
+      options.forEach((pos) => el2.appendChild(
+        pickBtn(pos, getCurrent() === pos.toLowerCase(), () => onPick(pos.toLowerCase()), el2)
+      ));
+      return el2;
+    }
     function minuteGroup() {
       const el2 = document.createElement("div");
       el2.className = "tmtc-co-chips";
@@ -50561,10 +50890,15 @@ ${names}`)) {
         w.appendChild(lbl("Player out:"));
         w.appendChild(playerGroup(fieldPlayers, () => state5.ORDER_PAR1, (v) => {
           state5.ORDER_PAR1 = v;
+          if (!state5.ORDER_PAR3) state5.ORDER_PAR3 = getFieldPositionForPlayer(v);
         }));
         w.appendChild(lbl("Player in:"));
         w.appendChild(playerGroup(benchPlayers, () => state5.ORDER_PAR2, (v) => {
           state5.ORDER_PAR2 = v;
+        }));
+        w.appendChild(lbl("Position:"));
+        w.appendChild(positionGroup(() => state5.ORDER_PAR3, (v) => {
+          state5.ORDER_PAR3 = v;
         }));
         return w;
       }
@@ -50581,14 +50915,9 @@ ${names}`)) {
           state5.ORDER_PAR1 = v;
         }));
         w.appendChild(lbl("New position:"));
-        const posEl = document.createElement("div");
-        posEl.className = "tmtc-co-chips";
-        POSITIONS.forEach((pos) => posEl.appendChild(
-          pickBtn(pos, state5.ORDER_PAR3 === pos.toLowerCase(), () => {
-            state5.ORDER_PAR3 = pos.toLowerCase();
-          }, posEl)
-        ));
-        w.appendChild(posEl);
+        w.appendChild(positionGroup(() => state5.ORDER_PAR3, (v) => {
+          state5.ORDER_PAR3 = v;
+        }, POSITIONS));
         return w;
       }
       return null;
@@ -50740,6 +51069,7 @@ ${names}`)) {
       destroy = handle.destroy;
     }
     async function save() {
+      const orderPar3 = state5.ORDER_ID === 1 && !state5.ORDER_PAR3 ? getFieldPositionForPlayer(state5.ORDER_PAR1) : state5.ORDER_PAR3;
       const payload = new URLSearchParams({
         COND_ORDER_NUM: state5.COND_ORDER_NUM,
         EVENT_ID: state5.EVENT_ID || 0,
@@ -50749,7 +51079,7 @@ ${names}`)) {
         ORDER_ID: state5.ORDER_ID || 0,
         ORDER_PAR1: state5.ORDER_PAR1 || 0,
         ORDER_PAR2: state5.ORDER_PAR2 || 0,
-        ORDER_PAR3: state5.ORDER_PAR3 || 0,
+        ORDER_PAR3: orderPar3 || 0,
         reserves,
         national,
         miniGameId
@@ -50887,6 +51217,21 @@ ${names}`)) {
 
   // src/pages/tactics.js
   var mountedMain5 = null;
+  var mountedPath2 = "";
+  var tacticsSyncListener = null;
+  function getBTeamClubId2() {
+    var _a;
+    return String(((_a = window.SESSION) == null ? void 0 : _a.b_team) || "").trim();
+  }
+  function hasReservesTeam() {
+    return Boolean(getBTeamClubId2());
+  }
+  function getTacticsTeamMode(pathname = window.location.pathname) {
+    return /^\/tactics\/reserves\/?$/i.test(pathname) ? "reserves" : "first-team";
+  }
+  function getTacticsRoute(pathname = window.location.pathname, teamMode = getTacticsTeamMode(pathname)) {
+    return teamMode === "reserves" ? "/tactics/reserves/" : "/tactics/";
+  }
   function captureNativeSettings() {
     const getVal = (id) => {
       var _a;
@@ -50898,23 +51243,39 @@ ${names}`)) {
       focus: getVal("focus_side_select")
     };
   }
-  async function fetchTacticsData(reserves, national, miniGameId) {
-    const body = new URLSearchParams({ reserves, national, miniGameId }).toString();
-    const res = await fetch("/ajax/tactics_get.ajax.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" },
-      body
-    });
-    if (!res.ok) throw new Error(`tactics_get failed: ${res.status}`);
-    return res.json();
+  function replaceSyncedPlayer(data, syncedPlayer) {
+    var _a;
+    const syncedId = String((syncedPlayer == null ? void 0 : syncedPlayer.id) || (syncedPlayer == null ? void 0 : syncedPlayer.player_id) || "").trim();
+    if (!syncedId) return false;
+    let changed = false;
+    if ((_a = data.players_by_id) == null ? void 0 : _a[syncedId]) {
+      data.players_by_id[syncedId] = syncedPlayer;
+      changed = true;
+    }
+    for (const [key, player] of Object.entries(data.players || {})) {
+      if (String((player == null ? void 0 : player.player_id) || (player == null ? void 0 : player.id) || "") !== syncedId) continue;
+      data.players[key] = syncedPlayer;
+      changed = true;
+    }
+    return changed;
   }
   async function initTacticsPage(main2) {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f;
     if (!/^\/tactics(?:\/reserves)?\/?$/i.test(window.location.pathname)) return;
     if (!main2 || !main2.isConnected) return;
-    if (mountedMain5 === main2 && ((_a = main2.querySelector(".tmtc-page")) == null ? void 0 : _a.isConnected)) return;
+    if (mountedMain5 === main2 && mountedPath2 === window.location.pathname && ((_a = main2.querySelector(".tmtc-page")) == null ? void 0 : _a.isConnected)) return;
     mountedMain5 = main2;
-    const reserves = Number((_b = window.reserves) != null ? _b : 0);
+    mountedPath2 = window.location.pathname;
+    const teamMode = getTacticsTeamMode(window.location.pathname);
+    const bTeamClubId = getBTeamClubId2();
+    const showReserves = hasReservesTeam();
+    const activeTeamTab = teamMode === "reserves" && showReserves ? "reserves" : "first-team";
+    if (teamMode === "reserves" && !showReserves) {
+      window.location.assign("/tactics/");
+      return;
+    }
+    const reserves = teamMode === "reserves" ? 1 : 0;
+    const clubId2 = teamMode === "reserves" ? bTeamClubId : String(((_b = window.SESSION) == null ? void 0 : _b.main_id) || "");
     const national = Number((_c = window.national) != null ? _c : 0);
     const miniGameId = Number((_d = window.miniGameId) != null ? _d : 0);
     const initialSettings = captureNativeSettings();
@@ -50928,7 +51289,7 @@ ${names}`)) {
     host.innerHTML = TmUI.loading();
     let rawData;
     try {
-      rawData = await fetchTacticsData(reserves, national, miniGameId);
+      rawData = await TmTacticsService.fetchTactics(reserves, national, miniGameId, { clubId: clubId2 });
     } catch (err) {
       host.innerHTML = TmUI.error((err == null ? void 0 : err.message) || "Failed to load tactics data.");
       return;
@@ -50937,14 +51298,9 @@ ${names}`)) {
       host.innerHTML = TmUI.error("No tactics data returned from server.");
       return;
     }
-    const players = rawData.players || {};
-    const players_by_id = {};
-    for (const p of Object.values(players)) {
-      if (p == null ? void 0 : p.player_id) players_by_id[p.player_id] = p;
-    }
     const data = {
-      players,
-      players_by_id,
+      players: rawData.players || {},
+      players_by_id: rawData.players_by_id || {},
       formation: rawData.formation || {},
       formation_by_pos: rawData.formation_by_pos || {},
       formation_subs: rawData.formation_subs || {},
@@ -50964,35 +51320,55 @@ ${names}`)) {
     statsPanel.className = "tmtc-main-stats";
     const rightPanel = document.createElement("div");
     rightPanel.className = "tmtc-main-right";
+    const rightSwitch = document.createElement("div");
+    rightSwitch.className = "tmtc-orders-switch";
+    const ordersHost = document.createElement("div");
+    ordersHost.className = "tmtc-orders-host";
     mainGrid.appendChild(leftPanel);
     mainGrid.appendChild(midPanel);
     mainGrid.appendChild(statsPanel);
     mainGrid.appendChild(rightPanel);
+    rightPanel.appendChild(rightSwitch);
+    rightPanel.appendChild(ordersHost);
+    const teamTabs = TmUI.tabs({
+      items: [
+        { key: "first-team", label: "First Team" },
+        ...showReserves ? [{ key: "reserves", label: "Reserves" }] : []
+      ],
+      active: activeTeamTab,
+      stretch: true,
+      onChange: (nextMode) => {
+        const nextPath = getTacticsRoute(window.location.pathname, nextMode);
+        if (nextPath === window.location.pathname) return;
+        window.location.assign(nextPath);
+      }
+    });
+    (_f = (_e = TmUI).setActive) == null ? void 0 : _f.call(_e, teamTabs, activeTeamTab);
+    rightSwitch.appendChild(teamTabs);
     const lineupApi = mountTacticsLineup(leftPanel, data, { ...opts, squadContainer: midPanel });
     const panelApi = mountTacticsPanel(statsPanel, data, initialSettings, opts, lineupApi);
-    mountTacticsOrders(rightPanel, data, opts);
-    const clubId2 = String(((_e = window.SESSION) == null ? void 0 : _e.main_id) || "");
-    if (clubId2) {
-      await TmPlayerDB.init();
-      TmClubService.fetchSquadRaw(clubId2, { skipSync: true }).then((data2) => {
-        var _a2;
-        if (!((_a2 = data2 == null ? void 0 : data2.post) == null ? void 0 : _a2.length)) return;
-        for (const sp of data2.post) {
-          const pid = String(sp.id || sp.player_id || "");
-          if (!pid) continue;
-          const existing = players_by_id[pid];
-          if (existing) {
-            existing.allPositionRatings = sp.allPositionRatings;
-            existing.routine = sp.routine;
-            existing.favposition = sp.favposition;
-          } else {
-            players_by_id[pid] = sp;
-          }
-        }
-        lineupApi.refresh();
-        panelApi.refreshStats();
-      }).catch(() => {
-      });
+    mountTacticsOrders(ordersHost, data, opts);
+    lineupApi.refresh();
+    panelApi.refreshStats();
+    if (tacticsSyncListener) {
+      window.removeEventListener("tm:player-synced", tacticsSyncListener);
+      tacticsSyncListener = null;
+    }
+    tacticsSyncListener = (event) => {
+      var _a2;
+      if (!main2.isConnected) return;
+      const syncedPlayer = (_a2 = event.detail) == null ? void 0 : _a2.player;
+      if (!syncedPlayer) return;
+      if (!replaceSyncedPlayer(data, syncedPlayer)) return;
+      lineupApi.refresh();
+      panelApi.refreshStats();
+    };
+    window.addEventListener("tm:player-synced", tacticsSyncListener);
+    for (const player of Object.values(data.players_by_id || {})) {
+      const playerId = String((player == null ? void 0 : player.player_id) || (player == null ? void 0 : player.id) || "").trim();
+      if (!playerId) continue;
+      const DBPlayer = TmPlayerDB.get(playerId);
+      TmPlayerService.normalizePlayer(player, DBPlayer);
     }
   }
 
@@ -51559,7 +51935,7 @@ ${names}`)) {
       initBidsPage(main2);
       return;
     }
-    if (/^\/quickmatch(?:\/complete-standings(?:\/[^/]+)?)?\/?$/i.test(currentPath)) {
+    if (/^\/quickmatch(?:\/(?:complete-standings(?:\/[^/]+)?|latest-matches))?\/?$/i.test(currentPath)) {
       initQuickmatchPage(main2);
       return;
     }
@@ -52223,7 +52599,7 @@ ${names}`)) {
           Diff: totalDb != null ? (totalNew - totalDb >= 0 ? "+" : "") + (totalNew - totalDb).toFixed(2) : "",
           Train: ""
         });
-        const posR5Str = Object.entries(r.r5ByPos).map(([pos, v]) => `${pos}:${v.R5.toFixed(1)}`).join(" ");
+        const posR5Str = Object.entries(r.r5ByPos).map(([pos, v]) => `${pos}:${TmUtils.formatR5(v.R5)}`).join(" ");
         console.log(
           `%c-- ${r.name} (#${r.number}) -- Age:${r.ageYears}.${String(r.ageMonths).padStart(2, "0")} | ${r.position} | ASI:${r.asi} | Rtn:${r.routine} | TI:${r.TI}(${r.TI_change >= 0 ? "+" : ""}${r.TI_change}) | Best:${r.bestPos} R5_DB:${r.R5_DB != null ? r.R5_DB.toFixed(2) : "?"} R5_New:${r.R5 != null ? r.R5.toFixed(2) : "?"} | R5[${posR5Str}] | REC:${r.REC != null ? r.REC.toFixed(2) : "?"} | Rem:${r.asiRemainder.toFixed(2)} | DB:${r.curDbSkillsFull ? "\u2713" : "\u2717"}`,
           "font-weight:bold;color:var(--tmu-warning)"
@@ -52986,7 +53362,7 @@ ${names}`)) {
                 <a class="tmrc-legend-name" href="https://trophymanager.com/players/${s6.pid}/" target="_blank" title="${s6.name}">${s6.name}</a>
                 <div class="tmrc-legend-pos" style="color:${posGroupColor(s6.posIdx)}">${s6.posLabel}</div>
                 <div class="tmrc-legend-age">${ageY}.${ageM}</div>
-                <div class="tmrc-legend-r5" style="color:${getColor6(lastR5, R5_THRESHOLDS5)}">${Number(lastR5).toFixed(1)}</div>
+                <div class="tmrc-legend-r5" style="color:${getColor6(lastR5, R5_THRESHOLDS5)}">${TmUtils.formatR5(lastR5)}</div>
             </div>`;
       });
       container.innerHTML = h;

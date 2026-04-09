@@ -141,17 +141,36 @@ export const TmPlayerService = {
         player.isGK = String(player.favposition || '').split(',')[0].trim().toLowerCase() === 'gk';
     },
 
+    _pickBestDbRecord(player, DBRecord) {
+        const records = DBRecord?.records;
+        if (!records) return null;
+
+        const exact = records[player.ageMonthsString] || null;
+        if (exact) return exact;
+
+        const currentAgeMonths = Number(player.ageMonths);
+        const entries = Object.entries(records)
+            .filter(([, record]) => record && Array.isArray(record.skills) && record.skills.length)
+            .map(([ageKey, record]) => ({ ageKey, ageMonths: TmUtils.ageToMonths(ageKey), record }))
+            .sort((a, b) => a.ageMonths - b.ageMonths);
+
+        if (!entries.length) return null;
+
+        const latestAtOrBeforeCurrent = [...entries].reverse().find(entry => entry.ageMonths <= currentAgeMonths);
+        return latestAtOrBeforeCurrent?.record || entries[entries.length - 1].record || null;
+    },
+
     /**
      * Resolves a player's skills array from one of three sources (in priority order):
-     *   1. IndexedDB record for the player's current age key
+     *   1. IndexedDB record for the player's current age key, or the nearest earlier DB record
      *   2. Tooltip-API rich objects (already { key, value } shaped)
      *   3. Squad-API flat numeric fields on the player object
      * Returns an array of skill objects matching the given defs.
      */
     _resolveSkills(player, defs, DBRecord) {
-        const ageKey = player.ageMonthsString;
-        if (DBRecord && DBRecord.records?.[ageKey]) {
-            const skills = DBRecord.records[ageKey].skills;
+        const bestRecord = this._pickBestDbRecord(player, DBRecord);
+        if (bestRecord?.skills) {
+            const skills = bestRecord.skills;
             return defs.map(def => {
                 const raw = skills[def.id];
                 const v = (typeof raw === 'object' && raw !== null) ? raw.value : raw;
@@ -218,6 +237,7 @@ export const TmPlayerService = {
         if (shouldSync) this._migratePlayerMeta(player, DBPlayer);
         const defs = player.isGK ? TmConst.SKILL_DEFS_GK : TmConst.SKILL_DEFS_OUT;
         player.skills = this._resolveSkills(player, defs, DBPlayer);
+        const initialDbRecord = this._pickBestDbRecord(player, DBPlayer);
         const applyPositions = (currentRecord = null) => {
             const calcSkills = currentRecord?.skills ? this._toNumericSkills(currentRecord.skills) : this._toNumericSkills(player.skills);
             const calcPlayer = {
@@ -246,7 +266,7 @@ export const TmPlayerService = {
         const syncPromise = shouldSync ? TmSync?.syncPlayerStore(player, DBPlayer) : null;
         if (syncPromise instanceof Promise) {
             syncPromise.then(updatedDB => {
-                const curRec = updatedDB?.records?.[player.ageMonthsString];
+                const curRec = this._pickBestDbRecord(player, updatedDB);
                 if (!curRec?.skills) return;
                 player.skills = this._resolveSkills(player, defs, updatedDB);
                 applyPositions(curRec);
@@ -254,7 +274,7 @@ export const TmPlayerService = {
             });
         }
 
-        applyPositions(DBPlayer?.records?.[player.ageMonthsString] || null);
+        applyPositions(initialDbRecord);
         player.name = player.player_name || player.name;
         return player;
     },

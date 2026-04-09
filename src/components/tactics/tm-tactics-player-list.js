@@ -2,11 +2,14 @@ import { TmTable } from '../shared/tm-table.js';
 import { TmSectionCard } from '../shared/tm-section-card.js';
 import { TmPosition } from '../../lib/tm-position.js';
 import { TmUI } from '../shared/tm-ui.js';
+import { TmConst } from '../../lib/tm-constants.js';
+import { TmPlayerTooltip } from '../player/tm-player-tooltip.js';
 
 'use strict';
 
 const escHtml = v => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const cleanText = v => String(v || '').replace(/\s+/g, ' ').trim();
+const formatAge = (years, months) => `${Number(years) || 0}.${String(Number(months) || 0).padStart(2, '0')}`;
 
 // Filter groups
 const LINE_GROUPS  = ['gk', 'd', 'm', 'f'];
@@ -37,6 +40,31 @@ function matchesSide(player, sideFilter) {
 function getPositions(player) {
     return String(player.favposition || '').split(',').map(s => s.trim()).filter(Boolean)
         .flatMap(seg => seg.split('/').map(p => p.replace(/\s+/g, '').toLowerCase()).filter(Boolean));
+}
+
+function adaptForTooltip(player) {
+    const positions = player.positions?.length
+        ? player.positions
+        : getPositions(player).map(key => {
+            const entry = TmConst.POSITION_MAP[key] || TmConst.POSITION_MAP[key.replace(/[lrc]$/, '')];
+            return { position: entry?.position || key.toUpperCase(), color: entry?.color };
+        });
+
+    const skills = Array.isArray(player.skills)
+        ? player.skills.map((skill, index) => typeof skill === 'object'
+            ? skill
+            : { value: skill, name: (player.isGK ? TmConst.SKILL_LABELS_GK : TmConst.SKILL_LABELS_OUT)[index] || '' })
+        : [];
+
+    return {
+        ...player,
+        positions,
+        ageMonthsString: player.ageMonthsString || formatAge(player.age, player.months),
+        skills,
+        rec: Number.isFinite(parseFloat(player.rec)) ? parseFloat(player.rec) : (Number.isFinite(parseFloat(player.rec_sort)) ? parseFloat(player.rec_sort) : null),
+        r5: Number.isFinite(parseFloat(player.r5)) ? parseFloat(player.r5) : null,
+        routine: Number.isFinite(parseFloat(player.routine)) ? parseFloat(player.routine) : null,
+    };
 }
 
 function buildTable(players, query) {
@@ -180,6 +208,30 @@ export function mountTacticsPlayerList(container, data) {
     // ── Table slot ───────────────────────────────────────────────────────
     const tableSlot = document.createElement('div');
     body.appendChild(tableSlot);
+
+    let hoverTooltipTimer = null;
+    const clearTooltip = () => {
+        clearTimeout(hoverTooltipTimer);
+        TmPlayerTooltip.hide();
+    };
+
+    tableSlot.addEventListener('mouseover', event => {
+        const link = event.target.closest('a[href*="/players/"]');
+        if (!link || !tableSlot.contains(link) || link.contains(event.relatedTarget)) return;
+        const playerId = link.getAttribute('href')?.match(/\/players\/(\d+)\//)?.[1] || '';
+        const player = allPlayers.find(p => String(p.player_id || '') === playerId);
+        if (!player) return;
+        clearTooltip();
+        hoverTooltipTimer = setTimeout(() => {
+            TmPlayerTooltip.show(link, adaptForTooltip(player));
+        }, 80);
+    });
+
+    tableSlot.addEventListener('mouseout', event => {
+        const link = event.target.closest('a[href*="/players/"]');
+        if (!link || !tableSlot.contains(link) || link.contains(event.relatedTarget)) return;
+        clearTooltip();
+    });
 
     function getVisible() {
         return allPlayers.filter(p => {

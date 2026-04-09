@@ -17,6 +17,7 @@ let mountedPath = '';
 const STYLE_ID = 'tmvu-quickmatch-style';
 const QUICKMATCH_HOME_RE = /^\/quickmatch\/?$/i;
 const QUICKMATCH_STANDINGS_RE = /^\/quickmatch\/complete-standings(?:\/[^/]+)?\/?$/i;
+const QUICKMATCH_LATEST_RE = /^\/quickmatch\/latest-matches\/?$/i;
 const HASH_TO_TAB = { '#ranked': 'ranked', '#show': 'show', '#friendly': 'friendly' };
 const TAB_TO_HASH = { ranked: '#ranked', show: '#show', friendly: '#friendly' };
 const RANKED_MODES = [
@@ -57,6 +58,7 @@ const setHash = (tab) => {
 };
 const getRouteMode = (pathname = window.location.pathname) => {
     if (QUICKMATCH_STANDINGS_RE.test(pathname)) return 'standings';
+    if (QUICKMATCH_LATEST_RE.test(pathname)) return 'latest';
     if (QUICKMATCH_HOME_RE.test(pathname)) return 'home';
     return '';
 };
@@ -175,6 +177,11 @@ const findStandingsContentBox = () => {
     return best?.box || null;
 };
 
+const findCellByLinkPatterns = (cells, patterns = []) => cells.find((cell) => {
+    const hrefs = Array.from(cell?.querySelectorAll('a[href]') || []).map(link => link.getAttribute('href') || '');
+    return hrefs.some(href => patterns.some(pattern => pattern.test(href)));
+}) || null;
+
 const parseCompleteStandingsData = () => {
     const contentBox = findStandingsContentBox();
     const table = findStandingsTableCandidate(contentBox);
@@ -219,7 +226,15 @@ const parseCompleteStandingsData = () => {
         const clubLabel = cleanText(clubLink?.textContent || clubCell?.textContent || 'Club');
         const clubHtml = buildLinkHtml(clubLink?.getAttribute('href') || '', clubLabel, 'tmvu-qm-standings-link');
 
-        const countryCell = cells[countryIndex];
+        const statsCell = findCellByLinkPatterns(cells, [/\/statistics\/club\//i]) || cells[statsIndex] || null;
+        const leagueCell = findCellByLinkPatterns(cells, [/\/league\//i, /\/league(?!-stats)/i]) || cells[leagueIndex] || null;
+        const countryCell = cells.find((cell, cellIndex) => {
+            if (!cell || cell === clubCell || cell === leagueCell || cell === statsCell) return false;
+            if (cellIndex !== countryIndex && !extractFlagCode(cell)) return false;
+            const hrefs = Array.from(cell.querySelectorAll('a[href]')).map(link => link.getAttribute('href') || '');
+            return hrefs.length === 0 || hrefs.some(href => !/\/club\/|\/league\/|\/statistics\/club\//i.test(href));
+        }) || cells[countryIndex] || null;
+
         const countryCode = extractFlagCode(countryCell);
         const countryLabel = cleanText(countryCell?.textContent || '').replace(/^[-–]\s*/, '');
         const countryLink = countryCell?.querySelector('a[href]')?.getAttribute('href') || '';
@@ -231,12 +246,10 @@ const parseCompleteStandingsData = () => {
             ? (countryLink ? `<a class="tmvu-qm-standings-country" href="${escapeAttr(countryLink)}">${countryInner}</a>` : `<span class="tmvu-qm-standings-country">${countryInner}</span>`)
             : '';
 
-        const leagueCell = cells[leagueIndex];
         const leagueLink = leagueCell?.querySelector('a[href]');
         const leagueLabel = cleanText(leagueLink?.textContent || leagueCell?.textContent || '');
         const leagueHtml = leagueLabel ? buildLinkHtml(leagueLink?.getAttribute('href') || '', leagueLabel, 'tmvu-qm-standings-link') : '';
 
-        const statsCell = cells[statsIndex];
         const statsLink = statsCell?.querySelector('a[href]');
         const statsLabel = cleanText(statsLink?.textContent || statsCell?.textContent || 'Open');
         const statsHtml = statsLink
@@ -263,6 +276,16 @@ const parseCompleteStandingsData = () => {
         title,
         rows,
         regionAction,
+    };
+};
+
+const parseLatestMatchesData = () => {
+    const contentBox = sourceRoot.querySelector('.column2_a > .box, .column2 > .box');
+    const title = 'Latest Matches';
+    const byMonth = parseQmLatestMatchesHtml(sourceRoot.innerHTML || '');
+    return {
+        title,
+        byMonth,
     };
 };
 
@@ -551,7 +574,7 @@ const injectStyles = () => {
 
             .tmvu-qm-standings-table th:nth-child(2),
             .tmvu-qm-standings-table td:nth-child(2) {
-                width: 5.5rem;
+                min-width: 16rem;
             }
 
             @media (max-width: 960px) {
@@ -579,6 +602,7 @@ const initState = () => {
         rankedLoading: false,
         rankedRows: [],
         completeStandings: routeMode === 'standings' ? parseCompleteStandingsData() : null,
+        latestMatches: routeMode === 'latest' ? parseLatestMatchesData() : null,
         completeStandingsHref: parseCompleteStandingsHref(),
         showGroups,
         activeShowGroup: showGroups[0]?.key || '',
@@ -781,12 +805,6 @@ const buildCompleteStandingsTable = () => TmTable.table({
             render: value => String(value),
         },
         {
-            key: 'rating',
-            label: 'Rating',
-            align: 'r',
-            render: value => String(value),
-        },
-        {
             key: 'clubHtml',
             label: 'Club',
             sortable: false,
@@ -805,11 +823,10 @@ const buildCompleteStandingsTable = () => TmTable.table({
             render: (_, row) => row.leagueHtml || '',
         },
         {
-            key: 'statsHtml',
-            label: 'Statistics',
-            sortable: false,
+            key: 'rating',
+            label: 'Pts',
             align: 'r',
-            render: value => value,
+            render: value => String(value),
         },
     ],
     rowCls: row => row._rowClass || '',
@@ -886,6 +903,62 @@ const mountCompleteStandingsContent = (container) => {
     }
 
     refs.body.appendChild(buildCompleteStandingsTable());
+    container.appendChild(card);
+};
+
+const mountLatestMatchesContent = (container) => {
+    const card = document.createElement('div');
+    const refs = TmSectionCard.mount(card, {
+        title: state.latestMatches?.title || 'Latest Ranked Matches',
+        icon: '🕒',
+        titleMode: 'body',
+        cardVariant: 'flatpanel',
+        hostClass: 'tmvu-qm-card-host',
+        bodyClass: 'tmvu-qm-standings-wrap',
+    });
+
+    const byMonth = state.latestMatches?.byMonth || null;
+    if (!byMonth) {
+        refs.body.innerHTML = TmUI.empty('No recent quickmatch games found.', true);
+        container.appendChild(card);
+        return;
+    }
+
+    const monthKeys = Object.keys(byMonth).sort();
+    let activeMonthKey = monthKeys[monthKeys.length - 1] || '';
+
+    const renderMonth = () => {
+        refs.body.innerHTML = '';
+        if (monthKeys.length > 1) {
+            const tabs = TmUI.tabs({
+                items: monthKeys.map(key => ({ key, label: byMonth[key].label })),
+                active: activeMonthKey,
+                onChange: key => {
+                    activeMonthKey = key;
+                    renderMonth();
+                },
+                stretch: true,
+            });
+            tabs.classList.add('tmvu-qm-subtabs');
+            refs.body.appendChild(tabs);
+        }
+
+        const matches = byMonth[activeMonthKey]?.matches || [];
+        if (!matches.length) {
+            refs.body.insertAdjacentHTML('beforeend', TmUI.empty('No recent quickmatch games found.', true));
+            return;
+        }
+
+        const groups = TmFixturesList.fromMatches(matches);
+        const listWrap = document.createElement('div');
+        listWrap.className = 'tmcf-month-content';
+        listWrap.innerHTML = TmFixturesList.render(groups, { linkUpcoming: true });
+        refs.body.appendChild(listWrap);
+        TmFixturesList.bindHover(listWrap);
+        TmFixturesList.bindRowNav(listWrap);
+    };
+
+    renderMonth();
     container.appendChild(card);
 };
 
@@ -1147,6 +1220,13 @@ const renderPage = () => {
         return;
     }
 
+    if (state.routeMode === 'latest') {
+        const content = document.createElement('div');
+        mountLatestMatchesContent(content);
+        mainColumn.appendChild(content);
+        return;
+    }
+
     mainColumn.appendChild(renderHero());
 
     const tabs = TmUI.tabs({
@@ -1175,6 +1255,7 @@ export function initQuickmatchPage(main) {
     if (!nativeMain) return;
     if (routeMode === 'home' && !nativeMain.querySelector('.column1 .content_menu, #match_type_ranked, #match_type_show, #match_type_friendly')) return;
     if (routeMode === 'standings' && !nativeMain.querySelector('.column1 .content_menu, .column2_a > .box table, .column2 > .box table')) return;
+    if (routeMode === 'latest' && !nativeMain.querySelector('.column1 .content_menu, .column2_a > .box table.zebra, .column2 > .box table.zebra')) return;
     if (mountedMain === main && mountedPath === window.location.pathname && mainColumn?.isConnected) return;
 
     mountedMain = main;
@@ -1202,7 +1283,7 @@ export function initQuickmatchPage(main) {
 
     mainColumn.innerHTML = TmUI.loading('Loading quickmatch...');
 
-    if (routeMode === 'standings') {
+    if (routeMode === 'standings' || routeMode === 'latest') {
         renderPage();
         return;
     }

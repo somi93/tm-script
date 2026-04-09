@@ -636,7 +636,7 @@ function initCurrentPage() {
         initBidsPage(main);
         return;
     }
-    if (/^\/quickmatch(?:\/complete-standings(?:\/[^/]+)?)?\/?$/i.test(currentPath)) {
+    if (/^\/quickmatch(?:\/(?:complete-standings(?:\/[^/]+)?|latest-matches))?\/?$/i.test(currentPath)) {
         initQuickmatchPage(main);
         return;
     }

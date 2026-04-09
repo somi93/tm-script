@@ -4,9 +4,10 @@ const STAR_CSS = `
 .tmu-stars{line-height:1}
 .tmu-star-full{color:var(--tmu-warning)}
 .tmu-star-half{background:linear-gradient(90deg,var(--tmu-warning) 50%,var(--tmu-border-embedded) 50%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.tmu-star-empty{color:var(--tmu-border-embedded)}
+.tmu-star-empty{color:var(--tmu-warning)}
 .tmu-star-green{color:var(--tmu-success)}
 .tmu-star-green-half{background:linear-gradient(90deg,var(--tmu-success) 50%,var(--tmu-border-embedded) 50%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.tmu-star-green-empty{color:var(--tmu-success)}
 .tmu-star-split{background:linear-gradient(90deg,var(--tmu-warning) 50%,var(--tmu-success) 50%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 `;
 
@@ -43,7 +44,7 @@ function recommendation(value, cls = '') {
     let html = '';
     for (let index = 0; index < fullStars; index += 1) html += '<span class="tmu-star-full">★</span>';
     if (hasHalfStar) html += '<span class="tmu-star-half">★</span>';
-    for (let index = 0; index < emptyStars; index += 1) html += '<span class="tmu-star-empty">★</span>';
+    for (let index = 0; index < emptyStars; index += 1) html += '<span class="tmu-star-empty">☆</span>';
     return wrapStars(html, cls);
 }
 
@@ -57,7 +58,7 @@ function green(value, cls = '') {
     let html = '';
     for (let index = 0; index < fullStars; index += 1) html += '<span class="tmu-star-green">★</span>';
     if (hasHalfStar) html += '<span class="tmu-star-green-half">★</span>';
-    for (let index = 0; index < emptyStars; index += 1) html += '<span class="tmu-star-empty">★</span>';
+    for (let index = 0; index < emptyStars; index += 1) html += '<span class="tmu-star-green-empty">☆</span>';
     return wrapStars(html, cls);
 }
 
@@ -73,7 +74,7 @@ function combined(current, potential, cls = '') {
         else if (index - 0.5 <= currentValue && currentValue < index) html += potentialValue >= index ? '<span class="tmu-star-split">★</span>' : '<span class="tmu-star-half">★</span>';
         else if (index <= potentialValue) html += '<span class="tmu-star-green">★</span>';
         else if (index - 0.5 <= potentialValue && potentialValue < index) html += '<span class="tmu-star-green-half">★</span>';
-        else html += '<span class="tmu-star-empty">★</span>';
+        else html += '<span class="tmu-star-green-empty">☆</span>';
     }
     return wrapStars(html, cls);
 }

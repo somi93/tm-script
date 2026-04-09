@@ -51,6 +51,12 @@ function showOrderDialog(co, data, opts, onSaved) {
     const players_by_id    = data.players_by_id    || {};
     const formation_by_pos = data.formation_by_pos || {};
     const formation_assoc  = data.formation_assoc  || {};
+    const activePositions = [...new Set(Object.keys(formation_by_pos)
+        .map(pos => String(pos || '').toUpperCase())
+        .filter(pos => POSITIONS.includes(pos)))];
+    const positionOptions = activePositions.length
+        ? activePositions.sort((a, b) => POSITIONS.indexOf(a) - POSITIONS.indexOf(b))
+        : POSITIONS;
 
     const fieldPlayers = Object.values(formation_by_pos)
         .filter(Boolean).map(String)
@@ -71,6 +77,9 @@ function showOrderDialog(co, data, opts, onSaved) {
         ORDER_PAR2: co.ORDER_PAR2 || 0,
         ORDER_PAR3: co.ORDER_PAR3 || '',
     };
+
+    const getFieldPositionForPlayer = pid => Object.entries(formation_by_pos)
+        .find(([, playerId]) => String(playerId) === String(pid))?.[0]?.toLowerCase() || '';
 
     let destroy;
 
@@ -104,6 +113,15 @@ function showOrderDialog(co, data, opts, onSaved) {
         return el;
     }
 
+    function positionGroup(getCurrent, onPick, options = positionOptions) {
+        const el = document.createElement('div');
+        el.className = 'tmtc-co-chips';
+        options.forEach(pos => el.appendChild(
+            pickBtn(pos, getCurrent() === pos.toLowerCase(), () => onPick(pos.toLowerCase()), el)
+        ));
+        return el;
+    }
+
     function minuteGroup() {
         const el = document.createElement('div');
         el.className = 'tmtc-co-chips';
@@ -133,9 +151,14 @@ function showOrderDialog(co, data, opts, onSaved) {
         if (id === 1) {
             const w = document.createElement('div');
             w.appendChild(lbl('Player out:'));
-            w.appendChild(playerGroup(fieldPlayers, () => state.ORDER_PAR1, v => { state.ORDER_PAR1 = v; }));
+            w.appendChild(playerGroup(fieldPlayers, () => state.ORDER_PAR1, v => {
+                state.ORDER_PAR1 = v;
+                if (!state.ORDER_PAR3) state.ORDER_PAR3 = getFieldPositionForPlayer(v);
+            }));
             w.appendChild(lbl('Player in:'));
             w.appendChild(playerGroup(benchPlayers, () => state.ORDER_PAR2, v => { state.ORDER_PAR2 = v; }));
+            w.appendChild(lbl('Position:'));
+            w.appendChild(positionGroup(() => state.ORDER_PAR3, v => { state.ORDER_PAR3 = v; }));
             return w;
         }
         if (id === 2) return chipGroup(MENTALITY_MAP_LONG, () => state.ORDER_PAR1, v => { state.ORDER_PAR1 = v; });
@@ -145,12 +168,7 @@ function showOrderDialog(co, data, opts, onSaved) {
             w.appendChild(lbl('Player:'));
             w.appendChild(playerGroup(fieldPlayers, () => state.ORDER_PAR1, v => { state.ORDER_PAR1 = v; }));
             w.appendChild(lbl('New position:'));
-            const posEl = document.createElement('div');
-            posEl.className = 'tmtc-co-chips';
-            POSITIONS.forEach(pos => posEl.appendChild(
-                pickBtn(pos, state.ORDER_PAR3 === pos.toLowerCase(), () => { state.ORDER_PAR3 = pos.toLowerCase(); }, posEl)
-            ));
-            w.appendChild(posEl);
+            w.appendChild(positionGroup(() => state.ORDER_PAR3, v => { state.ORDER_PAR3 = v; }, POSITIONS));
             return w;
         }
         return null;
@@ -293,6 +311,9 @@ function showOrderDialog(co, data, opts, onSaved) {
     }
 
     async function save() {
+        const orderPar3 = state.ORDER_ID === 1 && !state.ORDER_PAR3
+            ? getFieldPositionForPlayer(state.ORDER_PAR1)
+            : state.ORDER_PAR3;
         const payload = new URLSearchParams({
             COND_ORDER_NUM: state.COND_ORDER_NUM,
             EVENT_ID:   state.EVENT_ID   || 0,
@@ -302,7 +323,7 @@ function showOrderDialog(co, data, opts, onSaved) {
             ORDER_ID:   state.ORDER_ID   || 0,
             ORDER_PAR1: state.ORDER_PAR1 || 0,
             ORDER_PAR2: state.ORDER_PAR2 || 0,
-            ORDER_PAR3: state.ORDER_PAR3 || 0,
+            ORDER_PAR3: orderPar3 || 0,
             reserves, national, miniGameId,
         });
         try {

@@ -439,7 +439,7 @@ export function initR5HistoryPage() {
                 <a class="tmrc-legend-name" href="https://trophymanager.com/players/${s.pid}/" target="_blank" title="${s.name}">${s.name}</a>
                 <div class="tmrc-legend-pos" style="color:${posGroupColor(s.posIdx)}">${s.posLabel}</div>
                 <div class="tmrc-legend-age">${ageY}.${ageM}</div>
-                <div class="tmrc-legend-r5" style="color:${getColor(lastR5, R5_THRESHOLDS)}">${Number(lastR5).toFixed(1)}</div>
+                <div class="tmrc-legend-r5" style="color:${getColor(lastR5, R5_THRESHOLDS)}">${TmUtils.formatR5(lastR5)}</div>
             </div>`;
         });
         container.innerHTML = h;

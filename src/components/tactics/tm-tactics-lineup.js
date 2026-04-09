@@ -3,6 +3,8 @@ import { TmTable } from '../shared/tm-table.js';
 import { TmConst } from '../../lib/tm-constants.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmAlert } from '../shared/tm-alert.js';
+import { TmStars } from '../shared/tm-stars.js';
+import { TmPlayerTooltip } from '../player/tm-player-tooltip.js';
 
 'use strict';
 
@@ -18,6 +20,14 @@ const POSKEY_TO_ZONE = {};
 for (const z of FIELD_ZONES) {
     for (const pk of z.cols) { if (pk) POSKEY_TO_ZONE[pk] = z.key; }
 }
+
+const LINE_PENALTIES = {
+    1: { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4 },
+    2: { 1: 1, 2: 0, 3: 1, 4: 2, 5: 3 },
+    3: { 1: 2, 2: 1, 3: 0, 4: 1, 5: 2 },
+    4: { 1: 3, 2: 2, 3: 1, 4: 0, 5: 1 },
+    5: { 1: 4, 2: 3, 3: 2, 4: 1, 5: 0 },
+};
 
 // Symmetric target rank indices for N occupied slots among `total` active slots in a zone.
 // 1→center, 2→CL+CR, 3→CL+C+CR, 4→L+CL+CR+R, 5→all
@@ -35,7 +45,6 @@ function getTargetRanks(total, count) {
 }
 
 const escHtml = v => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-const recStars = r => { const n = Math.min(Math.round(Number(r) || 0), 5); return n ? '★'.repeat(n) : ''; };
 const gc = TmUtils.getColor;
 
 // Encode a nested object as PHP-style form data: on_field[gk]=123
@@ -142,6 +151,82 @@ export function mountTacticsLineup(container, data, opts = {}) {
     const changeListeners = [];
     const notifyChange = () => changeListeners.forEach(fn => fn());
 
+    const adaptTooltipPlayer = player => {
+        if (!player) return null;
+        return {
+            ...player,
+            name: player.name || player.lastname || String(player.player_id || ''),
+            rec: player._fmRec != null ? player._fmRec : player.rec,
+            r5: player._fmR5 != null ? player._fmR5 : player.r5,
+            routine: Number.isFinite(parseFloat(player.routine)) ? parseFloat(player.routine) : null,
+        };
+    };
+
+    const parseFavPositions = player => String(player?.favposition || player?.fp || '')
+        .split(',')
+        .map(pos => pos.trim().toLowerCase())
+        .filter(Boolean);
+
+    const getPositionRating = (player, posKey) => {
+        const positionId = TmConst.POSITION_MAP[String(posKey || '').toLowerCase()]?.id;
+        if (positionId == null || !player?.allPositionRatings?.length) return null;
+        return player.allPositionRatings.find(rating => rating.id === positionId) || null;
+    };
+
+    const getSlotRecommendation = (player, posKey) => {
+        const rating = getPositionRating(player, posKey);
+        if (rating?.rec != null) {
+            const score = parseFloat(rating.rec);
+            if (Number.isFinite(score)) return Math.round(score * 100) / 100;
+        }
+        const fallback = parseFloat(player?.rec_sort);
+        return Number.isFinite(fallback) ? fallback : null;
+    };
+
+    const getSlotDisplayRating = (player, posKey) => {
+        const rating = getPositionRating(player, posKey);
+        if (rating?.r5 != null) {
+            const score = parseFloat(rating.r5);
+            if (Number.isFinite(score)) return TmUtils.formatR5(score, '—');
+        }
+        return '—';
+    };
+
+    const getSlotRoutineDisplay = player => {
+        const routine = parseFloat(player?.routine);
+        return Number.isFinite(routine) && routine > 0 ? routine.toFixed(1) : '—';
+    };
+
+    const getMoodPenalty = (player, posKey) => {
+        const placed = TmConst.POSITION_MAP[String(posKey || '').toLowerCase()];
+        if (!placed) return 0;
+
+        const favEntries = parseFavPositions(player)
+            .map(favKey => TmConst.POSITION_MAP[favKey] || null)
+            .filter(Boolean);
+        if (!favEntries.length) return 0;
+
+        if (placed.row === 0) return favEntries.some(entry => entry.row === 0) ? 0 : 4;
+        if (favEntries.some(entry => entry.row === 0)) return 4;
+
+        const placedSide = placed.col === 0 ? 'L' : (placed.col === 4 ? 'R' : 'C');
+        let bestPenalty = 4;
+
+        for (const fav of favEntries) {
+            const favSide = fav.col === 0 ? 'L' : (fav.col === 4 ? 'R' : 'C');
+            let penalty = 0;
+
+            if (favSide !== placedSide) {
+                penalty += (favSide === 'C' || placedSide === 'C') ? 2 : 1;
+            }
+
+            penalty += LINE_PENALTIES[placed.row]?.[fav.row] ?? 4;
+            bestPenalty = Math.min(bestPenalty, Math.min(penalty, 4));
+        }
+
+        return bestPenalty;
+    };
+
     // ══════════════════════════════════════════════════════════════════════
     // SQUAD TABLE DATA
     // ══════════════════════════════════════════════════════════════════════
@@ -153,15 +238,9 @@ export function mountTacticsLineup(container, data, opts = {}) {
             const posStr = fmPosKey
                 ? fmPosKey
                 : String(p.favposition || '').split(',')[0]?.trim().toLowerCase() || '';
-            let _fmR5 = null, _fmRec = null;
-            if (p.allPositionRatings?.length) {
-                const posId  = TmConst.POSITION_MAP[posStr]?.id;
-                const rating = posId != null ? p.allPositionRatings.find(r => r.id === posId) : null;
-                if (rating) {
-                    _fmR5  = parseFloat(rating.r5);
-                    _fmRec = Math.round((parseFloat(rating.rec) || 0) * 100) / 100;
-                }
-            }
+            const rating = getPositionRating(p, posStr);
+            const _fmR5 = rating?.r5 != null ? parseFloat(rating.r5) : null;
+            const _fmRec = getSlotRecommendation(p, posStr);
             return {
                 ...p,
                 _fmOrder:   getSortKey(p.player_id),
@@ -215,6 +294,43 @@ export function mountTacticsLineup(container, data, opts = {}) {
     const squadCol = document.createElement('div');
     squadCol.className = 'tmtc-squad-col';
     if (!externalSquadContainer) layout.appendChild(squadCol);
+
+    let hoverTooltipTimer = null;
+    const clearPlayerTooltip = () => {
+        clearTimeout(hoverTooltipTimer);
+        TmPlayerTooltip.hide();
+    };
+
+    const bindTooltipDelegation = host => {
+        if (!host || host.dataset.tmtcTooltipBound === '1') return;
+        host.dataset.tmtcTooltipBound = '1';
+
+        host.addEventListener('mouseover', event => {
+            const hoverEl = event.target.closest('.tmtc-slot[data-player-id], .tmtc-bench-inner[data-player-id], tr[data-player-id]');
+            if (!hoverEl || !host.contains(hoverEl) || hoverEl.contains(event.relatedTarget)) return;
+
+            const playerId = hoverEl.dataset.playerId || '';
+            const player = adaptTooltipPlayer(players_by_id[String(playerId)] || null);
+            if (!player) return;
+            const anchor = hoverEl.matches('tr[data-player-id]')
+                ? (hoverEl.querySelector('a[href*="/players/"]') || hoverEl)
+                : hoverEl;
+
+            clearPlayerTooltip();
+            hoverTooltipTimer = setTimeout(() => {
+                TmPlayerTooltip.show(anchor, player);
+            }, 80);
+        });
+
+        host.addEventListener('mouseout', event => {
+            const hoverEl = event.target.closest('.tmtc-slot[data-player-id], .tmtc-bench-inner[data-player-id], tr[data-player-id]');
+            if (!hoverEl || !host.contains(hoverEl) || hoverEl.contains(event.relatedTarget)) return;
+            clearPlayerTooltip();
+        });
+    };
+
+    bindTooltipDelegation(layout);
+    bindTooltipDelegation(externalSquadContainer || squadCol);
 
     const specialRolesCol = document.createElement('div');
     specialRolesCol.className = 'tmtc-bench-col';
@@ -374,11 +490,19 @@ export function mountTacticsLineup(container, data, opts = {}) {
             slotEl.dataset.playerId = player.player_id;
             slotEl.removeEventListener('dragstart', onFieldDragStart);
             slotEl.addEventListener('dragstart', onFieldDragStart);
+            const slotRec = getSlotRecommendation(player, posKey);
+            const slotRating = getSlotDisplayRating(player, posKey);
+            const slotRoutine = getSlotRoutineDisplay(player);
+            const moodPenalty = getMoodPenalty(player, posKey);
             slotEl.innerHTML = `
-                <span class="tmtc-slot-no">${escHtml(player.no || '')}</span>
+                <span class="tmtc-slot-no">${escHtml(slotRating)}</span>
                 <span class="tmtc-slot-name">${escHtml(player.lastname || player.name || '')}</span>
                 ${TmPosition.chip([posKey || ''])}
-                <span class="tmtc-slot-rec">${recStars(player.rec_sort)}</span>
+                <span class="tmtc-slot-meta">
+                    <span class="tmtc-slot-rec">${TmStars.recommendation(slotRec, 'tmtc-rec-stars tmtc-rec-stars-sm') || '<span class="tmtc-slot-rec-empty">—</span>'}</span>
+                    ${moodPenalty > 0 ? `<span class="tmtc-slot-mood tmtc-slot-mood-${moodPenalty}" title="Out of natural position">☹</span>` : ''}
+                </span>
+                <span class="tmtc-slot-rtn" style="color:${slotRoutine !== '—' ? gc(Number(slotRoutine), RTN_THRESHOLDS) : 'var(--tmu-text-dim)'}">${slotRoutine}</span>
             `;
         } else {
             slotEl.removeAttribute('draggable');
@@ -475,11 +599,11 @@ export function mountTacticsLineup(container, data, opts = {}) {
                     },
                 },
                 {
-                    key: 'rec_sort', label: '★', align: 'c', width: '44px',
+                    key: 'rec_sort', label: '★', align: 'c', width: '58px',
                     render: (v, p) => {
                         if (p._isBenchPlaceholder) return '';
-                        const n = Math.min(Math.round(Number(v) || 0), 5);
-                        return n ? `<span style="color:var(--tmu-warning);font-size:var(--tmu-font-2xs)">${'★'.repeat(n)}</span>` : '—';
+                        const starValue = p._fmRec != null ? p._fmRec : v;
+                        return TmStars.recommendation(starValue, 'tmtc-rec-stars tmtc-rec-stars-sm') || '—';
                     },
                 },
                 {
@@ -493,7 +617,7 @@ export function mountTacticsLineup(container, data, opts = {}) {
                     key: '_fmR5', label: 'R5', align: 'r', width: '40px',
                     sortable: false,
                     render: (v, p) => p._isBenchPlaceholder ? '' : v != null
-                        ? `<span class="tmu-tabular" style="color:${gc(v, R5_THRESHOLDS)};font-weight:700">${v}</span>`
+                        ? `<span class="tmu-tabular" style="color:${gc(v, R5_THRESHOLDS)};font-weight:700">${TmUtils.formatR5(v)}</span>`
                         : `<span style="color:var(--tmu-text-dim)">—</span>`,
                 },
                 {
@@ -605,6 +729,14 @@ export function mountTacticsLineup(container, data, opts = {}) {
     }
 
     function refreshSquadTable() {
+        for (const [posKey, slotEl] of Object.entries(slotEls)) {
+            const pid = assignment[posKey];
+            renderFieldSlot(slotEl, pid ? (players_by_id[String(pid)] || null) : null, posKey);
+        }
+        for (const [role, slotEl] of Object.entries(benchSlotEls)) {
+            const pid = assignment[role];
+            renderBenchSlot(slotEl, pid ? (players_by_id[String(pid)] || null) : null, BENCH_LABELS[role] || role);
+        }
         tblWrap?.refresh({ items: sortedPlayers() });
         refreshFieldOverlay();
     }
