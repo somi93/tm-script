@@ -66,7 +66,7 @@ const bindRowNav = (container) => {
         if (event.target.closest('a')) return;
         const row = event.target.closest('.tmvu-fixture-row[data-mid]');
         if (row && container.contains(row)) {
-            window.location.href = `/matches/${row.dataset.mid}/`;
+            window.location.href = row.dataset.href || `/matches/${row.dataset.mid}/`;
         }
     });
 };

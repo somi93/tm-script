@@ -13,6 +13,11 @@ export const TMU_BUTTON_CSS = `
 .tmu-btn-size-md { min-height: 28px; padding: 2px 10px; font-size: var(--tmu-font-sm); }
 .tmu-btn-size-lg { min-height: 32px; padding: 4px 14px; font-size: var(--tmu-font-sm); }
 .tmu-btn-size-xl { min-height: 38px; padding: 6px 18px; font-size: var(--tmu-font-md); }
+.tmu-btn.tmu-btn-size-xs { font-weight: 600; }
+.tmu-btn.tmu-btn-size-sm { font-weight: 700; }
+.tmu-btn.tmu-btn-size-md,
+.tmu-btn.tmu-btn-size-lg,
+.tmu-btn.tmu-btn-size-xl { font-weight: 800; }
 .tmu-btn-icon                    { padding: 0 !important; }
 .tmu-btn-icon.tmu-btn-size-xs    { width: 22px; height: 22px; }
 .tmu-btn-icon.tmu-btn-size-sm    { width: 26px; height: 26px; }

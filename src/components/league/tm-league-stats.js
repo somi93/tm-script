@@ -41,11 +41,12 @@ if (!document.getElementById('tsa-league-stats-style')) {
 }
 
 const buttonHtml = ({ label, slot, cls = '', active = false, ...opts }) => TmButton.button({
-    color: 'secondary',
-    size: 'xs',
+    color: 'primary',
+    size: 'sm',
     label,
     slot,
-    cls: `${cls}${active ? ' tsa-stat-btn-active' : ''}`,
+    cls,
+    active,
     ...opts,
 }).outerHTML;
 

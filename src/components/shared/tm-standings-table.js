@@ -146,7 +146,7 @@ function escapeHtml(value) {
         .replace(/'/g, '&#39;');
 }
 
-function buildHtml({ rows = [], liveZoneMap = {}, isFiltered = false, showForm = false, formHtml = () => '', canOlder = false, canNewer = false, promotionCount = 1 } = {}) {
+function buildHtml({ rows = [], liveZoneMap = {}, isFiltered = false, showForm = false, formHtml = () => '', canOlder = false, canNewer = false, promotionCount = 1, nameLabel = 'Club' } = {}) {
     injectStyles();
 
     const headerForm = showForm
@@ -157,11 +157,12 @@ function buildHtml({ rows = [], liveZoneMap = {}, isFiltered = false, showForm =
         { key: 'rank', label: '#', sortable: false, thCls: 'tsa-rank', cls: 'tsa-rank', width: '36px', render: (_value, row) => { let bg, color; if (row.rank <= promotionCount) { bg = 'var(--tmu-success-fill-hover)'; color = 'var(--tmu-success)'; } else if (row.rank <= 4) { bg = 'rgba(56,189,248,0.10)'; color = 'var(--tmu-info-strong)'; } else { const zone = isFiltered ? (liveZoneMap[row.rank] || '') : row.zone; bg = zoneBg(zone); color = zoneColor(zone) || 'var(--tmu-text-faint)'; } return `<div class="tsa-rank-inner" style="background:${bg};color:${color};font-weight:700;position:absolute;inset:0;display:flex;align-items:center;justify-content:center">${escapeHtml(row.rank)}</div>`; } },
         {
             key: 'clubName',
-            label: 'Club',
+            label: nameLabel,
             sortable: false,
             thCls: 'tsa-left',
             cls: 'tsa-left tsa-club-cell',
             render: (_value, row) => {
+                if (row.nameHtml) return row.nameHtml;
                 const clubHref = row.clubId ? `/club/${row.clubId}/` : '';
                 const clubLogo = row.clubId
                     ? `<img class="tsa-club-logo" src="/pics/club_logos/${escapeHtml(row.clubId)}_25.png" onerror="this.style.visibility='hidden'">`
@@ -213,7 +214,7 @@ function buildHtml({ rows = [], liveZoneMap = {}, isFiltered = false, showForm =
     return table.outerHTML;
 }
 
-function buildGroupedHtml({ groups = [], promotionCount = 1 } = {}) {
+function buildGroupedHtml({ groups = [], promotionCount = 1, ...opts } = {}) {
     injectStyles();
 
     const validGroups = groups.filter(group => Array.isArray(group?.rows) && group.rows.length);
@@ -224,7 +225,7 @@ function buildGroupedHtml({ groups = [], promotionCount = 1 } = {}) {
             ${validGroups.map(group => `
                 <section class="tmvu-standings-group">
                     ${group.title ? `<div class="tmvu-standings-group-title">${escapeHtml(group.title)}</div>` : ''}
-                    ${buildHtml({ rows: group.rows, promotionCount })}
+                    ${buildHtml({ rows: group.rows, promotionCount, ...opts })}
                 </section>
             `).join('')}
         </div>

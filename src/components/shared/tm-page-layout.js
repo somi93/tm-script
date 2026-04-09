@@ -70,48 +70,6 @@ gap:var(--tmu-space-lg)
 .tmu-page-stack-early>.tmu-page-sidebar-stack{
 order:initial
 }
-@media (max-width:1240px){
-.tmu-page-layout-3rail.tmu-page-rail-break-wide{
-grid-template-columns:var(--tmu-page-sidebar-width,184px) var(--tmu-page-main-track,minmax(0,1fr))
-}
-.tmu-page-layout-3rail.tmu-page-rail-break-wide>.tmu-page-rail-stack{
-grid-column:2
-}
-}
-@media (max-width:1100px){
-.tmu-page-layout-3rail{
-grid-template-columns:var(--tmu-page-sidebar-width,184px) var(--tmu-page-main-track,minmax(0,1fr))
-}
-.tmu-page-layout-3rail>.tmu-page-rail-stack{
-grid-column:1/-1
-}
-}
-@media (max-width:960px){
-.tmu-page-stack-early.tmu-page-layout-2col,
-.tmu-page-stack-early.tmu-page-layout-3rail{
-grid-template-columns:minmax(0,1fr)
-}
-.tmu-page-stack-early.tmu-page-layout-2col>.tmu-page-sidebar-stack,
-.tmu-page-stack-early.tmu-page-layout-3rail>.tmu-page-sidebar-stack{
-order:2
-}
-.tmu-page-stack-early.tmu-page-layout-3rail>.tmu-page-rail-stack{
-grid-column:auto
-}
-}
-@media (max-width:820px){
-.tmu-page-layout-2col,
-.tmu-page-layout-3rail{
-grid-template-columns:minmax(0,1fr)
-}
-.tmu-page-layout-2col>.tmu-page-sidebar-stack,
-.tmu-page-layout-3rail>.tmu-page-sidebar-stack{
-order:2
-}
-.tmu-page-layout-3rail>.tmu-page-rail-stack{
-grid-column:auto
-}
-}
 `;
 
 export function injectTmPageLayoutStyles(target = document.head) {

@@ -36,7 +36,7 @@ const buildSummary = players => {
 /* ═══════════════════════════════════════════════════════════
    INTERNAL STATE
    ═══════════════════════════════════════════════════════════ */
-let _container, _allPlayers, _onSaleIds;
+let _container, _allPlayers, _onSaleIds, _titleHtml, _showTraining;
 
 const _tableOpts = () => ({
     columns: { timeleft: false, curbid: false },
@@ -44,7 +44,9 @@ const _tableOpts = () => ({
     onRowClick: null, rowCls: null,
     nameDecorator: p => playerStatusIconsHtml({ ...p, onSale: _onSaleIds.has(String(p.id)) }),
     extraColsBefore: [{ key: 'no', label: '#', align: 'r' }],
-    extraColsAfter: [{ key: 'trainingCustom', label: 'Training', align: 'c', sortable: false, render: v => PlayerTrainingDots.render(v) }],
+    extraColsAfter: _showTraining
+        ? [{ key: 'trainingCustom', label: 'Training', align: 'c', sortable: false, render: v => PlayerTrainingDots.render(v) }]
+        : [],
 });
 
 const _doRender = () => {
@@ -55,7 +57,7 @@ const _doRender = () => {
 
     const heading = document.createElement('div');
     heading.className = 'tmsq-page-title';
-    heading.innerHTML = '<span class="tmsq-page-title-icon">⚽️</span> Squad Overview';
+    heading.innerHTML = _titleHtml || '<span class="tmsq-page-title-icon">⚽️</span> Squad Overview';
     body.appendChild(heading);
 
     const senLbl = document.createElement('div');
@@ -122,11 +124,13 @@ let cssInjected = false;
  * @param {Object}      [options]
  * @param {Set}         [options.onSaleIds]  - Set of player id strings currently on sale
  */
-const render = (container, players, { onSaleIds = new Set() } = {}) => {
+const render = (container, players, { onSaleIds = new Set(), titleHtml = '', showTraining = true } = {}) => {
     if (!cssInjected) { injectCSS(); cssInjected = true; }
     _container = container;
     _allPlayers = players;
     _onSaleIds = onSaleIds;
+    _titleHtml = titleHtml;
+    _showTraining = showTraining;
 
     // Tooltip delegation — survives sort re-renders
     container.addEventListener('mouseover', e => {

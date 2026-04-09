@@ -1,5 +1,8 @@
 import { TmSectionCard } from './tm-section-card.js';
-import { TmTournamentPage } from './tm-tournament-page.js';
+import { TmSideMenu } from './tm-side-menu.js';
+import { TmSeasonBar } from './tm-season-bar.js';
+import { TmAutocomplete } from './tm-autocomplete.js';
+import { injectTmPageLayoutStyles } from './tm-page-layout.js';
 import { mountPlayerStatsBrowser, PLAYER_STAT_DEFS, PLAYER_COL_LABELS, parsePlayerStatsHtml } from './tm-player-stats-browser.js';
 
 const MENU_ITEMS = [
@@ -8,9 +11,29 @@ const MENU_ITEMS = [
     { label: 'Statistics', href: '/statistics/international-cup/1/', active: true },
 ];
 
-
-
 const cleanText = v => String(v ?? '').replace(/\s+/g, ' ').trim();
+
+const cleanOpts = sel => sel
+    ? Array.from(sel.options)
+        .map(o => ({ value: o.value, label: cleanText(o.textContent), selected: o.selected }))
+        .filter(o => o.value)
+    : [];
+
+const readMenuLabels = menu => menu
+    ? Array.from(menu.querySelectorAll('.ui-menu-item-wrapper'))
+        .map(el => cleanText(el.textContent))
+        .filter(Boolean)
+    : [];
+
+const readTourneyOpts = root => {
+    const selectOpts = cleanOpts(root.querySelector('#tourney_number'));
+    const menuLabels = readMenuLabels(document.querySelector('#tourney_number-menu'));
+    if (!selectOpts.length) return [];
+    return selectOpts.map((opt, idx) => ({
+        ...opt,
+        label: menuLabels[idx] || opt.label,
+    })).filter(opt => opt.label);
+};
 
 const statsCache = {};
 
@@ -32,34 +55,16 @@ export function mountInternationalCupStatisticsPage(main) {
     if (!main) main = document.querySelector('.tmvu-main');
     if (!main) return;
 
-    const sourceRoot = document.querySelector('.main_center') || main;
-    const cleanOpts = sel => sel
-        ? Array.from(sel.options).map(o => ({ value: o.value, label: cleanText(o.textContent), selected: o.selected }))
-        : [];
+    injectTmPageLayoutStyles();
 
-    const tourneyOpts = cleanOpts(sourceRoot.querySelector('#tourney_number'));
+    const sourceRoot = document.querySelector('.main_center') || main;
+
+    const tourneyOpts = readTourneyOpts(sourceRoot);
     const seasonOpts = cleanOpts(sourceRoot.querySelector('#stats_season'));
 
     let activeTourney = tourneyOpts.find(o => o.selected)?.value ?? tourneyOpts[0]?.value ?? '1';
     let activeSeason = seasonOpts.find(o => o.selected)?.value ?? seasonOpts[0]?.value ?? '';
 
-    // ── filter select helper ──────────────────────────────────────────────────
-    const buildSelect = (opts, current, onChange) => {
-        const sel = document.createElement('select');
-        sel.className = 'tmu-input tmu-input-tone-overlay tmu-input-density-compact';
-        opts.forEach(o => {
-            const opt = document.createElement('option');
-            opt.value = o.value;
-            opt.textContent = o.label;
-            if (o.value === current) opt.selected = true;
-            sel.appendChild(opt);
-        });
-        sel.addEventListener('change', () => onChange(sel.value));
-        return sel;
-    };
-
-    // ── body layout ───────────────────────────────────────────────────────────
-    const bodyEl = document.createElement('div');
     let browserWrap = null;
 
     const remountBrowser = () => {
@@ -74,46 +79,84 @@ export function mountInternationalCupStatisticsPage(main) {
         });
     };
 
-    // Filters row
+    // ── filters ───────────────────────────────────────────────────────────────
     const filtersRow = document.createElement('div');
-    filtersRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:var(--tmu-space-sm);align-items:center;margin-bottom:var(--tmu-space-md);';
-
-    const addFilter = (label, opts, current, onChange) => {
-        if (!opts.length) return;
-        const lbl = document.createElement('label');
-        lbl.textContent = label;
-        lbl.style.cssText = 'font-size:var(--tmu-font-xs);font-weight:600;color:var(--tmu-text-panel-label);text-transform:uppercase;letter-spacing:.06em;';
-        filtersRow.appendChild(lbl);
-        filtersRow.appendChild(buildSelect(opts, current, onChange));
-    };
+    filtersRow.className = 'tmu-filters-row';
 
     if (tourneyOpts.length > 1) {
-        addFilter('Tournament', tourneyOpts, activeTourney, v => { activeTourney = v; remountBrowser(); });
+        const ac = TmAutocomplete.autocomplete({
+            value: tourneyOpts.find(o => o.value === activeTourney)?.label ?? '',
+            placeholder: 'Tournament…',
+            tone: 'overlay',
+            density: 'compact',
+            size: 'md',
+        });
+        ac.style.width = '200px';
+        const renderItems = (q = '') => {
+            const ql = q.toLowerCase();
+            ac.setItems(tourneyOpts
+                .filter(o => o.value && o.label && (!ql || o.label.toLowerCase().includes(ql)))
+                .map(o => TmAutocomplete.autocompleteItem({
+                    label: o.label,
+                    active: o.value === activeTourney,
+                    onSelect: () => {
+                        activeTourney = o.value;
+                        ac.setValue(tourneyOpts.find(t => t.value === activeTourney)?.label ?? '');
+                        ac.hideDrop();
+                        remountBrowser();
+                    },
+                }))
+            );
+        };
+        ac.addEventListener('focusin', e => {
+            if (e.target !== ac.inputEl) return;
+            ac.setValue('');
+            renderItems();
+        });
+        ac.addEventListener('input', e => { if (e.target === ac.inputEl) renderItems(e.target.value); });
+        ac.addEventListener('focusout', e => {
+            if (e.target !== ac.inputEl) return;
+            setTimeout(() => {
+                ac.setValue(tourneyOpts.find(t => t.value === activeTourney)?.label ?? '');
+                ac.hideDrop();
+            }, 150);
+        });
+        filtersRow.appendChild(ac);
     }
-    addFilter('Season', seasonOpts, activeSeason, v => { activeSeason = v; remountBrowser(); });
 
-    if (filtersRow.children.length) bodyEl.appendChild(filtersRow);
+    TmSeasonBar.mount(filtersRow, {
+        seasons: seasonOpts.map(o => ({ id: o.value, label: o.label })),
+        current: activeSeason,
+        label: false,
+        cls: '',
+        onChange: v => { activeSeason = v; remountBrowser(); },
+    });
+
+    // ── build card body ───────────────────────────────────────────────────────
+    const bodyEl = document.createElement('div');
+    bodyEl.appendChild(filtersRow);
 
     browserWrap = document.createElement('div');
     bodyEl.appendChild(browserWrap);
 
-    // ── card + page ───────────────────────────────────────────────────────────
-    const cardHost = document.createElement('div');
-    const refs = TmSectionCard.mount(cardHost, {
-        title: 'Player Statistics',
-        bodyClass: 'tmvu-icup-stats-body',
-    });
-    if (refs?.body) refs.body.appendChild(bodyEl);
+    // ── assemble page ─────────────────────────────────────────────────────────
+    main.innerHTML = '';
+    main.classList.add('tmu-page-layout-2col', 'tmu-page-density-regular');
 
-    TmTournamentPage.mount(main, {
-        pageClass: 'tmvu-icup-page tmvu-icup-page-statistics',
-        menuItems: MENU_ITEMS,
+    TmSideMenu.mount(main, {
+        className: 'tmu-page-sidebar-stack',
+        items: MENU_ITEMS,
         currentHref: window.location.pathname,
-        mainClass: 'tmvu-icup-main',
-        sideClass: 'tmvu-icup-side',
-        mainNodes: [cardHost],
-        sideNodes: [],
     });
+
+    const section = document.createElement('section');
+    section.className = 'tmu-page-section-stack';
+    main.appendChild(section);
+
+    const cardHost = document.createElement('div');
+    const refs = TmSectionCard.mount(cardHost, { title: 'Player Statistics' });
+    if (refs?.body) refs.body.appendChild(bodyEl);
+    section.appendChild(cardHost);
 
     remountBrowser();
 }

@@ -14,7 +14,8 @@ export function parsePlayerStatsHtml(html, teamIdx) {
         if (tds.length < 3) return;
         const playerTd = tds[0];
         const playerA = playerTd.querySelector('a');
-        const flagImg = playerTd.querySelector('img');
+        const countryAnchor = playerTd.querySelector('a.country_link[href*="/national-teams/"], a[href*="/national-teams/"]');
+        const flagEl = playerTd.querySelector('ib[class*="flag-img-"], img[class*="flag-img-"]');
         const clubA = tds[1].querySelector('a');
         const playerId = playerA
             ? (playerA.getAttribute('player_link') || (playerA.getAttribute('href')?.match(/\/players\/(\d+)/) || [])[1] || '')
@@ -26,11 +27,11 @@ export function parsePlayerStatsHtml(html, teamIdx) {
             rank: i + 1,
             name: _clean(playerA ? playerA.textContent : playerTd.textContent),
             playerId,
-            flagHtml: flagImg ? flagImg.outerHTML : '',
+            flagHtml: countryAnchor?.outerHTML || flagEl?.outerHTML || '',
             clubName: _clean(clubA ? clubA.textContent : (tds[1]?.textContent ?? '')),
             clubId,
             val: parseFloat(tds[tds.length - 1].textContent.trim()) || 0,
-            isMe: tr.classList.contains('highlighted_row'),
+            isMe: tr.classList.contains('highlighted_row') || tr.classList.contains('highlighted_row_done'),
         });
     });
     return rows;
@@ -49,7 +50,7 @@ export const PLAYER_COL_LABELS = {
 if (!document.getElementById('tmu-psb-style')) {
     const s = document.createElement('style');
     s.id = 'tmu-psb-style';
-    s.textContent = `.tmu-psb-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--tmu-space-sm);padding:var(--tmu-space-sm) 0;border-bottom:1px solid var(--tmu-border-soft-alpha-strong);margin-bottom:var(--tmu-space-sm)}.tmu-psb-btns,.tmu-psb-team{display:flex;flex-wrap:wrap;gap:var(--tmu-space-xs)}.tmu-psb-rank{color:var(--tmu-text-dim);width:28px;text-align:right;padding-right:var(--tmu-space-sm)!important}.tmu-psb-player a{color:var(--tmu-text-main);text-decoration:none}.tmu-psb-player a:hover{color:var(--tmu-accent)}.tmu-psb-val{text-align:right!important;font-weight:700;color:var(--tmu-text-strong)}.tmu-psb-me{background:var(--tmu-success-fill-faint)!important;box-shadow:inset 3px 0 0 var(--tmu-success)}.tmu-psb-me .tmu-psb-player a{color:var(--tmu-accent)}.tmu-psb-me .tmu-psb-val{color:var(--tmu-success)}`;
+    s.textContent = `.tmu-psb-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--tmu-space-sm);padding:var(--tmu-space-sm) 0;border-bottom:1px solid var(--tmu-border-soft-alpha-strong);margin-bottom:var(--tmu-space-sm)}.tmu-psb-btns,.tmu-psb-team{display:flex;flex-wrap:wrap;gap:var(--tmu-space-xs)}.tmu-psb-rank{color:var(--tmu-text-dim);width:28px;text-align:right;padding-right:var(--tmu-space-sm)!important}.tmu-psb-player{display:flex;align-items:center;gap:4px}.tmu-psb-player a{color:var(--tmu-text-main);text-decoration:none}.tmu-psb-player a:hover{color:var(--tmu-accent)}.tmu-psb-val{text-align:right!important;font-weight:700;color:var(--tmu-text-strong)}.tmu-psb-me{background:var(--tmu-success-fill-faint)!important;box-shadow:inset 3px 0 0 var(--tmu-success)}.tmu-psb-me .tmu-psb-player a{color:var(--tmu-accent)}.tmu-psb-me .tmu-psb-val{color:var(--tmu-success)}`;
     document.head.appendChild(s);
 }
 
@@ -76,7 +77,7 @@ export function mountPlayerStatsBrowser(container, {
         const btns = document.createElement('div');
         btns.className = 'tmu-psb-btns';
         statDefs.forEach(([key, label]) =>
-            btns.appendChild(TmButton.button({ color: 'secondary', size: 'xs', label, active: key === activeStat, attrs: { 'data-stat': key } }))
+            btns.appendChild(TmButton.button({ color: 'primary', size: 'sm', label, active: key === activeStat, attrs: { 'data-stat': key } }))
         );
         bar.appendChild(btns);
 
@@ -84,7 +85,7 @@ export function mountPlayerStatsBrowser(container, {
             const teamEl = document.createElement('div');
             teamEl.className = 'tmu-psb-team';
             teamLabels.forEach((label, i) =>
-                teamEl.appendChild(TmButton.button({ color: 'secondary', size: 'xs', label, active: i === activeTeam, attrs: { 'data-team': String(i) } }))
+                teamEl.appendChild(TmButton.button({ color: 'primary', size: 'sm', label, active: i === activeTeam, attrs: { 'data-team': String(i) } }))
             );
             bar.appendChild(teamEl);
         }

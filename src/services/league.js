@@ -44,4 +44,18 @@ export const TMLeagueService = {
         return _getHtml(`/history/league/${country}/${division}/${group}/transfers/${season}/`);
     },
 
+    fetchFriendlyLeaguePageHtml(leagueId) {
+        return _getHtml(`/friendly-league/${leagueId}/`);
+    },
+
+    fetchFriendlyLeagueStatisticsHtml(leagueId, stat = 'goals') {
+        return _getHtml(`/statistics/friendly-league/${leagueId}/${stat}`);
+    },
+
+    fetchFriendlyLeagueHistoryHtml(type = 'standings', seasonValue = '') {
+        const cleanType = String(type || 'standings').replace(/^\/+|\/+$/g, '');
+        const cleanSeason = String(seasonValue || '').replace(/^\/+|\/+$/g, '');
+        return _getHtml(`/history/friendly-league/${cleanType}/${cleanSeason ? `${cleanSeason}/` : ''}`);
+    },
+
 }

@@ -1,6 +1,6 @@
 import { TmHeroCard } from '../components/shared/tm-hero-card.js';
 import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
-import { TmSideMenu } from '../components/shared/tm-side-menu.js';
+import { mountNationalTeamsSideMenu } from '../components/national-teams/tm-national-teams-side-menu.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 
 export function initNationalTeamsRankingsPage(main) {
@@ -85,27 +85,6 @@ export function initNationalTeamsRankingsPage(main) {
 
         document.head.appendChild(style);
     };
-
-    const parseMenu = () => Array.from(sourceRoot.querySelectorAll('.column1 .content_menu > *')).flatMap(node => {
-        if (node.tagName === 'HR') return [{ type: 'separator' }];
-        if (node.tagName !== 'A') return [];
-
-        const label = cleanText(node.textContent);
-        return [{
-            type: 'link',
-            href: node.getAttribute('href') || '#',
-            label,
-            icon: /players/i.test(label) ? '👥'
-                : /tournaments/i.test(label) ? '🏆'
-                    : /rankings/i.test(label) ? '📈'
-                        : /fixtures/i.test(label) ? '📅'
-                            : /statistics/i.test(label) ? '📊'
-                                : /history/i.test(label) ? '📜'
-                                    : /election/i.test(label) ? '🗳'
-                                        : '🌍',
-            isSelected: node.classList.contains('selected'),
-        }];
-    });
 
     const parsePanels = (box) => {
         const labelById = new Map();
@@ -207,17 +186,14 @@ export function initNationalTeamsRankingsPage(main) {
         const overview = parseOverview();
         if (!overview || !overview.panels.length) return;
 
-        const menuItems = parseMenu();
-        const activeHref = menuItems.find(item => item.isSelected)?.href || window.location.pathname;
-
         main.classList.add('tmvu-nt-rankings-page', 'tmu-page-layout-2col', 'tmu-page-density-regular');
         main.innerHTML = '';
 
-        TmSideMenu.mount(main, {
+        mountNationalTeamsSideMenu(main, {
+            root: sourceRoot,
             id: 'tmvu-national-teams-rankings-nav',
             className: 'tmu-page-sidebar-stack',
-            items: menuItems,
-            currentHref: activeHref,
+            includeSave: false,
         });
 
         const mainColumn = document.createElement('section');

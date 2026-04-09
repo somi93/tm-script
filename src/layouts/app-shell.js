@@ -39,6 +39,11 @@ import { initInternationalCupStatisticsPage } from '../pages/international-cup-s
 import { initDbInspectPage } from '../pages/dbinspect.js';
 import { initDbRepairPage } from '../pages/dbrepair.js';
 import { initNationalTeamsRankingsPage } from '../pages/national-teams-rankings.js';
+import { initNationalTeamsFixturesPage } from '../pages/national-teams-fixtures.js';
+import { initNationalTeamsHistoryPage } from '../pages/national-teams-history.js';
+import { initNationalTeamsStatisticsPage } from '../pages/national-teams-statistics.js';
+import { initNationalTeamsElectionPage } from '../pages/national-teams-election.js';
+import { initNationalTeamsRegionPage } from '../pages/national-teams-region.js';
 import { initNationalTeamsPage } from '../pages/national-teams.js';
 import { initSupportProPage } from '../pages/support-pro.js';
 import { initPlayerPage } from '../pages/player.js';
@@ -631,7 +636,7 @@ function initCurrentPage() {
         initBidsPage(main);
         return;
     }
-    if (/^\/quickmatch\/?$/i.test(currentPath)) {
+    if (/^\/quickmatch(?:\/complete-standings(?:\/[^/]+)?)?\/?$/i.test(currentPath)) {
         initQuickmatchPage(main);
         return;
     }
@@ -647,7 +652,7 @@ function initCurrentPage() {
         initFinancesPage(main);
         return;
     }
-    if (/^\/friendly-league(?:\/\d+)?\/?$/i.test(currentPath)) {
+    if (/^(?:\/friendly-league(?:\/\d+)?|\/fixtures\/friendly-league\/\d+|\/statistics\/friendly-league\/\d+(?:\/[^/]+)?|\/history\/friendly-league\/(?:standings|matches)(?:\/.+)?)\/?$/i.test(currentPath)) {
         initFriendlyLeaguePage(main);
         return;
     }
@@ -686,11 +691,21 @@ function initCurrentPage() {
     }
     if (/^\/club(?:\/\d+(?:\/(?:overview\/)?)?)?\/?$/i.test(currentPath)) {
         initClubPage(main);
-    }    if (/^\/fixtures\/club\/\d+\/?$/i.test(currentPath)) {
+    }
+    if (/^\/fixtures\/club\/\d+\/?$/i.test(currentPath)) {
         initFixturesPage(main);
+    }
+    if (/^\/fixtures\/national-teams\/[a-z]{2,3}\/?$/i.test(currentPath)) {
+        initNationalTeamsFixturesPage(main);
+    }
+    if (/^\/history\/national-teams\/[a-z]{2,3}\/?$/i.test(currentPath)) {
+        initNationalTeamsHistoryPage(main);
     }
     if (/^\/statistics\/club\/\d+\/?$/i.test(currentPath)) {
         initStatsPage(main);
+    }
+    if (/^\/statistics\/national-teams\/[a-z]{2,3}(?:\/players\/[^/]+)?\/?$/i.test(currentPath)) {
+        initNationalTeamsStatisticsPage(main);
     }
     if (/^\/transfer\/?$/i.test(currentPath)) {
         initTransferPage(main);
@@ -749,6 +764,12 @@ function initCurrentPage() {
     }
     if (/^\/national-teams\/rankings\//i.test(currentPath)) {
         initNationalTeamsRankingsPage(main);
+    }
+    if (/^\/national-teams\/election\/?$/i.test(currentPath)) {
+        initNationalTeamsElectionPage(main);
+    }
+    if (/^\/national-teams\/region\//i.test(currentPath)) {
+        initNationalTeamsRegionPage(main);
     }
     if (/^\/national-teams\//i.test(currentPath)) {
         initNationalTeamsPage(main);

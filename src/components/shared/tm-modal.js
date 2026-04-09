@@ -10,23 +10,17 @@ document.head.appendChild(Object.assign(document.createElement('style'), {
 .tmu-modal-title{font-size:var(--tmu-font-md);font-weight:800;color:var(--tmu-text-strong);margin-bottom:var(--tmu-space-sm)}
 .tmu-modal-msg{font-size:var(--tmu-font-sm);color:var(--tmu-text-muted);line-height:1.65;margin-bottom:var(--tmu-space-xl)}
 .tmu-modal-btns{display:flex;flex-direction:column;gap:var(--tmu-space-sm)}
-.tmu-modal-btn{padding:var(--tmu-space-md) var(--tmu-space-lg);border-radius:var(--tmu-space-sm);font-size:var(--tmu-font-sm);font-weight:700;cursor:pointer;border:none;transition:all 0.14s;font-family:inherit;text-align:left}
-.tmu-modal-btn-primary{background:var(--tmu-border-embedded);color:var(--tmu-text-strong);border:1px solid var(--tmu-success)}
-.tmu-modal-btn-primary:hover{background:var(--tmu-accent-fill)}
-.tmu-modal-btn-secondary{background:var(--tmu-surface-tab-active);color:var(--tmu-accent);border:1px solid var(--tmu-border-embedded)}
-.tmu-modal-btn-secondary:hover{background:var(--tmu-surface-tab-hover)}
-.tmu-modal-btn-danger{background:var(--tmu-danger-fill);color:var(--tmu-danger);border:1px solid var(--tmu-border-danger)}
-.tmu-modal-btn-danger:hover{background:var(--tmu-border-danger);color:var(--tmu-text-strong)}
 .tmu-modal-btn-sub{font-size:var(--tmu-font-xs);font-weight:400;opacity:.7;display:block;margin-top:var(--tmu-space-xs)}
 .tmu-prompt-field{margin-bottom:var(--tmu-space-lg)}
 ` }));
 
 const htmlOf = (node) => node ? node.outerHTML : '';
 
-const buttonHtml = ({ style = 'secondary', label = '', sub = '', attrs = {} } = {}) => htmlOf(TmButton.button({
+const buttonHtml = ({ style = 'secondary', size = 'sm', selected = false, label = '', sub = '', attrs = {} } = {}) => htmlOf(TmButton.button({
     slot: `${label}${sub ? `<span class="tmu-modal-btn-sub">${sub}</span>` : ''}`,
     color: style === 'danger' ? 'danger' : style === 'primary' ? 'primary' : 'secondary',
-    size: 'sm',
+    size,
+    active: selected,
     cls: `tmu-modal-btn tmu-modal-btn-${style}`,
     attrs,
 }));
@@ -52,6 +46,8 @@ export const TmModal = {
                 `<div class="tmu-modal-btns">${buttons.map(b =>
                     buttonHtml({
                         style: b.style || 'secondary',
+                        size: b.size || 'sm',
+                        selected: Boolean(b.selected),
                         label: b.label,
                         sub: b.sub,
                         attrs: { 'data-val': b.value },

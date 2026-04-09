@@ -504,11 +504,6 @@ export function injectTacticsStyles() {
             border-radius: 2px;
         }
 
-        @media (max-width: 900px) {
-            .tmtc-lineup-2col  { flex-direction: column; }
-            .tmtc-field-col    { flex: 0 0 auto; width: 100%; max-width: 100%; }
-        }
-
         /* ── foreigners notice ── */
         .tmtc-foreigners-note {
             font-size: var(--tmu-font-sm);

@@ -4,7 +4,7 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmMatchHoverCard } from '../components/shared/tm-match-hover-card.js';
 import { TmMatchRow } from '../components/shared/tm-match-row.js';
 import { TmTournamentCards } from '../components/shared/tm-tournament-cards.js';
-import { TmNationalTeamsNtSave } from '../components/national-teams/tm-national-teams-nt-save.js';
+import { mountNationalTeamsSideMenu } from '../components/national-teams/tm-national-teams-side-menu.js';
 import { TmTable } from '../components/shared/tm-table.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmConst } from '../lib/tm-constants.js';
@@ -367,27 +367,6 @@ export function initNationalTeamsPage(main) {
         document.head.appendChild(style);
     };
 
-    const parseMenu = () => Array.from(sourceRoot.querySelectorAll('.column1 .content_menu > *')).flatMap(node => {
-        if (node.tagName === 'HR') return [{ type: 'separator' }];
-        if (node.tagName !== 'A') return [];
-
-        const label = cleanText(node.textContent);
-        return [{
-            type: 'link',
-            href: node.getAttribute('href') || '#',
-            label,
-            icon: /players/i.test(label) ? '👥'
-                : /tournaments/i.test(label) ? '🏆'
-                    : /rankings/i.test(label) ? '📈'
-                        : /fixtures/i.test(label) ? '📅'
-                            : /statistics/i.test(label) ? '📊'
-                                : /history/i.test(label) ? '📜'
-                                    : /election/i.test(label) ? '🗳'
-                                        : '🌍',
-            isSelected: node.classList.contains('selected'),
-        }];
-    });
-
     const parseFactTable = (table) => Array.from(table?.querySelectorAll('tr') || []).map(row => {
         const label = cleanText(row.querySelector('th')?.textContent || '');
         const valueCell = row.querySelector('td:last-child');
@@ -691,22 +670,16 @@ export function initNationalTeamsPage(main) {
 
         const overview = parseOverview();
         if (!overview) return;
-        const menuItems = parseMenu();
-        const activeHref = menuItems.find(item => item.isSelected)?.href || window.location.pathname;
         const trophies = parseTrophies();
         const squad = parseSquad();
 
         main.classList.add('tmvu-nt-page', 'tmu-page-layout-3rail', 'tmu-page-density-regular');
         main.innerHTML = '';
 
-        const sideMenuEl = TmSideMenu.mount(main, {
+        const { navEl: sideMenuEl } = mountNationalTeamsSideMenu(main, {
+            root: sourceRoot,
             id: 'tmvu-national-teams-nav',
             className: 'tmvu-national-teams-nav tmu-page-sidebar-stack',
-            items: menuItems,
-            currentHref: activeHref,
-        });
-        TmNationalTeamsNtSave.mount({
-            navEl: sideMenuEl,
             countryCode: routeMatch[1] || cleanText(window.SESSION?.country || ''),
             currentSeason: CURRENT_SEASON,
         });

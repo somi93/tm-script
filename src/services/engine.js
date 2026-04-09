@@ -57,6 +57,14 @@ const _getHtml = (url) => new Promise(resolve => {
         .fail(() => resolve(null));
 });
 
+const _postHtml = (url, data) => new Promise(resolve => {
+    const $ = window.jQuery;
+    if (!$) { resolve(null); return; }
+    $.ajax({ url, type: 'POST', data, dataType: 'html' })
+        .done(res => resolve(res || null))
+        .fail(() => resolve(null));
+});
+
 // ─── In-flight deduplication ────────────────────────────────────────────
 // Prevents multiple concurrent identical fetches for the same key.
 const _inflight = new Map();
@@ -68,7 +76,7 @@ const _dedup = (key, promiseFn) => {
 };
 
 // Named exports for use by individual service modules
-export { _post, _get, _getHtml, _dedup, _logError, _errors };
+export { _post, _get, _getHtml, _postHtml, _dedup, _logError, _errors };
 
 // ─────────────────────────────────────────────────────────────────────────
 

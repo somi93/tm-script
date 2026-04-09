@@ -9,6 +9,7 @@ import { TmScoutsService } from './scouts.js';
 import { TmShortlistService } from './shortlist.js';
 import { TmTrainingService } from './training.js';
 import { TmMessagesService } from './messages.js';
+import { TmNationalTeamsService } from './national-teams.js';
 import { TmYouthService } from './youth.js';
 
 export const TmApi = {
@@ -23,5 +24,6 @@ export const TmApi = {
     ...TmShortlistService,
     ...TmTrainingService,
     ...TmMessagesService,
+    ...TmNationalTeamsService,
     ...TmYouthService,
 };
