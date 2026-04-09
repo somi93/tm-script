@@ -35,6 +35,52 @@
         let initPromise = null;
         const cache = {};
         const cacheKey = (pid) => String(pid);
+        const numericKey = (pid) => {
+            const parsed = parseInt(pid, 10);
+            return Number.isFinite(parsed) ? parsed : null;
+        };
+
+        const recordScore = (record) => {
+            if (!record) return -1;
+            let score = 0;
+            if (record.R5 != null) score += 4;
+            if (record.REREC != null) score += 4;
+            if (Array.isArray(record.skills) && record.skills.length) score += 3;
+            if (record.routine != null) score += 1;
+            if (record.locked) score += 2;
+            if (!record._estimated) score += 1;
+            return score;
+        };
+
+        const mergeStores = (baseStore, nextStore) => {
+            if (!baseStore) return nextStore;
+            if (!nextStore) return baseStore;
+
+            const merged = {
+                ...baseStore,
+                ...nextStore,
+                _v: Math.max(Number(baseStore._v) || 0, Number(nextStore._v) || 0) || 1,
+                lastSeen: Math.max(Number(baseStore.lastSeen) || 0, Number(nextStore.lastSeen) || 0),
+                graphSync: !!(baseStore.graphSync || nextStore.graphSync),
+                graphWeekCount: Math.max(Number(baseStore.graphWeekCount) || 0, Number(nextStore.graphWeekCount) || 0) || undefined,
+                graphStartAgeMonths: Math.max(Number(baseStore.graphStartAgeMonths) || 0, Number(nextStore.graphStartAgeMonths) || 0) || undefined,
+                meta: { ...(baseStore.meta || {}), ...(nextStore.meta || {}) },
+                records: {}
+            };
+
+            const allRecordKeys = new Set([
+                ...Object.keys(baseStore.records || {}),
+                ...Object.keys(nextStore.records || {})
+            ]);
+
+            for (const ageKey of allRecordKeys) {
+                const baseRecord = baseStore.records?.[ageKey] || null;
+                const nextRecord = nextStore.records?.[ageKey] || null;
+                merged.records[ageKey] = recordScore(nextRecord) >= recordScore(baseRecord) ? (nextRecord || baseRecord) : baseRecord;
+            }
+
+            return merged;
+        };
 
         const open = () => new Promise((resolve, reject) => {
             const req = indexedDB.open(DB_NAME, DB_VERSION);
@@ -68,11 +114,13 @@
             }
             cache[key] = value;
             if (!db) return Promise.resolve();
-            const idbKey = parseInt(pid);
+            const idbKey = numericKey(pid);
             console.log('[DB] Writing player', pid, 'to IndexedDB (graphSync:', value?.graphSync, 'weekCount:', value?.graphWeekCount, 'recordCount:', Object.keys(value?.records || {}).length, ')');
             return new Promise((resolve, reject) => {
                 const tx = db.transaction(STORE_NAME, 'readwrite');
-                tx.objectStore(STORE_NAME).put(value, isFinite(idbKey) ? idbKey : pid);
+                const store = tx.objectStore(STORE_NAME);
+                store.put(value, idbKey ?? pid);
+                if (idbKey != null) store.delete(String(pid));
                 tx.oncomplete = () => resolve();
                 tx.onerror = (e) => reject(e.target.error);
             }).catch(e => console.warn('[DB] write failed:', e));
@@ -82,11 +130,11 @@
         const remove = (pid) => {
             delete cache[cacheKey(pid)];
             if (!db) return Promise.resolve();
-            const idbKey = parseInt(pid);
+            const idbKey = numericKey(pid);
             return new Promise((resolve, reject) => {
                 const tx = db.transaction(STORE_NAME, 'readwrite');
                 const store = tx.objectStore(STORE_NAME);
-                if (isFinite(idbKey)) store.delete(idbKey);
+                if (idbKey != null) store.delete(idbKey);
                 store.delete(String(pid));
                 tx.oncomplete = () => resolve();
                 tx.onerror = (e) => reject(e.target.error);
@@ -134,10 +182,20 @@
             const reqAll = store.getAll();
             const reqKeys = store.getAllKeys();
             await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = rej; });
-            for (let i = 0; i < reqKeys.result.length; i++)
-                cache[cacheKey(reqKeys.result[i])] = reqAll.result[i];
+            let mergedDuplicateCount = 0;
+            for (let i = 0; i < reqKeys.result.length; i++) {
+                const rawKey = reqKeys.result[i];
+                const normalizedKey = cacheKey(rawKey);
+                const existing = cache[normalizedKey] || null;
+                const incoming = reqAll.result[i];
+                if (existing) mergedDuplicateCount++;
+                cache[normalizedKey] = mergeStores(existing, incoming);
+            }
 
             console.log(`[DB] Loaded ${Object.keys(cache).length} player(s) from IndexedDB`);
+            if (mergedDuplicateCount > 0) {
+                console.warn(`[DB] Merged ${mergedDuplicateCount} duplicate string/integer player key entries while preloading cache`);
+            }
 
             /* Request persistent storage so Chrome won't auto-evict */
             if (navigator.storage && navigator.storage.persist) {

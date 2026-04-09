@@ -209,9 +209,31 @@ const previousDbRecord = (store, player) => {
     return store?.records?.[ageKey] || null;
 };
 
+const latestPreviousDbRecord = (store, player) => {
+    const records = store?.records;
+    if (!records) return null;
+    const currentAgeMonths = ((Number(player.ageYears) || 0) * 12) + (Number(player.ageMonths) || 0);
+    const entries = Object.entries(records)
+        .map(([ageKey, record]) => ({ ageKey, ageMonths: TmUtils.ageToMonths(ageKey), record }))
+        .filter((entry) => entry.ageMonths < currentAgeMonths)
+        .sort((a, b) => b.ageMonths - a.ageMonths);
+    return entries[0]?.record || null;
+};
+
 const currentDbRecord = (store, player) => {
     const ageKey = currentAgeKeyOf(player);
     return store?.records?.[ageKey] || null;
+};
+
+const looksLikeUniformFallbackRecord = (record) => {
+    const skills = numericSkills(record?.skills || []);
+    const decimals = skills
+        .filter((value) => Number.isFinite(value) && value < 20)
+        .map((value) => Number((value - Math.floor(value)).toFixed(2)));
+
+    if (decimals.length < 4) return false;
+    const distinct = [...new Set(decimals)];
+    return distinct.length === 1 && distinct[0] > 0;
 };
 
 const dbSkillChangesFromStore = (store, player) => {
@@ -422,8 +444,36 @@ export function initPlayersPage(main) {
             };
             if (record.skills) player.skills = numericSkills(record.skills);
             if (record.R5 != null) player.r5 = Number(record.R5);
-                player.skillChanges = dbSkillChangesFromStore(dbStore, player);
+            player.skillChanges = dbSkillChangesFromStore(dbStore, player);
         });
+    };
+
+    const getPlayerDecision = (player) => {
+        const dbStore = PlayerDB.get(player.pid);
+        const currentKey = currentAgeKeyOf(player);
+        const previousKey = previousAgeKeyOf(player);
+        const currentRecord = currentDbRecord(dbStore, player);
+        const previousRecord = previousKey ? dbStore?.records?.[previousKey] || null : null;
+
+        return {
+            player,
+            pid: player.pid,
+            currentKey,
+            previousKey,
+            currentRecord,
+            previousRecord,
+            needsSyncCurrent: !currentRecord,
+            needsPreviousInterpolation: !!currentRecord && !!previousKey && !previousRecord && hasAnyRecordBefore(dbStore, previousKey),
+        };
+    };
+
+    const getPlayersNeedingCurrentSync = (players = []) => players
+        .map((player) => getPlayerDecision(player))
+        .filter((decision) => decision.needsSyncCurrent);
+
+    const filterParsedPlayersForSync = (parsedPlayers = [], syncDecisions = []) => {
+        const syncPids = new Set(syncDecisions.map((decision) => String(decision.pid)));
+        return parsedPlayers.filter((player) => syncPids.has(String(player.pid || player.id || player.player_id || '')));
     };
 
     const ensureInterpolatedPreviousRecord = async (player) => {
@@ -442,9 +492,8 @@ export function initPlayersPage(main) {
 
         let changed = false;
         for (const player of players) {
-            const currentStore = PlayerDB.get(player.pid);
-            if (!currentDbRecord(currentStore, player)) continue;
-            if (previousDbRecord(currentStore, player)) continue;
+            const decision = getPlayerDecision(player);
+            if (!decision.needsPreviousInterpolation) continue;
             const updated = await ensureInterpolatedPreviousRecord(player);
             if (updated) changed = true;
             await delay(25);
@@ -630,11 +679,11 @@ export function initPlayersPage(main) {
         renderSections();
     };
 
-    const processSquadPage = async (players) => {
+    const processSquadPage = async (players, { overwriteCurrent = false } = {}) => {
         if (!players || !players.length) return [];
 
         const eff = TmUtils.skillEff;
-        const fetchTip = (pid) => TmPlayerService.fetchPlayerTooltip(pid).then((data) => data?.player ?? null);
+        const fetchTip = (pid) => TmPlayerService.fetchTooltipRaw(pid).then((data) => data?.player ?? null);
 
         console.log(`%c[Squad] Fetching tooltips for ${players.length} players...`, 'font-weight:bold;color:var(--tmu-info)');
 
@@ -648,34 +697,25 @@ export function initPlayersPage(main) {
             const curAgeKeyCheck = `${player.ageYears}.${player.ageMonths}`;
             const existingStore = PlayerDB.get(player.pid);
             const existingRec = existingStore?.records?.[curAgeKeyCheck];
-            if (existingRec) {
-                continue;
-            }
+            if (existingRec && !overwriteCurrent) continue;
 
             const tip = await fetchTip(player.pid);
             await delay(100);
 
             if (!tip) continue;
-
-            const asi = tip.asi;
+            const asi = parseFloat(tip.skill_index);
             const routine = tip.routine;
             const favpos = tip.favposition || '';
-            const isGK = tip.isGK;
+            const isGK = tip.position === "Gk";
             const skillCount = isGK ? 11 : 14;
-            const intSkills = tip.skills ? extractSkills(tip.skills, isGK) : player.skills;
+            const intSkills = tip.skills ? extractSkills(tip.skills, isGK) : [];
 
-            const dbRecord = PlayerDB.get(player.pid);
+            const dbRecord = PlayerDB.get(Number(player.pid));
             let prevDecimals = null;
             let prevSkillsFull = null;
             let curDbSkillsFull = null;
-
+            console.log(dbRecord?.records);
             if (dbRecord?.records) {
-                const keys = Object.keys(dbRecord.records).sort((a, b) => {
-                    const [ay, am] = a.split('.').map(Number);
-                    const [by, bm] = b.split('.').map(Number);
-                    return (ay * 12 + am) - (by * 12 + bm);
-                });
-
                 const curAgeKey = `${player.ageYears}.${player.ageMonths}`;
                 const curDbRec = dbRecord.records[curAgeKey];
                 if (curDbRec?.skills?.length === skillCount) {
@@ -685,18 +725,13 @@ export function initPlayersPage(main) {
                     });
                 }
 
-                let prevIdx = keys.length - 1;
-                if (keys.length > 1 && keys[prevIdx] === curAgeKey) prevIdx = keys.length - 2;
-
-                if (prevIdx >= 0) {
-                    const prevRec = dbRecord.records[keys[prevIdx]];
-                    if (prevRec?.skills?.length === skillCount) {
-                        prevSkillsFull = prevRec.skills.map((value) => {
-                            const numeric = typeof value === 'string' ? parseFloat(value) : value;
-                            return numeric >= 20 ? 20 : numeric;
-                        });
-                        prevDecimals = prevSkillsFull.map((value) => value >= 20 ? 0 : value - Math.floor(value));
-                    }
+                const previousRecord = previousDbRecord(dbRecord, player) || latestPreviousDbRecord(dbRecord, player);
+                if (previousRecord?.skills?.length === skillCount) {
+                    prevSkillsFull = previousRecord.skills.map((value) => {
+                        const numeric = typeof value === 'string' ? parseFloat(value) : value;
+                        return numeric >= 20 ? 20 : numeric;
+                    });
+                    prevDecimals = prevSkillsFull.map((value) => value >= 20 ? 0 : value - Math.floor(value));
                 }
             }
 
@@ -710,11 +745,10 @@ export function initPlayersPage(main) {
             player.improved.forEach((imp) => { improvementMap[imp.index] = imp.type; });
 
             const totalGain = player.TI / 10;
+            console.log(totalGain, asi, prevDecimals);
             let newDecimals;
-
             if (prevDecimals && asi > 0) {
                 newDecimals = [...prevDecimals];
-
                 const improvedIndices = player.improved.map((imp) => imp.index);
                 if (improvedIndices.length > 0 && totalGain > 0) {
                     const effWeights = improvedIndices.map((index) => eff(intSkills[index]));
@@ -860,8 +894,8 @@ export function initPlayersPage(main) {
                 newSkillsFull,
                 r5ByPos,
                 bestPos,
-                R5: r5,
-                REC: rec,
+                R5: r5 == null ? null : Number(r5),
+                REC: rec == null ? null : Number(rec),
             });
         }
 
@@ -882,10 +916,10 @@ export function initPlayersPage(main) {
 
             store.records[ageKey] = {
                 SI: result.asi,
-                REREC: result.REC,
-                R5: result.R5,
-                skills: result.newSkillsFull.map((value) => Math.round(value * 100) / 100),
-                routine: result.routine,
+                REREC: result.REC == null ? null : Number(result.REC),
+                R5: result.R5 == null ? null : Number(result.R5),
+                skills: result.newSkillsFull.map((value) => Number(value)),
+                routine: result.routine == null ? null : Number(result.routine),
                 locked: true,
             };
             store.lastSeen = Date.now();
@@ -914,12 +948,12 @@ export function initPlayersPage(main) {
         }
 
         squad.syncState = 'running';
-        squad.syncMessage = `Syncing ${squad.players.length} players`;
+        squad.syncMessage = `Syncing ${syncPlayers.length} players`;
         seedMetricsFromDb(squad.players);
         render();
 
         try {
-            const results = await processSquadPage(syncPlayers);
+            const results = await processSquadPage(syncPlayers, { overwriteCurrent: true });
             applySyncResults(results);
             await ensureInterpolatedPreviousRecords(squad.players);
             squad.syncState = 'done';
@@ -1001,9 +1035,6 @@ export function initPlayersPage(main) {
         await ensureInterpolatedPreviousRecords(squad.players);
         render();
 
-        const needsSync = squad.players.some((player) => !PlayerDB.get(player.pid)?.records?.[currentAgeKeyOf(player)]);
-        if (!needsSync) return;
-
         waitForPlayers(() => hasSquadRows(document) ? (parseSquadDocument(document) || []) : [])
             .then((parsed) => {
                 if (!parsed.length) return;
@@ -1026,9 +1057,8 @@ export function initPlayersPage(main) {
             squad.loaded = true;
             seedMetricsFromDb(squad.players);
             await ensureInterpolatedPreviousRecords(squad.players);
-            const needsSync = squad.players.some((player) => !PlayerDB.get(player.pid)?.records?.[currentAgeKeyOf(player)]);
-            if (needsSync) {
-                const parsed = await loadSquadFromIframe(RESERVES_URL);
+            const parsed = await loadSquadFromIframe(RESERVES_URL);
+            if (parsed.length) {
                 syncSquad('reserves', parsed).catch((error) => console.error('[Players] Reserve squad sync failed:', error));
             }
         } catch (error) {

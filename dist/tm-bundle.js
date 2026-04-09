@@ -4593,6 +4593,47 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     let initPromise = null;
     const cache = {};
     const cacheKey = (pid) => String(pid);
+    const numericKey = (pid) => {
+      const parsed = parseInt(pid, 10);
+      return Number.isFinite(parsed) ? parsed : null;
+    };
+    const recordScore = (record) => {
+      if (!record) return -1;
+      let score = 0;
+      if (record.R5 != null) score += 4;
+      if (record.REREC != null) score += 4;
+      if (Array.isArray(record.skills) && record.skills.length) score += 3;
+      if (record.routine != null) score += 1;
+      if (record.locked) score += 2;
+      if (!record._estimated) score += 1;
+      return score;
+    };
+    const mergeStores = (baseStore, nextStore) => {
+      var _a, _b;
+      if (!baseStore) return nextStore;
+      if (!nextStore) return baseStore;
+      const merged = {
+        ...baseStore,
+        ...nextStore,
+        _v: Math.max(Number(baseStore._v) || 0, Number(nextStore._v) || 0) || 1,
+        lastSeen: Math.max(Number(baseStore.lastSeen) || 0, Number(nextStore.lastSeen) || 0),
+        graphSync: !!(baseStore.graphSync || nextStore.graphSync),
+        graphWeekCount: Math.max(Number(baseStore.graphWeekCount) || 0, Number(nextStore.graphWeekCount) || 0) || void 0,
+        graphStartAgeMonths: Math.max(Number(baseStore.graphStartAgeMonths) || 0, Number(nextStore.graphStartAgeMonths) || 0) || void 0,
+        meta: { ...baseStore.meta || {}, ...nextStore.meta || {} },
+        records: {}
+      };
+      const allRecordKeys = /* @__PURE__ */ new Set([
+        ...Object.keys(baseStore.records || {}),
+        ...Object.keys(nextStore.records || {})
+      ]);
+      for (const ageKey of allRecordKeys) {
+        const baseRecord = ((_a = baseStore.records) == null ? void 0 : _a[ageKey]) || null;
+        const nextRecord = ((_b = nextStore.records) == null ? void 0 : _b[ageKey]) || null;
+        merged.records[ageKey] = recordScore(nextRecord) >= recordScore(baseRecord) ? nextRecord || baseRecord : baseRecord;
+      }
+      return merged;
+    };
     const open = () => new Promise((resolve, reject) => {
       const req = indexedDB.open(DB_NAME, DB_VERSION);
       req.onupgradeneeded = (e) => {
@@ -4625,11 +4666,13 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       }
       cache[key] = value;
       if (!db) return Promise.resolve();
-      const idbKey = parseInt(pid);
+      const idbKey = numericKey(pid);
       console.log("[DB] Writing player", pid, "to IndexedDB (graphSync:", value == null ? void 0 : value.graphSync, "weekCount:", value == null ? void 0 : value.graphWeekCount, "recordCount:", Object.keys((value == null ? void 0 : value.records) || {}).length, ")");
       return new Promise((resolve, reject) => {
         const tx = db.transaction(STORE_NAME, "readwrite");
-        tx.objectStore(STORE_NAME).put(value, isFinite(idbKey) ? idbKey : pid);
+        const store = tx.objectStore(STORE_NAME);
+        store.put(value, idbKey != null ? idbKey : pid);
+        if (idbKey != null) store.delete(String(pid));
         tx.oncomplete = () => resolve();
         tx.onerror = (e) => reject(e.target.error);
       }).catch((e) => console.warn("[DB] write failed:", e));
@@ -4637,11 +4680,11 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     const remove = (pid) => {
       delete cache[cacheKey(pid)];
       if (!db) return Promise.resolve();
-      const idbKey = parseInt(pid);
+      const idbKey = numericKey(pid);
       return new Promise((resolve, reject) => {
         const tx = db.transaction(STORE_NAME, "readwrite");
         const store = tx.objectStore(STORE_NAME);
-        if (isFinite(idbKey)) store.delete(idbKey);
+        if (idbKey != null) store.delete(idbKey);
         store.delete(String(pid));
         tx.oncomplete = () => resolve();
         tx.onerror = (e) => reject(e.target.error);
@@ -4690,9 +4733,19 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
           tx.oncomplete = res;
           tx.onerror = rej;
         });
-        for (let i = 0; i < reqKeys.result.length; i++)
-          cache[cacheKey(reqKeys.result[i])] = reqAll.result[i];
+        let mergedDuplicateCount = 0;
+        for (let i = 0; i < reqKeys.result.length; i++) {
+          const rawKey = reqKeys.result[i];
+          const normalizedKey = cacheKey(rawKey);
+          const existing = cache[normalizedKey] || null;
+          const incoming = reqAll.result[i];
+          if (existing) mergedDuplicateCount++;
+          cache[normalizedKey] = mergeStores(existing, incoming);
+        }
         console.log(`[DB] Loaded ${Object.keys(cache).length} player(s) from IndexedDB`);
+        if (mergedDuplicateCount > 0) {
+          console.warn(`[DB] Merged ${mergedDuplicateCount} duplicate string/integer player key entries while preloading cache`);
+        }
         if (navigator.storage && navigator.storage.persist) {
           navigator.storage.persist().then((granted) => {
             console.log(`[DB] Persistent storage: ${granted ? "\u2713 granted" : "\u2717 denied"}`);
@@ -40746,7 +40799,8 @@ ${names}`)) {
     });
     const savePlayer = (pid, data) => new Promise((resolve, reject) => {
       const tx = db.transaction(STORE_NAME, "readwrite");
-      tx.objectStore(STORE_NAME).put(data, String(pid));
+      const numericPid = parseInt(pid, 10);
+      tx.objectStore(STORE_NAME).put(data, Number.isFinite(numericPid) ? numericPid : String(pid));
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error);
     });
@@ -49048,6 +49102,14 @@ ${names}`)) {
     if (!ageKey) return null;
     return ((_a = store == null ? void 0 : store.records) == null ? void 0 : _a[ageKey]) || null;
   };
+  var latestPreviousDbRecord = (store, player) => {
+    var _a;
+    const records = store == null ? void 0 : store.records;
+    if (!records) return null;
+    const currentAgeMonths = (Number(player.ageYears) || 0) * 12 + (Number(player.ageMonths) || 0);
+    const entries = Object.entries(records).map(([ageKey, record]) => ({ ageKey, ageMonths: TmUtils.ageToMonths(ageKey), record })).filter((entry) => entry.ageMonths < currentAgeMonths).sort((a, b) => b.ageMonths - a.ageMonths);
+    return ((_a = entries[0]) == null ? void 0 : _a.record) || null;
+  };
   var currentDbRecord = (store, player) => {
     var _a;
     const ageKey = currentAgeKeyOf(player);
@@ -49238,6 +49300,29 @@ ${names}`)) {
         player.skillChanges = dbSkillChangesFromStore(dbStore, player);
       });
     };
+    const getPlayerDecision = (player) => {
+      var _a;
+      const dbStore = PlayerDB3.get(player.pid);
+      const currentKey = currentAgeKeyOf(player);
+      const previousKey = previousAgeKeyOf(player);
+      const currentRecord = currentDbRecord(dbStore, player);
+      const previousRecord = previousKey ? ((_a = dbStore == null ? void 0 : dbStore.records) == null ? void 0 : _a[previousKey]) || null : null;
+      return {
+        player,
+        pid: player.pid,
+        currentKey,
+        previousKey,
+        currentRecord,
+        previousRecord,
+        needsSyncCurrent: !currentRecord,
+        needsPreviousInterpolation: !!currentRecord && !!previousKey && !previousRecord && hasAnyRecordBefore(dbStore, previousKey)
+      };
+    };
+    const getPlayersNeedingCurrentSync = (players = []) => players.map((player) => getPlayerDecision(player)).filter((decision) => decision.needsSyncCurrent);
+    const filterParsedPlayersForSync = (parsedPlayers = [], syncDecisions = []) => {
+      const syncPids = new Set(syncDecisions.map((decision) => String(decision.pid)));
+      return parsedPlayers.filter((player) => syncPids.has(String(player.pid || player.id || player.player_id || "")));
+    };
     const ensureInterpolatedPreviousRecord = async (player) => {
       var _a, _b, _c;
       const dbStore = PlayerDB3.get(player.pid);
@@ -49252,9 +49337,8 @@ ${names}`)) {
       if (!state5.dbReady || !players.length) return false;
       let changed = false;
       for (const player of players) {
-        const currentStore = PlayerDB3.get(player.pid);
-        if (!currentDbRecord(currentStore, player)) continue;
-        if (previousDbRecord(currentStore, player)) continue;
+        const decision = getPlayerDecision(player);
+        if (!decision.needsPreviousInterpolation) continue;
         const updated = await ensureInterpolatedPreviousRecord(player);
         if (updated) changed = true;
         await delay(25);
@@ -49428,11 +49512,11 @@ ${names}`)) {
       renderControls();
       renderSections();
     };
-    const processSquadPage = async (players) => {
+    const processSquadPage = async (players, { overwriteCurrent = false } = {}) => {
       var _a, _b, _c;
       if (!players || !players.length) return [];
       const eff = TmUtils.skillEff;
-      const fetchTip = (pid) => TmPlayerService.fetchPlayerTooltip(pid).then((data) => {
+      const fetchTip = (pid) => TmPlayerService.fetchTooltipRaw(pid).then((data) => {
         var _a2;
         return (_a2 = data == null ? void 0 : data.player) != null ? _a2 : null;
       });
@@ -49445,28 +49529,22 @@ ${names}`)) {
         const curAgeKeyCheck = `${player.ageYears}.${player.ageMonths}`;
         const existingStore = PlayerDB3.get(player.pid);
         const existingRec = (_a = existingStore == null ? void 0 : existingStore.records) == null ? void 0 : _a[curAgeKeyCheck];
-        if (existingRec) {
-          continue;
-        }
+        if (existingRec && !overwriteCurrent) continue;
         const tip = await fetchTip(player.pid);
         await delay(100);
         if (!tip) continue;
-        const asi = tip.asi;
+        const asi = parseFloat(tip.skill_index);
         const routine = tip.routine;
         const favpos = tip.favposition || "";
-        const isGK = tip.isGK;
+        const isGK = tip.position === "Gk";
         const skillCount = isGK ? 11 : 14;
-        const intSkills = tip.skills ? extractSkills2(tip.skills, isGK) : player.skills;
-        const dbRecord = PlayerDB3.get(player.pid);
+        const intSkills = tip.skills ? extractSkills2(tip.skills, isGK) : [];
+        const dbRecord = PlayerDB3.get(Number(player.pid));
         let prevDecimals = null;
         let prevSkillsFull = null;
         let curDbSkillsFull = null;
+        console.log(dbRecord == null ? void 0 : dbRecord.records);
         if (dbRecord == null ? void 0 : dbRecord.records) {
-          const keys = Object.keys(dbRecord.records).sort((a, b) => {
-            const [ay, am] = a.split(".").map(Number);
-            const [by, bm] = b.split(".").map(Number);
-            return ay * 12 + am - (by * 12 + bm);
-          });
           const curAgeKey = `${player.ageYears}.${player.ageMonths}`;
           const curDbRec = dbRecord.records[curAgeKey];
           if (((_b = curDbRec == null ? void 0 : curDbRec.skills) == null ? void 0 : _b.length) === skillCount) {
@@ -49475,17 +49553,13 @@ ${names}`)) {
               return numeric >= 20 ? 20 : numeric;
             });
           }
-          let prevIdx = keys.length - 1;
-          if (keys.length > 1 && keys[prevIdx] === curAgeKey) prevIdx = keys.length - 2;
-          if (prevIdx >= 0) {
-            const prevRec = dbRecord.records[keys[prevIdx]];
-            if (((_c = prevRec == null ? void 0 : prevRec.skills) == null ? void 0 : _c.length) === skillCount) {
-              prevSkillsFull = prevRec.skills.map((value) => {
-                const numeric = typeof value === "string" ? parseFloat(value) : value;
-                return numeric >= 20 ? 20 : numeric;
-              });
-              prevDecimals = prevSkillsFull.map((value) => value >= 20 ? 0 : value - Math.floor(value));
-            }
+          const previousRecord = previousDbRecord(dbRecord, player) || latestPreviousDbRecord(dbRecord, player);
+          if (((_c = previousRecord == null ? void 0 : previousRecord.skills) == null ? void 0 : _c.length) === skillCount) {
+            prevSkillsFull = previousRecord.skills.map((value) => {
+              const numeric = typeof value === "string" ? parseFloat(value) : value;
+              return numeric >= 20 ? 20 : numeric;
+            });
+            prevDecimals = prevSkillsFull.map((value) => value >= 20 ? 0 : value - Math.floor(value));
           }
         }
         const asiWeight = isGK ? 48717927500 : 26353376e4;
@@ -49496,6 +49570,7 @@ ${names}`)) {
           improvementMap[imp.index] = imp.type;
         });
         const totalGain = player.TI / 10;
+        console.log(totalGain, asi, prevDecimals);
         let newDecimals;
         if (prevDecimals && asi > 0) {
           newDecimals = [...prevDecimals];
@@ -49636,8 +49711,8 @@ ${names}`)) {
           newSkillsFull,
           r5ByPos,
           bestPos,
-          R5: r5,
-          REC: rec
+          R5: r5 == null ? null : Number(r5),
+          REC: rec == null ? null : Number(rec)
         });
       }
       loader.update(0, results.length, "Syncing to DB...");
@@ -49654,10 +49729,10 @@ ${names}`)) {
         if (!(store == null ? void 0 : store._v)) store = { _v: 1, lastSeen: Date.now(), records: {} };
         store.records[ageKey] = {
           SI: result.asi,
-          REREC: result.REC,
-          R5: result.R5,
-          skills: result.newSkillsFull.map((value) => Math.round(value * 100) / 100),
-          routine: result.routine,
+          REREC: result.REC == null ? null : Number(result.REC),
+          R5: result.R5 == null ? null : Number(result.R5),
+          skills: result.newSkillsFull.map((value) => Number(value)),
+          routine: result.routine == null ? null : Number(result.routine),
           locked: true
         };
         store.lastSeen = Date.now();
@@ -49681,11 +49756,11 @@ ${names}`)) {
         return;
       }
       squad.syncState = "running";
-      squad.syncMessage = `Syncing ${squad.players.length} players`;
+      squad.syncMessage = `Syncing ${syncPlayers.length} players`;
       seedMetricsFromDb(squad.players);
       render18();
       try {
-        const results = await processSquadPage(syncPlayers);
+        const results = await processSquadPage(syncPlayers, { overwriteCurrent: true });
         applySyncResults(results);
         await ensureInterpolatedPreviousRecords(squad.players);
         squad.syncState = "done";
@@ -49756,11 +49831,6 @@ ${names}`)) {
       seedMetricsFromDb(squad.players);
       await ensureInterpolatedPreviousRecords(squad.players);
       render18();
-      const needsSync = squad.players.some((player) => {
-        var _a2, _b2;
-        return !((_b2 = (_a2 = PlayerDB3.get(player.pid)) == null ? void 0 : _a2.records) == null ? void 0 : _b2[currentAgeKeyOf(player)]);
-      });
-      if (!needsSync) return;
       waitForPlayers(() => hasSquadRows(document) ? parseSquadDocument2(document) || [] : []).then((parsed) => {
         if (!parsed.length) return;
         syncSquad("main", parsed).catch((error) => console.error("[Players] Main squad sync failed:", error));
@@ -49780,12 +49850,8 @@ ${names}`)) {
         squad.loaded = true;
         seedMetricsFromDb(squad.players);
         await ensureInterpolatedPreviousRecords(squad.players);
-        const needsSync = squad.players.some((player) => {
-          var _a2, _b;
-          return !((_b = (_a2 = PlayerDB3.get(player.pid)) == null ? void 0 : _a2.records) == null ? void 0 : _b[currentAgeKeyOf(player)]);
-        });
-        if (needsSync) {
-          const parsed = await loadSquadFromIframe(RESERVES_URL);
+        const parsed = await loadSquadFromIframe(RESERVES_URL);
+        if (parsed.length) {
           syncSquad("reserves", parsed).catch((error) => console.error("[Players] Reserve squad sync failed:", error));
         }
       } catch (error) {

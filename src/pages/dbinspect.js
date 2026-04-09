@@ -116,7 +116,8 @@ export function initDbInspectPage(main) {
 
     const savePlayer = (pid, data) => new Promise((resolve, reject) => {
         const tx = db.transaction(STORE_NAME, 'readwrite');
-        tx.objectStore(STORE_NAME).put(data, String(pid));
+        const numericPid = parseInt(pid, 10);
+        tx.objectStore(STORE_NAME).put(data, Number.isFinite(numericPid) ? numericPid : String(pid));
         tx.oncomplete = () => resolve();
         tx.onerror = () => reject(tx.error);
     });
