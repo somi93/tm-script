@@ -18,6 +18,14 @@ import { TmConst } from './tm-constants.js';
 
 const { SKILL_LABELS_OUT, SKILL_NAMES_GK_SHORT, SKILL_NAMES_OUT, SKILL_NAMES_GK } = TmConst;
 
+const getSquadRoot = (root = document) => {
+    if (!root) return null;
+    if (root.id === 'sq') return root;
+    if (typeof root.getElementById === 'function') return root.getElementById('sq');
+    if (typeof root.querySelector === 'function') return root.querySelector('#sq');
+    return null;
+};
+
 /**
  * Extract a flat integer skill array from the tooltip skills object array.
  * Tooltip provides skills as [{ name: "Strength", value: "15" }, ...].
@@ -65,8 +73,8 @@ const createSquadLoader = () => {
  * Detects GK section via .splitter rows; reads skills, improvements, TI.
  * @returns {Array<object>|undefined}
  */
-const parseSquadPage = () => {
-    const sqDiv = document.getElementById('sq');
+const parseSquadDocument = (root = document) => {
+    const sqDiv = getSquadRoot(root);
     if (!sqDiv) { console.warn('[Squad] No #sq div found'); return; }
 
     const allRows = sqDiv.querySelectorAll('table tbody tr');
@@ -90,6 +98,7 @@ const parseSquadPage = () => {
         if (!link) return;
         const pid = link.getAttribute('player_link');
         const name = link.textContent.trim();
+        const playerHref = link.getAttribute('href') || `/player/${pid}/`;
 
         const numEl = cells[0]?.querySelector('span.faux_link');
         const number = numEl ? parseInt(numEl.textContent) || 0 : 0;
@@ -139,6 +148,7 @@ const parseSquadPage = () => {
 
         players.push({
             pid, name, number, ageYears, ageMonths,
+            playerHref,
             position: posText, isGK: isGKSection,
             skills, improved, partUpCount, oneUpCount,
             totalImproved: partUpCount + oneUpCount,
@@ -150,9 +160,12 @@ const parseSquadPage = () => {
     return players;
 };
 
+const parseSquadPage = () => parseSquadDocument(document);
+
 export const TmSquad = {
     extractSkills,
     createSquadLoader,
+    parseSquadDocument,
     parseSquadPage,
 };
 

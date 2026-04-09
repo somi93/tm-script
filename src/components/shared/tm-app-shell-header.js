@@ -3,11 +3,11 @@ import { TmButton } from './tm-button.js';
 const TOP_MENU_LABELS = {
     '0': 'Home',
     '1': 'Tactics',
-    '2': 'Quick Match',
+    '2': 'Friendly league',
     '3': 'League',
     '4': 'Transfer',
     '5': 'Forum',
-    '6': 'Buy Pro',
+    '6': 'Pro',
 };
 
 const ICON_BY_GROUP = {
@@ -49,11 +49,11 @@ const DEFAULT_GROUPS = [
     {
         id: '2',
         href: '/quickmatch/',
-        label: 'Quick Match',
+        label: 'Friendly league',
         icon: '⚡',
         children: [
             { href: '/quickmatch/', label: 'Quick Match' },
-            { href: '/friendly-league/', label: 'Friendly League' },
+            { href: '/friendly-league/', label: 'Friendly league' },
         ],
     },
     {
@@ -64,8 +64,8 @@ const DEFAULT_GROUPS = [
         children: [
             { href: '/league/', label: 'League' },
             { href: '/cup/', label: 'Cup' },
-            { href: '/international-cup/', label: 'International Cup' },
-            { href: '/national-teams/', label: 'National Teams' },
+            { href: '/international-cup/', label: 'International cup' },
+            { href: '/national-teams/', label: 'National teams' },
         ],
     },
     {
@@ -95,11 +95,11 @@ const DEFAULT_GROUPS = [
     {
         id: '6',
         href: '/buy-pro/',
-        label: 'Buy Pro',
+        label: 'Pro',
         icon: '👑',
         children: [
-            { href: '/buy-pro/', label: 'Buy Pro' },
-            { href: '/about-pro/', label: 'About Pro' },
+            { href: '/buy-pro/', label: 'Buy pro' },
+            { href: '/about-pro/', label: 'About pro' },
             { href: '/donations/', label: 'Donations' },
             { href: '/support-pro/', label: 'Support' },
         ],

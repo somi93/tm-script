@@ -47,6 +47,8 @@ import { initNationalTeamsRegionPage } from '../pages/national-teams-region.js';
 import { initNationalTeamsPage } from '../pages/national-teams.js';
 import { initSupportProPage } from '../pages/support-pro.js';
 import { initPlayerPage } from '../pages/player.js';
+import { initPlayersPage } from '../pages/players.js';
+import { initR5HistoryPage } from '../pages/r5history.js';
 import { initTacticsPage } from '../pages/tactics.js';
 
 const IMPORT_PATH = '/import/';
@@ -66,64 +68,8 @@ function normalizeHref(href) {
     }
 }
 
-function dedupeChildren(children) {
-    const seen = new Set();
-    return children.filter(child => {
-        if (!child.href || !child.label || seen.has(child.href)) return false;
-        seen.add(child.href);
-        return true;
-    });
-}
-
-function isUsefulLink(anchor) {
-    const href = normalizeHref(anchor.getAttribute('href') || '');
-    const label = cleanText(anchor.textContent);
-    if (!href || !label) return false;
-    if (href.includes('/logout')) return false;
-    return true;
-}
-
 function collectNavGroups() {
-    const groups = [];
-
-    document.querySelectorAll('#top_menu > ul > li > a[top_menu]').forEach(anchor => {
-        const id = anchor.getAttribute('top_menu') || '';
-        const href = normalizeHref(anchor.getAttribute('href') || '');
-        if (!href) return;
-        const meta = getHeaderGroupMeta(id, cleanText(anchor.getAttribute('title')) || href);
-        groups.push({
-            id,
-            href,
-            label: meta.label,
-            icon: meta.icon,
-            children: [],
-        });
-    });
-
-    Array.from(document.querySelectorAll('#mega_menu_items > div')).forEach((column, index) => {
-        const group = groups[index];
-        if (!group) return;
-        column.querySelectorAll('a').forEach(anchor => {
-            if (!isUsefulLink(anchor)) return;
-            group.children.push({
-                href: normalizeHref(anchor.getAttribute('href') || ''),
-                label: cleanText(anchor.textContent),
-            });
-        });
-        group.children = dedupeChildren(group.children);
-    });
-
-    const resolvedGroups = groups.length < 4
-        ? getDefaultHeaderGroups()
-        : groups.map(group => ({
-            ...group,
-            children: dedupeChildren(group.children),
-        }));
-
-    return resolvedGroups.map(group => ({
-        ...group,
-        children: dedupeChildren(group.children),
-    }));
+    return getDefaultHeaderGroups();
 }
 
 function getHeaderFab(currentPath) {
@@ -166,12 +112,6 @@ function formatCash(value) {
     return new Intl.NumberFormat('en-US').format(amount);
 }
 
-function removeNativeMenus() {
-    document.getElementById('top_menu')?.remove();
-    document.getElementById('top_menu_sub')?.remove();
-    document.querySelectorAll('#cookies_disabled_message, .cookies_disabled_message, .column1_d').forEach(node => node.remove());
-}
-
 function replaceMainCenterClass() {
     document.querySelectorAll('.main_center').forEach(mainCenter => {
         mainCenter.style.display = 'none';
@@ -179,6 +119,11 @@ function replaceMainCenterClass() {
             mainCenter.remove();
         }
     });
+
+    const topMenu = document.querySelector('#top_menu');
+    const topMenuSub = document.querySelector('#top_menu_sub');
+    if (topMenu) topMenu.style.display = 'none';
+    if (topMenuSub) topMenuSub.style.display = 'none';
 }
 
 function injectStyles() {
@@ -777,6 +722,11 @@ function initCurrentPage() {
     if (/^\/support-pro\/?$/i.test(currentPath)) {
         initSupportProPage(main);
     }
+    if (/^\/players\/?$/i.test(currentPath)) {
+        initPlayersPage(main);
+        initR5HistoryPage();
+        return;
+    }
     if (/^\/players\/\d+/i.test(currentPath)) {
         initPlayerPage(main);
     }
@@ -814,12 +764,11 @@ export function initAppShellLayout() {
         return;
     }
 
-    removeNativeMenus();
+    const currentPath = normalizeHref(window.location.pathname) || '/home/';
+    const groups = collectNavGroups();
     replaceMainCenterClass();
     injectStyles();
 
-    const currentPath = normalizeHref(window.location.pathname) || '/home/';
-    const groups = collectNavGroups();
     const clubInfo = getClubInfo();
     const openGroupId = getInitialOpenGroup();
     const headerFab = getHeaderFab(currentPath);
