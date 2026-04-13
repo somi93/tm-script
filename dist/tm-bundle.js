@@ -2290,6 +2290,19 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
     const numericMatch = text.match(/\d+(?:\.\d+)?/);
     return numericMatch ? Number(numericMatch[0]) : null;
   };
+  var skillValue = (skill) => {
+    var _a;
+    return typeof skill === "object" && skill !== null ? Number((_a = skill.value) != null ? _a : 0) : Number(skill);
+  };
+  var sortAgeKeys = (keys) => Array.from(new Set(keys || [])).sort((a, b) => {
+    const [ay, am] = String(a).split(".").map(Number);
+    const [by, bm] = String(b).split(".").map(Number);
+    return ay * 12 + am - (by * 12 + bm);
+  });
+  var safeGrowthSkills = (skills) => (Array.isArray(skills) ? skills : []).map((value) => {
+    const numeric = typeof value === "object" ? value.value : value;
+    return Number.isFinite(numeric) ? Math.floor(numeric) : 0;
+  });
   var applyTooltipSkills = (player2, tooltipSkills) => {
     if (!Array.isArray(player2 == null ? void 0 : player2.skills) || !Array.isArray(tooltipSkills)) return player2;
     const tooltipMap = /* @__PURE__ */ new Map();
@@ -2416,7 +2429,7 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
     }).filter((skill) => skill.value != null && skill.value !== 0);
     return player2;
   };
-  var TmUtils = { getColor, parseNum, ageToMonths, monthsToAge, classifyPosition, posLabel, fix2, formatR5, fmtCoins, ratingColor, r5Color, toggleSort, skillColor, skillEff, getMainContainer, getMainContainers, extractFaceUrl, parseSkillValue, applyTooltipSkills, applyPlayerPositions, applySquadSkills, getOwnClubIds };
+  var TmUtils = { getColor, parseNum, ageToMonths, monthsToAge, classifyPosition, posLabel, fix2, formatR5, fmtCoins, ratingColor, r5Color, toggleSort, skillColor, skillEff, getMainContainer, getMainContainers, extractFaceUrl, parseSkillValue, skillValue, sortAgeKeys, safeGrowthSkills, applyTooltipSkills, applyPlayerPositions, applySquadSkills, getOwnClubIds };
 
   // src/components/shared/tm-skill.js
   var TmSkill = {
@@ -3570,12 +3583,9 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     STD_FOCUS: STD_FOCUS2,
     SMOOTH_WEIGHT: SMOOTH_WEIGHT2
   } = TmConst;
-  var { ageToMonths: ageToMonths2 } = TmUtils;
+  var { ageToMonths: ageToMonths2, skillValue: skillValue2 } = TmUtils;
   var _fix2 = (v) => (Math.round(v * 100) / 100).toFixed(2);
-  var _sv = (s6) => {
-    var _a;
-    return typeof s6 === "object" && s6 !== null ? Number((_a = s6.value) != null ? _a : 0) : Number(s6);
-  };
+  var _sv = skillValue2;
   var _calcRemainderRaw = (posIdx, skills, asi) => {
     const weight = posIdx === 9 ? ASI_WEIGHT_GK2 : ASI_WEIGHT_OUTFIELD2;
     const skillSum = skills.reduce((s6, v) => s6 + parseFloat(v), 0);
@@ -3684,6 +3694,11 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     const K = player2.isGK ? ASI_WEIGHT_GK2 : ASI_WEIGHT_OUTFIELD2;
     return Math.pow(2, Math.log(K * player2.asi) / Math.log(128));
   };
+  var sumSkillValues = (skills) => Array.isArray(skills) ? skills.reduce((sum, skill) => sum + skillValue2(skill), 0) : 0;
+  var calcASIFromSkillSum = (skillSum, isGK) => {
+    const weight = isGK ? ASI_WEIGHT_GK2 : ASI_WEIGHT_OUTFIELD2;
+    return Math.max(0, Math.round(Math.pow(Math.max(0, skillSum), 7) / weight));
+  };
   var calcSkillDecimalsSimple = (player2) => {
     const K = player2.isGK ? ASI_WEIGHT_GK2 : ASI_WEIGHT_OUTFIELD2;
     const skills = player2.skills;
@@ -3742,423 +3757,6 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       } else break;
     } while (++passes < 20);
     return intSkills.map((v, i) => v >= 20 ? 20 : v + dec[i]);
-  };
-  var _safeGrowthSkills = (skills) => skills.map((v) => {
-    const n = typeof v === "object" ? v.value : v;
-    return isFinite(n) ? Math.floor(n) : 0;
-  });
-  var _getHistoryStatKeys = (isGK) => isGK ? GRAPH_KEYS_GK2 : GRAPH_KEYS_OUT2;
-  var _getGraphHistorySkillMap = (graphData, isGK) => {
-    var _a, _b;
-    if (isGK) {
-      return {
-        strength: graphData == null ? void 0 : graphData.strength,
-        pace: graphData == null ? void 0 : graphData.pace,
-        jumping: graphData == null ? void 0 : graphData.jumping,
-        stamina: graphData == null ? void 0 : graphData.stamina,
-        one_on_ones: (_a = graphData == null ? void 0 : graphData.one_on_ones) != null ? _a : graphData == null ? void 0 : graphData.oneonones,
-        reflexes: graphData == null ? void 0 : graphData.reflexes,
-        aerial_ability: (_b = graphData == null ? void 0 : graphData.aerial_ability) != null ? _b : graphData == null ? void 0 : graphData.arialability,
-        communication: graphData == null ? void 0 : graphData.communication,
-        kicking: graphData == null ? void 0 : graphData.kicking,
-        throwing: graphData == null ? void 0 : graphData.throwing,
-        handling: graphData == null ? void 0 : graphData.handling
-      };
-    }
-    return {
-      strength: graphData == null ? void 0 : graphData.strength,
-      stamina: graphData == null ? void 0 : graphData.stamina,
-      pace: graphData == null ? void 0 : graphData.pace,
-      marking: graphData == null ? void 0 : graphData.marking,
-      tackling: graphData == null ? void 0 : graphData.tackling,
-      workrate: graphData == null ? void 0 : graphData.workrate,
-      positioning: graphData == null ? void 0 : graphData.positioning,
-      passing: graphData == null ? void 0 : graphData.passing,
-      crossing: graphData == null ? void 0 : graphData.crossing,
-      technique: graphData == null ? void 0 : graphData.technique,
-      heading: graphData == null ? void 0 : graphData.heading,
-      finishing: graphData == null ? void 0 : graphData.finishing,
-      longshots: graphData == null ? void 0 : graphData.longshots,
-      set_pieces: graphData == null ? void 0 : graphData.set_pieces
-    };
-  };
-  var _buildTIHistory = (skillIndexHistory, tiHistory = null, isGK = false) => {
-    const skillIndex = Array.isArray(skillIndexHistory) ? skillIndexHistory.map(Number) : [];
-    return skillIndex.map((asi, index) => {
-      const explicitTI = Number(tiHistory == null ? void 0 : tiHistory[index]);
-      if (index > 0 && Number.isFinite(asi) && Number.isFinite(skillIndex[index - 1])) {
-        const prevSkillSum = calcAsiSkillSum({ asi: skillIndex[index - 1], isGK });
-        const currentSkillSum = calcAsiSkillSum({ asi, isGK });
-        const derivedTI = Math.round((currentSkillSum - prevSkillSum) * 10);
-        if (!Number.isFinite(explicitTI) || explicitTI === 0) return derivedTI;
-      }
-      return Number.isFinite(explicitTI) ? explicitTI : 0;
-    });
-  };
-  var _getMergedHistoryKeys = (DBPlayer, records) => _sortAgeKeys(
-    Object.keys((DBPlayer == null ? void 0 : DBPlayer.records) || {}).concat(Object.keys(records || {}))
-  );
-  var _capGrowthDecimals = (decArr, intArr, N) => {
-    const CAP = 0.99;
-    const d = [...decArr];
-    let overflow = 0, passes = 0;
-    do {
-      overflow = 0;
-      let freeCount = 0;
-      for (let i = 0; i < N; i++) {
-        if (intArr[i] >= 20) {
-          d[i] = 0;
-          continue;
-        }
-        if (d[i] > CAP) {
-          overflow += d[i] - CAP;
-          d[i] = CAP;
-        } else if (d[i] < CAP) freeCount++;
-      }
-      if (overflow > 1e-4 && freeCount > 0) {
-        const add = overflow / freeCount;
-        for (let i = 0; i < N; i++) {
-          if (intArr[i] < 20 && d[i] < CAP) d[i] += add;
-        }
-      }
-    } while (overflow > 1e-4 && ++passes < 20);
-    return d;
-  };
-  var _normalizeTrainingWeights = (training, isGK) => {
-    const grp = isGK ? TRAINING_GROUPS_GK2 : TRAINING_GROUPS_OUT2;
-    const grpCount = grp.length;
-    const skillCount = isGK ? 11 : 14;
-    const equal = new Array(grpCount).fill(1 / grpCount);
-    if (isGK) return [1];
-    if (Array.isArray(training)) {
-      const dots = training.slice(0, grpCount).map((v) => Math.max(0, Number(v) || 0));
-      if (!dots.some(Boolean)) return equal;
-      const smoothed = dots.map((v) => v + SMOOTH_WEIGHT2);
-      const total2 = smoothed.reduce((sum, value) => sum + value, 0);
-      return total2 > 0 ? smoothed.map((v) => v / total2) : equal;
-    }
-    if (training && typeof training === "object") {
-      if (Array.isArray(training.custom)) return _normalizeTrainingWeights(training.custom, isGK);
-      if (training.standard != null) return _normalizeTrainingWeights(training.standard, isGK);
-    }
-    const focusIdx = STD_FOCUS2 == null ? void 0 : STD_FOCUS2[String(training)];
-    if (focusIdx == null) return equal;
-    const weights = grp.map((group) => 0.75 * (group.length / skillCount));
-    weights[focusIdx] += 0.25;
-    const total = weights.reduce((sum, value) => sum + value, 0);
-    return total > 0 ? weights.map((v) => v / total) : equal;
-  };
-  var _computeGrowthDecimalsInternal = (records, ageKeys, player2, getWeights) => {
-    const N = player2.isGK ? 11 : 14;
-    const GRP = player2.isGK ? TRAINING_GROUPS_GK2 : TRAINING_GROUPS_OUT2;
-    const GRP_COUNT = GRP.length;
-    const ASI_WEIGHT = player2.isGK ? ASI_WEIGHT_GK2 : ASI_WEIGHT_OUTFIELD2;
-    const totalPts = (si) => Math.pow(2, Math.log(ASI_WEIGHT * (si || 0)) / Math.log(128));
-    const eff = TmUtils.skillEff;
-    const calcShares = (intS, monthIndex) => {
-      const gw = getWeights(monthIndex, intS);
-      const base = new Array(N).fill(0);
-      let overflow = 0;
-      for (let gi = 0; gi < GRP_COUNT; gi++) {
-        const grp = GRP[gi];
-        const perSk = gw[gi] / grp.length;
-        for (const si of grp) {
-          if (intS[si] >= 20) overflow += perSk;
-          else base[si] = perSk;
-        }
-      }
-      const nonMax = intS.filter((v) => v < 20).length;
-      const ovfEach = nonMax > 0 ? overflow / nonMax : 0;
-      const w = base.map((b, i) => intS[i] >= 20 ? 0 : b + ovfEach);
-      const wE = w.map((wi, i) => wi * eff(intS[i]));
-      const tot = wE.reduce((a, b) => a + b, 0);
-      return tot > 0 ? wE.map((x) => x / tot) : new Array(N).fill(0);
-    };
-    const result = {};
-    const r0 = records[ageKeys[0]];
-    const firstSkills = _safeGrowthSkills(r0.skills);
-    const rem0 = totalPts(r0.SI) - firstSkills.reduce((a, b) => a + b, 0);
-    let dec = _capGrowthDecimals(calcShares(firstSkills, 0).map((s6) => Math.max(0, rem0 * s6)), firstSkills, N);
-    result[ageKeys[0]] = dec;
-    for (let m = 1; m < ageKeys.length; m++) {
-      const prevKey = ageKeys[m - 1], currKey = ageKeys[m];
-      const piSkills = _safeGrowthSkills(records[prevKey].skills), ciSkills = _safeGrowthSkills(records[currKey].skills);
-      const ptg = totalPts(records[prevKey].SI), ctg = totalPts(records[currKey].SI);
-      const delta = ctg - ptg;
-      const cRem = ctg - ciSkills.reduce((a, b) => a + b, 0);
-      const gains = calcShares(piSkills, m - 1).map((s6) => delta * s6);
-      let newDec = dec.map((d, i) => d + gains[i]);
-      for (let i = 0; i < N; i++) {
-        const chg = ciSkills[i] - piSkills[i];
-        if (chg > 0) {
-          newDec[i] -= chg;
-          if (newDec[i] < 0) newDec[i] = 0;
-        }
-        if (ciSkills[i] >= 20) newDec[i] = 0;
-      }
-      const ndSum = newDec.reduce((a, b) => a + b, 0);
-      if (ndSum > 1e-3) {
-        const scale = cRem / ndSum;
-        dec = _capGrowthDecimals(newDec.map((d, i) => ciSkills[i] >= 20 ? 0 : d * scale), ciSkills, N);
-      } else {
-        dec = _capGrowthDecimals(calcShares(ciSkills, m).map((s6) => Math.max(0, cRem * s6)), ciSkills, N);
-      }
-      result[currKey] = dec;
-    }
-    return result;
-  };
-  var computeGrowthDecimals = (records, ageKeys, player2, gw) => {
-    const grpCount = player2.isGK ? 1 : 6;
-    const weights = Array.isArray(gw) && gw.length === grpCount ? gw : new Array(grpCount).fill(1 / grpCount);
-    return _computeGrowthDecimalsInternal(records, ageKeys, player2, () => weights);
-  };
-  var reconstructSkillHistory = ({
-    skillIndexHistory,
-    skillHistory,
-    trainingHistory,
-    currentTraining,
-    tiHistory = null,
-    ageKeys = null,
-    isGK = false,
-    skillKeys = null
-  }) => {
-    if (!Array.isArray(skillIndexHistory) || !skillIndexHistory.length) {
-      throw new Error("skillIndexHistory is required");
-    }
-    const defaultSkillKeys = _getHistoryStatKeys(isGK);
-    const resolvedSkillKeys = skillKeys || defaultSkillKeys;
-    const resolvedAgeKeys = ageKeys || skillIndexHistory.map((_, i) => `${Math.floor(i / 12)}.${i % 12}`);
-    const monthCount = skillIndexHistory.length;
-    if (resolvedAgeKeys.length !== monthCount) throw new Error("ageKeys length mismatch");
-    const monthlySkills = Array.isArray(skillHistory) ? Array.isArray(skillHistory[0]) ? skillHistory : resolvedAgeKeys.map((_, monthIndex) => skillHistory.map((arr) => arr[monthIndex])) : resolvedAgeKeys.map((_, monthIndex) => resolvedSkillKeys.map((key) => {
-      var _a;
-      return (_a = skillHistory == null ? void 0 : skillHistory[key]) == null ? void 0 : _a[monthIndex];
-    }));
-    if (monthlySkills.length !== monthCount || monthlySkills.some((skills) => !Array.isArray(skills))) {
-      throw new Error("skillHistory shape is invalid");
-    }
-    const records = {};
-    resolvedAgeKeys.forEach((key, monthIndex) => {
-      records[key] = {
-        SI: Number(skillIndexHistory[monthIndex]) || 0,
-        skills: monthlySkills[monthIndex]
-      };
-    });
-    const monthlyTraining = Array.isArray(trainingHistory) && trainingHistory.length === monthCount && Array.isArray(trainingHistory[0]) ? trainingHistory : resolvedAgeKeys.map((_, monthIndex) => {
-      if (Array.isArray(trainingHistory) && trainingHistory.length === monthCount && !Array.isArray(trainingHistory[0])) {
-        return trainingHistory[monthIndex];
-      }
-      return trainingHistory != null ? trainingHistory : currentTraining;
-    });
-    const resolvedTIHistory = _buildTIHistory(skillIndexHistory, tiHistory, isGK);
-    const decimals = _computeGrowthDecimalsInternal(
-      records,
-      resolvedAgeKeys,
-      { isGK },
-      (monthIndex) => _normalizeTrainingWeights(monthlyTraining == null ? void 0 : monthlyTraining[monthIndex], isGK)
-    );
-    const reconstructed = {};
-    resolvedAgeKeys.forEach((key, monthIndex) => {
-      var _a;
-      const intSkills = _safeGrowthSkills(records[key].skills);
-      reconstructed[key] = {
-        ageKey: key,
-        SI: records[key].SI,
-        TI: Number((_a = resolvedTIHistory[monthIndex]) != null ? _a : 0),
-        skills: intSkills.map((value, index) => value + decimals[key][index])
-      };
-    });
-    return reconstructed;
-  };
-  var reconstructSkillHistoryFromGraph = (player2, DBPlayer, graphData, records) => {
-    var _a, _b, _c, _d;
-    const historyKeys = _getMergedHistoryKeys(DBPlayer, records);
-    const n = ((_a = graphData == null ? void 0 : graphData.skill_index) == null ? void 0 : _a.length) || 0;
-    const isGK = (_b = player2 == null ? void 0 : player2.isGK) != null ? _b : false;
-    const statKeys = _getHistoryStatKeys(isGK);
-    const graphSkillMap = _getGraphHistorySkillMap(graphData, isGK);
-    const currentTraining = (_c = player2 == null ? void 0 : player2.training) != null ? _c : null;
-    const resolveGraphIndex = (key) => {
-      const [y, m] = key.split(".").map(Number);
-      const idx = n - 1 - (player2.ageMonths - (y * 12 + m));
-      return idx >= 0 && idx < n ? idx : -1;
-    };
-    return reconstructSkillHistory({
-      ageKeys: historyKeys,
-      isGK: (_d = player2 == null ? void 0 : player2.isGK) != null ? _d : false,
-      currentTraining,
-      skillIndexHistory: historyKeys.map((key) => {
-        var _a2, _b2, _c2, _d2, _e, _f, _g;
-        const idx = resolveGraphIndex(key);
-        if (idx !== -1) return Number((_b2 = (_a2 = graphData == null ? void 0 : graphData.skill_index) == null ? void 0 : _a2[idx]) != null ? _b2 : 0);
-        return Number((_g = (_f = (_d2 = (_c2 = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _c2[key]) == null ? void 0 : _d2.SI) != null ? _f : (_e = records == null ? void 0 : records[key]) == null ? void 0 : _e.SI) != null ? _g : 0);
-      }),
-      tiHistory: historyKeys.map((key) => {
-        var _a2, _b2, _c2, _d2, _e;
-        return Number((_e = (_d2 = (_b2 = (_a2 = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _a2[key]) == null ? void 0 : _b2.TI) != null ? _d2 : (_c2 = records == null ? void 0 : records[key]) == null ? void 0 : _c2.TI) != null ? _e : 0);
-      }),
-      skillHistory: statKeys.reduce((acc, statKey) => {
-        acc[statKey] = historyKeys.map((key) => {
-          var _a2, _b2, _c2, _d2, _e, _f;
-          const idx = resolveGraphIndex(key);
-          const statIndex = statKeys.indexOf(statKey);
-          if (idx !== -1) return Number((_b2 = (_a2 = graphSkillMap[statKey]) == null ? void 0 : _a2[idx]) != null ? _b2 : 0);
-          return Math.floor((_f = (_e = (_d2 = (_c2 = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _c2[key]) == null ? void 0 : _d2.skills) == null ? void 0 : _e[statIndex]) != null ? _f : 0);
-        });
-        return acc;
-      }, {})
-    });
-  };
-  var reconstructSkillHistoryFromRecords = (player2, DBPlayer, records) => {
-    var _a, _b, _c;
-    const historyKeys = _getMergedHistoryKeys(DBPlayer, records);
-    const statKeys = _getHistoryStatKeys((_a = player2 == null ? void 0 : player2.isGK) != null ? _a : false);
-    const currentTraining = (_b = player2 == null ? void 0 : player2.training) != null ? _b : null;
-    const fallbackSkills = Array.isArray(player2 == null ? void 0 : player2.skills) ? player2.skills.map((skill) => Math.floor(_sv(skill) || 0)) : new Array((player2 == null ? void 0 : player2.isGK) ? 11 : 14).fill(0);
-    const resolvedRecords = {};
-    let previousSkills = fallbackSkills;
-    historyKeys.forEach((key) => {
-      var _a2, _b2, _c2;
-      const record = ((_a2 = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _a2[key]) || (records == null ? void 0 : records[key]) || {};
-      const intSkills = Array.isArray(record.skills) && record.skills.length ? record.skills.map((skill) => Math.floor(_sv(skill) || 0)) : previousSkills;
-      previousSkills = intSkills;
-      resolvedRecords[key] = {
-        SI: Number((_b2 = record.SI) != null ? _b2 : 0),
-        TI: Number((_c2 = record.TI) != null ? _c2 : 0),
-        skills: intSkills
-      };
-    });
-    return reconstructSkillHistory({
-      ageKeys: historyKeys,
-      isGK: (_c = player2 == null ? void 0 : player2.isGK) != null ? _c : false,
-      currentTraining,
-      skillIndexHistory: historyKeys.map((key) => resolvedRecords[key].SI),
-      tiHistory: historyKeys.map((key) => resolvedRecords[key].TI),
-      skillHistory: statKeys.reduce((acc, statKey, statIndex) => {
-        acc[statKey] = historyKeys.map((key) => {
-          var _a2, _b2;
-          return (_b2 = (_a2 = resolvedRecords[key].skills) == null ? void 0 : _a2[statIndex]) != null ? _b2 : 0;
-        });
-        return acc;
-      }, {})
-    });
-  };
-  var _sortAgeKeys = (keys) => Array.from(new Set(keys || [])).sort((a, b) => {
-    const [ay, am] = String(a).split(".").map(Number);
-    const [by, bm] = String(b).split(".").map(Number);
-    return ay * 12 + am - (by * 12 + bm);
-  });
-  var _sumSkillValues = (skills) => Array.isArray(skills) ? skills.reduce((sum, skill) => sum + _sv(skill), 0) : 0;
-  var _calcASIFromSkillSum = (skillSum, isGK) => {
-    const K = isGK ? ASI_WEIGHT_GK2 : ASI_WEIGHT_OUTFIELD2;
-    return Math.max(0, Math.round(Math.pow(Math.max(0, skillSum), 7) / K));
-  };
-  var _buildWeightedIntegerSeries = (total, count, liveTI = null) => {
-    const safeTotal = Math.round(Number(total) || 0);
-    if (count <= 0) return [];
-    if (count === 1) return [safeTotal];
-    const sign = safeTotal < 0 ? -1 : 1;
-    const magnitude = Math.abs(safeTotal);
-    const avg2 = magnitude / count;
-    const liveRaw = Number.isFinite(Number(liveTI)) ? Math.round(Number(liveTI)) : sign * avg2;
-    const live = Math.abs(liveRaw);
-    const slope = Math.min(0.75, Math.abs(live - avg2) / Math.max(1, avg2 || 1));
-    const rawWeights = Array.from({ length: count }, (_, index) => {
-      const progress = count === 1 ? 1 : index / (count - 1);
-      const directional = live >= avg2 ? progress : 1 - progress;
-      return 1 + directional * slope;
-    });
-    const rawTotal = rawWeights.reduce((sum, weight) => sum + weight, 0) || 1;
-    const quotas = rawWeights.map((weight) => magnitude * weight / rawTotal);
-    const series = quotas.map((value) => Math.floor(value));
-    let remainder = magnitude - series.reduce((sum, value) => sum + value, 0);
-    quotas.map((value, index) => ({ index, frac: value - Math.floor(value) })).sort((a, b) => b.frac - a.frac).forEach(({ index }) => {
-      if (remainder <= 0) return;
-      series[index] += 1;
-      remainder -= 1;
-    });
-    return series.map((value) => value * sign);
-  };
-  var reconstructSkillHistoryFromGuess = (player2, DBPlayer, missingKeys) => {
-    var _a, _b, _c, _d, _e, _f;
-    const segmentKeys = _sortAgeKeys(missingKeys);
-    if (!segmentKeys.length || !(DBPlayer == null ? void 0 : DBPlayer.records)) return {};
-    const historyKeys = _sortAgeKeys(Object.keys(DBPlayer.records).concat(segmentKeys));
-    const firstMissingIndex = historyKeys.indexOf(segmentKeys[0]);
-    if (firstMissingIndex <= 0) return {};
-    const startKey = historyKeys[firstMissingIndex - 1];
-    const startRecord = DBPlayer.records[startKey];
-    if (!((_a = startRecord == null ? void 0 : startRecord.skills) == null ? void 0 : _a.length)) return {};
-    const endKey = (player2 == null ? void 0 : player2.ageMonthsString) || segmentKeys.at(-1);
-    const endSkills = Array.isArray(player2 == null ? void 0 : player2.skills) ? player2.skills.map(_sv) : [];
-    if (!endSkills.length) return {};
-    const startSkills = startRecord.skills.map(_sv);
-    const startIntSkills = startSkills.map((skill) => Math.floor(skill || 0));
-    const endIntSkills = endSkills.map((skill) => Math.floor(skill || 0));
-    const startSum = _sumSkillValues(startSkills);
-    const endSum = _sumSkillValues(endSkills);
-    const totalTI = Math.round((endSum - startSum) * 10);
-    const tiSeries = _buildWeightedIntegerSeries(totalTI, segmentKeys.length, player2 == null ? void 0 : player2.ti);
-    const cumulativeTI = tiSeries.reduce((acc, ti, index) => {
-      acc.push(ti + (acc[index - 1] || 0));
-      return acc;
-    }, []);
-    const currentTraining = (_b = player2 == null ? void 0 : player2.training) != null ? _b : null;
-    const statKeys = _getHistoryStatKeys((_c = player2 == null ? void 0 : player2.isGK) != null ? _c : false);
-    const guessedRecords = {};
-    historyKeys.forEach((key) => {
-      var _a2, _b2, _c2, _d2, _e2;
-      if (!segmentKeys.includes(key)) {
-        const record = DBPlayer.records[key] || {};
-        guessedRecords[key] = {
-          SI: Number((_a2 = record.SI) != null ? _a2 : 0),
-          TI: Number((_b2 = record.TI) != null ? _b2 : 0),
-          skills: Array.isArray(record.skills) ? record.skills.map((skill) => Math.floor(_sv(skill) || 0)) : startIntSkills
-        };
-        return;
-      }
-      const segmentIndex = segmentKeys.indexOf(key);
-      const progress = totalTI > 0 ? cumulativeTI[segmentIndex] / totalTI : (segmentIndex + 1) / segmentKeys.length;
-      const intSkills = startIntSkills.map((value, skillIndex) => {
-        const delta = Math.max(0, endIntSkills[skillIndex] - value);
-        const advanced = segmentIndex === segmentKeys.length - 1 ? delta : Math.floor(delta * progress + 1e-9);
-        return value + Math.min(delta, advanced);
-      });
-      const skillSum = startSum + (cumulativeTI[segmentIndex] || 0) / 10;
-      guessedRecords[key] = {
-        SI: key === endKey ? Number((_c2 = player2 == null ? void 0 : player2.asi) != null ? _c2 : 0) : _calcASIFromSkillSum(skillSum, (_d2 = player2 == null ? void 0 : player2.isGK) != null ? _d2 : false),
-        TI: Number((_e2 = tiSeries[segmentIndex]) != null ? _e2 : 0),
-        skills: intSkills
-      };
-    });
-    const reconstructed = reconstructSkillHistory({
-      ageKeys: historyKeys,
-      isGK: (_d = player2 == null ? void 0 : player2.isGK) != null ? _d : false,
-      currentTraining,
-      skillIndexHistory: historyKeys.map((key) => {
-        var _a2, _b2;
-        return (_b2 = (_a2 = guessedRecords[key]) == null ? void 0 : _a2.SI) != null ? _b2 : 0;
-      }),
-      tiHistory: historyKeys.map((key) => {
-        var _a2, _b2;
-        return (_b2 = (_a2 = guessedRecords[key]) == null ? void 0 : _a2.TI) != null ? _b2 : 0;
-      }),
-      skillHistory: statKeys.reduce((acc, statKey, statIndex) => {
-        acc[statKey] = historyKeys.map((key) => {
-          var _a2, _b2, _c2;
-          return (_c2 = (_b2 = (_a2 = guessedRecords[key]) == null ? void 0 : _a2.skills) == null ? void 0 : _b2[statIndex]) != null ? _c2 : 0;
-        });
-        return acc;
-      }, {})
-    });
-    if (reconstructed[endKey]) {
-      reconstructed[endKey] = {
-        ...reconstructed[endKey],
-        SI: Number((_f = (_e = player2 == null ? void 0 : player2.asi) != null ? _e : reconstructed[endKey].SI) != null ? _f : 0),
-        skills: endSkills
-      };
-    }
-    return reconstructed;
   };
   var buildRoutineMap = (liveRou, liveAgeY, liveAgeM, gpData, ageKeys) => {
     const map = {};
@@ -4231,20 +3829,17 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     calcR5,
     calcRec,
     calcAsiSkillSum,
+    calcASIFromSkillSum,
     calcSkillDecimalsSimple,
     calcSkillDecimals,
-    computeGrowthDecimals,
-    reconstructSkillHistory,
-    reconstructSkillHistoryFromGraph,
-    reconstructSkillHistoryFromRecords,
-    reconstructSkillHistoryFromGuess,
     buildRoutineMap,
     calculatePlayerR5,
     calculatePlayerREC,
     calcASIProjection,
     getCurrentSession: _getCurrentSession,
     calculateTI,
-    calculateTIPerSession
+    calculateTIPerSession,
+    sumSkillValues
   };
 
   // src/utils/match.js
@@ -5079,6 +4674,77 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   })();
   var TmMatchCacheDB = MatchCacheDB;
 
+  // src/services/club.js
+  var TmClubService = {
+    /**
+     * Fetch club fixtures (all matches for a given club this season).
+     * @param {string|number} clubId
+     * @returns {Promise<object|null>}
+     */
+    fetchClubFixtures(clubId2) {
+      return _post("/ajax/fixtures.ajax.php", { type: "club", var1: clubId2 });
+    },
+    /**
+     * Fetch the match history HTML page for a club in a given season.
+     * Returns the raw HTML string (not JSON) or null on failure.
+     * @param {string|number} clubId
+     * @param {string|number} seasonId
+     * @returns {Promise<string|null>}
+     */
+    fetchClubMatchHistory(clubId2, seasonId) {
+      return _getHtml(`/history/club/matches/${clubId2}/${seasonId}/`);
+    },
+    /**
+     * Fetch the club transfer history HTML page for a given season.
+     * @param {string|number} clubId
+     * @param {string|number} seasonId
+     * @returns {Promise<string|null>}
+     */
+    fetchClubTransferHistory(clubId2, seasonId) {
+      return _getHtml(`/history/club/transfers/${clubId2}/${seasonId}/`);
+    },
+    /**
+     * Fetch the club records HTML page.
+     * @param {string|number} clubId
+     * @returns {Promise<string|null>}
+     */
+    fetchClubRecords(clubId2) {
+      return _getHtml(`/history/club/records/${clubId2}/`);
+    },
+    /**
+     * Fetch the raw club page HTML.
+     * @param {string|number} clubId
+     * @returns {Promise<string|null>}
+     */
+    fetchClubPageHtml(clubId2) {
+      return _getHtml(`/club/${clubId2}/`);
+    },
+    /**
+     * Fetch the club league history HTML page for a given season.
+     * @param {string|number} clubId
+     * @param {string|number} seasonId
+     * @returns {Promise<string|null>}
+     */
+    fetchClubLeagueHistory(clubId2, seasonId) {
+      return _getHtml(`/history/club/league/${clubId2}/${seasonId}/`);
+    },
+    /**
+     * Fetch the players_get_select post map for a club (raw, no normalization).
+     * Returns a { [playerId: string]: player } map, or null on failure.
+     * @param {string|number} clubId
+     * @returns {Promise<object|null>}
+     */
+    async fetchSquadPost(clubId2) {
+      return _dedup(`club:squad-post:${clubId2}`, async () => {
+        const data = await _post("/ajax/players_get_select.ajax.php", { type: "change", club_id: clubId2 });
+        if (!(data == null ? void 0 : data.post)) return null;
+        const map = {};
+        for (const [id, p] of Object.entries(data.post)) map[String(id)] = p;
+        return map;
+      });
+    }
+  };
+
   // src/lib/club.js
   var Club = {
     "id": null,
@@ -5263,123 +4929,6 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     player2.isOwnPlayer = TmUtils.getOwnClubIds().includes(String(player2.club_id));
     return player2;
   };
-  var getMissingRecords = (player2, DBPlayer) => {
-    if (!(DBPlayer == null ? void 0 : DBPlayer.records)) return [];
-    const keys = Object.keys(DBPlayer.records);
-    const [y0, m0] = keys.at(-1).split(".").map(Number);
-    const [y1, m1] = player2.ageMonthsString.split(".").map(Number);
-    const totalFrom = y0 * 12 + m0 + 1;
-    const totalTo = y1 * 12 + m1;
-    return Array.from({ length: Math.max(0, totalTo - totalFrom + 1) }, (_, i) => {
-      const t = totalFrom + i;
-      return `${Math.floor(t / 12)}.${t % 12}`;
-    }).filter((k) => !DBPlayer.records[k]);
-  };
-  var syncMissingRecords = async (player2, DBPlayer) => {
-    var _a, _b, _c, _d;
-    const missing = getMissingRecords(player2, DBPlayer);
-    console.log(missing);
-    if (!missing.length) return {};
-    const [trainingData, graphData] = await Promise.all([
-      fetchPlayerTraining(player2),
-      _post("/ajax/players_get_info.ajax.php", { player_id: player2.id, type: "graphs", show_non_pro_graphs: true })
-    ]);
-    player2.training = trainingData;
-    let historyRecords = null;
-    if ((_b = (_a = graphData == null ? void 0 : graphData.graphs) == null ? void 0 : _a.ti) == null ? void 0 : _b.length) {
-      historyRecords = syncMissingRecordsFromGraph(player2, DBPlayer, missing, graphData.graphs);
-    } else {
-      historyRecords = syncMissingRecordsGuess(player2, DBPlayer, missing);
-    }
-    if (historyRecords && Object.keys(historyRecords).length) {
-      const preferredPositions = player2.positions.filter((position) => position.preferred);
-      const store = {
-        ...DBPlayer || {},
-        _v: (DBPlayer == null ? void 0 : DBPlayer._v) || 1,
-        meta: {
-          ...(DBPlayer == null ? void 0 : DBPlayer.meta) || {},
-          name: ((_c = DBPlayer == null ? void 0 : DBPlayer.meta) == null ? void 0 : _c.name) || player2.name,
-          pos: ((_d = DBPlayer == null ? void 0 : DBPlayer.meta) == null ? void 0 : _d.pos) || (preferredPositions.length ? preferredPositions.map((position) => position.position).join(", ") : player2.positions.filter((position) => position.preferred || position.r5 != null).map((position) => position.position).join(", "))
-        },
-        records: {
-          ...(DBPlayer == null ? void 0 : DBPlayer.records) || {},
-          ...historyRecords
-        }
-      };
-      await TmPlayerDB.set(player2.id, store);
-    }
-    return historyRecords;
-  };
-  var fetchPlayerTraining = async (player2) => {
-    if (player2.isOwnPlayer) {
-      const data = await _post("/ajax/players_get_info.ajax.php", {
-        player_id: player2.id,
-        type: "training"
-      });
-      return data;
-    } else {
-      const data = await _post("/ajax/players_get_select.ajax.php", { type: "change", club_id: player2.club_id });
-      return normalizeSquadPlayerTraining(data == null ? void 0 : data.post[player2.id]);
-    }
-  };
-  var syncMissingRecordsFromGraph = (player2, DBPlayer, missing, graphData) => {
-    var _a, _b;
-    if (!missing.length || !((_a = graphData == null ? void 0 : graphData.skill_index) == null ? void 0 : _a.length)) return {};
-    const asi = graphData.skill_index;
-    const n = asi.length;
-    const result = {};
-    for (const key of missing) {
-      const [y, m] = key.split(".").map(Number);
-      const idx = n - 1 - (player2.ageMonths - (y * 12 + m));
-      if (idx < 0 || idx >= n) continue;
-      result[key] = { SI: Number(asi[idx]) };
-    }
-    if ((_b = graphData == null ? void 0 : graphData.strength) == null ? void 0 : _b.length) {
-      return syncStatsFromGraph(player2, DBPlayer, graphData, result);
-    } else {
-      return syncStatsFromRecords(player2, DBPlayer, result);
-    }
-  };
-  var enrichHistoryRecords = (player2, history) => {
-    const preferedPositions = player2.positions.filter((position) => position.preferred);
-    const positionsForRatings = preferedPositions.length ? preferedPositions : player2.positions;
-    Object.keys(history).forEach((ageKey) => {
-      const historyRecord = history[ageKey];
-      const playerSnapshot = {
-        ...player2,
-        asi: historyRecord.SI,
-        skills: historyRecord.skills
-      };
-      let maxR5 = null;
-      let maxRec = null;
-      positionsForRatings.forEach((position) => {
-        const r5 = Number(TmLib.calculatePlayerR5(position, playerSnapshot));
-        const rec = Number(TmLib.calculatePlayerREC(position, playerSnapshot));
-        if (Number.isFinite(r5) && (maxR5 === null || r5 > maxR5)) maxR5 = r5;
-        if (Number.isFinite(rec) && (maxRec === null || rec > maxRec)) maxRec = rec;
-      });
-      history[ageKey] = {
-        ...historyRecord,
-        R5: maxR5,
-        REREC: maxRec
-      };
-    });
-    return history;
-  };
-  var syncStatsFromGraph = (player2, DBPlayer, graphData, records) => {
-    const history = TmLib.reconstructSkillHistoryFromGraph(player2, DBPlayer, graphData, records);
-    return enrichHistoryRecords(player2, history);
-  };
-  var syncStatsFromRecords = (player2, DBPlayer, records) => {
-    const history = TmLib.reconstructSkillHistoryFromRecords(player2, DBPlayer, records);
-    return enrichHistoryRecords(player2, history);
-  };
-  var syncMissingRecordsGuess = (player2, DBPlayer, missing) => {
-    const history = TmLib.reconstructSkillHistoryFromGuess(player2, DBPlayer, missing);
-    const enriched = enrichHistoryRecords(player2, history);
-    console.log(enriched);
-    return enriched;
-  };
   var _extractClub = (html2) => {
     var _a, _b;
     if (!html2 || html2 === "-") return { name: null, href: null };
@@ -5433,6 +4982,31 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       current_season: (_e = data == null ? void 0 : data.current_season) != null ? _e : null
     };
   };
+  var populateSkillIndexFromTI = (tiHistory, currentAsi, isGK = false) => {
+    if (!Array.isArray(tiHistory) || !tiHistory.length || !Number.isFinite(Number(currentAsi))) return null;
+    const skillIndex = new Array(tiHistory.length).fill(null);
+    let currentSkillSum = TmLib.calcAsiSkillSum({ asi: Number(currentAsi), isGK });
+    skillIndex[tiHistory.length - 1] = Number(currentAsi);
+    for (let index = tiHistory.length - 2; index >= 0; index -= 1) {
+      const nextTI = Number(tiHistory[index + 1]);
+      if (!Number.isFinite(nextTI)) return null;
+      currentSkillSum -= nextTI / 10;
+      skillIndex[index] = TmLib.calcASIFromSkillSum(currentSkillSum, isGK);
+    }
+    return skillIndex;
+  };
+  var normalizePlayerGraphs = (graphs, player2) => {
+    var _a, _b, _c, _d, _e, _f, _g;
+    if (!graphs) return null;
+    const TI = (_b = (_a = graphs.TI) != null ? _a : graphs.ti) != null ? _b : null;
+    return {
+      ...graphs,
+      TI,
+      skill_index: (_c = graphs.skill_index) != null ? _c : populateSkillIndexFromTI(TI, player2 == null ? void 0 : player2.asi, player2 == null ? void 0 : player2.isGK),
+      one_on_ones: (_e = (_d = graphs.one_on_ones) != null ? _d : graphs.oneonones) != null ? _e : null,
+      aerial_ability: (_g = (_f = graphs.aerial_ability) != null ? _f : graphs.arialability) != null ? _g : null
+    };
+  };
   var normalizeSquadPlayerTraining = (data) => {
     var _a;
     if (!data) return null;
@@ -5451,7 +5025,6 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   };
   var normalizePlayerTraining = (data) => {
     var _a;
-    console.log(data);
     const { custom } = data;
     if (!custom.custom_on) {
       return {
@@ -5467,497 +5040,713 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     return { custom: customTraining, standard: null };
   };
 
+  // src/workflows/player-history/profile.js
+  var { sortAgeKeys: sortAgeKeys2 } = TmUtils;
+  var HISTORY_SYNC_STRATEGY = {
+    NOOP: "noop",
+    SKILL_GRAPHS: "skill-graphs",
+    EXACT_CURRENT_TI: "exact-current-ti",
+    ANCHORED_ESTIMATE: "anchored-estimate",
+    INSUFFICIENT_EVIDENCE: "insufficient-evidence"
+  };
+  var getMissingAgeKeys = (player2, DBPlayer) => {
+    if (!(DBPlayer == null ? void 0 : DBPlayer.records)) return [];
+    const keys = sortAgeKeys2(Object.keys(DBPlayer.records));
+    if (!keys.length) return [];
+    const [fromYear, fromMonth] = keys[0].split(".").map(Number);
+    const [toYear, toMonth] = String((player2 == null ? void 0 : player2.ageMonthsString) || "").split(".").map(Number);
+    if (!Number.isFinite(fromYear) || !Number.isFinite(fromMonth) || !Number.isFinite(toYear) || !Number.isFinite(toMonth)) return [];
+    const totalFrom = fromYear * 12 + fromMonth;
+    const totalTo = toYear * 12 + toMonth;
+    return Array.from({ length: Math.max(0, totalTo - totalFrom + 1) }, (_, index) => {
+      const total = totalFrom + index;
+      return `${Math.floor(total / 12)}.${total % 12}`;
+    }).filter((key) => !DBPlayer.records[key]);
+  };
+  var buildHistoryEvidenceProfile = (player2, DBPlayer) => {
+    var _a, _b, _c, _d;
+    const missingAgeKeys = getMissingAgeKeys(player2, DBPlayer);
+    const dbKeys = sortAgeKeys2(Object.keys((DBPlayer == null ? void 0 : DBPlayer.records) || {}));
+    const latestDbKey = dbKeys.at(-1) || null;
+    return {
+      playerId: (_a = player2 == null ? void 0 : player2.id) != null ? _a : null,
+      isOwnPlayer: Boolean(player2 == null ? void 0 : player2.isOwnPlayer),
+      isGK: Boolean(player2 == null ? void 0 : player2.isGK),
+      missingAgeKeys,
+      hasMissingAgeKeys: missingAgeKeys.length > 0,
+      hasDbHistory: dbKeys.length > 0,
+      hasLeftAnchor: Boolean(latestDbKey && ((_b = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _b[latestDbKey])),
+      hasCurrentSnapshot: Array.isArray(player2 == null ? void 0 : player2.skills) && player2.skills.length > 0,
+      hasReliableCurrentTI: Boolean((player2 == null ? void 0 : player2.isOwnPlayer) && Number.isFinite(Number(player2 == null ? void 0 : player2.ti))),
+      hasTraining: (player2 == null ? void 0 : player2.training) != null,
+      hasTIGraph: Boolean((_c = player2 == null ? void 0 : player2.graphs) == null ? void 0 : _c.hasTIGraph),
+      hasSkillGraphs: Boolean((_d = player2 == null ? void 0 : player2.graphs) == null ? void 0 : _d.hasSkillGraphs),
+      latestDbKey
+    };
+  };
+  var selectHistorySyncStrategy = (profile) => {
+    if (profile.hasSkillGraphs) return HISTORY_SYNC_STRATEGY.SKILL_GRAPHS;
+    if (profile.hasReliableCurrentTI && profile.hasCurrentSnapshot) return HISTORY_SYNC_STRATEGY.EXACT_CURRENT_TI;
+    if (profile.hasLeftAnchor && profile.hasCurrentSnapshot) return HISTORY_SYNC_STRATEGY.ANCHORED_ESTIMATE;
+    return HISTORY_SYNC_STRATEGY.INSUFFICIENT_EVIDENCE;
+  };
+
   // src/services/player.js
   var TmPlayerService = {
-    async fetchPlayerTooltip(player_id) {
-      var _a, _b;
-      const [playerData, initialDBPlayer] = await Promise.all([
-        _post("/ajax/tooltip.ajax.php", { player_id }),
-        this.fetchDBPlayer(player_id)
-      ]);
-      initialDBPlayer.records = {
-        "32.8": {
-          "SI": 191045,
-          "REREC": 5.23,
-          "R5": 100.28,
-          "skills": [
-            13.9444406178668,
-            15.4722203089334,
-            19.37777624714672,
-            18.37777624714672,
-            18.37777624714672,
-            19.37777624714672,
-            18.37777624714672,
-            16.472220308933398,
-            18.37777624714672,
-            17.472220308933398,
-            15.4722203089334
-          ],
-          "routine": 40.5,
-          "locked": true
-        },
-        "32.9": {
-          "SI": 188263,
-          "REREC": 5.22,
-          "R5": 100.13,
-          "skills": [
-            13.99,
-            15.534325864502549,
-            18.428771553752124,
-            18.428771553752124,
-            18.428771553752124,
-            19.428771553752124,
-            18.428771553752124,
-            16.53432586450255,
-            18.428771553752124,
-            17.53432586450255,
-            15.534325864502549
-          ],
-          "routine": 40.8,
-          "locked": true,
-          "TI": -4
-        },
-        "32.10": {
-          "SI": 184195,
-          "REREC": 5.2,
-          "R5": 99.9,
-          "skills": [
-            13.879964665836594,
-            15.479308197420846,
-            18.38475742008676,
-            18.38475742008676,
-            18.38475742008676,
-            19.38475742008676,
-            18.38475742008676,
-            16.479308197420846,
-            18.38475742008676,
-            17.479308197420846,
-            15.479308197420846
-          ],
-          "routine": 41.1,
-          "locked": true,
-          "TI": -6
-        },
-        "32.11": {
-          "SI": 180126,
-          "REREC": 5.19,
-          "R5": 99.67,
-          "skills": [
-            13.767798416311507,
-            15.423225072658303,
-            18.339890920276726,
-            18.339890920276726,
-            18.339890920276726,
-            19.339890920276726,
-            18.339890920276726,
-            16.4232250726583,
-            18.339890920276726,
-            17.4232250726583,
-            15.423225072658303
-          ],
-          "routine": 41.4,
-          "locked": true,
-          "TI": -6
-        },
-        "33.0": {
-          "SI": 176825,
-          "REREC": 5.17,
-          "R5": 99.49,
-          "skills": [
-            13.675195817894478,
-            15.37692377344979,
-            18.302849880909914,
-            18.302849880909914,
-            18.302849880909914,
-            19.302849880909914,
-            18.302849880909914,
-            16.37692377344979,
-            18.302849880909914,
-            17.37692377344979,
-            15.37692377344979
-          ],
-          "routine": 41.7,
-          "locked": true,
-          "TI": -5
-        },
-        "33.1": {
-          "SI": 175524,
-          "REREC": 5.17,
-          "R5": 99.58,
-          "skills": [
-            13.80623171048903,
-            14.45278870664838,
-            18.363886727032167,
-            18.363886727032167,
-            18.363886727032167,
-            19.363886727032167,
-            18.363886727032167,
-            16.45278870664838,
-            18.363886727032167,
-            17.45278870664838,
-            15.45278870664838
-          ],
-          "routine": 42,
-          "locked": true,
-          "TI": -2
-        },
-        "33.2": {
-          "SI": 174222,
-          "REREC": 5.16,
-          "R5": 99.53,
-          "skills": [
-            13.772213391470162,
-            14.418770387629513,
-            18.35027939942462,
-            18.35027939942462,
-            18.35027939942462,
-            19.35027939942462,
-            18.35027939942462,
-            16.435779547138946,
-            18.35027939942462,
-            17.435779547138946,
-            15.435779547138948
-          ],
-          "routine": 42.3,
-          "locked": true,
-          "TI": -2
-        },
-        "33.3": {
-          "SI": 170379,
-          "REREC": 5.15,
-          "R5": 99.29,
-          "skills": [
-            12.83814755613815,
-            14.396343698688849,
-            18.387001588022795,
-            18.387001588022795,
-            18.387001588022795,
-            19.387001588022795,
-            18.387001588022795,
-            16.48116485675012,
-            18.387001588022795,
-            17.48116485675012,
-            15.48116485675012
-          ],
-          "routine": 42.6,
-          "locked": true,
-          "TI": -6
-        },
-        "33.4": {
-          "SI": 167814,
-          "REREC": 5.14,
-          "R5": 99.15,
-          "skills": [
-            12.769171495423809,
-            14.327367637974508,
-            18.35941116373706,
-            18.35941116373706,
-            18.35941116373706,
-            19.35941116373706,
-            18.35941116373706,
-            16.44667682639295,
-            18.35941116373706,
-            17.44667682639295,
-            15.446676826392949
-          ],
-          "routine": 42.9,
-          "TI": -4,
-          "_estimated": true
-        },
-        "33.5": {
-          "SI": 165249,
-          "REREC": 5.11,
-          "R5": 98.55,
-          "skills": [
-            12.866550569105874,
-            14.319069978849523,
-            18.41073929283531,
-            17.41073929283531,
-            18.41073929283531,
-            19.41073929283531,
-            18.41073929283531,
-            16.51021816278449,
-            18.41073929283531,
-            17.51021816278449,
-            15.510218162784488
-          ],
-          "routine": 43.2,
-          "TI": -4,
-          "_estimated": true
-        },
-        "33.6": {
-          "SI": 162684,
-          "REREC": 5.11,
-          "R5": 98.59,
-          "skills": [
-            12.99,
-            15.002751302526766,
-            17.491625299355153,
-            17.482733311135444,
-            18.491625299355153,
-            19.491625299355153,
-            18.491625299355153,
-            16.609750359226183,
-            18.491625299355153,
-            16.609750359226183,
-            15.609750359226181
-          ],
-          "routine": 43.5,
-          "TI": -4,
-          "_estimated": true
-        },
-        "33.7": {
-          "SI": 160119,
-          "REREC": 5.08,
-          "R5": 97.82,
-          "skills": [
-            12.945724195312325,
-            14.96373333133038,
-            17.46937167262335,
-            16.460174762574177,
-            18.477194136257843,
-            19.477194136257843,
-            18.477194136257843,
-            17,
-            18.477194136257843,
-            16.591547447415657,
-            16
-          ],
-          "routine": 43.5,
-          "TI": -4,
-          "_estimated": true
-        },
-        "33.8": {
-          "SI": 157554,
-          "REREC": 5.05,
-          "R5": 97.48,
-          "skills": [
-            12.99,
-            14.927432163169566,
-            17.821034486546388,
-            16.804781011450313,
-            18.84840984359753,
-            18.84840984359753,
-            17.84840984359753,
-            16.991525363264795,
-            17.84840984359753,
-            16.99,
-            15.991525363264795
-          ],
-          "routine": 43.5,
-          "TI": -4,
-          "_estimated": true
-        },
-        "33.9": {
-          "SI": 154989,
-          "REREC": 5.04,
-          "R5": 97.28,
-          "skills": [
-            12.914926817312335,
-            14.889895571825733,
-            17.783497895202558,
-            16.767244420106483,
-            18.81838057052246,
-            18.81838057052246,
-            17.810873252253696,
-            16.95398877192096,
-            17.810873252253696,
-            16.95246340865617,
-            15.953988771920963
-          ],
-          "routine": 43.5,
-          "TI": -4,
-          "_estimated": true
-        },
-        "33.10": {
-          "SI": 152424,
-          "REREC": 5,
-          "R5": 96.45,
-          "skills": [
-            12.81867305758143,
-            16,
-            17.72755503676954,
-            15.711691203929856,
-            18.769033509527326,
-            18.769033509527326,
-            17.754274128263443,
-            16.917931618211533,
-            17.754274128263443,
-            16.892469963900826,
-            15.917931618211535
-          ],
-          "routine": 43.5,
-          "TI": -4,
-          "_estimated": true
-        },
-        "33.11": {
-          "SI": 149859,
-          "REREC": 4.99,
-          "R5": 96.31,
-          "skills": [
-            12.875850801463955,
-            15.95613073264723,
-            16.81395978865533,
-            15.79525542120299,
-            18.871973753968,
-            18.871973753968,
-            17.845463127750307,
-            16.859367410396995,
-            17.845463127750307,
-            16.99,
-            15.859367410396995
-          ],
-          "routine": 43.5,
-          "TI": -4,
-          "_estimated": true
-        },
-        "34.0": {
-          "SI": 147294,
-          "REREC": 5,
-          "R5": 96.51,
-          "skills": [
-            12.939135796078151,
-            15.914973906228576,
-            16.91273969932752,
-            15.890984108403213,
-            18.989335646964612,
-            18.989335646964612,
-            17.949382144459463,
-            16.8024256866367,
-            17.949382144459463,
-            15.99,
-            15.802425686636699
-          ],
-          "routine": 43.5,
-          "TI": -5,
-          "_estimated": true
-        },
-        "34.1": {
-          "SI": 144729,
-          "REREC": 4.97,
-          "R5": 95.85,
-          "skills": [
-            12.99,
-            16.002482838860494,
-            16.99,
-            14.99,
-            18.99,
-            18.99,
-            17.99,
-            16.87305727414523,
-            17.99,
-            15.99,
-            15.873057274145228
-          ],
-          "routine": 43.5,
-          "TI": -5,
-          "_estimated": true
-        },
-        "34.2": {
-          "SI": 142164,
-          "REREC": 4.93,
-          "R5": 94.93,
-          "skills": [
-            12.508478955920896,
-            17,
-            16.529131710702025,
-            14.508478955920896,
-            18.53326226165825,
-            18.53326226165825,
-            17.529131710702025,
-            18,
-            17.529131710702025,
-            15.529131710702025,
-            17
-          ],
-          "routine": 43.5,
-          "TI": -5
-        },
-        "34.6": {
-          "SI": 134731,
-          "REREC": 4.96,
-          "R5": 96.15,
-          "skills": [
-            11.774141659692827,
-            14.530545267145824,
-            17,
-            17,
-            18.800080390014045,
-            18.800080390014045,
-            17.795757268293844,
-            16.568801066868375,
-            18,
-            17,
-            14.530545267145824
-          ],
-          "routine": 43.5
-        },
-        "34.3": {
-          "SI": 140306,
-          "REREC": 4.95,
-          "R5": 95.44,
-          "skills": [
-            11.968601772527077,
-            15.989175282667425,
-            16.99,
-            14.968601772527077,
-            18.99,
-            18.99,
-            17.99,
-            17.000478444559224,
-            17.99,
-            15.99,
-            15.989175282667425
-          ],
-          "_estimated": true,
-          "routine": 43.5
-        },
-        "34.4": {
-          "SI": 138448,
-          "REREC": 4.95,
-          "R5": 95.66,
-          "skills": [
-            11.99,
-            15.290117655569636,
-            16.99,
-            15.341354291038376,
-            18.99,
-            18.99,
-            17.99,
-            17.305185154163443,
-            17.99,
-            16.341354291038378,
-            15.290117655569636
-          ],
-          "_estimated": true,
-          "routine": 43.5
-        },
-        "34.5": {
-          "SI": 136589,
-          "REREC": 4.97,
-          "R5": 96.1,
-          "skills": [
-            11.99,
-            14.694956653886432,
-            16.99,
-            16.34749357897816,
-            18.99,
-            18.99,
-            17.99,
-            16.715111212076447,
-            17.99,
-            16.76349170265954,
-            14.694956653886432
-          ],
-          "_estimated": true,
-          "routine": 43.5
-        }
+    async fetchPlayerTooltip(playerId) {
+      const data = await _post("/ajax/tooltip.ajax.php", { player_id: playerId });
+      return data ? normalizeTooltipPlayer(data) : null;
+    },
+    async fetchPlayerInfo(pid, type, extra = {}) {
+      return _post("/ajax/players_get_info.ajax.php", {
+        player_id: pid,
+        type,
+        show_non_pro_graphs: true,
+        ...extra
+      });
+    },
+    async fetchPlayerGraphs(player2) {
+      const data = await this.fetchPlayerInfo(player2.id, "graphs");
+      return normalizePlayerGraphs(data == null ? void 0 : data.graphs, player2);
+    },
+    async fetchPlayerHistory(playerId) {
+      const data = await this.fetchPlayerInfo(playerId, "history");
+      return data ? normalizePlayerStats(data) : null;
+    },
+    async fetchPlayerTraining(playerId) {
+      const data = await this.fetchPlayerInfo(playerId, "training");
+      return data ? normalizePlayerTraining(data) : null;
+    },
+    async fetchPlayerTrainingForSync(player2) {
+      var _a;
+      if (player2 == null ? void 0 : player2.isOwnPlayer) {
+        return this.fetchPlayerTraining(player2.id);
+      }
+      const data = await _post("/ajax/players_get_select.ajax.php", {
+        type: "change",
+        club_id: player2 == null ? void 0 : player2.club_id
+      });
+      return normalizeSquadPlayerTraining((_a = data == null ? void 0 : data.post) == null ? void 0 : _a[player2.id]);
+    },
+    normalizeSquadPlayer(postPlayer) {
+      return normalizeSquadPlayer(postPlayer);
+    },
+    normalizePlayer(player2) {
+      return player2;
+    }
+  };
+
+  // src/workflows/player-history/sources.js
+  var { GRAPH_KEYS_OUT: GRAPH_KEYS_OUT3, GRAPH_KEYS_GK: GRAPH_KEYS_GK3 } = TmConst;
+  var { sortAgeKeys: sortAgeKeys3, skillValue: skillValue3 } = TmUtils;
+  var normalizeGraphNumber = (value) => Number.isFinite(Number(value)) ? Number(value) : null;
+  var deriveTIFromSkillIndex = (previousSkillIndex, currentSkillIndex, isGK) => {
+    if (!Number.isFinite(Number(previousSkillIndex)) || !Number.isFinite(Number(currentSkillIndex))) return null;
+    const previousSkillSum = TmLib.calcAsiSkillSum({ asi: Number(previousSkillIndex), isGK });
+    const currentSkillSum = TmLib.calcAsiSkillSum({ asi: Number(currentSkillIndex), isGK });
+    return Math.round((currentSkillSum - previousSkillSum) * 10);
+  };
+  var populateMissingTIFromSkillIndex = (player2, ageKeys, recordsByAgeKey) => {
+    var _a, _b, _c;
+    for (let index = 1; index < ageKeys.length; index += 1) {
+      const ageKey = ageKeys[index];
+      const previousKey = ageKeys[index - 1];
+      const derivedTI = deriveTIFromSkillIndex(
+        (_a = recordsByAgeKey[previousKey]) == null ? void 0 : _a.SI,
+        (_b = recordsByAgeKey[ageKey]) == null ? void 0 : _b.SI,
+        player2 == null ? void 0 : player2.isGK
+      );
+      if (derivedTI == null) continue;
+      const currentTI = normalizeGraphNumber((_c = recordsByAgeKey[ageKey]) == null ? void 0 : _c.TI);
+      if (currentTI != null && !(currentTI === 0 && derivedTI !== 0)) continue;
+      recordsByAgeKey[ageKey].TI = derivedTI;
+    }
+  };
+  var buildGraphAgeKeysFromSeries = (player2, graphData) => {
+    var _a;
+    const graphLength = ((_a = graphData == null ? void 0 : graphData.skill_index) == null ? void 0 : _a.length) || 0;
+    if (!graphLength) return [];
+    return Array.from({ length: graphLength }, (_, index) => {
+      const totalMonths = player2.ageMonths - (graphLength - 1 - index);
+      return `${Math.floor(totalMonths / 12)}.${totalMonths % 12}`;
+    });
+  };
+  var buildPlayerGraphs = (player2, DBPlayer, rawGraphs = null) => {
+    var _a;
+    const statKeys = (player2 == null ? void 0 : player2.isGK) ? GRAPH_KEYS_GK3 : GRAPH_KEYS_OUT3;
+    const dbKeys = sortAgeKeys3(Object.keys((DBPlayer == null ? void 0 : DBPlayer.records) || {}));
+    const currentAgeKey = (player2 == null ? void 0 : player2.ageMonthsString) || null;
+    const recordsByAgeKey = rawGraphs ? {} : {};
+    if (!rawGraphs) {
+      dbKeys.forEach((ageKey) => {
+        var _a2;
+        const record = (_a2 = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _a2[ageKey];
+        recordsByAgeKey[ageKey] = {
+          SI: normalizeGraphNumber(record == null ? void 0 : record.SI),
+          TI: normalizeGraphNumber(record == null ? void 0 : record.TI),
+          skills: Array.isArray(record == null ? void 0 : record.skills) ? record.skills.map(skillValue3) : new Array(statKeys.length).fill(null)
+        };
+      });
+    }
+    const remoteAgeKeys = buildGraphAgeKeysFromSeries(player2, rawGraphs);
+    remoteAgeKeys.forEach((ageKey, graphIndex) => {
+      var _a2, _b;
+      const existing = recordsByAgeKey[ageKey] || {
+        SI: null,
+        TI: null,
+        skills: new Array(statKeys.length).fill(null)
       };
-      const player2 = normalizeTooltipPlayer(playerData);
-      const records = await syncMissingRecords(player2, initialDBPlayer);
+      const skillIndexValue = (_a2 = rawGraphs == null ? void 0 : rawGraphs.skill_index) == null ? void 0 : _a2[graphIndex];
+      if (skillIndexValue != null) existing.SI = Number(skillIndexValue);
+      const tiValue = (_b = rawGraphs == null ? void 0 : rawGraphs.TI) == null ? void 0 : _b[graphIndex];
+      if (tiValue != null) existing.TI = Number(tiValue);
+      statKeys.forEach((statKey, statIndex) => {
+        var _a3;
+        const statValue = (_a3 = rawGraphs == null ? void 0 : rawGraphs[statKey]) == null ? void 0 : _a3[graphIndex];
+        if (statValue != null) existing.skills[statIndex] = Number(statValue);
+      });
+      recordsByAgeKey[ageKey] = existing;
+    });
+    if (currentAgeKey) {
+      const existing = recordsByAgeKey[currentAgeKey] || {
+        SI: null,
+        TI: null,
+        skills: new Array(statKeys.length).fill(null)
+      };
+      if (Number.isFinite(Number(player2 == null ? void 0 : player2.asi))) existing.SI = Number(player2.asi);
+      if (Number.isFinite(Number(player2 == null ? void 0 : player2.ti))) existing.TI = Number(player2.ti);
+      if (Array.isArray(player2 == null ? void 0 : player2.skills) && player2.skills.length) existing.skills = player2.skills.map(skillValue3);
+      recordsByAgeKey[currentAgeKey] = existing;
+    }
+    const ageKeys = sortAgeKeys3(Object.keys(recordsByAgeKey));
+    if (!ageKeys.length) return null;
+    if (!rawGraphs) populateMissingTIFromSkillIndex(player2, ageKeys, recordsByAgeKey);
+    return {
+      source: (rawGraphs == null ? void 0 : rawGraphs.source) || (rawGraphs ? "remote" : "indexeddb"),
+      sparse: !rawGraphs || Boolean(rawGraphs == null ? void 0 : rawGraphs.sparse),
+      hasTIGraph: Boolean((_a = rawGraphs == null ? void 0 : rawGraphs.TI) == null ? void 0 : _a.length),
+      hasSkillGraphs: statKeys.some((statKey) => Array.isArray(rawGraphs == null ? void 0 : rawGraphs[statKey]) && rawGraphs[statKey].length > 0),
+      ageKeys,
+      recordsByAgeKey
+    };
+  };
+  var loadHistorySyncSources = async (player2, DBPlayer) => {
+    const [training, graphs] = await Promise.all([
+      TmPlayerService.fetchPlayerTrainingForSync(player2),
+      (player2 == null ? void 0 : player2.isOwnPlayer) ? TmPlayerService.fetchPlayerGraphs(player2) : Promise.resolve(null)
+    ]);
+    player2.training = training;
+    player2.graphs = buildPlayerGraphs(player2, DBPlayer, graphs);
+    return player2;
+  };
+
+  // src/workflows/player-history/shared.js
+  var {
+    GRAPH_KEYS_OUT: GRAPH_KEYS_OUT4,
+    GRAPH_KEYS_GK: GRAPH_KEYS_GK4,
+    TRAINING_GROUPS_OUT: TRAINING_GROUPS_OUT3,
+    TRAINING_GROUPS_GK: TRAINING_GROUPS_GK3,
+    ASI_WEIGHT_OUTFIELD: ASI_WEIGHT_OUTFIELD3,
+    ASI_WEIGHT_GK: ASI_WEIGHT_GK3,
+    STD_FOCUS: STD_FOCUS3,
+    SMOOTH_WEIGHT: SMOOTH_WEIGHT3
+  } = TmConst;
+  var { skillValue: skillValue4, sortAgeKeys: sortAgeKeys4, safeGrowthSkills: safeGrowthSkills2, skillEff: skillEff2 } = TmUtils;
+  var getHistoryStatKeys = (isGK) => isGK ? GRAPH_KEYS_GK4 : GRAPH_KEYS_OUT4;
+  var getMergedHistoryKeys = (DBPlayer, records) => sortAgeKeys4(
+    Object.keys((DBPlayer == null ? void 0 : DBPlayer.records) || {}).concat(Object.keys(records || {}))
+  );
+  var capGrowthDecimals = (decArr, intArr, count) => {
+    const cap = 0.99;
+    const decimals = [...decArr];
+    let overflow = 0;
+    let passes = 0;
+    do {
+      overflow = 0;
+      let freeCount = 0;
+      for (let index = 0; index < count; index++) {
+        if (intArr[index] >= 20) {
+          decimals[index] = 0;
+          continue;
+        }
+        if (decimals[index] > cap) {
+          overflow += decimals[index] - cap;
+          decimals[index] = cap;
+        } else if (decimals[index] < cap) {
+          freeCount++;
+        }
+      }
+      if (overflow > 1e-4 && freeCount > 0) {
+        const increment = overflow / freeCount;
+        for (let index = 0; index < count; index++) {
+          if (intArr[index] < 20 && decimals[index] < cap) decimals[index] += increment;
+        }
+      }
+    } while (overflow > 1e-4 && ++passes < 20);
+    return decimals;
+  };
+  var normalizeTrainingWeights = (training, isGK) => {
+    const groups = isGK ? TRAINING_GROUPS_GK3 : TRAINING_GROUPS_OUT3;
+    const groupCount = groups.length;
+    const skillCount = isGK ? 11 : 14;
+    const equal = new Array(groupCount).fill(1 / groupCount);
+    if (isGK) return [1];
+    if (Array.isArray(training)) {
+      const dots = training.slice(0, groupCount).map((value) => Math.max(0, Number(value) || 0));
+      if (!dots.some(Boolean)) return equal;
+      const smoothed = dots.map((value) => value + SMOOTH_WEIGHT3);
+      const total2 = smoothed.reduce((sum, value) => sum + value, 0);
+      return total2 > 0 ? smoothed.map((value) => value / total2) : equal;
+    }
+    if (training && typeof training === "object") {
+      if (Array.isArray(training.custom)) return normalizeTrainingWeights(training.custom, isGK);
+      if (training.standard != null) return normalizeTrainingWeights(training.standard, isGK);
+    }
+    const focusIdx = STD_FOCUS3 == null ? void 0 : STD_FOCUS3[String(training)];
+    if (focusIdx == null) return equal;
+    const weights = groups.map((group) => 0.75 * (group.length / skillCount));
+    weights[focusIdx] += 0.25;
+    const total = weights.reduce((sum, value) => sum + value, 0);
+    return total > 0 ? weights.map((value) => value / total) : equal;
+  };
+  var computeGrowthDecimalsInternal = (records, ageKeys, player2, getWeights) => {
+    const count = player2.isGK ? 11 : 14;
+    const groups = player2.isGK ? TRAINING_GROUPS_GK3 : TRAINING_GROUPS_OUT3;
+    const groupCount = groups.length;
+    const asiWeight = player2.isGK ? ASI_WEIGHT_GK3 : ASI_WEIGHT_OUTFIELD3;
+    const totalPoints = (si) => Math.pow(2, Math.log(asiWeight * (si || 0)) / Math.log(128));
+    const calcShares = (intSkills, monthIndex) => {
+      const weights = getWeights(monthIndex, intSkills);
+      const base = new Array(count).fill(0);
+      let overflow = 0;
+      for (let groupIndex = 0; groupIndex < groupCount; groupIndex++) {
+        const group = groups[groupIndex];
+        const perSkill = weights[groupIndex] / group.length;
+        for (const skillIndex of group) {
+          if (intSkills[skillIndex] >= 20) overflow += perSkill;
+          else base[skillIndex] = perSkill;
+        }
+      }
+      const nonMax = intSkills.filter((value) => value < 20).length;
+      const overflowEach = nonMax > 0 ? overflow / nonMax : 0;
+      const weighted = base.map((value, index) => intSkills[index] >= 20 ? 0 : value + overflowEach);
+      const actual = weighted.map((value, index) => value * skillEff2(intSkills[index]));
+      const total = actual.reduce((sum, value) => sum + value, 0);
+      return total > 0 ? actual.map((value) => value / total) : new Array(count).fill(0);
+    };
+    const result = {};
+    const firstRecord = records[ageKeys[0]];
+    const firstSkills = safeGrowthSkills2(firstRecord.skills);
+    const firstRemainder = totalPoints(firstRecord.SI) - firstSkills.reduce((sum, value) => sum + value, 0);
+    let decimals = capGrowthDecimals(calcShares(firstSkills, 0).map((share) => Math.max(0, firstRemainder * share)), firstSkills, count);
+    result[ageKeys[0]] = decimals;
+    for (let monthIndex = 1; monthIndex < ageKeys.length; monthIndex++) {
+      const prevKey = ageKeys[monthIndex - 1];
+      const currKey = ageKeys[monthIndex];
+      const prevSkills = safeGrowthSkills2(records[prevKey].skills);
+      const currSkills = safeGrowthSkills2(records[currKey].skills);
+      const prevTotal = totalPoints(records[prevKey].SI);
+      const currTotal = totalPoints(records[currKey].SI);
+      const delta = currTotal - prevTotal;
+      const currRemainder = currTotal - currSkills.reduce((sum, value) => sum + value, 0);
+      const gains = calcShares(prevSkills, monthIndex - 1).map((share) => delta * share);
+      let nextDecimals = decimals.map((value, index) => value + gains[index]);
+      for (let index = 0; index < count; index++) {
+        const skillChange = currSkills[index] - prevSkills[index];
+        if (skillChange > 0) {
+          nextDecimals[index] -= skillChange;
+          if (nextDecimals[index] < 0) nextDecimals[index] = 0;
+        }
+        if (currSkills[index] >= 20) nextDecimals[index] = 0;
+      }
+      const nextSum = nextDecimals.reduce((sum, value) => sum + value, 0);
+      if (nextSum > 1e-3) {
+        const scale = currRemainder / nextSum;
+        decimals = capGrowthDecimals(nextDecimals.map((value, index) => currSkills[index] >= 20 ? 0 : value * scale), currSkills, count);
+      } else {
+        decimals = capGrowthDecimals(calcShares(currSkills, monthIndex).map((share) => Math.max(0, currRemainder * share)), currSkills, count);
+      }
+      result[currKey] = decimals;
+    }
+    return result;
+  };
+  var reconstructSkillHistory = ({
+    player: player2,
+    skillIndexHistory,
+    skillHistoryByKey,
+    tiHistory = null,
+    ageKeys = null
+  }) => {
+    if (!Array.isArray(skillIndexHistory) || !skillIndexHistory.length) {
+      throw new Error("skillIndexHistory is required");
+    }
+    const resolvedSkillKeys = getHistoryStatKeys(player2 == null ? void 0 : player2.isGK);
+    const resolvedAgeKeys = ageKeys || skillIndexHistory.map((_, index) => `${Math.floor(index / 12)}.${index % 12}`);
+    const monthCount = skillIndexHistory.length;
+    if (resolvedAgeKeys.length !== monthCount) throw new Error("ageKeys length mismatch");
+    const monthlySkills = resolvedAgeKeys.map(
+      (_, monthIndex) => resolvedSkillKeys.map((key) => {
+        var _a;
+        return (_a = skillHistoryByKey == null ? void 0 : skillHistoryByKey[key]) == null ? void 0 : _a[monthIndex];
+      })
+    );
+    if (monthlySkills.length !== monthCount || monthlySkills.some((skills) => !Array.isArray(skills))) {
+      throw new Error("skillHistory shape is invalid");
+    }
+    const records = {};
+    resolvedAgeKeys.forEach((key, monthIndex) => {
+      records[key] = {
+        SI: Number(skillIndexHistory[monthIndex]) || 0,
+        skills: monthlySkills[monthIndex]
+      };
+    });
+    const decimals = computeGrowthDecimalsInternal(
+      records,
+      resolvedAgeKeys,
+      { isGK: player2 == null ? void 0 : player2.isGK },
+      () => {
+        var _a;
+        return normalizeTrainingWeights((_a = player2 == null ? void 0 : player2.training) != null ? _a : null, player2 == null ? void 0 : player2.isGK);
+      }
+    );
+    const reconstructed = {};
+    resolvedAgeKeys.forEach((key, monthIndex) => {
+      var _a;
+      const intSkills = safeGrowthSkills2(records[key].skills);
+      reconstructed[key] = {
+        ageKey: key,
+        SI: records[key].SI,
+        TI: Number((_a = tiHistory == null ? void 0 : tiHistory[monthIndex]) != null ? _a : 0),
+        skills: intSkills.map((value, index) => value + decimals[key][index])
+      };
+    });
+    return reconstructed;
+  };
+  var reconstructSkillHistoryFromGraph = (player2, DBPlayer, graphData, records) => {
+    const historyKeys = Array.isArray(graphData == null ? void 0 : graphData.ageKeys) && graphData.ageKeys.length ? sortAgeKeys4(graphData.ageKeys) : getMergedHistoryKeys(DBPlayer, records);
+    const statKeys = getHistoryStatKeys(player2 == null ? void 0 : player2.isGK);
+    const graphRecords = (graphData == null ? void 0 : graphData.recordsByAgeKey) || {};
+    return reconstructSkillHistory({
+      player: player2,
+      ageKeys: historyKeys,
+      skillIndexHistory: historyKeys.map((key) => {
+        var _a, _b;
+        return Number((_b = (_a = graphRecords[key]) == null ? void 0 : _a.SI) != null ? _b : 0);
+      }),
+      tiHistory: historyKeys.map((key) => {
+        var _a, _b;
+        return Number((_b = (_a = graphRecords[key]) == null ? void 0 : _a.TI) != null ? _b : 0);
+      }),
+      skillHistoryByKey: statKeys.reduce((acc, statKey, statIndex) => {
+        acc[statKey] = historyKeys.map((key) => {
+          var _a, _b, _c;
+          return Number((_c = (_b = (_a = graphRecords[key]) == null ? void 0 : _a.skills) == null ? void 0 : _b[statIndex]) != null ? _c : 0);
+        });
+        return acc;
+      }, {})
+    });
+  };
+  var buildWeightedIntegerSeries = (total, count, liveTI = null) => {
+    const safeTotal = Math.round(Number(total) || 0);
+    if (count <= 0) return [];
+    if (count === 1) return [safeTotal];
+    const sign = safeTotal < 0 ? -1 : 1;
+    const magnitude = Math.abs(safeTotal);
+    const avg2 = magnitude / count;
+    const liveRaw = Number.isFinite(Number(liveTI)) ? Math.round(Number(liveTI)) : sign * avg2;
+    const live = Math.abs(liveRaw);
+    const slope = Math.min(0.75, Math.abs(live - avg2) / Math.max(1, avg2 || 1));
+    const rawWeights = Array.from({ length: count }, (_, index) => {
+      const progress = count === 1 ? 1 : index / (count - 1);
+      const directional = live >= avg2 ? progress : 1 - progress;
+      return 1 + directional * slope;
+    });
+    const rawTotal = rawWeights.reduce((sum, weight) => sum + weight, 0) || 1;
+    const quotas = rawWeights.map((weight) => magnitude * weight / rawTotal);
+    const series = quotas.map((value) => Math.floor(value));
+    let remainder = magnitude - series.reduce((sum, value) => sum + value, 0);
+    quotas.map((value, index) => ({ index, frac: value - Math.floor(value) })).sort((a, b) => b.frac - a.frac).forEach(({ index }) => {
+      if (remainder <= 0) return;
+      series[index] += 1;
+      remainder -= 1;
+    });
+    return series.map((value) => value * sign);
+  };
+  var reconstructSkillHistoryFromEstimate = (player2, DBPlayer, missingKeys, options = {}) => {
+    var _a, _b, _c;
+    console.log(player2.name, DBPlayer.records, 39598512895219853e8);
+    if (!(DBPlayer == null ? void 0 : DBPlayer.records)) return {};
+    console.log(152215215215215140, player2.name, forceFullSync);
+    const { forceFullSync = false } = options;
+    const dbKeys = sortAgeKeys4(Object.keys(DBPlayer.records));
+    const segmentKeys = forceFullSync ? (() => {
+      if (!dbKeys.length) return [];
+      const endKey2 = (player2 == null ? void 0 : player2.ageMonthsString) || dbKeys.at(-1);
+      const [fromYear, fromMonth] = String(dbKeys[0] || "").split(".").map(Number);
+      const [toYear, toMonth] = String(endKey2 || "").split(".").map(Number);
+      if (!Number.isFinite(fromYear) || !Number.isFinite(fromMonth) || !Number.isFinite(toYear) || !Number.isFinite(toMonth)) return [];
+      return Array.from({ length: Math.max(0, toYear * 12 + toMonth - (fromYear * 12 + fromMonth) + 1) }, (_, index) => {
+        const total = fromYear * 12 + fromMonth + index;
+        return `${Math.floor(total / 12)}.${total % 12}`;
+      }).slice(1);
+    })() : sortAgeKeys4(missingKeys);
+    if (!segmentKeys.length) return {};
+    const historyKeys = forceFullSync ? [dbKeys[0], ...segmentKeys] : sortAgeKeys4(dbKeys.concat(segmentKeys));
+    const firstMissingIndex = historyKeys.indexOf(segmentKeys[0]);
+    if (firstMissingIndex <= 0) return {};
+    const startKey = historyKeys[firstMissingIndex - 1];
+    const startRecord = DBPlayer.records[startKey];
+    if (!((_a = startRecord == null ? void 0 : startRecord.skills) == null ? void 0 : _a.length)) return {};
+    const endKey = (player2 == null ? void 0 : player2.ageMonthsString) || segmentKeys.at(-1);
+    const endSkills = Array.isArray(player2 == null ? void 0 : player2.skills) ? player2.skills.map(skillValue4) : [];
+    if (!endSkills.length) return {};
+    console.log(124124421421, player2.name, startKey, startRecord.skills, endKey, endSkills);
+    const { graphRecordsByAgeKey = null, liveTI = player2 == null ? void 0 : player2.ti, exactLastTI = null } = options;
+    const startSkills = startRecord.skills.map(skillValue4);
+    const startIntSkills = startSkills.map((skill) => Math.floor(skill || 0));
+    const endIntSkills = endSkills.map((skill) => Math.floor(skill || 0));
+    const startSum = TmLib.sumSkillValues(startSkills);
+    const endSum = TmLib.sumSkillValues(endSkills);
+    const totalTI = Math.round((endSum - startSum) * 10);
+    const graphTIHistory = segmentKeys.map((key) => {
+      var _a2;
+      const graphTI = (_a2 = graphRecordsByAgeKey == null ? void 0 : graphRecordsByAgeKey[key]) == null ? void 0 : _a2.TI;
+      return Number.isFinite(Number(graphTI)) ? Math.round(Number(graphTI)) : null;
+    });
+    let tiSeries;
+    if (graphTIHistory.every((value) => value != null)) {
+      tiSeries = graphTIHistory;
+    } else if (graphTIHistory.some((value) => value != null)) {
+      const fallbackSeries = Number.isFinite(Number(exactLastTI)) && segmentKeys.length > 0 ? segmentKeys.length === 1 ? [Math.round(Number(exactLastTI))] : [...buildWeightedIntegerSeries(totalTI - Math.round(Number(exactLastTI)), segmentKeys.length - 1, liveTI), Math.round(Number(exactLastTI))] : buildWeightedIntegerSeries(totalTI, segmentKeys.length, liveTI);
+      tiSeries = graphTIHistory.map((value, index) => {
+        var _a2;
+        return (_a2 = value != null ? value : fallbackSeries[index]) != null ? _a2 : 0;
+      });
+    } else if (Number.isFinite(Number(exactLastTI)) && segmentKeys.length > 0) {
+      const lastTI = Math.round(Number(exactLastTI));
+      if (segmentKeys.length === 1) tiSeries = [lastTI];
+      else tiSeries = [...buildWeightedIntegerSeries(totalTI - lastTI, segmentKeys.length - 1, liveTI), lastTI];
+    } else {
+      tiSeries = buildWeightedIntegerSeries(totalTI, segmentKeys.length, liveTI);
+    }
+    const resolvedTotalTI = tiSeries.reduce((sum, ti) => sum + ti, 0);
+    const cumulativeTI = tiSeries.reduce((acc, ti, index) => {
+      acc.push(ti + (acc[index - 1] || 0));
+      return acc;
+    }, []);
+    const statKeys = getHistoryStatKeys(player2 == null ? void 0 : player2.isGK);
+    const guessedRecords = {};
+    historyKeys.forEach((key) => {
+      var _a2, _b2, _c2, _d, _e, _f;
+      if (!segmentKeys.includes(key)) {
+        const record = DBPlayer.records[key] || {};
+        guessedRecords[key] = {
+          SI: Number((_a2 = record.SI) != null ? _a2 : 0),
+          TI: Number((_b2 = record.TI) != null ? _b2 : 0),
+          skills: Array.isArray(record.skills) ? record.skills.map((skill) => Math.floor(skillValue4(skill) || 0)) : startIntSkills
+        };
+        return;
+      }
+      const segmentIndex = segmentKeys.indexOf(key);
+      const progress = resolvedTotalTI > 0 ? cumulativeTI[segmentIndex] / resolvedTotalTI : (segmentIndex + 1) / segmentKeys.length;
+      const intSkills = startIntSkills.map((value, skillIndex) => {
+        const delta = Math.max(0, endIntSkills[skillIndex] - value);
+        const advanced = segmentIndex === segmentKeys.length - 1 ? delta : Math.floor(delta * progress + 1e-9);
+        return value + Math.min(delta, advanced);
+      });
+      const skillSum = startSum + (cumulativeTI[segmentIndex] || 0) / 10;
+      guessedRecords[key] = {
+        SI: key === endKey ? Number((_c2 = player2 == null ? void 0 : player2.asi) != null ? _c2 : 0) : Number((_e = (_d = graphRecordsByAgeKey == null ? void 0 : graphRecordsByAgeKey[key]) == null ? void 0 : _d.SI) != null ? _e : TmLib.calcASIFromSkillSum(skillSum, player2 == null ? void 0 : player2.isGK)),
+        TI: Number((_f = tiSeries[segmentIndex]) != null ? _f : 0),
+        skills: intSkills
+      };
+    });
+    const reconstructed = reconstructSkillHistory({
+      player: player2,
+      ageKeys: historyKeys,
+      skillIndexHistory: historyKeys.map((key) => {
+        var _a2, _b2;
+        return (_b2 = (_a2 = guessedRecords[key]) == null ? void 0 : _a2.SI) != null ? _b2 : 0;
+      }),
+      tiHistory: historyKeys.map((key) => {
+        var _a2, _b2;
+        return (_b2 = (_a2 = guessedRecords[key]) == null ? void 0 : _a2.TI) != null ? _b2 : 0;
+      }),
+      skillHistoryByKey: statKeys.reduce((acc, statKey, statIndex) => {
+        acc[statKey] = historyKeys.map((key) => {
+          var _a2, _b2, _c2;
+          return (_c2 = (_b2 = (_a2 = guessedRecords[key]) == null ? void 0 : _a2.skills) == null ? void 0 : _b2[statIndex]) != null ? _c2 : 0;
+        });
+        return acc;
+      }, {})
+    });
+    if (reconstructed[endKey]) {
+      reconstructed[endKey] = {
+        ...reconstructed[endKey],
+        SI: Number((_c = (_b = player2 == null ? void 0 : player2.asi) != null ? _b : reconstructed[endKey].SI) != null ? _c : 0),
+        skills: endSkills
+      };
+    }
+    console.log(player2.name, reconstructed);
+    return reconstructed;
+  };
+  var enrichHistoryRecords = (player2, history) => {
+    console.log(player2.name, history);
+    const preferredPositions = player2.positions.filter((position) => position.preferred);
+    const positionsForRatings = preferredPositions.length ? preferredPositions : player2.positions;
+    Object.keys(history).forEach((ageKey) => {
+      const historyRecord = history[ageKey];
+      const snapshot = {
+        ...player2,
+        asi: historyRecord.SI,
+        skills: historyRecord.skills
+      };
+      let maxR5 = null;
+      let maxRec = null;
+      positionsForRatings.forEach((position) => {
+        const r5 = Number(TmLib.calculatePlayerR5(position, snapshot));
+        const rec = Number(TmLib.calculatePlayerREC(position, snapshot));
+        if (Number.isFinite(r5) && (maxR5 === null || r5 > maxR5)) maxR5 = r5;
+        if (Number.isFinite(rec) && (maxRec === null || rec > maxRec)) maxRec = rec;
+      });
+      history[ageKey] = {
+        ...historyRecord,
+        R5: maxR5,
+        REREC: maxRec
+      };
+    });
+    return history;
+  };
+  var saveHistoryRecords = async (player2, DBPlayer, historyRecords) => {
+    var _a, _b;
+    if (!historyRecords || !Object.keys(historyRecords).length) return historyRecords;
+    const preferredPositions = player2.positions.filter((position) => position.preferred);
+    await TmPlayerDB.set(player2.id, {
+      ...DBPlayer || {},
+      _v: (DBPlayer == null ? void 0 : DBPlayer._v) || 1,
+      meta: {
+        ...(DBPlayer == null ? void 0 : DBPlayer.meta) || {},
+        name: ((_a = DBPlayer == null ? void 0 : DBPlayer.meta) == null ? void 0 : _a.name) || player2.name,
+        pos: ((_b = DBPlayer == null ? void 0 : DBPlayer.meta) == null ? void 0 : _b.pos) || (preferredPositions.length ? preferredPositions.map((position) => position.position).join(", ") : player2.positions.filter((position) => position.preferred || position.r5 != null).map((position) => position.position).join(", "))
+      },
+      records: {
+        ...(DBPlayer == null ? void 0 : DBPlayer.records) || {},
+        ...historyRecords
+      }
+    });
+    return historyRecords;
+  };
+
+  // src/workflows/player-history/strategies.js
+  var syncFromSkillGraphs = ({ player: player2, DBPlayer, profile }) => {
+    var _a, _b;
+    const { graphs } = player2;
+    const records = {};
+    for (const key of profile.missingAgeKeys) {
+      const skillIndex = Number((_b = (_a = graphs == null ? void 0 : graphs.recordsByAgeKey) == null ? void 0 : _a[key]) == null ? void 0 : _b.SI);
+      if (!Number.isFinite(skillIndex)) continue;
+      records[key] = { SI: skillIndex };
+    }
+    return enrichHistoryRecords(player2, reconstructSkillHistoryFromGraph(player2, DBPlayer, graphs, records));
+  };
+  var syncFromExactCurrentTI = ({ player: player2, DBPlayer, profile, options = {} }) => {
+    var _a;
+    console.log("syncFromExactCurrentTI", { playerName: player2.name, playerId: player2.id, profile, options });
+    return enrichHistoryRecords(player2, reconstructSkillHistoryFromEstimate(player2, DBPlayer, profile.missingAgeKeys, {
+      graphRecordsByAgeKey: ((_a = player2 == null ? void 0 : player2.graphs) == null ? void 0 : _a.recordsByAgeKey) || null,
+      liveTI: player2 == null ? void 0 : player2.ti,
+      exactLastTI: player2 == null ? void 0 : player2.ti,
+      forceFullSync: Boolean(options.forceFullSync)
+    }));
+  };
+  var syncFromAnchoredEstimate = ({ player: player2, DBPlayer, profile, options = {} }) => {
+    var _a;
+    return enrichHistoryRecords(player2, reconstructSkillHistoryFromEstimate(player2, DBPlayer, profile.missingAgeKeys, {
+      graphRecordsByAgeKey: ((_a = player2 == null ? void 0 : player2.graphs) == null ? void 0 : _a.recordsByAgeKey) || null,
+      liveTI: Number.isFinite(Number(player2 == null ? void 0 : player2.ti)) ? player2.ti : null,
+      forceFullSync: Boolean(options.forceFullSync)
+    }));
+  };
+
+  // src/workflows/player-history/index.js
+  var executeHistorySyncStrategy = ({ player: player2, DBPlayer, profile, strategy, options = {} }) => {
+    switch (strategy) {
+      case HISTORY_SYNC_STRATEGY.NOOP:
+        return {};
+      case HISTORY_SYNC_STRATEGY.SKILL_GRAPHS:
+        return syncFromSkillGraphs({ player: player2, DBPlayer, profile });
+      case HISTORY_SYNC_STRATEGY.EXACT_CURRENT_TI:
+        return syncFromExactCurrentTI({ player: player2, DBPlayer, profile, options });
+      case HISTORY_SYNC_STRATEGY.ANCHORED_ESTIMATE:
+        return syncFromAnchoredEstimate({ player: player2, DBPlayer, profile, options });
+      default:
+        return {};
+    }
+  };
+  var syncPlayerHistory = async (player2, DBPlayer, options = {}) => {
+    const baseProfile = buildHistoryEvidenceProfile(player2, DBPlayer);
+    await loadHistorySyncSources(player2, DBPlayer);
+    const profile = buildHistoryEvidenceProfile(player2, DBPlayer);
+    const strategy = selectHistorySyncStrategy(profile);
+    if (strategy === HISTORY_SYNC_STRATEGY.INSUFFICIENT_EVIDENCE) return {};
+    const historyRecords = executeHistorySyncStrategy({ player: player2, DBPlayer, profile, strategy, options });
+    await saveHistoryRecords(player2, DBPlayer, historyRecords);
+    return historyRecords;
+  };
+  var TmPlayerHistorySyncWorkflow = {
+    syncPlayerHistory,
+    syncMissingRecords: syncPlayerHistory,
+    buildHistoryEvidenceProfile,
+    selectHistorySyncStrategy,
+    loadHistorySyncSources
+  };
+
+  // src/models/club.js
+  var TmClubModel2 = {
+    async fetchSquadRaw(clubId2, sync = false) {
+      const post = await TmClubService.fetchSquadPost(clubId2);
+      if (!post) return null;
+      const players = Object.values(post).map((player2) => normalizeSquadPlayer(player2));
+      return Promise.all(players.map(async (player2) => {
+        var _a, _b;
+        const initialDBPlayer = await TmPlayerDB.get(player2.id);
+        let DBPlayer = initialDBPlayer;
+        if (sync) {
+          const records = await TmPlayerHistorySyncWorkflow.syncMissingRecords(player2, initialDBPlayer);
+          if (Object.keys(records || {}).length) {
+            DBPlayer = await TmPlayerDB.get(player2.id);
+          }
+        }
+        const latestRecord = (_a = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _a[player2.ageMonthsString];
+        if (!Array.isArray(latestRecord == null ? void 0 : latestRecord.skills) || !((_b = player2.skills) == null ? void 0 : _b.length)) return player2;
+        player2.skills = player2.skills.map((skill, skillIndex) => ({
+          ...skill,
+          value: latestRecord.skills[skillIndex] != null ? Number(latestRecord.skills[skillIndex]) : skill.value
+        }));
+        player2.positions = player2.positions.map((position) => ({
+          ...position,
+          r5: TmLib.calculatePlayerR5(position, player2),
+          rec: TmLib.calculatePlayerREC(position, player2)
+        }));
+        return player2;
+      }));
+    }
+  };
+
+  // src/models/player.js
+  var tooltipCache = /* @__PURE__ */ new Map();
+  var TmPlayerModel = {
+    async fetchPlayerTooltip(playerId) {
+      var _a, _b;
+      const [player2, initialDBPlayer] = await Promise.all([
+        TmPlayerService.fetchPlayerTooltip(playerId),
+        TmPlayerDB.get(playerId)
+      ]);
+      if (!player2) return null;
+      const records = await TmPlayerHistorySyncWorkflow.syncMissingRecords(player2, initialDBPlayer);
       let DBPlayer = initialDBPlayer;
-      if (Object.keys(records).length) {
-        DBPlayer = await this.fetchDBPlayer(player_id);
+      if (Object.keys(records || {}).length) {
+        DBPlayer = await TmPlayerDB.get(playerId);
       }
       const latestRecord = (_a = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _a[player2.ageMonthsString];
       if (Array.isArray(latestRecord == null ? void 0 : latestRecord.skills) && ((_b = player2.skills) == null ? void 0 : _b.length)) {
@@ -5973,136 +5762,28 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       }
       return player2;
     },
-    fetchDBPlayer(id) {
-      return TmPlayerDB.get(id);
+    fetchTooltipCached(playerId) {
+      if (!tooltipCache.has(playerId)) {
+        tooltipCache.set(playerId, this.fetchPlayerTooltip(playerId).finally(() => {
+          tooltipCache.delete(playerId);
+        }));
+      }
+      return tooltipCache.get(playerId);
     },
-    normalizeSquadPlayer(postPlayer) {
-      return normalizeSquadPlayer(postPlayer);
+    fetchPlayerInfo(...args) {
+      return TmPlayerService.fetchPlayerInfo(...args);
     },
-    /**
-     * Fetch the players_get_info endpoint.
-     * show_non_pro_graphs is always included automatically.
-     * @param {string|number} pid
-     * @param {string} type — 'history' | 'training' | 'graphs' | 'scout' | etc.
-     * @param {object} [extra={}] — optional extra params (e.g. { scout_id: '123' })
-     * @returns {Promise<object|null>}
-     */
-    fetchPlayerInfo(pid, type, extra = {}) {
-      return _post("/ajax/players_get_info.ajax.php", {
-        player_id: pid,
-        type,
-        show_non_pro_graphs: true,
-        ...extra
-      });
+    fetchPlayerGraphs(...args) {
+      return TmPlayerService.fetchPlayerGraphs(...args);
     },
-    fetchPlayerGraphs(pid) {
-      return _post("/ajax/players_get_info.ajax.php", {
-        player_id: pid,
-        type: "graphs",
-        show_non_pro_graphs: true
-      });
+    fetchPlayerHistory(...args) {
+      return TmPlayerService.fetchPlayerHistory(...args);
     },
-    async fetchPlayerHistory(playerId) {
-      const data = await _post("/ajax/players_get_info.ajax.php", {
-        player_id: playerId,
-        type: "history",
-        show_non_pro_graphs: true
-      });
-      if (!data) return null;
-      return normalizePlayerStats(data);
+    fetchPlayerTraining(...args) {
+      return TmPlayerService.fetchPlayerTraining(...args);
     },
-    async fetchPlayerTraining(playerId) {
-      const data = await _post("/ajax/players_get_info.ajax.php", {
-        player_id: playerId,
-        type: "training",
-        show_non_pro_graphs: true
-      });
-      if (!data) return null;
-      return normalizePlayerTraining(data);
-    },
-    normalizePlayer(player2) {
-      return player2;
-    }
-  };
-
-  // src/services/club.js
-  var TmClubService = {
-    /**
-     * Fetch club fixtures (all matches for a given club this season).
-     * @param {string|number} clubId
-     * @returns {Promise<object|null>}
-     */
-    fetchClubFixtures(clubId2) {
-      return _post("/ajax/fixtures.ajax.php", { type: "club", var1: clubId2 });
-    },
-    /**
-     * Fetch the match history HTML page for a club in a given season.
-     * Returns the raw HTML string (not JSON) or null on failure.
-     * @param {string|number} clubId
-     * @param {string|number} seasonId
-     * @returns {Promise<string|null>}
-     */
-    fetchClubMatchHistory(clubId2, seasonId) {
-      return _getHtml(`/history/club/matches/${clubId2}/${seasonId}/`);
-    },
-    /**
-     * Fetch the club transfer history HTML page for a given season.
-     * @param {string|number} clubId
-     * @param {string|number} seasonId
-     * @returns {Promise<string|null>}
-     */
-    fetchClubTransferHistory(clubId2, seasonId) {
-      return _getHtml(`/history/club/transfers/${clubId2}/${seasonId}/`);
-    },
-    /**
-     * Fetch the club records HTML page.
-     * @param {string|number} clubId
-     * @returns {Promise<string|null>}
-     */
-    fetchClubRecords(clubId2) {
-      return _getHtml(`/history/club/records/${clubId2}/`);
-    },
-    /**
-     * Fetch the raw club page HTML.
-     * @param {string|number} clubId
-     * @returns {Promise<string|null>}
-     */
-    fetchClubPageHtml(clubId2) {
-      return _getHtml(`/club/${clubId2}/`);
-    },
-    /**
-     * Fetch the club league history HTML page for a given season.
-     * @param {string|number} clubId
-     * @param {string|number} seasonId
-     * @returns {Promise<string|null>}
-     */
-    fetchClubLeagueHistory(clubId2, seasonId) {
-      return _getHtml(`/history/club/league/${clubId2}/${seasonId}/`);
-    },
-    /**
-     * Fetch the players_get_select post map for a club (raw, no normalization).
-     * Returns a { [playerId: string]: player } map, or null on failure.
-     * @param {string|number} clubId
-     * @returns {Promise<object|null>}
-     */
-    async fetchSquadPost(clubId2) {
-      return _dedup(`club:squad-post:${clubId2}`, async () => {
-        const data = await _post("/ajax/players_get_select.ajax.php", { type: "change", club_id: clubId2 });
-        if (!(data == null ? void 0 : data.post)) return null;
-        const map = {};
-        for (const [id, p] of Object.entries(data.post)) map[String(id)] = p;
-        return map;
-      });
-    },
-    /**
-     * Fetch the squad player list for a club and return normalized players.
-     * @param {string|number} clubId
-     * @returns {Promise<object[]|null>}
-     */
-    async fetchSquadRaw(club_id) {
-      const data = await _post("/ajax/players_get_select.ajax.php", { type: "change", club_id });
-      if (!(data == null ? void 0 : data.post)) return null;
-      return Object.values(data.post).map((p) => TmPlayerService.normalizeSquadPlayer(p));
+    normalizeSquadPlayer(...args) {
+      return TmPlayerService.normalizeSquadPlayer(...args);
     }
   };
 
@@ -6335,8 +6016,8 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       if (dbSync) {
         (async () => {
           const [homeData, awayData] = await Promise.all([
-            TmClubService.fetchSquadRaw(homeClubId).catch(() => null),
-            TmClubService.fetchSquadRaw(awayClubId).catch(() => null)
+            TmClubModel2.fetchSquadRaw(homeClubId).catch(() => null),
+            TmClubModel2.fetchSquadRaw(awayClubId).catch(() => null)
           ]);
           console.log("Squad data fetched", { homeData, awayData });
           const squadMap = {};
@@ -6355,7 +6036,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
           }
           if (missingPids.length > 0) {
             await Promise.all(missingPids.map(
-              (pid) => TmPlayerService.fetchPlayerTooltip(pid).then((data) => {
+              (pid) => TmPlayerModel.fetchPlayerTooltip(pid).then((data) => {
                 if (data) players.push(data);
               }).catch(() => {
               })
@@ -11503,20 +11184,16 @@ order:initial
 
   // src/components/shared/tm-match-ratings.js
   var squadCache = /* @__PURE__ */ new Map();
-  var tooltipCache = /* @__PURE__ */ new Map();
+  var tooltipCache2 = /* @__PURE__ */ new Map();
   var matchCache = /* @__PURE__ */ new Map();
   var fetchSquad = (clubId2) => {
     if (!squadCache.has(clubId2)) {
-      squadCache.set(clubId2, TmClubService.fetchSquadRaw(clubId2).then((data) => {
-        if (!(data == null ? void 0 : data.post)) return { post: {} };
-        if (Array.isArray(data.post)) {
-          const postObj = {};
-          data.post.forEach((player2) => {
-            postObj[String(player2.id)] = player2;
-          });
-          data.post = postObj;
-        }
-        return data;
+      squadCache.set(clubId2, TmClubModel2.fetchSquadRaw(clubId2).then((data) => {
+        const post = {};
+        (data || []).forEach((player2) => {
+          post[String(player2.id)] = player2;
+        });
+        return { post };
       }).catch(() => ({ post: {} })));
     }
     return squadCache.get(clubId2);
@@ -11525,13 +11202,13 @@ order:initial
     var _a, _b, _c, _d;
     let player2 = (_a = squadPost.post) == null ? void 0 : _a[String(playerId)];
     if (!player2) {
-      if (!tooltipCache.has(playerId)) {
-        tooltipCache.set(playerId, TmPlayerService.fetchPlayerTooltip(playerId).then((response) => {
+      if (!tooltipCache2.has(playerId)) {
+        tooltipCache2.set(playerId, TmPlayerModel.fetchPlayerTooltip(playerId).then((response) => {
           var _a2;
           return (_a2 = response == null ? void 0 : response.player) != null ? _a2 : null;
         }).catch(() => null));
       }
-      player2 = await tooltipCache.get(playerId);
+      player2 = await tooltipCache2.get(playerId);
     }
     if (!player2) return { R5: 0 };
     const posData = (_b = player2.positions) == null ? void 0 : _b.find((pos) => {
@@ -16140,8 +15817,8 @@ order:initial
       if (!report.playerId) return report;
       try {
         const [tooltipData, scoutData] = await Promise.all([
-          TmPlayerService.fetchPlayerTooltip(report.playerId),
-          TmPlayerService.fetchPlayerInfo(report.playerId, "scout")
+          TmPlayerModel.fetchPlayerTooltip(report.playerId),
+          TmPlayerModel.fetchPlayerInfo(report.playerId, "scout")
         ]);
         return {
           ...report,
@@ -17848,7 +17525,7 @@ order:initial
     const load2 = (container, player3) => {
       if (player3.isOwnPlayer) {
         container.innerHTML = TmUI.loading();
-        TmPlayerService.fetchPlayerTraining(player3.id).then((training) => {
+        TmPlayerModel.fetchPlayerTraining(player3.id).then((training) => {
           if (!training) {
             container.innerHTML = TmUI.error("Failed to load data");
             return;
@@ -17861,7 +17538,7 @@ order:initial
         render17(container, { player: player3, readOnly: true });
       } else {
         container.innerHTML = TmUI.loading();
-        TmClubService.fetchSquadRaw(player3.club_id).then((squad) => {
+        TmClubModel2.fetchSquadRaw(player3.club_id).then((squad) => {
           const found = (squad || []).find((p) => Number(p.id) === Number(player3.id));
           if (!found) {
             container.innerHTML = TmUI.error("Player not found in squad data");
@@ -20493,8 +20170,8 @@ order:initial
       const idMatch = html2.match(/B-Team:\s*<\/strong>\s*<a\s+href="\/club\/(\d+)\//) || html2.match(/B-Team:[\s\S]*?\/club\/(\d+)\//);
       if (!idMatch) return;
       const bTeamId = idMatch[1];
-      TmClubService.fetchSquadRaw(bTeamId).then((data) => {
-        const players = (data == null ? void 0 : data.post) ? Object.values(data.post) || [] : [];
+      TmClubModel2.fetchSquadRaw(bTeamId).then((data) => {
+        const players = Array.isArray(data) ? data : [];
         if (players.length) {
           bTeamPlayers = players.map((p) => ({ ...p, isBTeam: true }));
           renderPanel2();
@@ -20525,9 +20202,9 @@ order:initial
     const clubId2 = (_a = location.pathname.match(/\/club\/(\d+)/)) == null ? void 0 : _a[1];
     if (!clubId2) return;
     await waitForJQuery();
-    const data = await TmClubService.fetchSquadRaw(clubId2);
-    if (data == null ? void 0 : data.post.length) {
-      allPlayers2 = data.post;
+    const data = await TmClubModel2.fetchSquadRaw(clubId2);
+    if (data == null ? void 0 : data.length) {
+      allPlayers2 = data;
       processed = true;
       renderPanel2();
       if (!bTeamFetched) {
@@ -20598,7 +20275,7 @@ order:initial
   function fetchPlayerInfo(pid) {
     pid = String(pid);
     if (playerInfoCache[pid] !== void 0) return Promise.resolve(playerInfoCache[pid]);
-    return TmPlayerService.fetchPlayerTooltip(pid).then(function(data) {
+    return TmPlayerModel.fetchPlayerTooltip(pid).then(function(data) {
       if (!(data == null ? void 0 : data.player)) {
         playerInfoCache[pid] = null;
         return null;
@@ -25621,9 +25298,9 @@ order:initial
       return `<span class="tms-range-wrap tmu-tabular"><span class="tms-strong-val tmu-tabular" style="color:${clrHi}">${hiFixed}</span></span>`;
     return `<span class="tms-range-wrap tmu-tabular"><span class="tms-range-val tmu-tabular" style="color:${clrLo}">${loFixed}</span><span class="tms-range-sep">\u2013</span><span class="tms-range-val tmu-tabular" style="color:${clrHi}">${hiFixed}</span></span>`;
   }
-  function buildBidBtn(p, tooltipCache2) {
+  function buildBidBtn(p, tooltipCache3) {
     const nameJs = (p.name_js || p.name || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
-    const fetched = tooltipCache2[p.id] && !tooltipCache2[p.id].estimated;
+    const fetched = tooltipCache3[p.id] && !tooltipCache3[p.id].estimated;
     const reloadBtn = fetched ? "" : TmUI.button({
       label: "\u21BB",
       variant: "icon",
@@ -25642,12 +25319,12 @@ order:initial
     }).outerHTML;
     return `${reloadBtn}${bidBtn}`;
   }
-  function buildPlayerRow(p, tooltipCache2) {
+  function buildPlayerRow(p, tooltipCache3) {
     const nameLink = `<a href="/players/${p.id}/" target="_blank" onclick="event.stopPropagation()">${p.name || p.id}</a>`;
     const timeId = `tms-td-${p.id}`;
     const timeTd = p.time > 0 ? `<span id="${timeId}" class="tms-time-cell tmu-tabular"></span>` : "\u2014";
     const bidCls = `bid_${p.id}`;
-    const cachedTip = tooltipCache2[p.id];
+    const cachedTip = tooltipCache3[p.id];
     const recHtml = cachedTip ? fmtRec(cachedTip.recCalc != null ? cachedTip.recCalc : cachedTip.recSort) : fmtRec(p.rec);
     const barClr = p.fp && p.fp.length ? (() => {
       var _a, _b;
@@ -25669,7 +25346,7 @@ order:initial
         <td class="tms-col-r tms-col-asi tmu-tabular">${p.asi ? fmtNum(p.asi) : "\u2014"}</td>
     <td class="tms-col-r ${bidCls} tmu-tabular">${fmtNum(p.bid) || "\u2014"}</td>
     <td class="tms-col-r tmu-tabular">${timeTd}</td>
-  <td>${buildBidBtn(p, tooltipCache2)}${noteIcon}</td>
+  <td>${buildBidBtn(p, tooltipCache3)}${noteIcon}</td>
 </tr>`;
   }
   function bindSharedSort(tableWrap, onSort) {
@@ -25693,14 +25370,14 @@ order:initial
       thCls: col.cls || ""
     }));
   }
-  function createBreakdownTableElement(players, sortKey, sortDir2, tooltipCache2, onSort) {
+  function createBreakdownTableElement(players, sortKey, sortDir2, tooltipCache3, onSort) {
     const wrap = TmTable.table({
       headers: breakdownHeaders(),
       items: players,
       sortKey,
       sortDir: sortDir2,
       cls: "tms-table",
-      renderRowsHtml: (sortedPlayers) => sortedPlayers.map((player2) => buildPlayerRow(player2, tooltipCache2)).join(""),
+      renderRowsHtml: (sortedPlayers) => sortedPlayers.map((player2) => buildPlayerRow(player2, tooltipCache3)).join(""),
       afterRender: ({ wrap: tableWrap, table: table2 }) => {
         table2.id = "tms-table";
         bindSharedSort(tableWrap, onSort);
@@ -25734,12 +25411,12 @@ order:initial
     wrap.classList.add("tms-table-wrap");
     return wrap;
   }
-  function buildExpandRow(p, tooltipCache2, colCount, skillsMode) {
+  function buildExpandRow(p, tooltipCache3, colCount, skillsMode) {
     const gk = p._gk;
     const skills = gk ? GK_SKILLS : OUTFIELD_SKILLS;
     const ss = p._ss;
     const ageP = p._ageP;
-    const tip = tooltipCache2[p.id];
+    const tip = tooltipCache3[p.id];
     const skillCells = skills.map((s6) => {
       const val = tip && tip.skills && tip.skills[s6] != null ? tip.skills[s6] : p[s6] || 0;
       const pct = val / 20 * 100;
@@ -25777,9 +25454,9 @@ order:initial
   </td>
 </tr>`;
   }
-  function adaptForTooltip2(p, tooltipCache2) {
+  function adaptForTooltip2(p, tooltipCache3) {
     const { R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
-    const tip = tooltipCache2[p.id];
+    const tip = tooltipCache3[p.id];
     const gk = p._gk;
     const skillKeys = gk ? GK_SKILLS : OUTFIELD_SKILLS;
     const ageP = p._ageP || {};
@@ -25866,7 +25543,7 @@ order:initial
     };
     let allPlayers3 = [];
     let isLoading = false;
-    let tooltipCache2 = {};
+    let tooltipCache3 = {};
     const tooltipPromiseCache = /* @__PURE__ */ new Map();
     let tooltipFetchAbort = false;
     let findAllRunning = false;
@@ -25877,11 +25554,11 @@ order:initial
     const CURRENT_SESSION = getCurrentSession();
     function computeAllEstimates(players) {
       for (const p of players) {
-        if (tooltipCache2[p.id] && !tooltipCache2[p.id].estimated) continue;
+        if (tooltipCache3[p.id] && !tooltipCache3[p.id].estimated) continue;
         const est = TmTransferService.estimateTransferPlayer(p);
         if (est) {
           console.log(`[TMS] ${p.name_js || p.name} | age ${p.age} | routineMax ${est.routineMax.toFixed(1)} | R5: ${est.r5Lo != null ? TmUtils.formatR5(est.r5Lo) : "?"}-${est.r5Hi != null ? TmUtils.formatR5(est.r5Hi) : "?"} | Rec: ${est.recCalc != null ? est.recCalc.toFixed(2) : "?"}`);
-          tooltipCache2[p.id] = {
+          tooltipCache3[p.id] = {
             estimated: true,
             r5Lo: est.r5Lo,
             r5Hi: est.r5Hi,
@@ -25906,7 +25583,7 @@ order:initial
     }
     function adaptTransferPlayer(p) {
       var _a, _b, _c, _d;
-      const tip = tooltipCache2[p.id];
+      const tip = tooltipCache3[p.id];
       const ap = p._ageP || {};
       const t = Math.max(0, p.time || 0);
       return {
@@ -25944,7 +25621,7 @@ order:initial
     }
     function hasFullTooltip(playerOrId) {
       const pid = tooltipPid(playerOrId);
-      return !!(tooltipCache2[pid] && !tooltipCache2[pid].estimated);
+      return !!(tooltipCache3[pid] && !tooltipCache3[pid].estimated);
     }
     function decRecToTM(val) {
       return Math.min(10, Math.max(0, Math.floor(parseFloat(val) * 2)));
@@ -25962,7 +25639,7 @@ order:initial
       };
     }
     function passesPostFilters(p, pf) {
-      const tip = tooltipCache2[p.id];
+      const tip = tooltipCache3[p.id];
       if (!tip) return true;
       if (tip.r5 != null) {
         if (pf.r5min !== null && tip.r5 < pf.r5min) return false;
@@ -26011,7 +25688,7 @@ order:initial
         rowCls: (p) => p.timeleft > 0 ? "tmpt-row-clickable" : null,
         rowAttrs: (p) => ({ "data-pid": String(p.id) }),
         nameDecorator: (p) => {
-          const fetched = tooltipCache2[p.id] && !tooltipCache2[p.id].estimated;
+          const fetched = tooltipCache3[p.id] && !tooltipCache3[p.id].estimated;
           const note = p._txt ? `<span title="${p._txt.replace(/"/g, "&quot;")}">&#x1F4CB;</span>` : "";
           const reload = fetched ? "" : `<button class="tmu-btn tmu-btn-icon tmu-btn-xs" data-transfer-reload data-pid="${p.id}" title="Fetch stats" onclick="event.stopPropagation()">&#x21BB;</button>`;
           return note + reload;
@@ -26034,11 +25711,11 @@ order:initial
         const player2 = allPlayers3.find((x) => String(x.id) === pid);
         if (!player2) return;
         const anchor = row.querySelector(".tmpt-link") || row;
-        TmPlayerTooltip.show(anchor, TmTransferTable.adaptForTooltip(player2, tooltipCache2));
-        if (!tooltipCache2[pid] || tooltipCache2[pid].estimated) {
+        TmPlayerTooltip.show(anchor, TmTransferTable.adaptForTooltip(player2, tooltipCache3));
+        if (!tooltipCache3[pid] || tooltipCache3[pid].estimated) {
           fetchOnePlayer(player2).then(() => {
             if (row.matches(":hover"))
-              TmPlayerTooltip.show(anchor, TmTransferTable.adaptForTooltip(player2, tooltipCache2));
+              TmPlayerTooltip.show(anchor, TmTransferTable.adaptForTooltip(player2, tooltipCache3));
           });
         }
       });
@@ -26065,12 +25742,12 @@ order:initial
     }
     async function fetchOnePlayer(p) {
       const pid = tooltipPid(p);
-      if (hasFullTooltip(pid)) return tooltipCache2[pid];
+      if (hasFullTooltip(pid)) return tooltipCache3[pid];
       if (tooltipPromiseCache.has(pid)) return tooltipPromiseCache.get(pid);
-      const request = TmPlayerService.fetchTooltipCached(pid).then((data) => {
+      const request = TmPlayerModel.fetchTooltipCached(pid).then((data) => {
         const tip = TmTransferService.enrichTransferFromTooltip(p, data, CURRENT_SESSION);
         if (!tip) return null;
-        tooltipCache2[pid] = tip;
+        tooltipCache3[pid] = tip;
         updateTooltipCells(pid, tip);
         return tip;
       }).finally(() => {
@@ -29352,32 +29029,28 @@ order:initial
     const squadCache2 = /* @__PURE__ */ new Map();
     const fetchSquad2 = (clubId2) => {
       if (!squadCache2.has(clubId2)) {
-        squadCache2.set(clubId2, TmClubService.fetchSquadRaw(clubId2).then((data) => {
-          if (!(data == null ? void 0 : data.post)) return { post: {} };
-          if (Array.isArray(data.post)) {
-            const postObj = {};
-            data.post.forEach((p) => {
-              postObj[String(p.id)] = p;
-            });
-            data.post = postObj;
-          }
-          return data;
+        squadCache2.set(clubId2, TmClubModel2.fetchSquadRaw(clubId2).then((data) => {
+          const post = {};
+          (data || []).forEach((p) => {
+            post[String(p.id)] = p;
+          });
+          return { post };
         }).catch(() => ({ post: {} })));
       }
       return squadCache2.get(clubId2);
     };
-    const tooltipCache2 = /* @__PURE__ */ new Map();
+    const tooltipCache3 = /* @__PURE__ */ new Map();
     const getPlayerDataFromSquad2 = async (pid, squadPost, matchPos) => {
       var _a, _b, _c, _d, _e, _f;
       let player2 = (_a = squadPost.post) == null ? void 0 : _a[String(pid)];
       if (!player2) {
-        if (!tooltipCache2.has(pid)) {
-          tooltipCache2.set(pid, TmPlayerService.fetchPlayerTooltip(pid).then((r) => {
+        if (!tooltipCache3.has(pid)) {
+          tooltipCache3.set(pid, TmPlayerModel.fetchPlayerTooltip(pid).then((r) => {
             var _a2;
             return (_a2 = r == null ? void 0 : r.player) != null ? _a2 : null;
           }).catch(() => null));
         }
-        player2 = await tooltipCache2.get(pid);
+        player2 = await tooltipCache3.get(pid);
       }
       if (!player2) return { Age: 0, R5: 0, REC: 0, isGK: false, skills: [], routine: 0 };
       const posData = (_b = player2.positions) == null ? void 0 : _b.find((p) => {
@@ -29875,7 +29548,7 @@ order:initial
       clubMap = /* @__PURE__ */ new Map();
       clubPlayersMap = /* @__PURE__ */ new Map();
       squadCache2.clear();
-      tooltipCache2.clear();
+      tooltipCache3.clear();
       totalExpected = 0;
       totalProcessed = 0;
       skillData = [];
@@ -37493,7 +37166,7 @@ order:initial
         const pid = anchor.getAttribute("player_link");
         if (!pid) return;
         _playerTipTimer = setTimeout(() => {
-          TmPlayerService.fetchPlayerTooltip(pid).then((data) => {
+          TmPlayerModel.fetchPlayerTooltip(pid).then((data) => {
             if (data == null ? void 0 : data.player) TmPlayerTooltip.show(anchor, data.player);
           }).catch(() => {
           });
@@ -40674,12 +40347,12 @@ order:initial
       TmApi._parseScalars(calcPlayer);
       const defs = calcPlayer.isGK ? TmConst.SKILL_DEFS_GK : TmConst.SKILL_DEFS_OUT;
       const resolvedSkills = TmApi._resolveSkills(calcPlayer, defs, null);
-      const numericSkills2 = TmApi._toNumericSkills(resolvedSkills);
-      if (!numericSkills2.length || !Number.isFinite(calcPlayer.asi)) return null;
+      const numericSkills = TmApi._toNumericSkills(resolvedSkills);
+      if (!numericSkills.length || !Number.isFinite(calcPlayer.asi)) return null;
       const positionKeys = String(calcPlayer.favposition || calcPlayer.fp || (calcPlayer.isGK ? "gk" : "")).split(",").map((value) => value.trim().toLowerCase()).filter(Boolean);
       const ratings = positionKeys.map((positionKey) => TmConst.POSITION_MAP[positionKey]).filter(Boolean).map((positionData) => Number(TmLib.calculatePlayerR5(positionData, {
         ...calcPlayer,
-        skills: numericSkills2,
+        skills: numericSkills,
         asi: calcPlayer.asi,
         routine: calcPlayer.routine || 0
       })));
@@ -41361,8 +41034,7 @@ order:initial
         total: flaggedClubs.length,
         note: flaggedClub.clubName
       });
-      const squadData = await TmApi.fetchSquadRaw(flaggedClub.clubId, { skipSync: true });
-      const squadPlayers = Array.isArray(squadData == null ? void 0 : squadData.post) ? squadData.post : [];
+      const squadPlayers = await TmClubModel.fetchSquadRaw(flaggedClub.clubId) || [];
       const squadPlayersMissingCountry = squadPlayers.filter((squadPlayer) => {
         const countryCode = resolvePlayerCountryCode(squadPlayer);
         return !countryCode && cleanText20(squadPlayer.id || squadPlayer.player_id);
@@ -43662,7 +43334,7 @@ order:initial
     const loadSquadPlayers = async (squad) => {
       const players = await Promise.all(squad.rows.map(async (row) => {
         try {
-          const response = await TmPlayerService.fetchPlayerTooltip(row.playerId);
+          const response = await TmPlayerModel.fetchPlayerTooltip(row.playerId);
           const player2 = response == null ? void 0 : response.player;
           if (!player2) return null;
           return {
@@ -44704,7 +44376,7 @@ order:initial
     };
     const load2 = (container, player2) => {
       container.innerHTML = TmUI.loading();
-      TmPlayerService.fetchPlayerGraphs(player2.id).then((data) => {
+      TmPlayerModel.fetchPlayerGraphs(player2.id).then((data) => {
         if (!data) {
           container.innerHTML = TmUI.error("Failed to load data");
           return;
@@ -44956,7 +44628,7 @@ order:initial
   var load = (container, playerArg) => {
     container.innerHTML = TmUI.loading();
     Promise.all([
-      TmPlayerService.fetchPlayerHistory(playerArg.id),
+      TmPlayerModel.fetchPlayerHistory(playerArg.id),
       Promise.resolve(parseNT(playerArg))
     ]).then(([stats, nt]) => {
       if (!stats) {
@@ -45594,7 +45266,7 @@ order:initial
       const scoutId = btn.dataset.scoutId;
       btn.disabled = true;
       btn.textContent = "...";
-      TmPlayerService.fetchPlayerInfo(player2 == null ? void 0 : player2.id, "scout", { scout_id: scoutId }).then((d) => {
+      TmPlayerModel.fetchPlayerInfo(player2 == null ? void 0 : player2.id, "scout", { scout_id: scoutId }).then((d) => {
         if (!d) {
           btn.textContent = "Error";
           btn.style.color = "var(--tmu-danger)";
@@ -46231,7 +45903,7 @@ order:initial
       TmTabsMod.mount({ player: player2, injectCSS: injectCSS5 });
     };
     bootstrapShell();
-    TmPlayerService.fetchPlayerTooltip(PLAYER_ID).then((data) => applyTooltip(data));
+    TmPlayerModel.fetchPlayerTooltip(PLAYER_ID).then((data) => applyTooltip(data));
     const fetchScoutData = () => {
       var _a;
       const col1 = (_a = ensurePlayerLayout()) == null ? void 0 : _a.leftRail;
@@ -46249,10 +45921,9 @@ order:initial
     };
   }
 
-  // src/pages/players.js
+  // src/pages/players-styles.js
   var STYLE_ID49 = "tmvu-players-page-style";
-  var RESERVES_URL = "/players/#/a//b/true/";
-  function injectPlayersPageStyles() {
+  var injectPlayersPageStyles = () => {
     if (document.getElementById(STYLE_ID49)) return;
     const style = document.createElement("style");
     style.id = STYLE_ID49;
@@ -46395,7 +46066,10 @@ order:initial
         }
     `;
     document.head.appendChild(style);
-  }
+  };
+
+  // src/pages/players.js
+  var RESERVES_URL = "/players/#/a//b/true/";
   var escapeHtml33 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var installJqueryBrowserCompat = () => {
     const jq = window.jQuery || window.$;
@@ -46413,36 +46087,10 @@ order:initial
     if (!n) return "0";
     return `${n > 0 ? "+" : ""}${n}`;
   };
-  var numericSkills = (skills = []) => skills.map((skill) => {
-    if (typeof skill === "object" && skill !== null) return Number(skill.value) || 0;
-    return Number(skill) || 0;
-  });
-  var toDisplayPlayer = (player2, squadKey) => {
-    const ageYears = Number(player2.age) || 0;
-    const ageMonths = Number(player2.months) || 0;
-    return {
-      ...player2,
-      pid: String(player2.id || player2.player_id || ""),
-      name: player2.name || player2.player_name || "",
-      ageYears,
-      ageMonths,
-      ageLabel: `${ageYears}.${ageMonths}`,
-      ageSort: ageYears * 12 + ageMonths,
-      position: player2.favposition || "",
-      isGK: !!player2.isGK,
-      skills: numericSkills(player2.skills),
-      playerHref: `/players/${player2.id || player2.player_id}/`,
-      TI: Number(player2.ti) || 0,
-      TI_change: 0,
-      squadKey,
-      r5: player2.r5 != null ? Number(player2.r5) : null,
-      skillChanges: []
-    };
-  };
   var skillCellHtml = (player2, index) => {
-    var _a, _b;
-    const value = Number(((_a = player2.skills) == null ? void 0 : _a[index]) || 0);
-    const change = ((_b = player2.skillChanges) == null ? void 0 : _b.find((item) => item.index === index)) || null;
+    var _a, _b, _c, _d, _e, _f;
+    const value = Number((_e = (_d = (_b = (_a = player2.skills) == null ? void 0 : _a[index]) == null ? void 0 : _b.value) != null ? _d : (_c = player2.skills) == null ? void 0 : _c[index]) != null ? _e : 0);
+    const change = ((_f = player2.skillChanges) == null ? void 0 : _f.find((item) => item.index === index)) || null;
     const toneCls = (change == null ? void 0 : change.type) ? ` ${change.type}` : "";
     const cls = `${value >= 20 ? " max" : value >= 19 ? " elite" : ""}${toneCls}`;
     const label = value >= 20 ? "\u2605" : value >= 19 ? "\u2606" : value.toFixed(2);
@@ -46495,7 +46143,10 @@ order:initial
       },
       reserveLoadStarted: false
     };
-    const decoratePlayers2 = (players, squadKey) => players.map((player2) => toDisplayPlayer(player2, squadKey));
+    const decoratePlayers2 = (players) => players.map((player2) => ({
+      ...player2,
+      skillChanges: []
+    }));
     const createSectionHost = (title) => {
       const host = document.createElement("section");
       const heading = document.createElement("h3");
@@ -46511,17 +46162,32 @@ order:initial
     const buildTableHeaders = (isGK) => {
       const skillLabels = isGK ? SKILL_NAMES_GK_SHORT2 : SKILL_LABELS_OUT2;
       const baseHeaders = [
-        { key: "number", label: "#", align: "c", width: "42px", defaultSortDir: 1 },
+        { key: "no", label: "#", align: "c", width: "42px", defaultSortDir: 1 },
         {
           key: "name",
           label: "Player",
           width: "220px",
           defaultSortDir: 1,
           sort: (a, b) => String(a.name || "").localeCompare(String(b.name || "")),
-          render: (_, item) => `<div class="tmvu-players-name"><a href="${escapeHtml33(item.playerHref)}">${escapeHtml33(item.name)}</a></div>`
+          render: (_, item) => `<div class="tmvu-players-name"><a href="/players/${escapeHtml33(item.id || item.player_id)}/">${escapeHtml33(item.name || item.player_name)}</a></div>`
         },
-        { key: "ageSort", label: "Age", align: "c", width: "60px", defaultSortDir: 1, render: (_, item) => escapeHtml33(item.ageLabel) },
-        { key: "position", label: "Pos", align: "c", width: "92px", defaultSortDir: 1, render: (_, item) => TmPosition.chip(String(item.position || "").split(",").map((s6) => s6.trim()).filter(Boolean)) }
+        {
+          key: "ageMonths",
+          label: "Age",
+          align: "c",
+          width: "60px",
+          defaultSortDir: 1,
+          sort: (a, b) => (Number(a.ageMonths) || 0) - (Number(b.ageMonths) || 0),
+          render: (_, item) => escapeHtml33(`${Number(item.age) || 0}.${Number(item.month) || 0}`)
+        },
+        {
+          key: "positions",
+          label: "Pos",
+          align: "c",
+          width: "92px",
+          defaultSortDir: 1,
+          render: (_, item) => TmPosition.chip((item.positions || []).filter((position) => position.preferred))
+        }
       ];
       const skillHeaders = skillLabels.map((label, index) => ({
         key: `skill_${index}`,
@@ -46530,15 +46196,15 @@ order:initial
         width: "42px",
         defaultSortDir: -1,
         sort: (a, b) => {
-          var _a, _b;
-          return (Number((_a = a.skills) == null ? void 0 : _a[index]) || 0) - (Number((_b = b.skills) == null ? void 0 : _b[index]) || 0);
+          var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
+          return (Number((_e = (_d = (_b = (_a = a.skills) == null ? void 0 : _a[index]) == null ? void 0 : _b.value) != null ? _d : (_c = a.skills) == null ? void 0 : _c[index]) != null ? _e : 0) || 0) - (Number((_j = (_i = (_g = (_f = b.skills) == null ? void 0 : _f[index]) == null ? void 0 : _g.value) != null ? _i : (_h = b.skills) == null ? void 0 : _h[index]) != null ? _j : 0) || 0);
         },
         render: (_, item) => skillCellHtml(item, index)
       }));
       return [
         ...baseHeaders,
         ...skillHeaders,
-        { key: "TI", label: "TI", align: "r", width: "54px", defaultSortDir: -1 },
+        { key: "ti", label: "TI", align: "r", width: "54px", defaultSortDir: -1 },
         {
           key: "TI_change",
           label: "\u0394",
@@ -46559,11 +46225,11 @@ order:initial
           defaultSortDir: -1,
           sort: (a, b) => {
             var _a, _b, _c, _d, _e, _f;
-            return ((_c = (_b = (_a = state5.metricsByPid[a.pid]) == null ? void 0 : _a.r5) != null ? _b : a.r5) != null ? _c : -Infinity) - ((_f = (_e = (_d = state5.metricsByPid[b.pid]) == null ? void 0 : _d.r5) != null ? _e : b.r5) != null ? _f : -Infinity);
+            return ((_c = (_b = (_a = state5.metricsByPid[String(a.id || a.player_id)]) == null ? void 0 : _a.r5) != null ? _b : a.r5) != null ? _c : -Infinity) - ((_f = (_e = (_d = state5.metricsByPid[String(b.id || b.player_id)]) == null ? void 0 : _d.r5) != null ? _e : b.r5) != null ? _f : -Infinity);
           },
           render: (_, item) => {
             var _a, _b;
-            const value = (_b = (_a = state5.metricsByPid[item.pid]) == null ? void 0 : _a.r5) != null ? _b : item.r5;
+            const value = (_b = (_a = state5.metricsByPid[String(item.id || item.player_id)]) == null ? void 0 : _a.r5) != null ? _b : item.r5;
             if (value == null) return '<span class="tmvu-players-r5 is-pending">...</span>';
             return `<span class="tmvu-players-r5">${escapeHtml33(TmUtils.formatR5(value))}</span>`;
           }
@@ -46632,7 +46298,7 @@ order:initial
             items: section.players,
             density: "tight",
             cls: "tmvu-players-table",
-            sortKey: "number",
+            sortKey: "no",
             sortDir: 1,
             emptyText: "No players found."
           });
@@ -46644,11 +46310,11 @@ order:initial
       renderControls();
       renderSections();
     };
-    const fetchSquadForRender = async (clubId2, squadKey) => {
+    const fetchSquadForRender = async (clubId2) => {
       if (!clubId2) return [];
-      const data = await TmClubService.fetchSquadRaw(clubId2, { skipSync: true });
-      const players = Array.isArray(data == null ? void 0 : data.post) ? data.post : [];
-      return decoratePlayers2(players, squadKey);
+      const players = await TmClubModel2.fetchSquadRaw(clubId2, true) || [];
+      console.log(players);
+      return decoratePlayers2(players);
     };
     const loadSquadFromIframe = (path) => new Promise((resolve, reject) => {
       const frame = document.createElement("iframe");
@@ -46692,7 +46358,7 @@ order:initial
       squad.loadError = "";
       render17();
       const clubId2 = String(((_a = window.SESSION) == null ? void 0 : _a.main_id) || ((_b = window.SESSION) == null ? void 0 : _b.club_id) || "").trim();
-      const players = await fetchSquadForRender(clubId2, "main");
+      const players = await fetchSquadForRender(clubId2);
       squad.loading = false;
       if (!players.length) {
         squad.loadError = "Main squad endpoint returned no players.";
@@ -46713,7 +46379,7 @@ order:initial
       render17();
       try {
         const clubId2 = String(((_a = window.SESSION) == null ? void 0 : _a.b_team) || "").trim();
-        squad.players = await fetchSquadForRender(clubId2, "reserves");
+        squad.players = await fetchSquadForRender(clubId2);
         squad.loaded = true;
       } catch (error) {
         state5.reserveLoadStarted = false;

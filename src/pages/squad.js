@@ -1,7 +1,7 @@
 import { TmSquadTable } from '../components/squad/tm-squad-table.js';
 import { initClubLayout, normalizeClubHref } from '../components/club/tm-club-layout.js';
 import { TmUI } from '../components/shared/tm-ui.js';
-import { TmClubService } from '../services/club.js';
+import { TmClubModel } from '../models/club.js';
 
 'use strict';
 
@@ -64,8 +64,8 @@ const getSquadContainer = () => {
                     || html.match(/B-Team:[\s\S]*?\/club\/(\d+)\//);
                 if (!idMatch) return;
                 const bTeamId = idMatch[1];
-                TmClubService.fetchSquadRaw(bTeamId).then(data => {
-                    const players = data?.post ? Object.values(data.post) || [] : [];
+                TmClubModel.fetchSquadRaw(bTeamId).then(data => {
+                    const players = Array.isArray(data) ? data : [];
                     if (players.length) {
                         bTeamPlayers = players.map(p => ({ ...p, isBTeam: true }));
                         renderPanel();
@@ -108,9 +108,9 @@ const getSquadContainer = () => {
         if (!clubId) return;
 
         await waitForJQuery();
-        const data = await TmClubService.fetchSquadRaw(clubId);
-        if (data?.post.length) {
-            allPlayers = data.post;
+        const data = await TmClubModel.fetchSquadRaw(clubId);
+        if (data?.length) {
+            allPlayers = data;
             processed = true;
             renderPanel();
 

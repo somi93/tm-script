@@ -5,7 +5,7 @@ import { TmScoutReportCards } from '../components/shared/tm-scout-report-cards.j
 import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { TmTable } from '../components/shared/tm-table.js';
 import { TmUI } from '../components/shared/tm-ui.js';
-import { TmPlayerService } from '../services/player.js';
+import { TmPlayerModel } from '../models/player.js';
 import { TmScoutsService } from '../services/scouts.js';
 import { TmUtils } from '../lib/tm-utils.js';
 
@@ -164,8 +164,8 @@ const enrichReports = async (reports) => {
         if (!report.playerId) return report;
         try {
             const [tooltipData, scoutData] = await Promise.all([
-                TmPlayerService.fetchPlayerTooltip(report.playerId),
-                TmPlayerService.fetchPlayerInfo(report.playerId, 'scout'),
+                TmPlayerModel.fetchPlayerTooltip(report.playerId),
+                TmPlayerModel.fetchPlayerInfo(report.playerId, 'scout'),
             ]);
             return {
                 ...report,

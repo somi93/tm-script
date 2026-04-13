@@ -3,157 +3,10 @@ import { TmCheckbox } from '../components/shared/tm-checkbox.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmPosition } from '../lib/tm-position.js';
 import { TmUtils } from '../lib/tm-utils.js';
-import { TmClubService } from '../services/club.js';
+import { TmClubModel } from '../models/club.js';
+import { injectPlayersPageStyles } from './players-styles.js';
 
-const STYLE_ID = 'tmvu-players-page-style';
 const RESERVES_URL = '/players/#/a//b/true/';
-
-function injectPlayersPageStyles() {
-    if (document.getElementById(STYLE_ID)) return;
-
-    const style = document.createElement('style');
-    style.id = STYLE_ID;
-    style.textContent = `
-        .tmvu-players-shell {
-            display: flex;
-            flex-direction: column;
-            gap: var(--tmu-space-lg);
-            width: 100%;
-            min-width: 0;
-        }
-        .tmvu-players-head {
-            display: flex;
-            align-items: center;
-            gap: var(--tmu-space-md);
-            padding: 0 0 var(--tmu-space-sm);
-        }
-        .tmvu-players-title {
-            margin: 0;
-            color: var(--tmu-text-strong);
-            font-size: 24px;
-            font-weight: 800;
-            letter-spacing: .01em;
-        }
-        .tmvu-players-controls {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: var(--tmu-space-md);
-            margin-bottom: var(--tmu-space-md);
-        }
-        .tmvu-players-sections {
-            display: flex;
-            flex-direction: column;
-            gap: var(--tmu-space-lg);
-            min-width: 0;
-        }
-        .tmvu-players-sections > section {
-            min-width: 0;
-        }
-        .tmvu-players-table-wrap {
-            width: 100%;
-            max-width: 100%;
-            min-width: 0;
-            overflow-x: auto;
-            overflow-y: hidden;
-        }
-        .tmvu-players-section-title {
-            margin: 0 0 var(--tmu-space-sm);
-            font-size: var(--tmu-font-md);
-            font-weight: 800;
-            color: var(--tmu-text-strong);
-        }
-        .tmvu-players-table .tmvu-players-name a {
-            color: var(--tmu-text-strong);
-            text-decoration: none;
-            font-weight: 700;
-        }
-        .tmvu-players-table .tmvu-players-name a:hover {
-            color: var(--tmu-accent);
-            text-decoration: none;
-        }
-        .tmvu-players-table .tmvu-players-pos {
-            color: var(--tmu-text-muted);
-            font-weight: 700;
-            white-space: nowrap;
-        }
-        .tmvu-players-table .tmvu-players-r5 {
-            color: var(--tmu-text-strong);
-            font-weight: 700;
-        }
-        .tmvu-players-table .tmvu-players-r5.is-pending {
-            color: var(--tmu-text-faint);
-        }
-        .tmvu-players-table .tmvu-players-delta {
-            font-weight: 700;
-        }
-        .tmvu-players-table .tmvu-players-delta.pos {
-            color: var(--tmu-success);
-        }
-        .tmvu-players-table .tmvu-players-delta.neg {
-            color: var(--tmu-danger);
-        }
-        .tmvu-players-skill-cell {
-            display: inline-flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 1px;
-            min-width: 44px;
-            width: 100%;
-            padding: 3px 4px;
-            border-radius: var(--tmu-space-xs);
-            font-weight: 700;
-            color: var(--tmu-text-main);
-        }
-        .tmvu-players-skill-cell.gain-decimal {
-            background: color-mix(in srgb, var(--tmu-success) 14%, transparent);
-        }
-        .tmvu-players-skill-cell.gain-integer {
-            background: color-mix(in srgb, var(--tmu-success) 28%, transparent);
-        }
-        .tmvu-players-skill-cell.loss-decimal,
-        .tmvu-players-skill-cell.loss-integer {
-            background: color-mix(in srgb, var(--tmu-danger) 12%, transparent);
-        }
-        .tmvu-players-skill-cell.max {
-            color: var(--tmu-metal-gold);
-        }
-        .tmvu-players-skill-cell.elite {
-            color: var(--tmu-metal-silver);
-        }
-        .tmvu-players-skill-main {
-            line-height: 1.1;
-        }
-        .tmvu-players-skill-delta {
-            font-size: 10px;
-            line-height: 1;
-            font-weight: 700;
-        }
-        .tmvu-players-skill-delta.pos {
-            color: var(--tmu-success-strong);
-        }
-        .tmvu-players-skill-delta.neg {
-            color: var(--tmu-danger);
-        }
-        .tmvu-players-empty {
-            padding: var(--tmu-space-md) 0;
-            color: var(--tmu-text-muted);
-        }
-        .tmvu-players-source-frame {
-            width: 0;
-            height: 0;
-            border: 0;
-            position: absolute;
-            left: -9999px;
-            top: -9999px;
-            opacity: 0;
-            pointer-events: none;
-        }
-    `;
-
-    document.head.appendChild(style);
-}
 
 const escapeHtml = (value) => String(value || '')
     .replace(/&/g, '&amp;')
@@ -180,35 +33,8 @@ const formatTiDelta = (value) => {
     return `${n > 0 ? '+' : ''}${n}`;
 };
 
-const numericSkills = (skills = []) => skills.map((skill) => {
-    if (typeof skill === 'object' && skill !== null) return Number(skill.value) || 0;
-    return Number(skill) || 0;
-});
-const toDisplayPlayer = (player, squadKey) => {
-    const ageYears = Number(player.age) || 0;
-    const ageMonths = Number(player.months) || 0;
-    return {
-        ...player,
-        pid: String(player.id || player.player_id || ''),
-        name: player.name || player.player_name || '',
-        ageYears,
-        ageMonths,
-        ageLabel: `${ageYears}.${ageMonths}`,
-        ageSort: (ageYears * 12) + ageMonths,
-        position: player.favposition || '',
-        isGK: !!player.isGK,
-        skills: numericSkills(player.skills),
-        playerHref: `/players/${player.id || player.player_id}/`,
-        TI: Number(player.ti) || 0,
-        TI_change: 0,
-        squadKey,
-        r5: player.r5 != null ? Number(player.r5) : null,
-        skillChanges: [],
-    };
-};
-
 const skillCellHtml = (player, index) => {
-    const value = Number(player.skills?.[index] || 0);
+    const value = Number(player.skills?.[index]?.value ?? player.skills?.[index] ?? 0);
     const change = player.skillChanges?.find((item) => item.index === index) || null;
     const toneCls = change?.type ? ` ${change.type}` : '';
     const cls = `${value >= 20 ? ' max' : value >= 19 ? ' elite' : ''}${toneCls}`;
@@ -275,7 +101,10 @@ export function initPlayersPage(main) {
         reserveLoadStarted: false,
     };
 
-    const decoratePlayers = (players, squadKey) => players.map((player) => toDisplayPlayer(player, squadKey));
+    const decoratePlayers = (players) => players.map((player) => ({
+        ...player,
+        skillChanges: [],
+    }));
 
 
     const createSectionHost = (title) => {
@@ -294,17 +123,32 @@ export function initPlayersPage(main) {
     const buildTableHeaders = (isGK) => {
         const skillLabels = isGK ? SKILL_NAMES_GK_SHORT : SKILL_LABELS_OUT;
         const baseHeaders = [
-            { key: 'number', label: '#', align: 'c', width: '42px', defaultSortDir: 1 },
+            { key: 'no', label: '#', align: 'c', width: '42px', defaultSortDir: 1 },
             {
                 key: 'name',
                 label: 'Player',
                 width: '220px',
                 defaultSortDir: 1,
                 sort: (a, b) => String(a.name || '').localeCompare(String(b.name || '')),
-                render: (_, item) => `<div class="tmvu-players-name"><a href="${escapeHtml(item.playerHref)}">${escapeHtml(item.name)}</a></div>`
+                render: (_, item) => `<div class="tmvu-players-name"><a href="/players/${escapeHtml(item.id || item.player_id)}/">${escapeHtml(item.name || item.player_name)}</a></div>`
             },
-            { key: 'ageSort', label: 'Age', align: 'c', width: '60px', defaultSortDir: 1, render: (_, item) => escapeHtml(item.ageLabel) },
-            { key: 'position', label: 'Pos', align: 'c', width: '92px', defaultSortDir: 1, render: (_, item) => TmPosition.chip(String(item.position || '').split(',').map(s => s.trim()).filter(Boolean)) },
+            {
+                key: 'ageMonths',
+                label: 'Age',
+                align: 'c',
+                width: '60px',
+                defaultSortDir: 1,
+                sort: (a, b) => (Number(a.ageMonths) || 0) - (Number(b.ageMonths) || 0),
+                render: (_, item) => escapeHtml(`${Number(item.age) || 0}.${Number(item.month) || 0}`)
+            },
+            {
+                key: 'positions',
+                label: 'Pos',
+                align: 'c',
+                width: '92px',
+                defaultSortDir: 1,
+                render: (_, item) => TmPosition.chip((item.positions || []).filter((position) => position.preferred))
+            },
         ];
 
         const skillHeaders = skillLabels.map((label, index) => ({
@@ -313,14 +157,14 @@ export function initPlayersPage(main) {
             align: 'c',
             width: '42px',
             defaultSortDir: -1,
-            sort: (a, b) => (Number(a.skills?.[index]) || 0) - (Number(b.skills?.[index]) || 0),
+            sort: (a, b) => (Number(a.skills?.[index]?.value ?? a.skills?.[index] ?? 0) || 0) - (Number(b.skills?.[index]?.value ?? b.skills?.[index] ?? 0) || 0),
             render: (_, item) => skillCellHtml(item, index),
         }));
 
         return [
             ...baseHeaders,
             ...skillHeaders,
-            { key: 'TI', label: 'TI', align: 'r', width: '54px', defaultSortDir: -1 },
+            { key: 'ti', label: 'TI', align: 'r', width: '54px', defaultSortDir: -1 },
             {
                 key: 'TI_change',
                 label: 'Δ',
@@ -339,9 +183,9 @@ export function initPlayersPage(main) {
                 align: 'r',
                 width: '64px',
                 defaultSortDir: -1,
-                sort: (a, b) => (((state.metricsByPid[a.pid]?.r5 ?? a.r5) ?? -Infinity) - (((state.metricsByPid[b.pid]?.r5 ?? b.r5) ?? -Infinity))),
+                sort: (a, b) => (((state.metricsByPid[String(a.id || a.player_id)]?.r5 ?? a.r5) ?? -Infinity) - (((state.metricsByPid[String(b.id || b.player_id)]?.r5 ?? b.r5) ?? -Infinity))),
                 render: (_, item) => {
-                    const value = state.metricsByPid[item.pid]?.r5 ?? item.r5;
+                    const value = state.metricsByPid[String(item.id || item.player_id)]?.r5 ?? item.r5;
                     if (value == null) return '<span class="tmvu-players-r5 is-pending">...</span>';
                     return `<span class="tmvu-players-r5">${escapeHtml(TmUtils.formatR5(value))}</span>`;
                 }
@@ -421,7 +265,7 @@ export function initPlayersPage(main) {
                     items: section.players,
                     density: 'tight',
                     cls: 'tmvu-players-table',
-                    sortKey: 'number',
+                    sortKey: 'no',
                     sortDir: 1,
                     emptyText: 'No players found.',
                 });
@@ -435,11 +279,11 @@ export function initPlayersPage(main) {
         renderSections();
     };
 
-    const fetchSquadForRender = async (clubId, squadKey) => {
+    const fetchSquadForRender = async (clubId) => {
         if (!clubId) return [];
-        const data = await TmClubService.fetchSquadRaw(clubId, { skipSync: true });
-        const players = Array.isArray(data?.post) ? data.post : [];
-        return decoratePlayers(players, squadKey);
+        const players = await TmClubModel.fetchSquadRaw(clubId, true) || [];
+        console.log(players);
+        return decoratePlayers(players);
     };
 
     const loadSquadFromIframe = (path) => new Promise((resolve, reject) => {
@@ -489,7 +333,8 @@ export function initPlayersPage(main) {
         render();
 
         const clubId = String(window.SESSION?.main_id || window.SESSION?.club_id || '').trim();
-        const players = await fetchSquadForRender(clubId, 'main');
+        const players = await fetchSquadForRender(clubId);
+
         squad.loading = false;
 
         if (!players.length) {
@@ -513,7 +358,7 @@ export function initPlayersPage(main) {
 
         try {
             const clubId = String(window.SESSION?.b_team || '').trim();
-            squad.players = await fetchSquadForRender(clubId, 'reserves');
+            squad.players = await fetchSquadForRender(clubId);
             squad.loaded = true;
         } catch (error) {
             state.reserveLoadStarted = false;

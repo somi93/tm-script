@@ -1,7 +1,7 @@
 import { TmConst } from '../../lib/tm-constants.js';
-import { TmClubService } from '../../services/club.js';
+import { TmClubModel } from '../../models/club.js';
 import { TmMatchService } from '../../services/match.js';
-import { TmPlayerService } from '../../services/player.js';
+import { TmPlayerModel } from '../../models/player.js';
 
 const squadCache = new Map();
 const tooltipCache = new Map();
@@ -9,16 +9,12 @@ const matchCache = new Map();
 
 const fetchSquad = (clubId) => {
     if (!squadCache.has(clubId)) {
-        squadCache.set(clubId, TmClubService.fetchSquadRaw(clubId).then(data => {
-            if (!data?.post) return { post: {} };
-            if (Array.isArray(data.post)) {
-                const postObj = {};
-                data.post.forEach(player => {
-                    postObj[String(player.id)] = player;
-                });
-                data.post = postObj;
-            }
-            return data;
+        squadCache.set(clubId, TmClubModel.fetchSquadRaw(clubId).then(data => {
+            const post = {};
+            (data || []).forEach(player => {
+                post[String(player.id)] = player;
+            });
+            return { post };
         }).catch(() => ({ post: {} })));
     }
     return squadCache.get(clubId);
@@ -28,7 +24,7 @@ const getPlayerDataFromSquad = async (playerId, squadPost, matchPos) => {
     let player = squadPost.post?.[String(playerId)];
     if (!player) {
         if (!tooltipCache.has(playerId)) {
-            tooltipCache.set(playerId, TmPlayerService.fetchPlayerTooltip(playerId)
+            tooltipCache.set(playerId, TmPlayerModel.fetchPlayerTooltip(playerId)
                 .then(response => response?.player ?? null)
                 .catch(() => null));
         }

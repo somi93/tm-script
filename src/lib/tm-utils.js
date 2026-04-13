@@ -146,6 +146,22 @@ const parseSkillValue = (value) => {
     return numericMatch ? Number(numericMatch[0]) : null;
 };
 
+const skillValue = (skill) => (typeof skill === 'object' && skill !== null)
+    ? Number(skill.value ?? 0)
+    : Number(skill);
+
+const sortAgeKeys = (keys) => Array.from(new Set(keys || []))
+    .sort((a, b) => {
+        const [ay, am] = String(a).split('.').map(Number);
+        const [by, bm] = String(b).split('.').map(Number);
+        return ay * 12 + am - (by * 12 + bm);
+    });
+
+const safeGrowthSkills = (skills) => (Array.isArray(skills) ? skills : []).map((value) => {
+    const numeric = typeof value === 'object' ? value.value : value;
+    return Number.isFinite(numeric) ? Math.floor(numeric) : 0;
+});
+
 const applyTooltipSkills = (player, tooltipSkills) => {
     if (!Array.isArray(player?.skills) || !Array.isArray(tooltipSkills)) return player;
 
@@ -258,5 +274,5 @@ const applySquadSkills = (player, postPlayer) => {
     return player;
 };
 
-export const TmUtils = { getColor, parseNum, ageToMonths, monthsToAge, classifyPosition, posLabel, fix2, formatR5, fmtCoins, ratingColor, r5Color, toggleSort, skillColor, skillEff, getMainContainer, getMainContainers, extractFaceUrl, parseSkillValue, applyTooltipSkills, applyPlayerPositions, applySquadSkills, getOwnClubIds };
+export const TmUtils = { getColor, parseNum, ageToMonths, monthsToAge, classifyPosition, posLabel, fix2, formatR5, fmtCoins, ratingColor, r5Color, toggleSort, skillColor, skillEff, getMainContainer, getMainContainers, extractFaceUrl, parseSkillValue, skillValue, sortAgeKeys, safeGrowthSkills, applyTooltipSkills, applyPlayerPositions, applySquadSkills, getOwnClubIds };
 

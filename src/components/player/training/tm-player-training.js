@@ -1,7 +1,7 @@
 ﻿'use strict';
 
-import { TmPlayerService } from '../../../services/player.js';
-import { TmClubService } from '../../../services/club.js';
+import { TmClubModel } from '../../../models/club.js';
+import { TmPlayerModel } from '../../../models/player.js';
 import { TmUI } from '../../shared/tm-ui.js';
 import { TMT_CSS, attachSharedShadowStyles } from './training-styles.js';
 import { mountGkTraining } from './gk-training.js';
@@ -74,7 +74,7 @@ export const TmTrainingMod = (() => {
     const load = (container, player) => {
         if (player.isOwnPlayer) {
             container.innerHTML = TmUI.loading();
-            TmPlayerService.fetchPlayerTraining(player.id).then(training => {
+            TmPlayerModel.fetchPlayerTraining(player.id).then(training => {
                 if (!training) {
                     container.innerHTML = TmUI.error('Failed to load data');
                     return;
@@ -87,7 +87,7 @@ export const TmTrainingMod = (() => {
             render(container, { player, readOnly: true });
         } else {
             container.innerHTML = TmUI.loading();
-            TmClubService.fetchSquadRaw(player.club_id).then(squad => {
+            TmClubModel.fetchSquadRaw(player.club_id).then(squad => {
                 const found = (squad || []).find(p => Number(p.id) === Number(player.id));
                 if (!found) {
                     container.innerHTML = TmUI.error('Player not found in squad data');

@@ -1,5 +1,5 @@
 import { TmUI } from '../../shared/tm-ui.js';
-import { TmPlayerService } from '../../../services/player.js';
+import { TmPlayerModel } from '../../../models/player.js';
 import { buildTiChart } from './tm-graph-ti.js';
 import { buildAsiChart } from './tm-graph-asi.js';
 import { buildRecChart } from './tm-graph-rec.js';
@@ -97,7 +97,7 @@ export const TmGraphsMod = (() => {
 
     const load = (container, player) => {
         container.innerHTML = TmUI.loading();
-        TmPlayerService.fetchPlayerGraphs(player.id).then(data => {
+        TmPlayerModel.fetchPlayerGraphs(player.id).then(data => {
             if (!data) {
                 container.innerHTML = TmUI.error('Failed to load data');
                 return;

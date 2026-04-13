@@ -9,7 +9,7 @@ import { TmPlayerStyles } from '../components/player/card/tm-player-styles.js';
 import { TmScoutMod } from '../components/player/scout/tm-scout-mod.js';
 import { TmSkillsGrid } from '../components/player/skills/tm-skills-grid.js';
 import { TmTabsMod } from '../components/player/tabs/tm-tabs-mod.js';
-import { TmPlayerService } from '../services/player.js';
+import { TmPlayerModel } from '../models/player.js';
 import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 
 export function initPlayerPage(main) {
@@ -168,7 +168,7 @@ export function initPlayerPage(main) {
     //    -----------------------------------------------------------
     bootstrapShell();
 
-    TmPlayerService.fetchPlayerTooltip(PLAYER_ID)
+    TmPlayerModel.fetchPlayerTooltip(PLAYER_ID)
         .then((data) => applyTooltip(data));
 
     /* -----------------------------------------------------------

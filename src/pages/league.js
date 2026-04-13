@@ -7,9 +7,9 @@ import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { createSocialFeedController } from '../components/shared/tm-social-feed.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmConst } from '../lib/tm-constants.js';
-import { TmClubService } from '../services/club.js';
+import { TmClubModel } from '../models/club.js';
 import { TmApi } from '../services/index.js';
-import { TmPlayerService } from '../services/player.js';
+import { TmPlayerModel } from '../models/player.js';
 import { TmUtils } from '../lib/tm-utils.js';
 
 export function initLeaguePage(main) {
@@ -48,14 +48,10 @@ export function initLeaguePage(main) {
 
     const fetchSquad = clubId => {
         if (!squadCache.has(clubId)) {
-            squadCache.set(clubId, TmClubService.fetchSquadRaw(clubId).then(data => {
-                if (!data?.post) return { post: {} };
-                if (Array.isArray(data.post)) {
-                    const postObj = {};
-                    data.post.forEach(p => { postObj[String(p.id)] = p; });
-                    data.post = postObj;
-                }
-                return data;
+            squadCache.set(clubId, TmClubModel.fetchSquadRaw(clubId).then(data => {
+                const post = {};
+                (data || []).forEach(p => { post[String(p.id)] = p; });
+                return { post };
             }).catch(() => ({ post: {} })));
         }
         return squadCache.get(clubId);
@@ -72,7 +68,7 @@ export function initLeaguePage(main) {
         let player = squadPost.post?.[String(pid)];
         if (!player) {
             if (!tooltipCache.has(pid)) {
-                tooltipCache.set(pid, TmPlayerService.fetchPlayerTooltip(pid)
+                tooltipCache.set(pid, TmPlayerModel.fetchPlayerTooltip(pid)
                     .then(r => r?.player ?? null).catch(() => null));
             }
             player = await tooltipCache.get(pid);

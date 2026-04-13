@@ -7,7 +7,7 @@ import { TmPlayersTable } from '../components/shared/tm-players-table.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmLib } from '../lib/tm-lib.js';
 import { TmTransferService } from '../services/transfer.js';
-import { TmPlayerService } from '../services/player.js';
+import { TmPlayerModel } from '../models/player.js';
 import { TmUtils } from '../lib/tm-utils.js';
 
 export function initTransferPage(main) {
@@ -282,7 +282,7 @@ export function initTransferPage(main) {
         if (hasFullTooltip(pid)) return tooltipCache[pid];
         if (tooltipPromiseCache.has(pid)) return tooltipPromiseCache.get(pid);
 
-        const request = TmPlayerService.fetchTooltipCached(pid)
+        const request = TmPlayerModel.fetchTooltipCached(pid)
             .then(data => {
                 const tip = TmTransferService.enrichTransferFromTooltip(p, data, CURRENT_SESSION);
                 if (!tip) return null;

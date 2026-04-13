@@ -3,7 +3,7 @@ import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js
 import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmUI } from '../components/shared/tm-ui.js';
-import { TmPlayerService } from '../services/player.js';
+import { TmPlayerModel } from '../models/player.js';
 import { TmPlayerTooltip } from '../components/player/tooltip/tm-player-tooltip.js';
 
 export function initForumPage(main) {
@@ -358,7 +358,7 @@ export function initForumPage(main) {
         var titleInput = liveForm.querySelector('#topic_title');
         if (titleInput) {
             titleInput.className = 'tmvu-forum-title-input';
-            titleInput.placeholder = 'Topic title…';
+            titleInput.placeholder = 'Topic titleï¿½';
             wrap.appendChild(titleInput);
         }
 
@@ -738,7 +738,7 @@ export function initForumPage(main) {
                             fetchAndEnrich(pid, a);
                             frag.appendChild(a);
                         }
-                        // i % 4 === 2,3 are inner capture groups — skip
+                        // i % 4 === 2,3 are inner capture groups ï¿½ skip
                     }
                     textNode.parentNode?.replaceChild(frag, textNode);
                 });
@@ -754,7 +754,7 @@ export function initForumPage(main) {
             const pid = anchor.getAttribute('player_link');
             if (!pid) return;
             _playerTipTimer = setTimeout(() => {
-                TmPlayerService.fetchPlayerTooltip(pid).then(data => {
+                TmPlayerModel.fetchPlayerTooltip(pid).then(data => {
                     if (data?.player) TmPlayerTooltip.show(anchor, data.player);
                 }).catch(() => {});
             }, 200);

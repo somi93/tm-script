@@ -1,6 +1,6 @@
 'use strict';
 
-import { TmPlayerService } from '../../../services/player.js';
+import { TmPlayerModel } from '../../../models/player.js';
 import { TmPlayerDataTable } from '../skills/tm-player-data-table.js';
 import { TmUI } from '../../shared/tm-ui.js';
 import { TmUtils } from '../../../lib/tm-utils.js';
@@ -57,7 +57,7 @@ export const mountScoutScouts = (el, scouts, player, { onReRender = null } = {})
         const scoutId = btn.dataset.scoutId;
         btn.disabled = true;
         btn.textContent = '...';
-        TmPlayerService.fetchPlayerInfo(player?.id, 'scout', { scout_id: scoutId }).then(d => {
+        TmPlayerModel.fetchPlayerInfo(player?.id, 'scout', { scout_id: scoutId }).then(d => {
             if (!d) {
                 btn.textContent = 'Error';
                 btn.style.color = 'var(--tmu-danger)';

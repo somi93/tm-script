@@ -1,9 +1,7 @@
 import { Player } from '../../lib/player.js';
 import { TmLib } from '../../lib/tm-lib.js';
-import { TmPlayerDB } from '../../lib/tm-playerdb.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 import { normalizeClubFromTooltip } from './club.js';
-import { _post } from '../../services/engine.js';
 
 export const normalizeTooltipPlayer = (playerData) => {
     const player = Player.create();
@@ -76,141 +74,6 @@ export const normalizeSquadPlayer = (postPlayer) => {
     return player;
 };
 
-const getMissingRecords = (player, DBPlayer) => {
-    if (!DBPlayer?.records) return [];
-    const keys = Object.keys(DBPlayer.records);
-    const [y0, m0] = keys.at(-1).split('.').map(Number);
-    const [y1, m1] = player.ageMonthsString.split('.').map(Number);
-    const totalFrom = y0 * 12 + m0 + 1;
-    const totalTo = y1 * 12 + m1;
-    return Array.from({ length: Math.max(0, totalTo - totalFrom + 1) }, (_, i) => {
-        const t = totalFrom + i;
-        return `${Math.floor(t / 12)}.${t % 12}`;
-    }).filter(k => !DBPlayer.records[k]);
-}
-
-export const syncMissingRecords = async (player, DBPlayer) => {
-    const missing = getMissingRecords(player, DBPlayer);
-    console.log(missing);
-    if (!missing.length) return {};
-    const [trainingData, graphData] = await Promise.all([
-        fetchPlayerTraining(player),
-        _post('/ajax/players_get_info.ajax.php', { player_id: player.id, type: 'graphs', show_non_pro_graphs: true })
-    ]);
-    player.training = trainingData;
-    let historyRecords = null;
-
-    if (graphData?.graphs?.ti?.length) {
-        historyRecords = syncMissingRecordsFromGraph(player, DBPlayer, missing, graphData.graphs);
-    } else {
-        historyRecords = syncMissingRecordsGuess(player, DBPlayer, missing);
-    }
-
-    if (historyRecords && Object.keys(historyRecords).length) {
-        const preferredPositions = player.positions.filter(position => position.preferred);
-        const store = {
-            ...(DBPlayer || {}),
-            _v: DBPlayer?._v || 1,
-            meta: {
-                ...(DBPlayer?.meta || {}),
-                name: DBPlayer?.meta?.name || player.name,
-                pos: DBPlayer?.meta?.pos || (preferredPositions.length
-                    ? preferredPositions.map(position => position.position).join(', ')
-                    : player.positions.filter(position => position.preferred || position.r5 != null).map(position => position.position).join(', ')),
-            },
-            records: {
-                ...(DBPlayer?.records || {}),
-                ...historyRecords,
-            },
-        };
-
-        await TmPlayerDB.set(player.id, store);
-    }
-    return historyRecords;
-};
-
-const fetchPlayerTraining = async (player) => {
-    if (player.isOwnPlayer) {
-        const data = await _post('/ajax/players_get_info.ajax.php', {
-            player_id: player.id,
-            type: 'training',
-        });
-        return data;
-    } else {
-        const data = await _post('/ajax/players_get_select.ajax.php', { type: 'change', club_id: player.club_id })
-
-        return normalizeSquadPlayerTraining(data?.post[player.id]);
-    }
-}
-
-export const syncMissingRecordsFromGraph = (player, DBPlayer, missing, graphData) => {
-    if (!missing.length || !graphData?.skill_index?.length) return {};
-    const asi = graphData.skill_index;
-    const n = asi.length;
-
-    const result = {};
-    for (const key of missing) {
-        const [y, m] = key.split('.').map(Number);
-        const idx = (n - 1) - (player.ageMonths - (y * 12 + m));
-        if (idx < 0 || idx >= n) continue;
-        result[key] = { SI: Number(asi[idx]) };
-    }
-    if (graphData?.strength?.length) {
-        return syncStatsFromGraph(player, DBPlayer, graphData, result);
-    } else {
-        return syncStatsFromRecords(player, DBPlayer, result);
-    }
-};
-
-const enrichHistoryRecords = (player, history) => {
-    const preferedPositions = player.positions.filter(position => position.preferred);
-    const positionsForRatings = preferedPositions.length ? preferedPositions : player.positions;
-
-    Object.keys(history).forEach((ageKey) => {
-        const historyRecord = history[ageKey];
-
-        const playerSnapshot = {
-            ...player,
-            asi: historyRecord.SI,
-            skills: historyRecord.skills,
-        };
-
-        let maxR5 = null;
-        let maxRec = null;
-        positionsForRatings.forEach((position) => {
-            const r5 = Number(TmLib.calculatePlayerR5(position, playerSnapshot));
-            const rec = Number(TmLib.calculatePlayerREC(position, playerSnapshot));
-            if (Number.isFinite(r5) && (maxR5 === null || r5 > maxR5)) maxR5 = r5;
-            if (Number.isFinite(rec) && (maxRec === null || rec > maxRec)) maxRec = rec;
-        });
-
-        history[ageKey] = {
-            ...historyRecord,
-            R5: maxR5,
-            REREC: maxRec,
-        };
-    });
-
-    return history;
-};
-
-const syncStatsFromGraph = (player, DBPlayer, graphData, records) => {
-    const history = TmLib.reconstructSkillHistoryFromGraph(player, DBPlayer, graphData, records);
-    return enrichHistoryRecords(player, history);
-};
-
-const syncStatsFromRecords = (player, DBPlayer, records) => {
-    const history = TmLib.reconstructSkillHistoryFromRecords(player, DBPlayer, records);
-    return enrichHistoryRecords(player, history);
-};
-
-export const syncMissingRecordsGuess = (player, DBPlayer, missing) => {
-    const history = TmLib.reconstructSkillHistoryFromGuess(player, DBPlayer, missing);
-    const enriched = enrichHistoryRecords(player, history);
-    console.log(enriched);
-    return enriched;
-};
-
 const _extractClub = (html) => {
     if (!html || html === '-') return { name: null, href: null };
     const name = (html.match(/>([^<]+)<\/a>/) || [])[1] ?? null;
@@ -263,6 +126,35 @@ export const normalizePlayerStats = (data) => ({
     current_season: data?.current_season ?? null,
 });
 
+const populateSkillIndexFromTI = (tiHistory, currentAsi, isGK = false) => {
+    if (!Array.isArray(tiHistory) || !tiHistory.length || !Number.isFinite(Number(currentAsi))) return null;
+
+    const skillIndex = new Array(tiHistory.length).fill(null);
+    let currentSkillSum = TmLib.calcAsiSkillSum({ asi: Number(currentAsi), isGK });
+    skillIndex[tiHistory.length - 1] = Number(currentAsi);
+
+    for (let index = tiHistory.length - 2; index >= 0; index -= 1) {
+        const nextTI = Number(tiHistory[index + 1]);
+        if (!Number.isFinite(nextTI)) return null;
+        currentSkillSum -= nextTI / 10;
+        skillIndex[index] = TmLib.calcASIFromSkillSum(currentSkillSum, isGK);
+    }
+
+    return skillIndex;
+};
+
+export const normalizePlayerGraphs = (graphs, player) => {
+    if (!graphs) return null;
+    const TI = graphs.TI ?? graphs.ti ?? null;
+    return {
+        ...graphs,
+        TI,
+        skill_index: graphs.skill_index ?? populateSkillIndexFromTI(TI, player?.asi, player?.isGK),
+        one_on_ones: graphs.one_on_ones ?? graphs.oneonones ?? null,
+        aerial_ability: graphs.aerial_ability ?? graphs.arialability ?? null,
+    };
+};
+
 export const normalizeSquadPlayerTraining = (data) => {
     if (!data) return null;
     const customRaw = String(data.training_custom || '').trim();
@@ -282,7 +174,6 @@ export const normalizeSquadPlayerTraining = (data) => {
 }
 
 export const normalizePlayerTraining = (data) => {
-    console.log(data);
     const { custom } = data;
     if (!custom.custom_on) {
         return {

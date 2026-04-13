@@ -2,8 +2,8 @@ import { _post, _get } from './engine.js';
 import { TmStatsMatchProcessor } from '../components/stats/tm-stats-match-processor.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmMatchCacheDB } from '../lib/tm-playerdb.js';
-import { TmPlayerService } from './player.js';
-import { TmClubService } from './club.js';
+import { TmClubModel } from '../models/club.js';
+import { TmPlayerModel } from '../models/player.js';
 import { TmMatchUtils } from '../utils/match.js';
 
 export const TmMatchService = {
@@ -259,8 +259,8 @@ export const TmMatchService = {
             (async () => {
                 // Fetch both squads in parallel — covers the vast majority of players
                 const [homeData, awayData] = await Promise.all([
-                    TmClubService.fetchSquadRaw(homeClubId).catch(() => null),
-                    TmClubService.fetchSquadRaw(awayClubId).catch(() => null),
+                    TmClubModel.fetchSquadRaw(homeClubId).catch(() => null),
+                    TmClubModel.fetchSquadRaw(awayClubId).catch(() => null),
                 ]);
 
                 console.log('Squad data fetched', { homeData, awayData });
@@ -283,7 +283,7 @@ export const TmMatchService = {
                 // Fetch tooltips only for players not found in squad
                 if (missingPids.length > 0) {
                     await Promise.all(missingPids.map(pid =>
-                        TmPlayerService.fetchPlayerTooltip(pid)
+                        TmPlayerModel.fetchPlayerTooltip(pid)
                             .then(data => { if (data) players.push(data); })
                             .catch(() => { })
                     ));

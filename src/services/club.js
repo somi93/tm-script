@@ -1,5 +1,4 @@
 import { _post, _getHtml, _dedup } from './engine.js';
-import { TmPlayerService } from './player.js';
 
 export const TmClubService = {
 
@@ -76,16 +75,5 @@ export const TmClubService = {
             for (const [id, p] of Object.entries(data.post)) map[String(id)] = p;
             return map;
         });
-    },
-
-    /**
-     * Fetch the squad player list for a club and return normalized players.
-     * @param {string|number} clubId
-     * @returns {Promise<object[]|null>}
-     */
-    async fetchSquadRaw(club_id) {
-        const data = await _post('/ajax/players_get_select.ajax.php', { type: 'change', club_id });
-        if (!data?.post) return null;
-        return Object.values(data.post).map(p => TmPlayerService.normalizeSquadPlayer(p));
     },
 }

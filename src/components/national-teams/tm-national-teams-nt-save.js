@@ -1594,8 +1594,7 @@ async function processFlaggedClubs(state) {
             note: flaggedClub.clubName,
         });
 
-        const squadData = await TmApi.fetchSquadRaw(flaggedClub.clubId, { skipSync: true });
-        const squadPlayers = Array.isArray(squadData?.post) ? squadData.post : [];
+        const squadPlayers = await TmClubModel.fetchSquadRaw(flaggedClub.clubId) || [];
 
         const squadPlayersMissingCountry = squadPlayers.filter(squadPlayer => {
             const countryCode = resolvePlayerCountryCode(squadPlayer);

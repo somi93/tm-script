@@ -10,7 +10,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmPosition } from '../lib/tm-position.js';
 import { TmUtils } from '../lib/tm-utils.js';
-import { TmPlayerService } from '../services/player.js';
+import { TmPlayerModel } from '../models/player.js';
 
 export function initNationalTeamsPage(main) {
     if (!main || !main.isConnected) return;
@@ -523,7 +523,7 @@ export function initNationalTeamsPage(main) {
     const loadSquadPlayers = async (squad) => {
         const players = await Promise.all(squad.rows.map(async row => {
             try {
-                const response = await TmPlayerService.fetchPlayerTooltip(row.playerId);
+                const response = await TmPlayerModel.fetchPlayerTooltip(row.playerId);
                 const player = response?.player;
                 if (!player) return null;
                 return {

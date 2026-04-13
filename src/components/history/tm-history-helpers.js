@@ -1,6 +1,6 @@
 import { TmConst } from '../../lib/tm-constants.js';
 import { TmPosition } from '../../lib/tm-position.js';
-import { TmPlayerService } from '../../services/player.js';
+import { TmPlayerModel } from '../../models/player.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmUI } from '../shared/tm-ui.js';
 
@@ -40,7 +40,7 @@ const { R5_THRESHOLDS } = TmConst;
     function fetchPlayerInfo(pid) {
         pid = String(pid);
         if (playerInfoCache[pid] !== undefined) return Promise.resolve(playerInfoCache[pid]);
-        return TmPlayerService.fetchPlayerTooltip(pid).then(function (data) {
+        return TmPlayerModel.fetchPlayerTooltip(pid).then(function (data) {
             if (!data?.player) { playerInfoCache[pid] = null; return null; }
             const p = data.player;
             const info = {

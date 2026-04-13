@@ -1,6 +1,6 @@
 import { TmUI } from '../../shared/tm-ui.js';
 import { TmPlayerDataTable } from '../skills/tm-player-data-table.js';
-import { TmPlayerService } from '../../../services/player.js';
+import { TmPlayerModel } from '../../../models/player.js';
 import { CountryFlag } from '../../shared/country-flag.js';
 import { TmUtils } from '../../../lib/tm-utils.js';
 
@@ -209,7 +209,7 @@ const render = (container, p) => {
 const load = (container, playerArg) => {
     container.innerHTML = TmUI.loading();
     Promise.all([
-        TmPlayerService.fetchPlayerHistory(playerArg.id),
+        TmPlayerModel.fetchPlayerHistory(playerArg.id),
         Promise.resolve(parseNT(playerArg)),
     ]).then(([stats, nt]) => {
         if (!stats) {
