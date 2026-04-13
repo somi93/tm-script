@@ -1,7 +1,7 @@
 import { TmConst } from '../../lib/tm-constants.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 import { PlayerTrainingDots } from '../shared/tm-training-dots.js';
-import { TmPlayerTooltip } from '../player/tm-player-tooltip.js';
+import { TmPlayerTooltip } from '../player/tooltip/tm-player-tooltip.js';
 import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
 import { playerStatusIconsHtml } from '../shared/tm-player-status-icons.js';
 import { TmPlayersTable } from '../shared/tm-players-table.js';

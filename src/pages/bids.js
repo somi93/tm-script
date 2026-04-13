@@ -4,7 +4,7 @@ import { TmBidsDialog } from '../components/bids/tm-bids-dialog.js';
 import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmShortlistService } from '../services/shortlist.js';
-import { enrichPlayers, toPageRecord } from '../services/players-enrich.js';
+// import { enrichPlayers, toPageRecord } from '../services/players-enrich.js';
 
 'use strict';
 

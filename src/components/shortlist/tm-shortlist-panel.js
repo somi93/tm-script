@@ -1,4 +1,4 @@
-import { TmPlayerTooltip } from '../player/tm-player-tooltip.js';
+import { TmPlayerTooltip } from '../player/tooltip/tm-player-tooltip.js';
 import { TmShortlistFilters } from './tm-shortlist-filters.js';
 import { TmShortlistTable } from './tm-shortlist-table.js';
 import { TmUtils } from '../../lib/tm-utils.js';
@@ -86,7 +86,6 @@ import { TmUI } from '../shared/tm-ui.js';
         const tabs = TmUI.tabs({
             items: [
                 { key: 'shortlist', slot: `📋 Shortlist ${slCountHtml}` },
-                { key: 'indexed', slot: `🗄 Indexed${ixCountHtml}`, disabled: shortlistLoading, title: shortlistLoading ? 'Pričekaj dok se shortlist učita…' : '' },
             ],
             active: activeTab,
             color: 'primary',
@@ -130,29 +129,7 @@ import { TmUI } from '../shared/tm-ui.js';
                 h += TmUI.empty('No players match current filters');
             }
         } else {
-            if (!indexedPlayers) {
-                h += TmUI.loading('Loading indexed players…');
-            } else {
-                h += TmShortlistFilters.buildFilters(fs, { loadHtml: loadBtnHtml });
-                if (!ixFiltered.length) {
-                    h += TmUI.empty('No players match current filters');
-                } else {
-                    const pageSize = IX_PAGE_SIZE || 50;
-                    const totalPages = Math.ceil(ixFiltered.length / pageSize);
-                    const page = Math.min(ixPage || 0, totalPages - 1);
-                    const pageSlice = ixFiltered.slice(page * pageSize, (page + 1) * pageSize);
-                    h += '<div id="tmsl-indexed-table-slot"></div>';
-                    if (totalPages > 1) {
-                        const from = page * pageSize + 1;
-                        const to = Math.min((page + 1) * pageSize, ixFiltered.length);
-                        h += `<div class="tmsl-pagination">`;
-                        h += buttonHtml({ id: 'tmsl-ix-prev', label: '← Prev', color: 'secondary', size: 'xs', disabled: page === 0 });
-                        h += `<span style="font-size:var(--tmu-font-sm);color:var(--tmu-text-accent-soft)">${from}–${to} of ${ixFiltered.length}</span>`;
-                        h += buttonHtml({ id: 'tmsl-ix-next', label: 'Next →', color: 'secondary', size: 'xs', disabled: page >= totalPages - 1 });
-                        h += `</div>`;
-                    }
-                }
-            }
+            h += TmUI.empty('Indexed tab is unavailable.');
         }
 
         panel.innerHTML = h;
@@ -187,16 +164,6 @@ import { TmUI } from '../shared/tm-ui.js';
                 return;
             }
 
-            const indexedPrevButton = event.target.closest('#tmsl-ix-prev');
-            if (indexedPrevButton && panel.contains(indexedPrevButton)) {
-                onIxPage(-1);
-                return;
-            }
-
-            const indexedNextButton = event.target.closest('#tmsl-ix-next');
-            if (indexedNextButton && panel.contains(indexedNextButton)) {
-                onIxPage(1);
-            }
         };
 
         panel.onmouseover = (event) => {
@@ -210,11 +177,6 @@ import { TmUI } from '../shared/tm-ui.js';
                 return;
             }
 
-            const indexedRow = link.closest('tr[data-ixpid]');
-            if (indexedRow) {
-                const player = indexedPlayers && indexedPlayers.find(pl => pl.id === indexedRow.dataset.ixpid);
-                if (player) TmPlayerTooltip.show(link, adaptForTooltip(player));
-            }
         };
 
         panel.onmouseout = (event) => {
@@ -233,17 +195,6 @@ import { TmUI } from '../shared/tm-ui.js';
             const slot = panel.querySelector('#tmsl-table-slot');
             if (slot) {
                 slot.replaceWith(TmShortlistTable.createTableElement(pageSlice, sortCol, sortDir, onSort));
-            }
-        }
-
-        if (!shortlistLoading && activeTab === 'indexed' && indexedPlayers && ixFiltered && ixFiltered.length) {
-            const pageSize = IX_PAGE_SIZE || 50;
-            const totalPages = Math.ceil(ixFiltered.length / pageSize);
-            const page = Math.min(ixPage || 0, totalPages - 1);
-            const pageSlice = ixFiltered.slice(page * pageSize, (page + 1) * pageSize);
-            const slot = panel.querySelector('#tmsl-indexed-table-slot');
-            if (slot) {
-                slot.replaceWith(TmShortlistTable.createIndexedTableElement(pageSlice, ixSortCol, ixSortDir, onIxSort));
             }
         }
 

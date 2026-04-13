@@ -7,7 +7,6 @@ import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { createSocialFeedController } from '../components/shared/tm-social-feed.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmConst } from '../lib/tm-constants.js';
-import { TmPlayerDB } from '../lib/tm-playerdb.js';
 import { TmClubService } from '../services/club.js';
 import { TmApi } from '../services/index.js';
 import { TmPlayerService } from '../services/player.js';
@@ -494,7 +493,6 @@ export function initLeaguePage(main) {
         initUI();
     };
 
-    TmPlayerDB.init().catch(e => console.warn('[League] TmPlayerDB init failed:', e));
     setInterval(initForCurrentPage, 500);
     initForCurrentPage();
 }

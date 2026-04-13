@@ -1,0 +1,229 @@
+{
+    "id": 134837110,
+    "club_id": 1199811,
+    "club": {
+        "id": 1199811,
+        "name": "FC Example",
+        "country": "md"
+    },
+    "name": "Nicu Baltag",
+    "firstname": "Nicu",
+    "lastname": "Baltag",
+    "country": "md",
+    "isGK": false,
+    "age": 35,
+    "month": 2,
+    "ageMonths": 422,
+    "ageMonthsString": "35.2",
+    "asi": 73274,
+    "routine": 60.9,
+    "ti": 0.92,
+    "wage": 1359123,
+    "retire": false,
+    "ban": 0,
+    "injury": 0,
+    "faceUrl": "https://trophymanager.com/pics/player_pic2.php?face=2&nose=4&eyes=2&ears=1&mouth=2&brows=4&hcolor=4&scolor=4&hair=10&age=35&rgb=875d34&w=96",
+    "positions": [
+        {
+            "id": 8,
+            "key": "omc",
+            "position": "OM C",
+            "ordering": 8,
+            "r5": 81.34,
+            "rec": 15.42
+        },
+        {
+            "id": 7,
+            "key": "mc",
+            "position": "M C",
+            "ordering": 7,
+            "r5": 78.91,
+            "rec": 14.83
+        }
+    ],
+    "skills": [
+        {
+            "name": "Strength",
+            "key": "strength",
+            "isGK": true,
+            "isOutfield": true,
+            "category": "Physical",
+            "id": 0,
+            "value": 10
+        },
+        {
+            "name": "Stamina",
+            "key": "stamina",
+            "isGK": true,
+            "isOutfield": true,
+            "category": "Physical",
+            "id": 1,
+            "value": 10
+        },
+        {
+            "name": "Pace",
+            "key": "pace",
+            "isGK": true,
+            "isOutfield": true,
+            "category": "Physical",
+            "id": 2,
+            "value": 16.54
+        },
+        {
+            "name": "Marking",
+            "key": "marking",
+            "isOutfield": true,
+            "category": "Tactical",
+            "id": 3,
+            "value": 12.34
+        },
+        {
+            "name": "Tackling",
+            "key": "tackling",
+            "isOutfield": true,
+            "category": "Tactical",
+            "id": 4,
+            "value": 9.87
+        },
+        {
+            "name": "Workrate",
+            "key": "workrate",
+            "isOutfield": true,
+            "category": "Tactical",
+            "id": 5,
+            "value": 11.23
+        },
+        {
+            "name": "Positioning",
+            "key": "positioning",
+            "isOutfield": true,
+            "category": "Tactical",
+            "id": 6,
+            "value": 10.12
+        },
+        {
+            "name": "Passing",
+            "key": "passing",
+            "isOutfield": true,
+            "category": "Technical",
+            "id": 7,
+            "value": 14.56
+        },
+        {
+            "name": "Crossing",
+            "key": "crossing",
+            "isOutfield": true,
+            "category": "Technical",
+            "id": 8,
+            "value": 13.45
+        },
+        {
+            "name": "Technique",
+            "key": "technique",
+            "isOutfield": true,
+            "category": "Technical",
+            "id": 9,
+            "value": 15.67
+        },
+        {
+            "name": "Heading",
+            "key": "heading",
+            "isOutfield": true,
+            "category": "Physical",
+            "id": 10,
+            "value": 12.34
+        },
+        {
+            "name": "Finishing",
+            "key": "finishing",
+            "isOutfield": true,
+            "category": "Technical",
+            "id": 11,
+            "value": 14.78
+        },
+        {
+            "name": "Longshots",
+            "key": "longshots",
+            "isOutfield": true,
+            "category": "Technical",
+            "id": 12,
+            "value": 13.21
+        },
+        {
+            "name": "Set Pieces",
+            "key": "set_pieces",
+            "isOutfield": true,
+            "category": "Technical",
+            "id": 13,
+            "value": 12.34
+        },
+        {
+            "name": "Handling",
+            "key": "handling",
+            "isGK": true,
+            "category": "Technical",
+            "id": 3,
+            "value": 10
+        },
+        {
+            "name": "One on ones",
+            "key": "oneonones",
+            "isGK": true,
+            "category": "Tactical",
+            "key2": "one_on_ones",
+            "id": 4,
+            "value": 10
+        },
+        {
+            "name": "Reflexes",
+            "key": "reflexes",
+            "isGK": true,
+            "category": "Technical",
+            "id": 5,
+            "value": 10
+        },
+        {
+            "name": "Aerial Ability",
+            "key": "arialability",
+            "isGK": true,
+            "category": "Tactical",
+            "key2": "aerial_ability",
+            "id": 6,
+            "value": 10
+        },
+        {
+            "name": "Jumping",
+            "key": "jumping",
+            "isGK": true,
+            "category": "Physical",
+            "id": 7,
+            "value": 10
+        },
+        {
+            "name": "Communication",
+            "key": "communication",
+            "isGK": true,
+            "category": "Tactical",
+            "id": 8,
+            "value": 10
+        },
+        {
+            "name": "Kicking",
+            "key": "kicking",
+            "isGK": true,
+            "category": "Technical",
+            "id": 9,
+            "value": 10
+        },
+        {
+            "name": "Throwing",
+            "key": "throwing",
+            "isGK": true,
+            "category": "Technical",
+            "id": 10,
+            "value": 10
+        }
+    ],
+    "no": "10",
+    "note": "Used across tooltip, shortlist and forum previews"
+}

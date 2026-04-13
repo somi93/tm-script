@@ -4,8 +4,6 @@ import { injectTacticsStyles } from '../components/tactics/tm-tactics-styles.js'
 import { mountTacticsLineup } from '../components/tactics/tm-tactics-lineup.js';
 import { mountTacticsPanel } from '../components/tactics/tm-tactics-panel.js';
 import { mountTacticsOrders } from '../components/tactics/tm-tactics-orders.js';
-import { TmPlayerDB } from '../lib/tm-playerdb.js';
-import { TmPlayerService } from '../services/player.js';
 import { TmTacticsService } from '../services/tactics.js';
 
 'use strict';
@@ -179,22 +177,5 @@ export async function initTacticsPage(main) {
     if (tacticsSyncListener) {
         window.removeEventListener('tm:player-synced', tacticsSyncListener);
         tacticsSyncListener = null;
-    }
-
-    tacticsSyncListener = event => {
-        if (!main.isConnected) return;
-        const syncedPlayer = event.detail?.player;
-        if (!syncedPlayer) return;
-        if (!replaceSyncedPlayer(data, syncedPlayer)) return;
-        lineupApi.refresh();
-        panelApi.refreshStats();
-    };
-    window.addEventListener('tm:player-synced', tacticsSyncListener);
-
-    for (const player of Object.values(data.players_by_id || {})) {
-        const playerId = String(player?.player_id || player?.id || '').trim();
-        if (!playerId) continue;
-        const DBPlayer = TmPlayerDB.get(playerId);
-        TmPlayerService.normalizePlayer(player, DBPlayer);
     }
 }

@@ -1,4 +1,4 @@
-import { TmPlayerTooltip } from '../components/player/tm-player-tooltip.js';
+import { TmPlayerTooltip } from '../components/player/tooltip/tm-player-tooltip.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmTransferSidebar } from '../components/transfer/tm-transfer-sidebar.js';
 import { TmTransferStyles } from '../components/transfer/tm-transfer-styles.js';

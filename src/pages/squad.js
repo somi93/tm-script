@@ -1,16 +1,12 @@
 import { TmSquadTable } from '../components/squad/tm-squad-table.js';
 import { initClubLayout, normalizeClubHref } from '../components/club/tm-club-layout.js';
 import { TmUI } from '../components/shared/tm-ui.js';
-import { TmPlayerArchiveDB, TmPlayerDB } from '../lib/tm-playerdb.js';
 import { TmClubService } from '../services/club.js';
 
 'use strict';
 
 let CURRENT_PATH = '';
 let _main = null;
-const PlayerDB = TmPlayerDB;
-const PlayerArchiveDB = TmPlayerArchiveDB;
-
 let processed = false;
 let allPlayers = [];
 let bTeamPlayers = [];
@@ -59,23 +55,6 @@ const getSquadContainer = () => {
             if (m) onSaleIds.add(m[1]);
         });
     };
-
-    // When syncPlayerStore finishes it fires tm:growthUpdated.
-    // Update the player in-place from DB and re-render.
-    window.addEventListener('tm:growthUpdated', e => {
-        const pid = String(e.detail?.pid || '');
-        if (!pid) return;
-        const player = allPlayers.find(p => String(p.id) === pid)
-            || bTeamPlayers.find(p => String(p.id) === pid);
-        if (!player) return;
-        const dbRec = TmPlayerDB?.get(pid)?.records?.[`${player.age}.${player.month}`];
-        if (!dbRec || (dbRec.R5 == null && dbRec.REREC == null)) return;
-        if (dbRec.R5 != null) player.r5 = dbRec.R5;
-        if (dbRec.REREC != null) player.rec = dbRec.REREC;
-        if (dbRec.routine != null) player.routine = dbRec.routine;
-        player.fromDB = true;
-        renderPanel();
-    });
 
     const fetchBTeamInfo = clubId => {
         fetch(`/club/${clubId}/`)
@@ -129,9 +108,6 @@ const getSquadContainer = () => {
         if (!clubId) return;
 
         await waitForJQuery();
-        await PlayerDB.init();
-        PlayerArchiveDB.init();
-
         const data = await TmClubService.fetchSquadRaw(clubId);
         if (data?.post.length) {
             allPlayers = data.post;

@@ -266,9 +266,9 @@ export const TmMatchService = {
                 console.log('Squad data fetched', { homeData, awayData });
                 // Build pid → normalized player map from squad results
                 const squadMap = {};
-                [homeData, awayData].forEach(data => {
-                    if (!data?.post) return;
-                    data.post.forEach(p => { squadMap[String(p.id)] = p; });
+                [homeData, awayData].forEach(squad => {
+                    if (!Array.isArray(squad)) return;
+                    squad.forEach(p => { squadMap[String(p.id)] = p; });
                 });
 
                 // Split into found (in squad) and missing (sold/released)
@@ -276,7 +276,7 @@ export const TmMatchService = {
                 const missingPids = [];
                 for (const pid of allPids) {
                     const p = squadMap[pid];
-                    if (p) players.push({ player: p });
+                    if (p) players.push(p);
                     else missingPids.push(pid);
                 }
 

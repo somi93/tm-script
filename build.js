@@ -96,8 +96,6 @@ const PAGES = [
     'shortlist',
     'import',
     'r5history',
-    'dbinspect',
-    'dbrepair',
 ];
 
 // --- Build -------------------------------------------------------------------

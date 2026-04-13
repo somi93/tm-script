@@ -1,14 +1,14 @@
-import { TmAsiCalculator } from '../components/player/tm-asi-calculator.js';
-import { TmBestEstimate } from '../components/player/tm-best-estimate.js';
-import { TmGraphsMod } from '../components/player/tm-graphs-mod.js';
-import { TmHistoryMod } from '../components/player/tm-history-mod.js';
-import { TmPlayerCard } from '../components/player/tm-player-card.js';
-import { TmPlayerSidebar } from '../components/player/tm-player-sidebar.js';
-import { TmPlayerStyles } from '../components/player/tm-player-styles.js';
-import { TmScoutMod } from '../components/player/tm-scout-mod.js';
-import { TmSkillsGrid } from '../components/player/tm-skills-grid.js';
-import { TmTabsMod } from '../components/player/tm-tabs-mod.js';
-import { TmPlayerArchiveDB, TmPlayerDB } from '../lib/tm-playerdb.js';
+import { TmAsiCalculator } from '../components/player/card/tm-asi-calculator.js';
+import { TmBestEstimate } from '../components/player/scout/tm-best-estimate.js';
+import { TmGraphsMod } from '../components/player/graphs/tm-graphs-mod.js';
+import { TmScoutsService } from '../services/scouts.js';
+import { TmHistoryMod } from '../components/player/history/tm-history-mod.js';
+import { TmPlayerCard } from '../components/player/card/tm-player-card.js';
+import { TmPlayerSidebar } from '../components/player/card/tm-player-sidebar.js';
+import { TmPlayerStyles } from '../components/player/card/tm-player-styles.js';
+import { TmScoutMod } from '../components/player/scout/tm-scout-mod.js';
+import { TmSkillsGrid } from '../components/player/skills/tm-skills-grid.js';
+import { TmTabsMod } from '../components/player/tabs/tm-tabs-mod.js';
 import { TmPlayerService } from '../services/player.js';
 import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 
@@ -20,25 +20,11 @@ export function initPlayerPage(main) {
     const PLAYER_ID = urlMatch[1];
     let nativeSidebarSnapshot = null;
 
-    const PlayerDB = TmPlayerDB;
-    const PlayerArchiveDB = TmPlayerArchiveDB;
-
     /* -----------------------------------------------------------
        SHARED STATE (tooltip-derived)
        ----------------------------------------------------------- */
     let player = null;
-    let club = null;
 
-
-    /* Check if player belongs to the logged-in user's club */
-    const getOwnClubIds = () => {
-        const s = window.SESSION;
-        if (!s) return [];
-        const ids = [];
-        if (s.main_id) ids.push(String(s.main_id));
-        if (s.b_team) ids.push(String(s.b_team));
-        return ids;
-    };
 
     const injectCSS = () => {
         injectTmPageLayoutStyles();
@@ -108,7 +94,6 @@ export function initPlayerPage(main) {
         layout.appendChild(leftRail);
         layout.appendChild(mainRail);
         layout.appendChild(rightRail);
-        console.log('Inserting player layout', layout, main);
         main.appendChild(layout);
 
         return { main, layout, leftRail, mainRail, rightRail };
@@ -146,13 +131,13 @@ export function initPlayerPage(main) {
 
         TmPlayerCard.render({
             player,
-            club
         });
 
         const sidebarLayout = ensureSidebarLayout();
         if (sidebarLayout?.sidebarSlot) {
             TmPlayerSidebar.mount(sidebarLayout.sidebarSlot, {
                 player,
+                isOwnPlayer: player.isOwnPlayer,
                 sourceRoot: sidebarLayout.nativeSnapshot,
             });
         }
@@ -166,67 +151,43 @@ export function initPlayerPage(main) {
     };
 
     const applyTooltip = (data) => {
-        if (!data || !data.player) return;
+        if (!data) return;
         if (data.retired) return;
 
-        player = data.player;
-        club = data.club ?? null;
-
-        /* re-render scout if already shown */
-        TmScoutMod.reRender();
-        /* parse NT data before card renders (cleans DOM) */
-        const parsedNTData = TmHistoryMod.parseNT();
+        player = data;
 
         renderPlayerChrome();
 
-        /* re-render history if already loaded, so NT tab appears */
-        if (parsedNTData && TmTabsMod.isLoaded('history')) TmHistoryMod.reRender();
+        /* fetch scout data — populates player.scoutReports/scouts/interestedClubs/bestEstimate */
+        fetchScoutData();
 
-        /* fetch scout data for Best Estimate card */
-        fetchBestEstimate();
-
-        TmTabsMod.mount({ player, getOwnClubIds, injectCSS });
+        TmTabsMod.mount({ player, injectCSS });
     };
 
     //    INIT - run DB init and tooltip fetch in parallel
     //    -----------------------------------------------------------
     bootstrapShell();
 
-    Promise.all([
-        PlayerDB.init().then(() => PlayerArchiveDB.init()).catch(e => {
-            console.warn('[DB] IndexedDB init failed, falling back:', e);
-        }),
-        TmPlayerService.fetchPlayerTooltip(PLAYER_ID),
-    ])
-        .then(([, data]) => applyTooltip(data));
+    TmPlayerService.fetchPlayerTooltip(PLAYER_ID)
+        .then((data) => applyTooltip(data));
 
     /* -----------------------------------------------------------
-       BEST ESTIMATE see components/player/tm-player-best-estimate.js
+       SCOUT DATA — fetched once after tooltip, shared by Best Estimate
+       and the scout tab (TmScoutMod.load skips fetch if already set)
        ----------------------------------------------------------- */
-    const fetchBestEstimate = () => {
+    const fetchScoutData = () => {
         const col1 = ensurePlayerLayout()?.leftRail;
         if (!col1) return;
         const el = ensureRailSlot(col1, 'tmbe-standalone', { prepend: true });
         if (!el) return;
-        TmPlayerService.fetchPlayerInfo(PLAYER_ID, 'scout').then(data => {
-            TmBestEstimate.render(el, {
-                scoutData: data || {},
-                player,
-            });
+        TmScoutsService.fetchPlayerScouting(PLAYER_ID).then(data => {
+            if (!data) return;
+            player.scoutReports = data.reports || [];
+            player.scouts = data.scouts || {};
+            player.interestedClubs = data.interested || [];
+            player.bestEstimate = data.bestEstimate || null;
+            TmBestEstimate.render(el, { player });
         });
     };
-
-    window.addEventListener('tm:growthUpdated', () => {
-        try { TmGraphsMod.reRender(); } catch (e) { }
-        try { TmSkillsGrid.reRender(); } catch (e) { }
-    });
-
-    window.addEventListener('tm:player-synced', event => {
-        const syncedPlayer = event.detail?.player;
-        const syncedId = event.detail?.id;
-        if (!syncedPlayer || Number(syncedId) !== Number(PLAYER_ID)) return;
-        player = syncedPlayer;
-        try { renderPlayerChrome({ rerenderSkills: true }); } catch (e) { }
-    });
 
 }

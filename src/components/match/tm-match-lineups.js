@@ -1,11 +1,11 @@
-﻿import { TmConst } from '../../lib/tm-constants.js';
+import { TmConst } from '../../lib/tm-constants.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmPosition } from '../../lib/tm-position.js';
-import { TmPlayerTooltip } from '../player/tm-player-tooltip.js';
+import { TmPlayerTooltip } from '../player/tooltip/tm-player-tooltip.js';
 import { TmMatchUtils } from '../../utils/match.js';
 import { showPlayerDialog } from './tm-match-player-dialog.js';
 
-// ── Pitch grid position maps — [row, col] (1-based), 5 rows × 12 cols ──
+// -- Pitch grid position maps � [row, col] (1-based), 5 rows � 12 cols --
 const homePosMap = {
     gk: [3, 1],
     dl: [1, 2], dcl: [2, 2], dc: [3, 2], dcr: [4, 2], dr: [5, 2],
@@ -25,8 +25,8 @@ const awayPosMap = {
 const mentalityMap = TmConst.MENTALITY_MAP_LONG;
 const styleMap = TmConst.STYLE_MAP;
 const focusMap = TmConst.FOCUS_MAP;
-const focusIcons = { Balanced: '⚖️', Left: '⬅️', Central: '⬆️', Right: '➡️' };
-// SVG pitch markings — static, created once at module load
+const focusIcons = { Balanced: '??', Left: '??', Central: '??', Right: '??' };
+// SVG pitch markings � static, created once at module load
 const lw = 0.4, clr = 'var(--tmu-border-soft-alpha-mid)', clr2 = 'var(--tmu-border-soft-alpha-strong)';
 const pitchSVG = `<svg class="rnd-pitch-lines" viewBox="0 0 150 100" preserveAspectRatio="xMidYMid meet">
             <!-- outer boundary -->
@@ -74,13 +74,13 @@ export const TmMatchLineups = {
         const allPlayers = [...(mData.teams.home.lineup || []), ...(mData.teams.away.lineup || [])];
         const pEvents = Object.fromEntries(allPlayers.map(player => [String(player.id), player]));
 
-        // Build event icons string for a player — only lineupIcon cols with count > 0
+        // Build event icons string for a player � only lineupIcon cols with count > 0
         const eventIcons = (pid) => {
             const result = pEvents[String(pid)];
             if (!result?.grouped?.length) return '';
             return result.grouped
                 .filter(col => col.lineupIcon).map(col => {
-                    const prefix = (!col.lineupBool && col.count > 1) ? col.count + '×' : '';
+                    const prefix = (!col.lineupBool && col.count > 1) ? col.count + '�' : '';
                     const icon = col.iconStyle
                         ? `<span style="${col.iconStyle}">${col.icon}</span>`
                         : (col.icon || col.abbr);
@@ -117,15 +117,15 @@ export const TmMatchLineups = {
                 h += `<div class="rnd-lu-player rnd-lu-clickable" data-pid="${pid}">`;
                 h += `<span class="rnd-lu-pos">${TmPosition.chip([origPos(p)])}</span>`;
                 h += `<span class="rnd-lu-name ml-3">${p.name}`;
-                if (!!p.captain) h += ` <span class="rnd-lu-captain" title="Captain">©</span>`;
-                if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">⭐</span>`;
+                if (!!p.captain) h += ` <span class="rnd-lu-captain" title="Captain">�</span>`;
+                if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">?</span>`;
                 h += `</span>`;
                 if (evts) h += `<span class="rnd-lu-events">${evts}</span>`;
                 if (matchEnded) {
                     const rFmt = p.rating ? Number(p.rating).toFixed(2) : '-';
                     h += `<span class="rnd-lu-rating" style="color:${ratingColor(p.rating)}">${rFmt}</span>`;
                 }
-                const r5Badge = p.r5 !== null && p.r5 !== undefined ? p.r5 : '···';
+                const r5Badge = p.r5 !== null && p.r5 !== undefined ? p.r5 : '���';
                 const r5Style = p.r5 !== null && p.r5 !== undefined ? ` style="background:${r5Color(p.r5)}"` : '';
                 h += `<span class="rnd-lu-r5" data-pid="${p.id}"${r5Style}>${r5Badge}</span>`;
                 h += `</div>`;
@@ -140,14 +140,14 @@ export const TmMatchLineups = {
                 h += `<div class="rnd-lu-player${mData.profilesReady ? ' rnd-lu-clickable' : ''}" data-pid="${pid}">`;
                 h += `<span class="rnd-lu-pos">${TmPosition.chip([(p.fp || '').split(',')[0]])}</span>`;
                 h += `<span class="rnd-lu-name ml-3"${isGkSub ? ' style="color:var(--tmu-text-disabled)"' : ''}>${p.name}`;
-                if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">⭐</span>`;
+                if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">?</span>`;
                 h += `</span>`;
                 if (evts) h += `<span class="rnd-lu-events">${evts}</span>`;
                 if (matchEnded) {
                     const rFmtS = p.rating ? Number(p.rating).toFixed(2) : '-';
                     h += `<span class="rnd-lu-rating" style="color:${ratingColor(p.rating)}">${rFmtS}</span>`;
                 }
-                const r5Badge = p.r5 !== null && p.r5 !== undefined ? p.r5 : '···';
+                const r5Badge = p.r5 !== null && p.r5 !== undefined ? p.r5 : '���';
                 const r5Style = p.r5 !== null && p.r5 !== undefined ? ` style="background:${r5Color(p.r5)}"` : '';
                 h += `<span class="rnd-lu-r5" data-pid="${p.id}"${r5Style}>${r5Badge}</span>`;
                 h += `</div>`;
@@ -159,9 +159,9 @@ export const TmMatchLineups = {
         const faceNode = (p, clubColor) =>
             `<div class="rnd-pitch-face" style="border:2.5px solid ${clubColor}"><img src="${p.faceUrl}" alt="${p.no}"></div>`;
 
-        // Build grid cells: 5 rows × 12 cols = 60 cells
-        const cellMap = {};  // "row-col" → html
-        const cellPidMap = {};  // "row-col" → player id
+        // Build grid cells: 5 rows � 12 cols = 60 cells
+        const cellMap = {};  // "row-col" ? html
+        const cellPidMap = {};  // "row-col" ? player id
         const placeNode = (pid, posMap, color) => {
             const p = pEvents[pid];
             if (!p) return;
@@ -179,7 +179,7 @@ export const TmMatchLineups = {
             // Captain armband indicator on face
             if (isCaptain) h += `<div class="rnd-pitch-captain">C</div>`;
             // MOM star on face
-            if (isMom) h += `<div class="rnd-pitch-mom">⭐</div>`;
+            if (isMom) h += `<div class="rnd-pitch-mom">?</div>`;
             h += `<div class="rnd-pitch-info">`;
             h += `<div class="rnd-pitch-label">${p.nameLast || p.name}</div>`;
             if (rFmt) h += `<div class="rnd-pitch-rating" style="color:${ratingColor(p.rating)}">${rFmt}</div>`;
@@ -206,7 +206,7 @@ export const TmMatchLineups = {
 
         let html = '';
 
-        // ── Build per-side tactics HTML ──
+        // -- Build per-side tactics HTML --
         const md = mData.match_data;
         const buildTactics = (side) => {
             const future = TmMatchUtils.isMatchFuture(mData);
@@ -214,17 +214,17 @@ export const TmMatchLineups = {
             let t = '<div class="rnd-tactics-section"><div class="rnd-tactics-grid">';
             // Avg R5 (filled async)
             t += `<div class="rnd-tactic-row r5-row" data-avg-r5="${side}">
-                <span class="rnd-tactic-icon">⭐</span>
+                <span class="rnd-tactic-icon">?</span>
                 <span class="rnd-tactic-label">Avg R5</span>
                 <div class="rnd-tactic-meter"><div class="rnd-r5-side-meter-fill ${side}" style="width:0%"></div></div>
-                <span class="rnd-r5-side-val" style="font-size:var(--tmu-font-xs);font-weight:800;color:var(--tmu-text-strong);min-width:36px;text-align:right">···</span>
+                <span class="rnd-r5-side-val" style="font-size:var(--tmu-font-xs);font-weight:800;color:var(--tmu-text-strong);min-width:36px;text-align:right">���</span>
             </div>`;
             // Mentality (live)
             {
                 const lvl = team.mentality;
                 const val = team.mentalityLabel || mentalityMap[lvl] || lvl;
                 t += `<div class="rnd-tactic-row">
-                    <span class="rnd-tactic-icon">⚔️</span>
+                    <span class="rnd-tactic-icon">??</span>
                     <span class="rnd-tactic-label">Mentality</span>
                     <div class="rnd-tactic-meter"><div class="rnd-tactic-meter-fill ${side}" style="width:${Math.round(lvl / 7 * 100)}%"></div></div>
                     <span class="rnd-tactic-value">${val}</span>
@@ -234,7 +234,7 @@ export const TmMatchLineups = {
             if (team.attackingStyle) {
                 const sVal = team.attackingStyleLabel || styleMap[team.attackingStyle] || team.attackingStyle;
                 t += `<div class="rnd-tactic-row">
-                    <span class="rnd-tactic-icon">🎯</span>
+                    <span class="rnd-tactic-icon">??</span>
                     <span class="rnd-tactic-label">Style</span>
                     <span class="rnd-tactic-value-pill ${side}">${sVal}</span>
                 </div>`;
@@ -242,24 +242,24 @@ export const TmMatchLineups = {
             // Focus Side
             if (team.focusSide) {
                 const fVal = team.focusSideLabel || focusMap[team.focusSide] || team.focusSide;
-                const fIcon = focusIcons[fVal] || '⬆️';
+                const fIcon = focusIcons[fVal] || '??';
                 t += `<div class="rnd-tactic-row">
-                    <span class="rnd-tactic-icon">◎</span>
+                    <span class="rnd-tactic-icon">?</span>
                     <span class="rnd-tactic-label">Focus</span>
                     <span class="rnd-tactic-value-pill ${side}">${fIcon} ${fVal}</span>
                 </div>`;
             }
-            // Lineup Out (unavailable players) — prematch only
+            // Lineup Out (unavailable players) � prematch only
             if (future && md.lineup_out && md.lineup_out[side]) {
                 const outPlayers = Object.values(md.lineup_out[side]);
                 if (outPlayers.length) {
                     t += `<div class="rnd-tactic-row" style="margin-top:var(--tmu-space-sm);border-top:1px solid var(--tmu-border-soft-alpha);padding-top:var(--tmu-space-sm)">
-                        <span class="rnd-tactic-icon">🚫</span>
+                        <span class="rnd-tactic-icon">??</span>
                         <span class="rnd-tactic-label" style="color:var(--tmu-warning-soft)">Unavailable</span>
                     </div>`;
                     outPlayers.forEach(op => {
                         t += `<div class="rnd-tactic-row">
-                            <span class="rnd-tactic-icon" style="font-size:var(--tmu-font-xs);color:var(--tmu-warning-soft)">✕</span>
+                            <span class="rnd-tactic-icon" style="font-size:var(--tmu-font-xs);color:var(--tmu-warning-soft)">?</span>
                             <span class="rnd-tactic-value" style="color:var(--tmu-warning-soft);font-size:var(--tmu-font-xs)">${op.name}</span>
                         </div>`;
                     });
@@ -283,7 +283,7 @@ export const TmMatchLineups = {
             wrapHtml += `<div class="rnd-lu-list">${renderList(mData.teams.away)}${buildTactics('away')}</div>`;
             existingWrap.html(wrapHtml);
         } else {
-            // First render or match ended: full rebuild — save canvas first
+            // First render or match ended: full rebuild � save canvas first
             saveUnityCanvas();
             if (isLive) {
                 html += '<div class="rnd-lu-outer">';
@@ -318,7 +318,7 @@ export const TmMatchLineups = {
                 showPlayerDialog(player, liveState);
             });
 
-            // ── Pitch hover tooltip ──
+            // -- Pitch hover tooltip --
             let pitchTooltipTimer = null;
 
             const removePitchTooltip = () => {
@@ -340,7 +340,7 @@ export const TmMatchLineups = {
 
             body.on('mouseleave', '.rnd-pitch-cell[data-pid], .rnd-lu-player[data-pid]', removePitchTooltip);
 
-            // ── Unity: move canvas into viewport on match page ──
+            // -- Unity: move canvas into viewport on match page --
             if (unityState.available) {
                 setTimeout(() => {
                     const vp = document.getElementById('rnd-unity-viewport');

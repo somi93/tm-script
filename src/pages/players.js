@@ -1,14 +1,9 @@
 import { TmTable } from '../components/shared/tm-table.js';
 import { TmCheckbox } from '../components/shared/tm-checkbox.js';
 import { TmConst } from '../lib/tm-constants.js';
-import { TmSync } from '../lib/tm-dbsync.js';
-import { TmLib } from '../lib/tm-lib.js';
 import { TmPosition } from '../lib/tm-position.js';
-import { TmPlayerArchiveDB, TmPlayerDB } from '../lib/tm-playerdb.js';
-import { TmSquad } from '../lib/tm-squad.js';
 import { TmUtils } from '../lib/tm-utils.js';
 import { TmClubService } from '../services/club.js';
-import { TmPlayerService } from '../services/player.js';
 
 const STYLE_ID = 'tmvu-players-page-style';
 const RESERVES_URL = '/players/#/a//b/true/';
@@ -185,89 +180,13 @@ const formatTiDelta = (value) => {
     return `${n > 0 ? '+' : ''}${n}`;
 };
 
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const currentAgeKeyOf = (player) => `${player.ageYears}.${player.ageMonths}`;
-
-const previousAgeKeyOf = (player) => {
-    const ageMonths = ((Number(player.ageYears) || 0) * 12) + (Number(player.ageMonths) || 0) - 1;
-    if (ageMonths < 0) return null;
-    return `${Math.floor(ageMonths / 12)}.${ageMonths % 12}`;
-};
-
 const numericSkills = (skills = []) => skills.map((skill) => {
     if (typeof skill === 'object' && skill !== null) return Number(skill.value) || 0;
     return Number(skill) || 0;
 });
-
-const hasAnyRecordBefore = (store, ageKey) => Object.keys(store?.records || {})
-    .some((key) => TmUtils.ageToMonths(key) < TmUtils.ageToMonths(ageKey));
-
-const previousDbRecord = (store, player) => {
-    const ageKey = previousAgeKeyOf(player);
-    if (!ageKey) return null;
-    return store?.records?.[ageKey] || null;
-};
-
-const latestPreviousDbRecord = (store, player) => {
-    const records = store?.records;
-    if (!records) return null;
-    const currentAgeMonths = ((Number(player.ageYears) || 0) * 12) + (Number(player.ageMonths) || 0);
-    const entries = Object.entries(records)
-        .map(([ageKey, record]) => ({ ageKey, ageMonths: TmUtils.ageToMonths(ageKey), record }))
-        .filter((entry) => entry.ageMonths < currentAgeMonths)
-        .sort((a, b) => b.ageMonths - a.ageMonths);
-    return entries[0]?.record || null;
-};
-
-const currentDbRecord = (store, player) => {
-    const ageKey = currentAgeKeyOf(player);
-    return store?.records?.[ageKey] || null;
-};
-
-const looksLikeUniformFallbackRecord = (record) => {
-    const skills = numericSkills(record?.skills || []);
-    const decimals = skills
-        .filter((value) => Number.isFinite(value) && value < 20)
-        .map((value) => Number((value - Math.floor(value)).toFixed(2)));
-
-    if (decimals.length < 4) return false;
-    const distinct = [...new Set(decimals)];
-    return distinct.length === 1 && distinct[0] > 0;
-};
-
-const dbSkillChangesFromStore = (store, player) => {
-    const currentRecord = currentDbRecord(store, player);
-    const previousRecord = previousDbRecord(store, player);
-    if (!currentRecord?.skills || !previousRecord?.skills) return [];
-
-    const currentSkills = numericSkills(currentRecord.skills);
-    const previousSkills = numericSkills(previousRecord.skills);
-    const changes = [];
-
-    for (let index = 0; index < Math.min(currentSkills.length, previousSkills.length); index++) {
-        const currentValue = currentSkills[index];
-        const previousValue = previousSkills[index];
-        const delta = currentValue - previousValue;
-        if (Math.abs(delta) < 0.005) continue;
-        const integerChange = Math.floor(currentValue) !== Math.floor(previousValue);
-        changes.push({
-            index,
-            delta,
-            type: delta > 0
-                ? (integerChange ? 'gain-integer' : 'gain-decimal')
-                : (integerChange ? 'loss-integer' : 'loss-decimal')
-        });
-    }
-
-    return changes;
-};
-
-const toDisplayPlayer = (player, squadKey, dbStore = null) => {
+const toDisplayPlayer = (player, squadKey) => {
     const ageYears = Number(player.age) || 0;
     const ageMonths = Number(player.months) || 0;
-    const currentRecord = currentDbRecord(dbStore, { ageYears, ageMonths });
-    const displaySkills = currentRecord?.skills ? numericSkills(currentRecord.skills) : numericSkills(player.skills);
     return {
         ...player,
         pid: String(player.id || player.player_id || ''),
@@ -278,21 +197,14 @@ const toDisplayPlayer = (player, squadKey, dbStore = null) => {
         ageSort: (ageYears * 12) + ageMonths,
         position: player.favposition || '',
         isGK: !!player.isGK,
-        skills: displaySkills,
+        skills: numericSkills(player.skills),
         playerHref: `/players/${player.id || player.player_id}/`,
         TI: Number(player.ti) || 0,
         TI_change: 0,
         squadKey,
-        r5: currentRecord?.R5 != null ? Number(currentRecord.R5) : (player.r5 != null ? Number(player.r5) : null),
-        skillChanges: dbSkillChangesFromStore(dbStore, { ageYears, ageMonths }),
+        r5: player.r5 != null ? Number(player.r5) : null,
+        skillChanges: [],
     };
-};
-
-const hasSquadRows = (root = document) => {
-    if (!root) return false;
-    const sq = typeof root.getElementById === 'function' ? root.getElementById('sq') : root.querySelector?.('#sq');
-    if (!sq) return false;
-    return sq.querySelectorAll('table tbody tr').length > 0 && sq.querySelectorAll('a[player_link]').length > 0;
 };
 
 const skillCellHtml = (player, index) => {
@@ -328,45 +240,7 @@ export function initPlayersPage(main) {
     injectPlayersPageStyles();
     installJqueryBrowserCompat();
 
-    const PlayerDB = TmPlayerDB;
-    const PlayerArchiveDB = TmPlayerArchiveDB;
     const { SKILL_LABELS_OUT, SKILL_NAMES_GK_SHORT } = TmConst;
-    const { extractSkills, createSquadLoader, parseSquadDocument } = TmSquad;
-
-    const buildGrowthPlayer = (player, dbStore) => {
-        const records = dbStore?.records || {};
-        const currentKey = currentAgeKeyOf(player);
-        const currentRecord = records[currentKey] || currentDbRecord(dbStore, player);
-        const latestKey = Object.keys(records)
-            .sort((a, b) => TmUtils.ageToMonths(b) - TmUtils.ageToMonths(a))[0] || currentKey;
-        const latestRecord = records[latestKey] || currentRecord || null;
-        const skillSource = currentRecord?.skills || latestRecord?.skills || player.skills || [];
-        const skillCount = skillSource.length;
-        const isGK = player.isGK ?? dbStore?.meta?.isGK ?? skillCount === 11;
-        const positionSource = dbStore?.meta?.pos || player.position || '';
-        let positions = String(positionSource).split(',').map((value) => {
-            const key = value.trim().toLowerCase();
-            return TmConst.POSITION_MAP[key] || null;
-        }).filter(Boolean);
-
-        if (!positions.length) {
-            positions = isGK
-                ? [TmConst.POSITION_MAP.gk]
-                : [TmConst.POSITION_MAP.dc || { id: 0 }];
-        }
-
-        return {
-            id: player.pid,
-            isGK,
-            positions,
-            skills: numericSkills(skillSource),
-            routine: Number(currentRecord?.routine ?? latestRecord?.routine) || 0,
-            age: player.ageYears,
-            months: player.ageMonths,
-            ageMonthsString: currentKey,
-            asi: Number(currentRecord?.SI ?? latestRecord?.SI) || 0,
-        };
-    };
 
     const sourceRoot = document.querySelector('.main_center') || document.body;
     const renderHost = main || sourceRoot;
@@ -393,8 +267,6 @@ export function initPlayersPage(main) {
     renderHost.appendChild(shell);
 
     const state = {
-        dbReady: false,
-        dbError: '',
         metricsByPid: {},
         squads: {
             main: createSquadModel('main', 'Main Squad', true),
@@ -403,124 +275,8 @@ export function initPlayersPage(main) {
         reserveLoadStarted: false,
     };
 
-    const waitForPlayers = (reader, timeoutMs = 16000) => new Promise((resolve) => {
-        const immediate = reader();
-        if (immediate?.length) {
-            resolve(immediate);
-            return;
-        }
+    const decoratePlayers = (players, squadKey) => players.map((player) => toDisplayPlayer(player, squadKey));
 
-        const started = Date.now();
-        const timer = window.setInterval(() => {
-            const players = reader();
-            if (players?.length) {
-                window.clearInterval(timer);
-                resolve(players);
-                return;
-            }
-            if ((Date.now() - started) >= timeoutMs) {
-                window.clearInterval(timer);
-                resolve([]);
-            }
-        }, 250);
-    });
-
-    const decoratePlayers = (players, squadKey) => players.map((player) => {
-        const dbStore = state.dbReady ? PlayerDB.get(String(player.id || player.player_id || player.pid || '')) : null;
-        return toDisplayPlayer(player, squadKey, dbStore);
-    });
-
-    const seedMetricsFromDb = (players) => {
-        if (!state.dbReady || !players?.length) return;
-        players.forEach((player) => {
-            const dbStore = PlayerDB.get(player.pid);
-            const ageKey = currentAgeKeyOf(player);
-            const record = dbStore?.records?.[ageKey];
-            if (!record) return;
-            state.metricsByPid[player.pid] = {
-                r5: Number(record.R5) || null,
-                rec: Number(record.REREC) || null,
-                routine: Number(record.routine) || null,
-            };
-            if (record.skills) player.skills = numericSkills(record.skills);
-            if (record.R5 != null) player.r5 = Number(record.R5);
-            player.skillChanges = dbSkillChangesFromStore(dbStore, player);
-        });
-    };
-
-    const getPlayerDecision = (player) => {
-        const dbStore = PlayerDB.get(player.pid);
-        const currentKey = currentAgeKeyOf(player);
-        const previousKey = previousAgeKeyOf(player);
-        const currentRecord = currentDbRecord(dbStore, player);
-        const previousRecord = previousKey ? dbStore?.records?.[previousKey] || null : null;
-
-        return {
-            player,
-            pid: player.pid,
-            currentKey,
-            previousKey,
-            currentRecord,
-            previousRecord,
-            needsSyncCurrent: !currentRecord,
-            needsPreviousInterpolation: !!currentRecord && !!previousKey && !previousRecord && hasAnyRecordBefore(dbStore, previousKey),
-        };
-    };
-
-    const getPlayersNeedingCurrentSync = (players = []) => players
-        .map((player) => getPlayerDecision(player))
-        .filter((decision) => decision.needsSyncCurrent);
-
-    const filterParsedPlayersForSync = (parsedPlayers = [], syncDecisions = []) => {
-        const syncPids = new Set(syncDecisions.map((decision) => String(decision.pid)));
-        return parsedPlayers.filter((player) => syncPids.has(String(player.pid || player.id || player.player_id || '')));
-    };
-
-    const ensureInterpolatedPreviousRecord = async (player) => {
-        const dbStore = PlayerDB.get(player.pid);
-        const currentKey = currentAgeKeyOf(player);
-        const previousKey = previousAgeKeyOf(player);
-        if (!dbStore?.records?.[currentKey] || !previousKey || dbStore.records[previousKey]) return false;
-        if (!hasAnyRecordBefore(dbStore, previousKey)) return false;
-
-        await TmSync.analyzeGrowth(buildGrowthPlayer(player, dbStore), dbStore, null, null);
-        return !!PlayerDB.get(player.pid)?.records?.[previousKey];
-    };
-
-    const ensureInterpolatedPreviousRecords = async (players = []) => {
-        if (!state.dbReady || !players.length) return false;
-
-        let changed = false;
-        for (const player of players) {
-            const decision = getPlayerDecision(player);
-            if (!decision.needsPreviousInterpolation) continue;
-            const updated = await ensureInterpolatedPreviousRecord(player);
-            if (updated) changed = true;
-            await delay(25);
-        }
-
-        if (changed) seedMetricsFromDb(players);
-        return changed;
-    };
-
-    const applySyncResults = (results = []) => {
-        results.forEach((result) => {
-            state.metricsByPid[result.pid] = {
-                r5: Number(result.R5) || null,
-                rec: Number(result.REC) || null,
-                routine: Number(result.routine) || null,
-            };
-        });
-        Object.values(state.squads).forEach((squad) => {
-            squad.players.forEach((player) => {
-                const dbStore = PlayerDB.get(player.pid);
-                const record = currentDbRecord(dbStore, player);
-                if (record?.skills) player.skills = numericSkills(record.skills);
-                if (record?.R5 != null) player.r5 = Number(record.R5);
-                if (dbStore) player.skillChanges = dbSkillChangesFromStore(dbStore, player);
-            });
-        });
-    };
 
     const createSectionHost = (title) => {
         const host = document.createElement('section');
@@ -679,293 +435,6 @@ export function initPlayersPage(main) {
         renderSections();
     };
 
-    const processSquadPage = async (players, { overwriteCurrent = false } = {}) => {
-        if (!players || !players.length) return [];
-
-        const eff = TmUtils.skillEff;
-        const fetchTip = (pid) => TmPlayerService.fetchTooltipRaw(pid).then((data) => data?.player ?? null);
-
-        console.log(`%c[Squad] Fetching tooltips for ${players.length} players...`, 'font-weight:bold;color:var(--tmu-info)');
-
-        const loader = createSquadLoader();
-        const results = [];
-
-        for (let pi = 0; pi < players.length; pi++) {
-            const player = players[pi];
-            loader.update(pi + 1, players.length, player.name);
-
-            const curAgeKeyCheck = `${player.ageYears}.${player.ageMonths}`;
-            const existingStore = PlayerDB.get(player.pid);
-            const existingRec = existingStore?.records?.[curAgeKeyCheck];
-            if (existingRec && !overwriteCurrent) continue;
-
-            const tip = await fetchTip(player.pid);
-            await delay(100);
-
-            if (!tip) continue;
-            const asi = parseFloat(tip.skill_index);
-            const routine = tip.routine;
-            const favpos = tip.favposition || '';
-            const isGK = tip.position === "Gk";
-            const skillCount = isGK ? 11 : 14;
-            const intSkills = tip.skills ? extractSkills(tip.skills, isGK) : [];
-
-            const dbRecord = PlayerDB.get(Number(player.pid));
-            let prevDecimals = null;
-            let prevSkillsFull = null;
-            let curDbSkillsFull = null;
-            console.log(dbRecord?.records);
-            if (dbRecord?.records) {
-                const curAgeKey = `${player.ageYears}.${player.ageMonths}`;
-                const curDbRec = dbRecord.records[curAgeKey];
-                if (curDbRec?.skills?.length === skillCount) {
-                    curDbSkillsFull = curDbRec.skills.map((value) => {
-                        const numeric = typeof value === 'string' ? parseFloat(value) : value;
-                        return numeric >= 20 ? 20 : numeric;
-                    });
-                }
-
-                const previousRecord = previousDbRecord(dbRecord, player) || latestPreviousDbRecord(dbRecord, player);
-                if (previousRecord?.skills?.length === skillCount) {
-                    prevSkillsFull = previousRecord.skills.map((value) => {
-                        const numeric = typeof value === 'string' ? parseFloat(value) : value;
-                        return numeric >= 20 ? 20 : numeric;
-                    });
-                    prevDecimals = prevSkillsFull.map((value) => value >= 20 ? 0 : value - Math.floor(value));
-                }
-            }
-
-            const asiWeight = isGK ? 48717927500 : 263533760000;
-            const intSum = intSkills.reduce((sum, value) => sum + value, 0);
-            const asiRemainder = asi > 0
-                ? Math.round((Math.pow(2, Math.log(asiWeight * asi) / Math.log(128)) - intSum) * 100) / 100
-                : 0;
-
-            const improvementMap = {};
-            player.improved.forEach((imp) => { improvementMap[imp.index] = imp.type; });
-
-            const totalGain = player.TI / 10;
-            console.log(totalGain, asi, prevDecimals);
-            let newDecimals;
-            if (prevDecimals && asi > 0) {
-                newDecimals = [...prevDecimals];
-                const improvedIndices = player.improved.map((imp) => imp.index);
-                if (improvedIndices.length > 0 && totalGain > 0) {
-                    const effWeights = improvedIndices.map((index) => eff(intSkills[index]));
-                    const effTotal = effWeights.reduce((sum, value) => sum + value, 0);
-                    const shares = effTotal > 0
-                        ? effWeights.map((weight) => weight / effTotal)
-                        : effWeights.map(() => 1 / improvedIndices.length);
-                    improvedIndices.forEach((index, j) => { newDecimals[index] += totalGain * shares[j]; });
-                }
-
-                player.improved.forEach((imp) => {
-                    if (imp.type === 'one_up') newDecimals[imp.index] = 0;
-                });
-
-                let overflow = 0;
-                let passes = 0;
-                do {
-                    overflow = 0;
-                    let freeCount = 0;
-                    for (let i = 0; i < skillCount; i++) {
-                        if (intSkills[i] >= 20) {
-                            newDecimals[i] = 0;
-                            continue;
-                        }
-                        if (newDecimals[i] >= 1) {
-                            overflow += newDecimals[i] - 0.99;
-                            newDecimals[i] = 0.99;
-                        } else if (newDecimals[i] < 0.99) {
-                            freeCount++;
-                        }
-                    }
-                    if (overflow > 0.0001 && freeCount > 0) {
-                        const add = overflow / freeCount;
-                        for (let i = 0; i < skillCount; i++) {
-                            if (intSkills[i] < 20 && newDecimals[i] < 0.99) newDecimals[i] += add;
-                        }
-                    }
-                } while (overflow > 0.0001 && ++passes < 20);
-
-                let subtleOverflow = 0;
-                passes = 0;
-                do {
-                    subtleOverflow = 0;
-                    for (let i = 0; i < skillCount; i++) {
-                        if (intSkills[i] >= 20) continue;
-                        const prevInt = prevSkillsFull ? Math.floor(prevSkillsFull[i]) : intSkills[i];
-                        if (!improvementMap[i] && intSkills[i] === prevInt && newDecimals[i] >= 1) {
-                            subtleOverflow += newDecimals[i] - 0.99;
-                            newDecimals[i] = 0.99;
-                        }
-                    }
-                    if (subtleOverflow > 0.0001) {
-                        let freeSlots = 0;
-                        for (let i = 0; i < skillCount; i++) {
-                            if (intSkills[i] < 20 && newDecimals[i] < 0.99) freeSlots++;
-                        }
-                        if (freeSlots > 0) {
-                            const add = subtleOverflow / freeSlots;
-                            for (let i = 0; i < skillCount; i++) {
-                                if (intSkills[i] < 20 && newDecimals[i] < 0.99) newDecimals[i] += add;
-                            }
-                        }
-                    }
-                } while (subtleOverflow > 0.0001 && ++passes < 20);
-
-                const decimalSum = newDecimals.reduce((sum, value) => sum + value, 0);
-                if (decimalSum > 0.001 && asiRemainder > 0) {
-                    const scale = asiRemainder / decimalSum;
-                    newDecimals = newDecimals.map((value, index) => intSkills[index] >= 20 ? 0 : value * scale);
-                } else if (asiRemainder > 0) {
-                    const nonMax = intSkills.filter((value) => value < 20).length;
-                    newDecimals = intSkills.map((value) => value >= 20 ? 0 : asiRemainder / nonMax);
-                }
-
-                passes = 0;
-                do {
-                    overflow = 0;
-                    let freeCount = 0;
-                    for (let i = 0; i < skillCount; i++) {
-                        if (intSkills[i] >= 20) {
-                            newDecimals[i] = 0;
-                            continue;
-                        }
-                        if (newDecimals[i] > 0.99) {
-                            overflow += newDecimals[i] - 0.99;
-                            newDecimals[i] = 0.99;
-                        } else if (newDecimals[i] < 0) {
-                            newDecimals[i] = 0;
-                        } else if (newDecimals[i] < 0.99) {
-                            freeCount++;
-                        }
-                    }
-                    if (overflow > 0.0001 && freeCount > 0) {
-                        const add = overflow / freeCount;
-                        for (let i = 0; i < skillCount; i++) {
-                            if (intSkills[i] < 20 && newDecimals[i] < 0.99) newDecimals[i] += add;
-                        }
-                    }
-                } while (overflow > 0.0001 && ++passes < 20);
-            } else if (asi > 0) {
-                const nonMax = intSkills.filter((value) => value < 20).length;
-                newDecimals = intSkills.map((value) => value >= 20 ? 0 : (nonMax > 0 ? asiRemainder / nonMax : 0));
-            } else {
-                newDecimals = new Array(skillCount).fill(0);
-            }
-
-            const newSkillsFull = intSkills.map((value, index) => value >= 20 ? 20 : value + (newDecimals[index] || 0));
-            const allPositions = favpos.split(',').map((value) => value.trim()).filter(Boolean);
-            let r5 = null;
-            let rec = null;
-            let bestPos = allPositions[0] || '';
-            const r5ByPos = {};
-
-            if (asi > 0) {
-                let bestR5 = -Infinity;
-                for (const pos of allPositions) {
-                    const posIdx = TmLib.getPositionIndex(pos);
-                    const fakePlayer = { skills: newSkillsFull, asi, routine: routine || 0 };
-                    const r5Value = TmLib.calculatePlayerR5({ id: posIdx }, fakePlayer);
-                    const recValue = TmLib.calculatePlayerREC({ id: posIdx }, fakePlayer);
-                    r5ByPos[pos] = { R5: r5Value, REC: recValue };
-                    if (r5Value > bestR5) {
-                        bestR5 = r5Value;
-                        r5 = r5Value;
-                        rec = recValue;
-                        bestPos = pos;
-                    }
-                }
-            }
-
-            results.push({
-                pid: player.pid,
-                name: player.name,
-                ageYears: player.ageYears,
-                ageMonths: player.ageMonths,
-                position: favpos,
-                isGK,
-                asi,
-                routine,
-                TI: player.TI,
-                TI_change: player.TI_change,
-                improved: player.improved,
-                newSkillsFull,
-                r5ByPos,
-                bestPos,
-                R5: r5 == null ? null : Number(r5),
-                REC: rec == null ? null : Number(rec),
-            });
-        }
-
-        loader.update(0, results.length, 'Syncing to DB...');
-        const bar = document.getElementById('tmrc-loader-bar');
-        if (bar) bar.style.width = '0%';
-
-        let syncCount = 0;
-        for (const result of results) {
-            if (result.asi <= 0) {
-                syncCount++;
-                continue;
-            }
-
-            const ageKey = `${result.ageYears}.${result.ageMonths}`;
-            let store = PlayerDB.get(result.pid);
-            if (!store?._v) store = { _v: 1, lastSeen: Date.now(), records: {} };
-
-            store.records[ageKey] = {
-                SI: result.asi,
-                REREC: result.REC == null ? null : Number(result.REC),
-                R5: result.R5 == null ? null : Number(result.R5),
-                skills: result.newSkillsFull.map((value) => Number(value)),
-                routine: result.routine == null ? null : Number(result.routine),
-                locked: true,
-            };
-            store.lastSeen = Date.now();
-            if (!store.meta) store.meta = { name: result.name, pos: result.position, isGK: result.isGK };
-
-            await PlayerDB.set(result.pid, store);
-            syncCount++;
-
-            const pct = Math.round((syncCount / results.length) * 100);
-            if (bar) bar.style.width = `${pct}%`;
-            const txt = document.getElementById('tmrc-loader-text');
-            if (txt) txt.textContent = `Syncing ${syncCount}/${results.length} — ${result.name}`;
-        }
-
-        loader.done(syncCount);
-        return results;
-    };
-
-    const syncSquad = async (squadKey, syncPlayers = []) => {
-        const squad = state.squads[squadKey];
-        if (!squad.players.length || squad.syncState === 'running' || !syncPlayers.length) return;
-        if (!state.dbReady) {
-            squad.syncMessage = state.dbError || 'IndexedDB unavailable';
-            render();
-            return;
-        }
-
-        squad.syncState = 'running';
-        squad.syncMessage = `Syncing ${syncPlayers.length} players`;
-        seedMetricsFromDb(squad.players);
-        render();
-
-        try {
-            const results = await processSquadPage(syncPlayers, { overwriteCurrent: true });
-            applySyncResults(results);
-            await ensureInterpolatedPreviousRecords(squad.players);
-            squad.syncState = 'done';
-            squad.syncMessage = `Synced ${results.length} players`;
-        } catch (error) {
-            squad.syncState = 'error';
-            squad.syncMessage = error?.message || 'Sync failed';
-        }
-
-        render();
-    };
-
     const fetchSquadForRender = async (clubId, squadKey) => {
         if (!clubId) return [];
         const data = await TmClubService.fetchSquadRaw(clubId, { skipSync: true });
@@ -1031,16 +500,7 @@ export function initPlayersPage(main) {
 
         squad.players = players;
         squad.loaded = true;
-        seedMetricsFromDb(squad.players);
-        await ensureInterpolatedPreviousRecords(squad.players);
         render();
-
-        waitForPlayers(() => hasSquadRows(document) ? (parseSquadDocument(document) || []) : [])
-            .then((parsed) => {
-                if (!parsed.length) return;
-                syncSquad('main', parsed).catch((error) => console.error('[Players] Main squad sync failed:', error));
-            })
-            .catch((error) => console.error('[Players] Main squad sync source failed:', error));
     };
 
     const loadReserveSquad = async () => {
@@ -1055,12 +515,6 @@ export function initPlayersPage(main) {
             const clubId = String(window.SESSION?.b_team || '').trim();
             squad.players = await fetchSquadForRender(clubId, 'reserves');
             squad.loaded = true;
-            seedMetricsFromDb(squad.players);
-            await ensureInterpolatedPreviousRecords(squad.players);
-            const parsed = await loadSquadFromIframe(RESERVES_URL);
-            if (parsed.length) {
-                syncSquad('reserves', parsed).catch((error) => console.error('[Players] Reserve squad sync failed:', error));
-            }
         } catch (error) {
             state.reserveLoadStarted = false;
             squad.loadError = error?.message || `Could not load reserves from ${RESERVES_URL}.`;
@@ -1070,25 +524,11 @@ export function initPlayersPage(main) {
         }
     };
 
-    const dbInitPromise = PlayerDB.init()
-        .then(() => PlayerArchiveDB.init())
-        .then(() => {
-            state.dbReady = true;
-            Object.values(state.squads).forEach((squad) => seedMetricsFromDb(squad.players));
-            render();
-        })
-        .catch((error) => {
-            state.dbError = error?.message || 'IndexedDB init failed';
-            render();
-        });
-
     render();
 
-    dbInitPromise.finally(() => {
-        loadMainSquad().catch((error) => {
-            state.squads.main.loading = false;
-            state.squads.main.loadError = error?.message || 'Main squad load failed.';
-            render();
-        });
+    loadMainSquad().catch((error) => {
+        state.squads.main.loading = false;
+        state.squads.main.loadError = error?.message || 'Main squad load failed.';
+        render();
     });
 }

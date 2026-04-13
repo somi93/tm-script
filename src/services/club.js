@@ -1,5 +1,4 @@
 import { _post, _getHtml, _dedup } from './engine.js';
-import { TmPlayerDB } from '../lib/tm-playerdb.js';
 import { TmPlayerService } from './player.js';
 
 export const TmClubService = {
@@ -80,24 +79,13 @@ export const TmClubService = {
     },
 
     /**
-     * Fetch the squad player list for a club (players_get_select endpoint).
-     * All entries in data.post are normalized in place via normalizePlayer.
+     * Fetch the squad player list for a club and return normalized players.
      * @param {string|number} clubId
-     * @returns {Promise<{squad: object[], post: object, [key: string]: any}|null>}
+     * @returns {Promise<object[]|null>}
      */
-    async fetchSquadRaw(clubId, { skipSync = false } = {}) {
-        return _dedup(`club:squad-raw:${clubId}:${skipSync ? 'nosync' : 'sync'}`, async () => {
-            const data = await _post('/ajax/players_get_select.ajax.php', { type: 'change', club_id: clubId });
-            if (data?.post) {
-                const players = Object.values(data.post).map(player => {
-                    player.club_id = clubId; // not included in this endpoint but needed for normalization
-                    const DBPlayer = TmPlayerDB.get(player.id || player.player_id);
-                    TmPlayerService.normalizePlayer(player, DBPlayer, { skipSync });
-                    return player;
-                });
-                data.post = players;
-            }
-            return data;
-        });
+    async fetchSquadRaw(club_id) {
+        const data = await _post('/ajax/players_get_select.ajax.php', { type: 'change', club_id });
+        if (!data?.post) return null;
+        return Object.values(data.post).map(p => TmPlayerService.normalizeSquadPlayer(p));
     },
 }

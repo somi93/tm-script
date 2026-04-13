@@ -4,7 +4,7 @@ import { TmConst } from '../../lib/tm-constants.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmAlert } from '../shared/tm-alert.js';
 import { TmStars } from '../shared/tm-stars.js';
-import { TmPlayerTooltip } from '../player/tm-player-tooltip.js';
+import { TmPlayerTooltip } from '../player/tooltip/tm-player-tooltip.js';
 
 'use strict';
 

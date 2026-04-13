@@ -3,7 +3,7 @@ import { TmSectionCard } from '../shared/tm-section-card.js';
 import { TmPosition } from '../../lib/tm-position.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmConst } from '../../lib/tm-constants.js';
-import { TmPlayerTooltip } from '../player/tm-player-tooltip.js';
+import { TmPlayerTooltip } from '../player/tooltip/tm-player-tooltip.js';
 
 'use strict';
 

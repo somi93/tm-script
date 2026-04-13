@@ -1,8 +1,7 @@
 import { TmShortlistPanel } from '../components/shortlist/tm-shortlist-panel.js';
 import { TmShortlistTable } from '../components/shortlist/tm-shortlist-table.js';
-import { TmPlayerDB } from '../lib/tm-playerdb.js';
 import { TmShortlistService } from '../services/shortlist.js';
-import { enrichPlayers, dbRecordToPlayer, toPageRecord } from '../services/players-enrich.js';
+// import { enrichPlayers, toPageRecord } from '../services/players-enrich.js';
 import { TmUtils } from '../lib/tm-utils.js';
 
 'use strict';
@@ -21,25 +20,10 @@ let loadMoreState = null;      // null | 'loading' | 'done'
 let nextStart = 0;             // offset for next shortlist page fetch
 let totalKnown = 0;            // total IDs discovered across all pages
 let activeTab = 'shortlist';
-let indexedPlayers = null;
-let indexedLoading = false;
+let indexedPlayers = [];
 let ixSortCol = 'r5', ixSortDir = -1;
 let ixPage = 0, slPage = 0;
 const IX_PAGE_SIZE = 50, SL_PAGE_SIZE = 50;
-
-    /* ═════════════════════════════════════════════════════════
-       INDEXED TAB
-       ═════════════════════════════════════════════════════════ */
-    async function loadIndexedTab() {
-        if (indexedLoading) return;
-        indexedLoading = true;
-        await TmPlayerDB.init();
-        indexedPlayers = TmPlayerDB.allPids()
-            .map(pid => dbRecordToPlayer(pid, TmPlayerDB.get(pid)))
-            .filter(Boolean);
-        indexedLoading = false;
-        renderPanel();
-    }
 
     /* ═════════════════════════════════════════════════════════
        FETCH MORE  — load subsequent shortlist pages
@@ -109,8 +93,7 @@ const IX_PAGE_SIZE = 50, SL_PAGE_SIZE = 50;
             onTabChange(t) {
                 if (activeTab === t || shortlistLoading) return;
                 activeTab = t;
-                if (t === 'indexed' && !indexedPlayers && !indexedLoading) loadIndexedTab();
-                else renderPanel();
+                renderPanel();
             },
             onGroupFilter(g) { if (fPos.has(g)) fPos.delete(g); else fPos.add(g); ixPage = 0; slPage = 0; renderPanel(); },
             onSideFilter(s) { if (fSide.has(s)) fSide.delete(s); else fSide.add(s); ixPage = 0; slPage = 0; renderPanel(); },

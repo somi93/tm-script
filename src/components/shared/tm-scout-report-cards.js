@@ -1,5 +1,5 @@
 import { TmUtils } from '../../lib/tm-utils.js';
-import { TmBestEstimate } from '../player/tm-best-estimate.js';
+import { TmBestEstimate } from '../player/scout/tm-best-estimate.js';
 import { TmUI } from './tm-ui.js';
 
 const STYLE_ID = 'tm-scout-report-cards-style';
@@ -79,11 +79,6 @@ const potColor = (pot) => {
     if (value >= 9) return THEME_COLORS.warning;
     return THEME_COLORS.danger;
 };
-const extractTier = (txt) => {
-    if (!txt) return null;
-    const match = txt.match(/\((\d)\/(\d)\)/);
-    return match ? { val: parseInt(match[1], 10), max: parseInt(match[2], 10) } : null;
-};
 const barColor = (val, max) => {
     const ratio = val / max;
     if (ratio >= 0.75) return THEME_COLORS.success;
@@ -101,8 +96,6 @@ const bloomColor = (txt) => {
     if (normalized.includes('not bloomed')) return THEME_COLORS.danger;
     return THEME_COLORS.main;
 };
-const cleanPeakText = (txt) => txt ? txt.replace(/^\s*-\s*/, '').replace(/\s*(physique|tactical ability|technical ability)\s*$/i, '').trim() : '';
-const confPct = (skill) => Math.round((parseInt(skill, 10) || 0) / 20 * 100);
 const badgeHtml = (opts, tone = 'muted') => TmUI.badge({ size: 'xs', shape: 'rounded', weight: 'bold', ...opts }, tone);
 const metricHtml = (opts) => TmUI.metric(opts);
 const confBadge = (pct) => {
@@ -145,80 +138,95 @@ const combinedStarsHtml = (current, potMax) => {
     return html;
 };
 
-function getScoutForReport(report, scouts = {}) {
-    if (!report?.scoutid) return null;
-    return Object.values(scouts).find(scout => String(scout.id) === String(report.scoutid)) || null;
-}
-
-function cardHtml(report, { scouts = {} } = {}) {
+function cardHtml(report) {
     injectStyles();
 
-    const pot = parseInt(report?.old_pot, 10) || 0;
-    const potStarsVal = (parseFloat(report?.potential) || 0) / 2;
-    if (report?.scout_name === 'YD' || report?.scoutid === '0') {
-        return `<div class="tmsc-report"><tm-row data-justify="space-between" data-align="flex-start" data-cls="tmsc-report-header"><div><div class="tmsc-stars">${greenStarsHtml(potStarsVal)}</div><div class="tmsc-report-scout">Youth Development${badgeHtml({ label: 'YD' }, 'success')}</div></div><div class="tmsc-report-date tmu-meta tmu-tabular">${report.done || '-'}</div></tm-row><div class="tmsc-report-grid">${splitMetricHtml({ label: 'Potential', value: String(pot), valueColor: potColor(pot), wide: true })}${splitMetricHtml({ label: 'Age at report', value: report.report_age || '-', wide: true })}</div></div>`;
+    const isYD = report?.scout?.id === '0' || !report?.scout?.id;
+    const devGroup = report.development ?? [];
+    const potEntry = devGroup.find(d => d.key === 'potential');
+    const bloomEntry = devGroup.find(d => d.key === 'bloom');
+    const devEntry = devGroup.find(d => d.key === 'devStatus');
+    const pot = potEntry?.value ?? 0;
+    const potStarsVal = (report.rec ?? 0) / 2;
+
+    if (isYD) {
+        return `<div class="tmsc-report"><tm-row data-justify="space-between" data-align="flex-start" data-cls="tmsc-report-header"><div><div class="tmsc-stars">${greenStarsHtml(potStarsVal)}</div><div class="tmsc-report-scout">Youth Development${badgeHtml({ label: 'YD' }, 'success')}</div></div><div class="tmsc-report-date tmu-meta tmu-tabular">${report.date || '-'}</div></tm-row><div class="tmsc-report-grid">${splitMetricHtml({ label: 'Potential', value: String(pot), valueColor: potColor(pot), wide: true })}${splitMetricHtml({ label: 'Age at report', value: report.age ?? '-', wide: true })}</div></div>`;
     }
 
-    const spec = parseInt(report?.specialist, 10) || 0;
+    const potConf = potEntry?.reliability ?? null;
+    const bloomConf = bloomEntry?.reliability ?? null;
+    const phyConf = (report.peaks ?? [])[0]?.reliability ?? null;
+    const tacConf = (report.peaks ?? [])[1]?.reliability ?? null;
+    const tecConf = (report.peaks ?? [])[2]?.reliability ?? null;
+
+    const spec = report.specialist?.value ?? 0;
     const specLabel = SPECIALTIES[spec] || 'None';
-    const scout = getScoutForReport(report, scouts);
-    let potConf = null;
-    let bloomConf = null;
-    let phyConf = null;
-    let tacConf = null;
-    let tecConf = null;
-    let psyConf = null;
     let specConf = null;
-
-    if (scout) {
-        const age = parseInt(report.report_age, 10) || 0;
-        const senYth = age < 20 ? (parseInt(scout.youths, 10) || 0) : (parseInt(scout.seniors, 10) || 0);
-        const dev = parseInt(scout.development, 10) || 0;
-        potConf = confPct(Math.min(senYth, dev));
-        bloomConf = confPct(dev);
-        phyConf = confPct(parseInt(scout.physical, 10) || 0);
-        tacConf = confPct(parseInt(scout.tactical, 10) || 0);
-        tecConf = confPct(parseInt(scout.technical, 10) || 0);
-        psyConf = confPct(parseInt(scout.psychology, 10) || 0);
-        if (spec > 0) {
-            const physicalSpec = [1, 2, 3, 11];
-            const tacticalSpec = [4, 5, 6, 7];
-            if (physicalSpec.includes(spec)) specConf = phyConf;
-            else if (tacticalSpec.includes(spec)) specConf = tacConf;
-            else specConf = tecConf;
-        }
+    if (spec > 0) {
+        const physicalSpec = [1, 2, 3, 11];
+        const tacticalSpec = [4, 5, 6, 7];
+        if (physicalSpec.includes(spec)) specConf = phyConf;
+        else if (tacticalSpec.includes(spec)) specConf = tacConf;
+        else specConf = tecConf;
     }
 
-    const peaks = [
-        { label: 'Physique', text: cleanPeakText(report.peak_phy_txt), conf: phyConf },
-        { label: 'Tactical', text: cleanPeakText(report.peak_tac_txt), conf: tacConf },
-        { label: 'Technical', text: cleanPeakText(report.peak_tec_txt), conf: tecConf },
-    ];
     let peaksHtml = '';
-    for (const peak of peaks) {
-        const tier = extractTier(peak.text);
+    for (const peak of report.peaks ?? []) {
+        const tier = peak.value;
         if (!tier) continue;
-        const pct = (tier.val / tier.max) * 100;
-        const color = barColor(tier.val, tier.max);
-        peaksHtml += `<div class="tmsc-bar-row"><span class="tmsc-bar-label tmu-text-panel-label">${peak.label}</span><div class="tmsc-bar-track"><div class="tmsc-bar-fill" style="width:${pct}%;background:${color}"></div></div><span class="tmsc-bar-text tmu-tabular" style="color:${color}">${tier.val}/${tier.max}</span>${peak.conf !== null ? confBadge(peak.conf) : ''}</div>`;
+        const pct = (tier.value / tier.max) * 100;
+        const color = barColor(tier.value, tier.max);
+        peaksHtml += `<div class="tmsc-bar-row">
+                <span class="tmsc-bar-label tmu-text-panel-label">${peak.label}</span>
+                <div class="tmsc-bar-track">
+                    <div class="tmsc-bar-fill" style="width:${pct}%;background:${color}"></div>
+                </div>
+                <span class="tmsc-bar-text tmu-tabular" style="color:${color}">${tier.value}/${tier.max}</span>
+                ${peak.reliability !== null ? confBadge(peak.reliability) : ''}
+            </div>`;
     }
 
-    const personality = [
-        { label: 'Leadership', value: parseInt(report.charisma, 10) || 0 },
-        { label: 'Professionalism', value: parseInt(report.professionalism, 10) || 0 },
-        { label: 'Aggression', value: parseInt(report.aggression, 10) || 0 },
-    ];
     let personalityHtml = '';
-    for (const item of personality) {
-        const pct = (item.value / 20) * 100;
-        const color = TmUtils.skillColor(item.value);
-        personalityHtml += `<div class="tmsc-bar-row"><span class="tmsc-bar-label tmu-text-panel-label">${item.label}</span><div class="tmsc-bar-track"><div class="tmsc-bar-fill" style="width:${pct}%;background:${color}"></div></div><span class="tmsc-bar-text tmu-tabular" style="color:${color}">${item.value}</span>${psyConf !== null ? confBadge(psyConf) : ''}</div>`;
+    for (const item of report.personality ?? []) {
+        const v = item.value ?? 0;
+        const pct = (v / 20) * 100;
+        const color = TmUtils.skillColor(v);
+        personalityHtml += `<div class="tmsc-bar-row">
+                <span class="tmsc-bar-label tmu-text-panel-label">${item.label}</span>
+                <div class="tmsc-bar-track">
+                    <div class="tmsc-bar-fill" style="width:${pct}%;background:${color}"></div>
+                </div>
+                <span class="tmsc-bar-text tmu-tabular" style="color:${color}">${v}</span>
+                ${item.reliability !== null ? confBadge(item.reliability) : ''}
+            </div>`;
     }
 
-    return `<div class="tmsc-report"><tm-row data-justify="space-between" data-align="flex-start" data-cls="tmsc-report-header"><div><div class="tmsc-stars">${combinedStarsHtml(report.rec, potStarsVal)}</div><div class="tmsc-report-scout">${report.scout_name || 'Unknown'}</div></div><div class="tmsc-report-date tmu-meta tmu-tabular">${report.done || '-'}</div></tm-row><div class="tmsc-report-grid">${splitMetricHtml({ label: 'Potential', value: `${pot}${potConf !== null ? confBadge(potConf) : ''}`, valueColor: potColor(pot) })}${splitMetricHtml({ label: 'Age', value: report.report_age || '-' })}${splitMetricHtml({ label: 'Bloom', value: `${report.bloom_status_txt || '-'}${bloomConf !== null ? confBadge(bloomConf) : ''}`, valueColor: bloomColor(report.bloom_status_txt) })}${splitMetricHtml({ label: 'Development', value: `${report.dev_status || '-'}${bloomConf !== null ? confBadge(bloomConf) : ''}` })}${splitMetricHtml({ label: 'Specialty', value: `${specLabel}${specConf !== null ? confBadge(specConf) : ''}`, valueCls: spec > 0 ? 'tmsc-value-warning' : 'tmsc-value-muted', wide: true })}</div><div><div class="tmsc-section-title tmu-kicker tmu-text-faint">Peak Development</div>${peaksHtml}</div><div><div class="tmsc-section-title tmu-kicker tmu-text-faint">Personality</div>${personalityHtml}</div></div>`;
+    const bloomVal = bloomEntry?.value || '-';
+    const devVal = devEntry?.value || '-';
+
+    return `<div class="tmsc-report">
+        <tm-row data-justify="space-between" data-align="flex-start" data-cls="tmsc-report-header">
+            <div>
+                <div class="tmsc-stars">${combinedStarsHtml(report.rec, potStarsVal)}</div>
+                <div class="tmsc-report-scout">${report.scout?.name}</div>
+            </div>
+            <div class="tmsc-report-date tmu-meta tmu-tabular">${report.date}</div>
+        </tm-row>
+        <div class="tmsc-report-grid">
+            ${splitMetricHtml({ label: 'Potential', value: `${pot}${potConf !== null ? confBadge(potConf) : ''}`, valueColor: potColor(pot) })}${splitMetricHtml({ label: 'Age', value: report.age ?? '-' })}${splitMetricHtml({ label: 'Bloom', value: `${bloomVal}${bloomConf !== null ? confBadge(bloomConf) : ''}`, valueColor: bloomColor(bloomVal) })}${splitMetricHtml({ label: 'Development', value: `${devVal}${bloomConf !== null ? confBadge(bloomConf) : ''}` })}${splitMetricHtml({ label: 'Specialty', value: `${specLabel}${specConf !== null ? confBadge(specConf) : ''}`, valueCls: spec > 0 ? 'tmsc-value-warning' : 'tmsc-value-muted', wide: true })}
+        </div>
+        <div>
+            <div class="tmsc-section-title tmu-kicker tmu-text-faint">Peak Development</div>
+            ${peaksHtml}
+        </div>
+        <div>
+            <div class="tmsc-section-title tmu-kicker tmu-text-faint">Personality</div>
+            ${personalityHtml}
+            </div>
+        </div>`;
 }
 
-function listHtml({ reports = [], scouts = {}, error = '', emptyText = 'No scout reports available' } = {}) {
+function listHtml({ reports = [], error = '', emptyText = 'No scout reports available' } = {}) {
     injectStyles();
 
     let html = '';
@@ -230,7 +238,7 @@ function listHtml({ reports = [], scouts = {}, error = '', emptyText = 'No scout
     if (reports.length > 1) html += `<div class="tmsc-report-count tmu-kicker tmu-text-faint">${reports.length} Reports</div>`;
     for (let index = 0; index < reports.length; index += 1) {
         if (index > 0) html += '<hr class="tmsc-report-divider">';
-        html += cardHtml(reports[index], { scouts });
+        html += cardHtml(reports[index]);
     }
     return html;
 }

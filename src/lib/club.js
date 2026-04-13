@@ -1,0 +1,18 @@
+export const Club = {
+    "id": null,
+    "name": null,
+    "nick": null,
+    "country": null,
+    "division": null,
+    "group": null,
+    "manager_name": null,
+    "fanclub": null,
+    "stadium": null,
+    "city": null,
+    "a_team": null,
+    "b_team": null,
+    "created": null,
+    "is_diamond": null,
+    "cash": null,
+    "online": null,
+}

@@ -828,7 +828,7 @@ function computeCandidateR5(player = {}) {
         const numericSkills = TmApi._toNumericSkills(resolvedSkills);
         if (!numericSkills.length || !Number.isFinite(calcPlayer.asi)) return null;
 
-        const positionKeys = String(calcPlayer.favposition || calcPlayer.fp || calcPlayer.favorite_position || (calcPlayer.isGK ? 'gk' : ''))
+        const positionKeys = String(calcPlayer.favposition || calcPlayer.fp || (calcPlayer.isGK ? 'gk' : ''))
             .split(',')
             .map(value => value.trim().toLowerCase())
             .filter(Boolean);
@@ -859,7 +859,7 @@ function buildCandidateRecord(player, club, clubId = '', clubName = '') {
         months: Number(player?.months ?? player?.month) || 0,
         asi: TmUtils.parseNum(player?.skill_index || player?.asi),
         r5: computeCandidateR5(player),
-        position: cleanText(player?.favposition || player?.fp || player?.favorite_position),
+        position: cleanText(player?.favposition || player?.fp),
         clubId: cleanText(clubId || player?.club_id || club?.id),
         clubName: cleanText(clubName || player?.club_name || club?.club_name) || 'Unknown club',
         clubCreated: lowerText(club?.created),

@@ -2,7 +2,7 @@ import { TmUI } from '../shared/tm-ui.js';
 import { TmButton } from '../shared/tm-button.js';
 import { TmPosition } from '../../lib/tm-position.js';
 import { TmTransferService } from '../../services/transfer.js';
-import { TmPlayerPhoto } from '../player/tm-player-photo.js';
+import { TmPlayerPhoto } from '../player/card/tm-player-photo.js';
 import { TmShortlistService } from '../../services/shortlist.js';
 import { TmAlert } from '../shared/tm-alert.js';
 

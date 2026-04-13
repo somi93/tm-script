@@ -5,7 +5,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
 import { TmTable } from '../components/shared/tm-table.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmPosition } from '../lib/tm-position.js';
-import { TmTrainingMod } from '../components/player/tm-training-mod.js';
+import { TmTrainingMod } from '../components/player/training/tm-player-training.js';
 import { PlayerTrainingDots } from '../components/shared/tm-training-dots.js';
 import { TmClubService } from '../services/club.js';
 import { TmTrainingService } from '../services/training.js';
@@ -440,6 +440,7 @@ const mountEditor = (host) => {
     TmTrainingMod.render(editorMount, TmTrainingService.adaptSquadTraining(player), {
         playerId: player.id,
         readOnly: false,
+        // TODO: onStateChange now receives player.training { standard, custom } — update this to use new format
         onStateChange: (trainingState) => {
             updatePlayer(player.id, {
                 trainingState,

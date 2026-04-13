@@ -75,7 +75,7 @@ export const TmCheckbox = {
         input.className = `tmu-checkbox${cls ? ' ' + cls : ''}`;
         if (id) input.id = id;
         if (name) input.name = name;
-        if (checked) input.checked = true;
+        if (checked) { input.checked = true; input.setAttribute('checked', ''); }
         if (disabled) input.disabled = true;
         if (value !== undefined && value !== null) input.value = String(value);
         Object.entries(attrs).forEach(([key, val]) => {

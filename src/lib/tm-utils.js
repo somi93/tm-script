@@ -121,6 +121,66 @@ const getMainContainer = (root = document) => root.querySelector('.tmvu-main');
 
 const getMainContainers = (root = document) => Array.from(root.querySelectorAll('.tmvu-main'));
 
+const extractFaceUrl = (appearance, fallback = null) => {
+    const src = String(appearance || '').match(/src=['"]([^'"]+)['"]/i)?.[1] || fallback;
+    if (!src) return null;
+    return String(src).replace(/([?&])w=\d+(&?)/i, (_match, prefix, suffix) => {
+        if (prefix === '?' && suffix) return '?';
+        return suffix ? prefix : '';
+    }).replace(/[?&]$/, '');
+};
+
+const parseSkillValue = (value) => {
+    if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+
+    const text = String(value || '');
+    const attrMatch = text.match(/(?:title|alt)=['"]?(\d+(?:\.\d+)?)/i);
+    if (attrMatch) return Number(attrMatch[1]);
+
+    if (/star/i.test(text)) {
+        if (/silver/i.test(text)) return 19;
+        return 20;
+    }
+
+    const numericMatch = text.match(/\d+(?:\.\d+)?/);
+    return numericMatch ? Number(numericMatch[0]) : null;
+};
+
+const applyTooltipSkills = (player, tooltipSkills) => {
+    if (!Array.isArray(player?.skills) || !Array.isArray(tooltipSkills)) return player;
+
+    const tooltipMap = new Map();
+    for (const skill of tooltipSkills) {
+        if (!skill?.key) continue;
+        tooltipMap.set(skill.key, parseSkillValue(skill.value));
+    }
+
+    player.skills = player.skills.map(skill => ({
+        ...skill,
+        value: tooltipMap.get(skill.key) ?? (skill.key2 ? tooltipMap.get(skill.key2) ?? null : null),
+    })).filter(skill => skill.value != null);
+
+    return player;
+};
+
+const applyPlayerPositions = (player, favposition = '') => {
+    if (!Array.isArray(player?.positions)) return player;
+
+    const preferredKeys = new Set(String(favposition || '')
+        .split(',')
+        .map(value => value.trim().toLowerCase())
+        .filter(Boolean));
+
+    player.positions = player.positions
+        .filter(position => player.isGK ? position.key === 'gk' : position.key !== 'gk')
+        .map(position => ({
+            ...position,
+            preferred: preferredKeys.has(String(position.key || '').toLowerCase()),
+        }));
+
+    return player;
+};
+
 /* Map an R5 value (25–118) to a hex color string.
    Uses piecewise HSL tiers for < 95, explicit per-integer lookup for 95–118.
    Results are memoised by rounded integer value. */
@@ -177,5 +237,26 @@ const r5Color = (() => {
     };
 })();
 
-export const TmUtils = { getColor, parseNum, ageToMonths, monthsToAge, classifyPosition, posLabel, fix2, formatR5, fmtCoins, ratingColor, r5Color, toggleSort, skillColor, skillEff, getMainContainer, getMainContainers };
+const getOwnClubIds = () => {
+    const s = window.SESSION;
+    if (!s) return [];
+    const ids = [];
+    if (s.main_id) ids.push(String(s.main_id));
+    if (s.b_team) ids.push(String(s.b_team));
+    return ids;
+};
+
+const applySquadSkills = (player, postPlayer) => {
+    if (!Array.isArray(player?.skills)) return player;
+    // post data uses 'setpieces' but SKILL_DEFS uses 'set_pieces'
+    const remap = { set_pieces: 'setpieces' };
+    player.skills = player.skills.map(skill => {
+        const postKey = remap[skill.key] ?? skill.key;
+        const value = postPlayer[postKey] ?? (skill.key2 ? postPlayer[remap[skill.key2] ?? skill.key2] ?? null : null);
+        return { ...skill, value: value != null ? Number(value) : null };
+    }).filter(skill => skill.value != null && skill.value !== 0);
+    return player;
+};
+
+export const TmUtils = { getColor, parseNum, ageToMonths, monthsToAge, classifyPosition, posLabel, fix2, formatR5, fmtCoins, ratingColor, r5Color, toggleSort, skillColor, skillEff, getMainContainer, getMainContainers, extractFaceUrl, parseSkillValue, applyTooltipSkills, applyPlayerPositions, applySquadSkills, getOwnClubIds };
 

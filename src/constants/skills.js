@@ -34,54 +34,54 @@ export const COLOR_LEVELS = [
     { color: '#ff4c4c' }, { color: '#ff8c00' }, { color: '#ffd700' },
     { color: '#90ee90' }, { color: '#00cfcf' }, { color: '#5b9bff' }, { color: '#cc88ff' }
 ];
-export const R5_THRESHOLDS  = [110, 100, 90, 80, 70, 60, 0];
-export const TI_THRESHOLDS  = [12, 9, 6, 4, 2, 1, -Infinity];
+export const R5_THRESHOLDS = [110, 100, 90, 80, 70, 60, 0];
+export const TI_THRESHOLDS = [12, 9, 6, 4, 2, 1, -Infinity];
 export const REC_THRESHOLDS = [5.5, 5, 4, 3, 2, 1, 0];
 export const RTN_THRESHOLDS = [90, 60, 40, 30, 20, 10, 0];
 
 // ─── ASI formula constants ────────────────────────────────────────────
 /* Positional defense/offense bonus multipliers (outfield only, index 0-8) */
-export const POS_MULTIPLIERS    = [0.3, 0.3, 0.9, 0.6, 1.5, 0.9, 0.9, 0.6, 0.3];
+export const POS_MULTIPLIERS = [0.3, 0.3, 0.9, 0.6, 1.5, 0.9, 0.9, 0.6, 0.3];
 export const ASI_WEIGHT_OUTFIELD = 263533760000; // 2^9 * 5^4 * 7^7 * 128
-export const ASI_WEIGHT_GK       = 48717927500;
+export const ASI_WEIGHT_GK = 48717927500;
 
 // ─── Skill definitions ────────────────────────────────────────────────
 export const SKILL_DEFS = [
     // shared (isGK + isOutfield) — must stay at the top; indices 0-2 match both weight matrices
-    { name: 'Strength', key: 'strength', isGK: true, isOutfield: true, category: 'Physical', id: 0 },
-    { name: 'Stamina',  key: 'stamina',  isGK: true, isOutfield: true, category: 'Physical', id: 1 },
-    { name: 'Pace',     key: 'pace',     isGK: true, isOutfield: true, category: 'Physical', id: 2 },
+    { name: 'Strength', key: 'strength', isGK: true, isOutfield: true, category: 'Physical', id: 0, color: '#22cc22' },
+    { name: 'Stamina', key: 'stamina', isGK: true, isOutfield: true, category: 'Physical', id: 1, color: '#00bcd4' },
+    { name: 'Pace', key: 'pace', isGK: true, isOutfield: true, category: 'Physical', id: 2, color: '#8bc34a' },
     // outfield-only (indices 3-13 after filter)
-    { name: 'Marking',     key: 'marking',    isOutfield: true, category: 'Tactical',  id: 3 },
-    { name: 'Tackling',    key: 'tackling',   isOutfield: true, category: 'Tactical',  id: 4 },
-    { name: 'Workrate',    key: 'workrate',   isOutfield: true, category: 'Tactical',  id: 5 },
-    { name: 'Positioning', key: 'positioning',isOutfield: true, category: 'Tactical',  id: 6 },
-    { name: 'Passing',     key: 'passing',    isOutfield: true, category: 'Technical', id: 7 },
-    { name: 'Crossing',    key: 'crossing',   isOutfield: true, category: 'Technical', id: 8 },
-    { name: 'Technique',   key: 'technique',  isOutfield: true, category: 'Technical', id: 9 },
-    { name: 'Heading',     key: 'heading',    isOutfield: true, category: 'Physical',  id: 10 },
-    { name: 'Finishing',   key: 'finishing',  isOutfield: true, category: 'Technical', id: 11 },
-    { name: 'Longshots',   key: 'longshots',  isOutfield: true, category: 'Technical', id: 12 },
-    { name: 'Set Pieces',  key: 'set_pieces', isOutfield: true, category: 'Technical', id: 13 },
+    { name: 'Marking', key: 'marking', isOutfield: true, category: 'Tactical', id: 3, color: '#f44336' },
+    { name: 'Tackling', key: 'tackling', isOutfield: true, category: 'Tactical', id: 4, color: '#26a69a' },
+    { name: 'Workrate', key: 'workrate', isOutfield: true, category: 'Tactical', id: 5, color: '#3f51b5' },
+    { name: 'Positioning', key: 'positioning', isOutfield: true, category: 'Tactical', id: 6, color: '#9c27b0' },
+    { name: 'Passing', key: 'passing', isOutfield: true, category: 'Technical', id: 7, color: '#e91e63' },
+    { name: 'Crossing', key: 'crossing', isOutfield: true, category: 'Technical', id: 8, color: '#2196f3' },
+    { name: 'Technique', key: 'technique', isOutfield: true, category: 'Technical', id: 9, color: '#ff4081' },
+    { name: 'Heading', key: 'heading', isOutfield: true, category: 'Physical', id: 10, color: '#757575' },
+    { name: 'Finishing', key: 'finishing', isOutfield: true, category: 'Technical', id: 11, color: '#4caf50' },
+    { name: 'Longshots', key: 'longshots', isOutfield: true, category: 'Technical', id: 12, color: '#00e5ff' },
+    { name: 'Set Pieces', key: 'set_pieces', isOutfield: true, category: 'Technical', id: 13, color: '#607d8b' },
     // GK-only (indices 3-10 after filter)
-    { name: 'Handling',      key: 'handling',      isGK: true, category: 'Technical', id: 3 },
-    { name: 'One on ones',   key: 'oneonones',     isGK: true, category: 'Tactical',  key2: 'one_on_ones',    id: 4 },
-    { name: 'Reflexes',      key: 'reflexes',      isGK: true, category: 'Technical', id: 5 },
-    { name: 'Aerial Ability',key: 'arialability',  isGK: true, category: 'Tactical',  key2: 'aerial_ability', id: 6 },
-    { name: 'Jumping',       key: 'jumping',       isGK: true, category: 'Physical',  id: 7 },
-    { name: 'Communication', key: 'communication', isGK: true, category: 'Tactical',  id: 8 },
-    { name: 'Kicking',       key: 'kicking',       isGK: true, category: 'Technical', id: 9 },
-    { name: 'Throwing',      key: 'throwing',      isGK: true, category: 'Technical', id: 10 },
+    { name: 'Handling', key: 'handling', isGK: true, category: 'Technical', id: 3, color: '#f44336' },
+    { name: 'One on ones', key: 'oneonones', isGK: true, category: 'Tactical', key2: 'one_on_ones', id: 4, color: '#26a69a' },
+    { name: 'Reflexes', key: 'reflexes', isGK: true, category: 'Technical', id: 5, color: '#3f51b5' },
+    { name: 'Aerial Ability', key: 'arialability', isGK: true, category: 'Tactical', key2: 'aerial_ability', id: 6, color: '#9c27b0' },
+    { name: 'Jumping', key: 'jumping', isGK: true, category: 'Physical', id: 7, color: '#e91e63' },
+    { name: 'Communication', key: 'communication', isGK: true, category: 'Tactical', id: 8, color: '#2196f3' },
+    { name: 'Kicking', key: 'kicking', isGK: true, category: 'Technical', id: 9, color: '#ff4081' },
+    { name: 'Throwing', key: 'throwing', isGK: true, category: 'Technical', id: 10, color: '#757575' },
 ];
 
 export const SKILL_DEFS_OUT = SKILL_DEFS.filter(s => s.isOutfield);
-export const SKILL_DEFS_GK  = SKILL_DEFS.filter(s => s.isGK);
+export const SKILL_DEFS_GK = SKILL_DEFS.filter(s => s.isGK);
 
 // ─── Transfer-API short skill keys (in API response order) ───────────
 export const SKILL_KEYS_OUT = ['str', 'sta', 'pac', 'mar', 'tac', 'wor', 'pos', 'pas', 'cro', 'tec', 'hea', 'fin', 'lon', 'set'];
 /* GK: str/sta/pac come first (shared), then GK-only in Transfer-API response order.
    NOTE: SKILL_KEYS_GK_WEIGHT (below) follows the ASI weight-matrix index order — different sequence. */
-export const SKILL_KEYS_GK  = ['str', 'sta', 'pac', 'han', 'one', 'ref', 'ari', 'jum', 'com', 'kic', 'thr'];
+export const SKILL_KEYS_GK = ['str', 'sta', 'pac', 'han', 'one', 'ref', 'ari', 'jum', 'com', 'kic', 'thr'];
 export const SKILL_KEYS_ALL = [...SKILL_KEYS_OUT, ...SKILL_KEYS_GK.filter(s => !SKILL_KEYS_OUT.includes(s))];
 
 export const SKILL_LABELS = {
@@ -93,20 +93,20 @@ export const SKILL_LABELS = {
 
 /* Ordered short-label arrays derived from SKILL_LABELS.
    SKILL_LABELS_GK follows the weight-matrix / GRAPH_KEYS_GK index order, NOT SKILL_KEYS_GK order. */
-export const SKILL_LABELS_OUT     = SKILL_KEYS_OUT.map(k => SKILL_LABELS[k]);
-export const SKILL_LABELS_GK      = ['str', 'pac', 'jum', 'sta', 'one', 'ref', 'ari', 'com', 'kic', 'thr', 'han'].map(k => SKILL_LABELS[k]);
+export const SKILL_LABELS_OUT = SKILL_KEYS_OUT.map(k => SKILL_LABELS[k]);
+export const SKILL_LABELS_GK = ['str', 'pac', 'jum', 'sta', 'one', 'ref', 'ari', 'com', 'kic', 'thr', 'han'].map(k => SKILL_LABELS[k]);
 /* Short skill keys in ASI weight-matrix index order for GK. Different from SKILL_KEYS_GK (Transfer-API order). */
 export const SKILL_KEYS_GK_WEIGHT = ['str', 'pac', 'jum', 'sta', 'one', 'ref', 'ari', 'com', 'kic', 'thr', 'han'];
 /* SKILL_KEYS_GK order short labels (different from SKILL_LABELS_GK which is weight-matrix order) */
 export const SKILL_NAMES_GK_SHORT = SKILL_KEYS_GK.map(k => SKILL_LABELS[k]);
 /* Full names in SKILL_KEYS_OUT / SKILL_KEYS_GK order (matches tooltip skill name strings) */
 export const SKILL_NAMES_OUT = SKILL_DEFS_OUT.map(s => s.name);
-export const SKILL_NAMES_GK  = SKILL_DEFS_GK.map(s => s.name);
+export const SKILL_NAMES_GK = SKILL_DEFS_GK.map(s => s.name);
 
 /* Graphs API long-key order. GRAPH_KEYS_GK matches the ASI weight-matrix index order
    (short-key equivalent of SKILL_LABELS_GK). Different from SKILL_KEYS_GK. */
 export const GRAPH_KEYS_OUT = SKILL_DEFS_OUT.map(s => s.key);
-export const GRAPH_KEYS_GK  = ['strength', 'pace', 'jumping', 'stamina', 'one_on_ones', 'reflexes', 'aerial_ability', 'communication', 'kicking', 'throwing', 'handling'];
+export const GRAPH_KEYS_GK = ['strength', 'pace', 'jumping', 'stamina', 'one_on_ones', 'reflexes', 'aerial_ability', 'communication', 'kicking', 'throwing', 'handling'];
 
 /* Skill efficiency brackets — fraction of overflow points absorbed per integer level.
    Format: [minLevel, efficiencyRate]. Evaluated top-to-bottom; first match wins. */
