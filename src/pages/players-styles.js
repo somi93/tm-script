@@ -73,6 +73,12 @@ export const injectPlayersPageStyles = () => {
             color: var(--tmu-text-strong);
             font-weight: 700;
         }
+        .tmvu-players-table .tmvu-players-r5-stack {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+        }
         .tmvu-players-table .tmvu-players-r5.is-pending {
             color: var(--tmu-text-faint);
         }

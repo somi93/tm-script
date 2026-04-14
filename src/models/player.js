@@ -1,6 +1,7 @@
 import { TmLib } from '../lib/tm-lib.js';
 import { TmPlayerDB } from '../lib/tm-playerdb.js';
 import { TmPlayerService } from '../services/player.js';
+import { applyPlayerPositionRatings } from '../utils/normalize/player.js';
 import { TmPlayerHistorySyncWorkflow } from '../workflows/player-history-sync.js';
 
 const tooltipCache = new Map();
@@ -19,17 +20,15 @@ export const TmPlayerModel = {
 			DBPlayer = await TmPlayerDB.get(playerId);
 		}
 
+		player.records = DBPlayer?.records || {};
+
 		const latestRecord = DBPlayer?.records?.[player.ageMonthsString];
 		if (Array.isArray(latestRecord?.skills) && player.skills?.length) {
 			player.skills = player.skills.map((skill, index) => ({
 				...skill,
 				value: latestRecord.skills[index] != null ? Number(latestRecord.skills[index]) : skill.value,
 			}));
-			player.positions = player.positions.map((position) => ({
-				...position,
-				r5: TmLib.calculatePlayerR5(position, player),
-				rec: TmLib.calculatePlayerREC(position, player),
-			}));
+			applyPlayerPositionRatings(player);
 		}
 
 		return player;

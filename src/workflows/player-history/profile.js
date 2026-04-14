@@ -51,9 +51,12 @@ export const buildHistoryEvidenceProfile = (player, DBPlayer) => {
 };
 
 export const selectHistorySyncStrategy = (profile) => {
-    // if (!profile?.hasMissingAgeKeys) return HISTORY_SYNC_STRATEGY.NOOP;
-    if (profile.hasSkillGraphs) return HISTORY_SYNC_STRATEGY.SKILL_GRAPHS;
-    if (profile.hasReliableCurrentTI && profile.hasCurrentSnapshot) return HISTORY_SYNC_STRATEGY.EXACT_CURRENT_TI;
-    if (profile.hasLeftAnchor && profile.hasCurrentSnapshot) return HISTORY_SYNC_STRATEGY.ANCHORED_ESTIMATE;
-    return HISTORY_SYNC_STRATEGY.INSUFFICIENT_EVIDENCE;
+    if (!profile?.hasMissingAgeKeys) return HISTORY_SYNC_STRATEGY.NOOP;
+    return profile.hasSkillGraphs
+        ? HISTORY_SYNC_STRATEGY.SKILL_GRAPHS
+        : profile.hasReliableCurrentTI && profile.hasCurrentSnapshot
+            ? HISTORY_SYNC_STRATEGY.EXACT_CURRENT_TI
+            : profile.hasLeftAnchor && profile.hasCurrentSnapshot
+                ? HISTORY_SYNC_STRATEGY.ANCHORED_ESTIMATE
+                : HISTORY_SYNC_STRATEGY.INSUFFICIENT_EVIDENCE;
 };

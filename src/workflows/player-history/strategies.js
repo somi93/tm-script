@@ -17,20 +17,17 @@ export const syncFromSkillGraphs = ({ player, DBPlayer, profile }) => {
     return enrichHistoryRecords(player, reconstructSkillHistoryFromGraph(player, DBPlayer, graphs, records));
 };
 
-export const syncFromExactCurrentTI = ({ player, DBPlayer, profile, options = {} }) => {
-    
+export const syncFromExactCurrentTI = ({ player, DBPlayer, profile }) => {
     return enrichHistoryRecords(player, reconstructSkillHistoryFromEstimate(player, DBPlayer, profile.missingAgeKeys, {
         graphRecordsByAgeKey: player?.graphs?.recordsByAgeKey || null,
         liveTI: player?.ti,
         exactLastTI: player?.ti,
-        forceFullSync: Boolean(options.forceFullSync),
     }));
 };
 
-export const syncFromAnchoredEstimate = ({ player, DBPlayer, profile, options = {} }) => {
+export const syncFromAnchoredEstimate = ({ player, DBPlayer, profile }) => {
     return enrichHistoryRecords(player, reconstructSkillHistoryFromEstimate(player, DBPlayer, profile.missingAgeKeys, {
         graphRecordsByAgeKey: player?.graphs?.recordsByAgeKey || null,
         liveTI: Number.isFinite(Number(player?.ti)) ? player.ti : null,
-        forceFullSync: Boolean(options.forceFullSync),
     }));
 };

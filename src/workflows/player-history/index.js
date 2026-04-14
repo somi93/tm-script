@@ -3,16 +3,16 @@ import { loadHistorySyncSources } from './sources.js';
 import { saveHistoryRecords } from './shared.js';
 import { syncFromAnchoredEstimate, syncFromExactCurrentTI, syncFromSkillGraphs } from './strategies.js';
 
-const executeHistorySyncStrategy = ({ player, DBPlayer, profile, strategy, options = {} }) => {
+const executeHistorySyncStrategy = ({ player, DBPlayer, profile, strategy }) => {
     switch (strategy) {
         case HISTORY_SYNC_STRATEGY.NOOP:
             return {};
         case HISTORY_SYNC_STRATEGY.SKILL_GRAPHS:
             return syncFromSkillGraphs({ player, DBPlayer, profile });
         case HISTORY_SYNC_STRATEGY.EXACT_CURRENT_TI:
-            return syncFromExactCurrentTI({ player, DBPlayer, profile, options });
+            return syncFromExactCurrentTI({ player, DBPlayer, profile });
         case HISTORY_SYNC_STRATEGY.ANCHORED_ESTIMATE:
-            return syncFromAnchoredEstimate({ player, DBPlayer, profile, options });
+            return syncFromAnchoredEstimate({ player, DBPlayer, profile });
         default:
             return {};
     }
@@ -20,15 +20,16 @@ const executeHistorySyncStrategy = ({ player, DBPlayer, profile, strategy, optio
 
 const syncPlayerHistory = async (player, DBPlayer, options = {}) => {
     const baseProfile = buildHistoryEvidenceProfile(player, DBPlayer);
-    
-    // if (!baseProfile.hasMissingAgeKeys) return {};
+    if (!baseProfile.hasMissingAgeKeys) return {};
+
     await loadHistorySyncSources(player, DBPlayer);
 
     const profile = buildHistoryEvidenceProfile(player, DBPlayer);
     const strategy = selectHistorySyncStrategy(profile);
     if (strategy === HISTORY_SYNC_STRATEGY.INSUFFICIENT_EVIDENCE) return {};
-
     const historyRecords = executeHistorySyncStrategy({ player, DBPlayer, profile, strategy, options });
+
+    console.log(player.name, player.graphs, historyRecords);
     await saveHistoryRecords(player, DBPlayer, historyRecords);
     return historyRecords;
 };

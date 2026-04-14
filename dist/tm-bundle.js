@@ -3712,7 +3712,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     else result = nums.map((v) => v === 20 ? 20 : v + remainder / nonStar);
     return skills.map((s6, i) => ({ ...s6, value: result[i] }));
   };
-  var calcSkillDecimals = (intSkills, asi, isGK, gw) => {
+  var calcSkillDecimals = (intSkills, asi, isGK, gw, { maxIntegers } = {}) => {
     const N = intSkills.length;
     const GRP = isGK ? TRAINING_GROUPS_GK2 : TRAINING_GROUPS_OUT2;
     const GRP_COUNT = GRP.length;
@@ -3746,14 +3746,18 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
           dec[i] = 0;
           continue;
         }
-        if (dec[i] > CAP) {
-          ovfl += dec[i] - CAP;
-          dec[i] = CAP;
-        } else if (dec[i] < CAP) freeCount++;
+        const cap = maxIntegers ? Math.max(0, maxIntegers[i] - intSkills[i]) + CAP : CAP;
+        if (dec[i] > cap) {
+          ovfl += dec[i] - cap;
+          dec[i] = cap;
+        } else if (dec[i] < cap) freeCount++;
       }
       if (ovfl > 1e-4 && freeCount > 0) {
         const add = ovfl / freeCount;
-        for (let i = 0; i < N; i++) if (intSkills[i] < 20 && dec[i] < CAP) dec[i] += add;
+        for (let i = 0; i < N; i++) {
+          const cap = maxIntegers ? Math.max(0, maxIntegers[i] - intSkills[i]) + CAP : CAP;
+          if (intSkills[i] < 20 && dec[i] < cap) dec[i] += add;
+        }
       } else break;
     } while (++passes < 20);
     return intSkills.map((v, i) => v >= 20 ? 20 : v + dec[i]);
@@ -4859,6 +4863,26 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   };
 
   // src/utils/normalize/player.js
+  var applyPlayerPositionRatings = (player2) => {
+    player2.positions = player2.positions.map((position) => ({
+      ...position,
+      r5: TmLib.calculatePlayerR5(position, player2),
+      rec: TmLib.calculatePlayerREC(position, player2)
+    }));
+    const preferredPositions = player2.positions.filter((position) => position.preferred);
+    const positionsForRatings = preferredPositions.length ? preferredPositions : player2.positions;
+    player2.r5 = positionsForRatings.reduce((best, position) => {
+      const value = Number(position == null ? void 0 : position.r5);
+      if (!Number.isFinite(value)) return best;
+      return best == null || value > best ? value : best;
+    }, null);
+    player2.rec = positionsForRatings.reduce((best, position) => {
+      const value = Number(position == null ? void 0 : position.rec);
+      if (!Number.isFinite(value)) return best;
+      return best == null || value > best ? value : best;
+    }, null);
+    return player2;
+  };
   var normalizeTooltipPlayer = (playerData) => {
     var _a;
     const player2 = Player.create();
@@ -4886,11 +4910,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     TmUtils.applyTooltipSkills(player2, playerTooltip.skills);
     TmUtils.applyPlayerPositions(player2, playerTooltip.favposition);
     player2.skills = TmLib.calcSkillDecimalsSimple(player2);
-    player2.positions = player2.positions.map((position) => ({
-      ...position,
-      r5: TmLib.calculatePlayerR5(position, player2),
-      rec: TmLib.calculatePlayerREC(position, player2)
-    }));
+    applyPlayerPositionRatings(player2);
     player2.isOwnPlayer = TmUtils.getOwnClubIds().includes(String(player2.club_id));
     return player2;
   };
@@ -4907,7 +4927,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     player2.name = postPlayer.player_name;
     player2.firstname = postPlayer.player_name.split(" ").filter((n) => n !== postPlayer.lastname).join(" ");
     player2.country = postPlayer.country;
-    player2.routine = TmUtils.parseNum(postPlayer.rutine, null);
+    player2.routine = TmUtils.parseNum(Number(postPlayer.rutine), 0);
     player2.wage = TmUtils.parseNum(postPlayer.wage, null);
     player2.asi = postPlayer.asi;
     player2.no = postPlayer.no;
@@ -4920,11 +4940,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     player2.transfer = postPlayer.transfer;
     TmUtils.applySquadSkills(player2, postPlayer);
     TmUtils.applyPlayerPositions(player2, postPlayer.favposition);
-    player2.positions = player2.positions.map((position) => ({
-      ...position,
-      r5: TmLib.calculatePlayerR5(position, player2),
-      rec: TmLib.calculatePlayerREC(position, player2)
-    }));
+    applyPlayerPositionRatings(player2);
     player2.ti = TmLib.calculateTIPerSession(player2);
     player2.isOwnPlayer = TmUtils.getOwnClubIds().includes(String(player2.club_id));
     return player2;
@@ -4984,6 +5000,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   };
   var populateSkillIndexFromTI = (tiHistory, currentAsi, isGK = false) => {
     if (!Array.isArray(tiHistory) || !tiHistory.length || !Number.isFinite(Number(currentAsi))) return null;
+    tiHistory = tiHistory.slice(1);
     const skillIndex = new Array(tiHistory.length).fill(null);
     let currentSkillSum = TmLib.calcAsiSkillSum({ asi: Number(currentAsi), isGK });
     skillIndex[tiHistory.length - 1] = Number(currentAsi);
@@ -5085,10 +5102,8 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     };
   };
   var selectHistorySyncStrategy = (profile) => {
-    if (profile.hasSkillGraphs) return HISTORY_SYNC_STRATEGY.SKILL_GRAPHS;
-    if (profile.hasReliableCurrentTI && profile.hasCurrentSnapshot) return HISTORY_SYNC_STRATEGY.EXACT_CURRENT_TI;
-    if (profile.hasLeftAnchor && profile.hasCurrentSnapshot) return HISTORY_SYNC_STRATEGY.ANCHORED_ESTIMATE;
-    return HISTORY_SYNC_STRATEGY.INSUFFICIENT_EVIDENCE;
+    if (!(profile == null ? void 0 : profile.hasMissingAgeKeys)) return HISTORY_SYNC_STRATEGY.NOOP;
+    return profile.hasSkillGraphs ? HISTORY_SYNC_STRATEGY.SKILL_GRAPHS : profile.hasReliableCurrentTI && profile.hasCurrentSnapshot ? HISTORY_SYNC_STRATEGY.EXACT_CURRENT_TI : profile.hasLeftAnchor && profile.hasCurrentSnapshot ? HISTORY_SYNC_STRATEGY.ANCHORED_ESTIMATE : HISTORY_SYNC_STRATEGY.INSUFFICIENT_EVIDENCE;
   };
 
   // src/services/player.js
@@ -5136,114 +5151,10 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     }
   };
 
-  // src/workflows/player-history/sources.js
-  var { GRAPH_KEYS_OUT: GRAPH_KEYS_OUT3, GRAPH_KEYS_GK: GRAPH_KEYS_GK3 } = TmConst;
-  var { sortAgeKeys: sortAgeKeys3, skillValue: skillValue3 } = TmUtils;
-  var normalizeGraphNumber = (value) => Number.isFinite(Number(value)) ? Number(value) : null;
-  var deriveTIFromSkillIndex = (previousSkillIndex, currentSkillIndex, isGK) => {
-    if (!Number.isFinite(Number(previousSkillIndex)) || !Number.isFinite(Number(currentSkillIndex))) return null;
-    const previousSkillSum = TmLib.calcAsiSkillSum({ asi: Number(previousSkillIndex), isGK });
-    const currentSkillSum = TmLib.calcAsiSkillSum({ asi: Number(currentSkillIndex), isGK });
-    return Math.round((currentSkillSum - previousSkillSum) * 10);
-  };
-  var populateMissingTIFromSkillIndex = (player2, ageKeys, recordsByAgeKey) => {
-    var _a, _b, _c;
-    for (let index = 1; index < ageKeys.length; index += 1) {
-      const ageKey = ageKeys[index];
-      const previousKey = ageKeys[index - 1];
-      const derivedTI = deriveTIFromSkillIndex(
-        (_a = recordsByAgeKey[previousKey]) == null ? void 0 : _a.SI,
-        (_b = recordsByAgeKey[ageKey]) == null ? void 0 : _b.SI,
-        player2 == null ? void 0 : player2.isGK
-      );
-      if (derivedTI == null) continue;
-      const currentTI = normalizeGraphNumber((_c = recordsByAgeKey[ageKey]) == null ? void 0 : _c.TI);
-      if (currentTI != null && !(currentTI === 0 && derivedTI !== 0)) continue;
-      recordsByAgeKey[ageKey].TI = derivedTI;
-    }
-  };
-  var buildGraphAgeKeysFromSeries = (player2, graphData) => {
-    var _a;
-    const graphLength = ((_a = graphData == null ? void 0 : graphData.skill_index) == null ? void 0 : _a.length) || 0;
-    if (!graphLength) return [];
-    return Array.from({ length: graphLength }, (_, index) => {
-      const totalMonths = player2.ageMonths - (graphLength - 1 - index);
-      return `${Math.floor(totalMonths / 12)}.${totalMonths % 12}`;
-    });
-  };
-  var buildPlayerGraphs = (player2, DBPlayer, rawGraphs = null) => {
-    var _a;
-    const statKeys = (player2 == null ? void 0 : player2.isGK) ? GRAPH_KEYS_GK3 : GRAPH_KEYS_OUT3;
-    const dbKeys = sortAgeKeys3(Object.keys((DBPlayer == null ? void 0 : DBPlayer.records) || {}));
-    const currentAgeKey = (player2 == null ? void 0 : player2.ageMonthsString) || null;
-    const recordsByAgeKey = rawGraphs ? {} : {};
-    if (!rawGraphs) {
-      dbKeys.forEach((ageKey) => {
-        var _a2;
-        const record = (_a2 = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _a2[ageKey];
-        recordsByAgeKey[ageKey] = {
-          SI: normalizeGraphNumber(record == null ? void 0 : record.SI),
-          TI: normalizeGraphNumber(record == null ? void 0 : record.TI),
-          skills: Array.isArray(record == null ? void 0 : record.skills) ? record.skills.map(skillValue3) : new Array(statKeys.length).fill(null)
-        };
-      });
-    }
-    const remoteAgeKeys = buildGraphAgeKeysFromSeries(player2, rawGraphs);
-    remoteAgeKeys.forEach((ageKey, graphIndex) => {
-      var _a2, _b;
-      const existing = recordsByAgeKey[ageKey] || {
-        SI: null,
-        TI: null,
-        skills: new Array(statKeys.length).fill(null)
-      };
-      const skillIndexValue = (_a2 = rawGraphs == null ? void 0 : rawGraphs.skill_index) == null ? void 0 : _a2[graphIndex];
-      if (skillIndexValue != null) existing.SI = Number(skillIndexValue);
-      const tiValue = (_b = rawGraphs == null ? void 0 : rawGraphs.TI) == null ? void 0 : _b[graphIndex];
-      if (tiValue != null) existing.TI = Number(tiValue);
-      statKeys.forEach((statKey, statIndex) => {
-        var _a3;
-        const statValue = (_a3 = rawGraphs == null ? void 0 : rawGraphs[statKey]) == null ? void 0 : _a3[graphIndex];
-        if (statValue != null) existing.skills[statIndex] = Number(statValue);
-      });
-      recordsByAgeKey[ageKey] = existing;
-    });
-    if (currentAgeKey) {
-      const existing = recordsByAgeKey[currentAgeKey] || {
-        SI: null,
-        TI: null,
-        skills: new Array(statKeys.length).fill(null)
-      };
-      if (Number.isFinite(Number(player2 == null ? void 0 : player2.asi))) existing.SI = Number(player2.asi);
-      if (Number.isFinite(Number(player2 == null ? void 0 : player2.ti))) existing.TI = Number(player2.ti);
-      if (Array.isArray(player2 == null ? void 0 : player2.skills) && player2.skills.length) existing.skills = player2.skills.map(skillValue3);
-      recordsByAgeKey[currentAgeKey] = existing;
-    }
-    const ageKeys = sortAgeKeys3(Object.keys(recordsByAgeKey));
-    if (!ageKeys.length) return null;
-    if (!rawGraphs) populateMissingTIFromSkillIndex(player2, ageKeys, recordsByAgeKey);
-    return {
-      source: (rawGraphs == null ? void 0 : rawGraphs.source) || (rawGraphs ? "remote" : "indexeddb"),
-      sparse: !rawGraphs || Boolean(rawGraphs == null ? void 0 : rawGraphs.sparse),
-      hasTIGraph: Boolean((_a = rawGraphs == null ? void 0 : rawGraphs.TI) == null ? void 0 : _a.length),
-      hasSkillGraphs: statKeys.some((statKey) => Array.isArray(rawGraphs == null ? void 0 : rawGraphs[statKey]) && rawGraphs[statKey].length > 0),
-      ageKeys,
-      recordsByAgeKey
-    };
-  };
-  var loadHistorySyncSources = async (player2, DBPlayer) => {
-    const [training, graphs] = await Promise.all([
-      TmPlayerService.fetchPlayerTrainingForSync(player2),
-      (player2 == null ? void 0 : player2.isOwnPlayer) ? TmPlayerService.fetchPlayerGraphs(player2) : Promise.resolve(null)
-    ]);
-    player2.training = training;
-    player2.graphs = buildPlayerGraphs(player2, DBPlayer, graphs);
-    return player2;
-  };
-
   // src/workflows/player-history/shared.js
   var {
-    GRAPH_KEYS_OUT: GRAPH_KEYS_OUT4,
-    GRAPH_KEYS_GK: GRAPH_KEYS_GK4,
+    GRAPH_KEYS_OUT: GRAPH_KEYS_OUT3,
+    GRAPH_KEYS_GK: GRAPH_KEYS_GK3,
     TRAINING_GROUPS_OUT: TRAINING_GROUPS_OUT3,
     TRAINING_GROUPS_GK: TRAINING_GROUPS_GK3,
     ASI_WEIGHT_OUTFIELD: ASI_WEIGHT_OUTFIELD3,
@@ -5251,9 +5162,9 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     STD_FOCUS: STD_FOCUS3,
     SMOOTH_WEIGHT: SMOOTH_WEIGHT3
   } = TmConst;
-  var { skillValue: skillValue4, sortAgeKeys: sortAgeKeys4, safeGrowthSkills: safeGrowthSkills2, skillEff: skillEff2 } = TmUtils;
-  var getHistoryStatKeys = (isGK) => isGK ? GRAPH_KEYS_GK4 : GRAPH_KEYS_OUT4;
-  var getMergedHistoryKeys = (DBPlayer, records) => sortAgeKeys4(
+  var { skillValue: skillValue3, sortAgeKeys: sortAgeKeys3, safeGrowthSkills: safeGrowthSkills2, skillEff: skillEff2 } = TmUtils;
+  var getHistoryStatKeys = (isGK) => isGK ? GRAPH_KEYS_GK3 : GRAPH_KEYS_OUT3;
+  var getMergedHistoryKeys = (DBPlayer, records) => sortAgeKeys3(
     Object.keys((DBPlayer == null ? void 0 : DBPlayer.records) || {}).concat(Object.keys(records || {}))
   );
   var capGrowthDecimals = (decArr, intArr, count) => {
@@ -5309,36 +5220,42 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     const total = weights.reduce((sum, value) => sum + value, 0);
     return total > 0 ? weights.map((value) => value / total) : equal;
   };
+  var calcGrowthShares = ({ intSkills, isGK, getWeights, monthIndex = 0 }) => {
+    const count = isGK ? 11 : 14;
+    const groups = isGK ? TRAINING_GROUPS_GK3 : TRAINING_GROUPS_OUT3;
+    const groupCount = groups.length;
+    const weights = getWeights(monthIndex, intSkills);
+    const base = new Array(count).fill(0);
+    let overflow = 0;
+    for (let groupIndex = 0; groupIndex < groupCount; groupIndex++) {
+      const group = groups[groupIndex];
+      const perSkill = weights[groupIndex] / group.length;
+      for (const skillIndex of group) {
+        if (intSkills[skillIndex] >= 20) overflow += perSkill;
+        else base[skillIndex] = perSkill;
+      }
+    }
+    const nonMax = intSkills.filter((value) => value < 20).length;
+    const overflowEach = nonMax > 0 ? overflow / nonMax : 0;
+    const weighted = base.map((value, index) => intSkills[index] >= 20 ? 0 : value + overflowEach);
+    const actual = weighted.map((value, index) => value * skillEff2(intSkills[index]));
+    const total = actual.reduce((sum, value) => sum + value, 0);
+    return total > 0 ? actual.map((value) => value / total) : new Array(count).fill(0);
+  };
   var computeGrowthDecimalsInternal = (records, ageKeys, player2, getWeights) => {
     const count = player2.isGK ? 11 : 14;
-    const groups = player2.isGK ? TRAINING_GROUPS_GK3 : TRAINING_GROUPS_OUT3;
-    const groupCount = groups.length;
     const asiWeight = player2.isGK ? ASI_WEIGHT_GK3 : ASI_WEIGHT_OUTFIELD3;
     const totalPoints = (si) => Math.pow(2, Math.log(asiWeight * (si || 0)) / Math.log(128));
-    const calcShares = (intSkills, monthIndex) => {
-      const weights = getWeights(monthIndex, intSkills);
-      const base = new Array(count).fill(0);
-      let overflow = 0;
-      for (let groupIndex = 0; groupIndex < groupCount; groupIndex++) {
-        const group = groups[groupIndex];
-        const perSkill = weights[groupIndex] / group.length;
-        for (const skillIndex of group) {
-          if (intSkills[skillIndex] >= 20) overflow += perSkill;
-          else base[skillIndex] = perSkill;
-        }
-      }
-      const nonMax = intSkills.filter((value) => value < 20).length;
-      const overflowEach = nonMax > 0 ? overflow / nonMax : 0;
-      const weighted = base.map((value, index) => intSkills[index] >= 20 ? 0 : value + overflowEach);
-      const actual = weighted.map((value, index) => value * skillEff2(intSkills[index]));
-      const total = actual.reduce((sum, value) => sum + value, 0);
-      return total > 0 ? actual.map((value) => value / total) : new Array(count).fill(0);
-    };
     const result = {};
     const firstRecord = records[ageKeys[0]];
     const firstSkills = safeGrowthSkills2(firstRecord.skills);
     const firstRemainder = totalPoints(firstRecord.SI) - firstSkills.reduce((sum, value) => sum + value, 0);
-    let decimals = capGrowthDecimals(calcShares(firstSkills, 0).map((share) => Math.max(0, firstRemainder * share)), firstSkills, count);
+    let decimals = capGrowthDecimals(calcGrowthShares({
+      intSkills: firstSkills,
+      isGK: player2.isGK,
+      getWeights,
+      monthIndex: 0
+    }).map((share) => Math.max(0, firstRemainder * share)), firstSkills, count);
     result[ageKeys[0]] = decimals;
     for (let monthIndex = 1; monthIndex < ageKeys.length; monthIndex++) {
       const prevKey = ageKeys[monthIndex - 1];
@@ -5349,7 +5266,12 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       const currTotal = totalPoints(records[currKey].SI);
       const delta = currTotal - prevTotal;
       const currRemainder = currTotal - currSkills.reduce((sum, value) => sum + value, 0);
-      const gains = calcShares(prevSkills, monthIndex - 1).map((share) => delta * share);
+      const gains = calcGrowthShares({
+        intSkills: prevSkills,
+        isGK: player2.isGK,
+        getWeights,
+        monthIndex: monthIndex - 1
+      }).map((share) => delta * share);
       let nextDecimals = decimals.map((value, index) => value + gains[index]);
       for (let index = 0; index < count; index++) {
         const skillChange = currSkills[index] - prevSkills[index];
@@ -5364,7 +5286,12 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         const scale = currRemainder / nextSum;
         decimals = capGrowthDecimals(nextDecimals.map((value, index) => currSkills[index] >= 20 ? 0 : value * scale), currSkills, count);
       } else {
-        decimals = capGrowthDecimals(calcShares(currSkills, monthIndex).map((share) => Math.max(0, currRemainder * share)), currSkills, count);
+        decimals = capGrowthDecimals(calcGrowthShares({
+          intSkills: currSkills,
+          isGK: player2.isGK,
+          getWeights,
+          monthIndex
+        }).map((share) => Math.max(0, currRemainder * share)), currSkills, count);
       }
       result[currKey] = decimals;
     }
@@ -5375,6 +5302,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     skillIndexHistory,
     skillHistoryByKey,
     tiHistory = null,
+    routineHistory = null,
     ageKeys = null
   }) => {
     if (!Array.isArray(skillIndexHistory) || !skillIndexHistory.length) {
@@ -5411,19 +5339,20 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     );
     const reconstructed = {};
     resolvedAgeKeys.forEach((key, monthIndex) => {
-      var _a;
+      var _a, _b;
       const intSkills = safeGrowthSkills2(records[key].skills);
       reconstructed[key] = {
         ageKey: key,
         SI: records[key].SI,
-        TI: Number((_a = tiHistory == null ? void 0 : tiHistory[monthIndex]) != null ? _a : 0),
+        TI: Math.round(Number((_a = tiHistory == null ? void 0 : tiHistory[monthIndex]) != null ? _a : 0)),
+        routine: Number((_b = routineHistory == null ? void 0 : routineHistory[monthIndex]) != null ? _b : 0),
         skills: intSkills.map((value, index) => value + decimals[key][index])
       };
     });
     return reconstructed;
   };
   var reconstructSkillHistoryFromGraph = (player2, DBPlayer, graphData, records) => {
-    const historyKeys = Array.isArray(graphData == null ? void 0 : graphData.ageKeys) && graphData.ageKeys.length ? sortAgeKeys4(graphData.ageKeys) : getMergedHistoryKeys(DBPlayer, records);
+    const historyKeys = Array.isArray(graphData == null ? void 0 : graphData.ageKeys) && graphData.ageKeys.length ? sortAgeKeys3(graphData.ageKeys) : getMergedHistoryKeys(DBPlayer, records);
     const statKeys = getHistoryStatKeys(player2 == null ? void 0 : player2.isGK);
     const graphRecords = (graphData == null ? void 0 : graphData.recordsByAgeKey) || {};
     return reconstructSkillHistory({
@@ -5446,131 +5375,51 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       }, {})
     });
   };
-  var buildWeightedIntegerSeries = (total, count, liveTI = null) => {
-    const safeTotal = Math.round(Number(total) || 0);
-    if (count <= 0) return [];
-    if (count === 1) return [safeTotal];
-    const sign = safeTotal < 0 ? -1 : 1;
-    const magnitude = Math.abs(safeTotal);
-    const avg2 = magnitude / count;
-    const liveRaw = Number.isFinite(Number(liveTI)) ? Math.round(Number(liveTI)) : sign * avg2;
-    const live = Math.abs(liveRaw);
-    const slope = Math.min(0.75, Math.abs(live - avg2) / Math.max(1, avg2 || 1));
-    const rawWeights = Array.from({ length: count }, (_, index) => {
-      const progress = count === 1 ? 1 : index / (count - 1);
-      const directional = live >= avg2 ? progress : 1 - progress;
-      return 1 + directional * slope;
-    });
-    const rawTotal = rawWeights.reduce((sum, weight) => sum + weight, 0) || 1;
-    const quotas = rawWeights.map((weight) => magnitude * weight / rawTotal);
-    const series = quotas.map((value) => Math.floor(value));
-    let remainder = magnitude - series.reduce((sum, value) => sum + value, 0);
-    quotas.map((value, index) => ({ index, frac: value - Math.floor(value) })).sort((a, b) => b.frac - a.frac).forEach(({ index }) => {
-      if (remainder <= 0) return;
-      series[index] += 1;
-      remainder -= 1;
-    });
-    return series.map((value) => value * sign);
-  };
   var reconstructSkillHistoryFromEstimate = (player2, DBPlayer, missingKeys, options = {}) => {
-    var _a, _b, _c;
-    console.log(player2.name, DBPlayer.records, 39598512895219853e8);
-    if (!(DBPlayer == null ? void 0 : DBPlayer.records)) return {};
-    console.log(152215215215215140, player2.name, forceFullSync);
-    const { forceFullSync = false } = options;
-    const dbKeys = sortAgeKeys4(Object.keys(DBPlayer.records));
-    const segmentKeys = forceFullSync ? (() => {
-      if (!dbKeys.length) return [];
-      const endKey2 = (player2 == null ? void 0 : player2.ageMonthsString) || dbKeys.at(-1);
-      const [fromYear, fromMonth] = String(dbKeys[0] || "").split(".").map(Number);
-      const [toYear, toMonth] = String(endKey2 || "").split(".").map(Number);
-      if (!Number.isFinite(fromYear) || !Number.isFinite(fromMonth) || !Number.isFinite(toYear) || !Number.isFinite(toMonth)) return [];
-      return Array.from({ length: Math.max(0, toYear * 12 + toMonth - (fromYear * 12 + fromMonth) + 1) }, (_, index) => {
-        const total = fromYear * 12 + fromMonth + index;
-        return `${Math.floor(total / 12)}.${total % 12}`;
-      }).slice(1);
-    })() : sortAgeKeys4(missingKeys);
-    if (!segmentKeys.length) return {};
-    const historyKeys = forceFullSync ? [dbKeys[0], ...segmentKeys] : sortAgeKeys4(dbKeys.concat(segmentKeys));
-    const firstMissingIndex = historyKeys.indexOf(segmentKeys[0]);
-    if (firstMissingIndex <= 0) return {};
-    const startKey = historyKeys[firstMissingIndex - 1];
-    const startRecord = DBPlayer.records[startKey];
-    if (!((_a = startRecord == null ? void 0 : startRecord.skills) == null ? void 0 : _a.length)) return {};
-    const endKey = (player2 == null ? void 0 : player2.ageMonthsString) || segmentKeys.at(-1);
-    const endSkills = Array.isArray(player2 == null ? void 0 : player2.skills) ? player2.skills.map(skillValue4) : [];
+    var _a, _b, _c, _d, _e, _f, _g;
+    if (player2.id === 137234654) console.log(player2.graphs);
+    const { graphRecordsByAgeKey = null, liveTI = player2 == null ? void 0 : player2.ti } = options;
+    const graphRecords = graphRecordsByAgeKey || {};
+    const allGraphKeys = sortAgeKeys3(Object.keys(graphRecords));
+    if (!allGraphKeys.length) return {};
+    const endKey = (player2 == null ? void 0 : player2.ageMonthsString) || allGraphKeys.at(-1);
+    const endSkills = Array.isArray(player2 == null ? void 0 : player2.skills) ? player2.skills.map(skillValue3) : [];
     if (!endSkills.length) return {};
-    console.log(124124421421, player2.name, startKey, startRecord.skills, endKey, endSkills);
-    const { graphRecordsByAgeKey = null, liveTI = player2 == null ? void 0 : player2.ti, exactLastTI = null } = options;
-    const startSkills = startRecord.skills.map(skillValue4);
-    const startIntSkills = startSkills.map((skill) => Math.floor(skill || 0));
-    const endIntSkills = endSkills.map((skill) => Math.floor(skill || 0));
-    const startSum = TmLib.sumSkillValues(startSkills);
-    const endSum = TmLib.sumSkillValues(endSkills);
-    const totalTI = Math.round((endSum - startSum) * 10);
-    const graphTIHistory = segmentKeys.map((key) => {
-      var _a2;
-      const graphTI = (_a2 = graphRecordsByAgeKey == null ? void 0 : graphRecordsByAgeKey[key]) == null ? void 0 : _a2.TI;
-      return Number.isFinite(Number(graphTI)) ? Math.round(Number(graphTI)) : null;
-    });
-    let tiSeries;
-    if (graphTIHistory.every((value) => value != null)) {
-      tiSeries = graphTIHistory;
-    } else if (graphTIHistory.some((value) => value != null)) {
-      const fallbackSeries = Number.isFinite(Number(exactLastTI)) && segmentKeys.length > 0 ? segmentKeys.length === 1 ? [Math.round(Number(exactLastTI))] : [...buildWeightedIntegerSeries(totalTI - Math.round(Number(exactLastTI)), segmentKeys.length - 1, liveTI), Math.round(Number(exactLastTI))] : buildWeightedIntegerSeries(totalTI, segmentKeys.length, liveTI);
-      tiSeries = graphTIHistory.map((value, index) => {
-        var _a2;
-        return (_a2 = value != null ? value : fallbackSeries[index]) != null ? _a2 : 0;
-      });
-    } else if (Number.isFinite(Number(exactLastTI)) && segmentKeys.length > 0) {
-      const lastTI = Math.round(Number(exactLastTI));
-      if (segmentKeys.length === 1) tiSeries = [lastTI];
-      else tiSeries = [...buildWeightedIntegerSeries(totalTI - lastTI, segmentKeys.length - 1, liveTI), lastTI];
-    } else {
-      tiSeries = buildWeightedIntegerSeries(totalTI, segmentKeys.length, liveTI);
-    }
-    const resolvedTotalTI = tiSeries.reduce((sum, ti) => sum + ti, 0);
-    const cumulativeTI = tiSeries.reduce((acc, ti, index) => {
-      acc.push(ti + (acc[index - 1] || 0));
-      return acc;
-    }, []);
+    const historyKeys = sortAgeKeys3([...allGraphKeys, ...allGraphKeys.includes(endKey) ? [] : [endKey]]);
     const statKeys = getHistoryStatKeys(player2 == null ? void 0 : player2.isGK);
     const guessedRecords = {};
-    historyKeys.forEach((key) => {
-      var _a2, _b2, _c2, _d, _e, _f;
-      if (!segmentKeys.includes(key)) {
-        const record = DBPlayer.records[key] || {};
+    for (const key of allGraphKeys) {
+      const rec = graphRecords[key];
+      if ((_a = rec == null ? void 0 : rec.skills) == null ? void 0 : _a.some((v) => v != null)) {
         guessedRecords[key] = {
-          SI: Number((_a2 = record.SI) != null ? _a2 : 0),
-          TI: Number((_b2 = record.TI) != null ? _b2 : 0),
-          skills: Array.isArray(record.skills) ? record.skills.map((skill) => Math.floor(skillValue4(skill) || 0)) : startIntSkills
+          SI: Number((_b = rec.SI) != null ? _b : 0),
+          TI: Number((_c = rec.TI) != null ? _c : 0),
+          routine: Number((_d = rec.routine) != null ? _d : 0),
+          skills: rec.skills.map((v) => Math.floor(skillValue3(v) || 0))
         };
-        return;
       }
-      const segmentIndex = segmentKeys.indexOf(key);
-      const progress = resolvedTotalTI > 0 ? cumulativeTI[segmentIndex] / resolvedTotalTI : (segmentIndex + 1) / segmentKeys.length;
-      const intSkills = startIntSkills.map((value, skillIndex) => {
-        const delta = Math.max(0, endIntSkills[skillIndex] - value);
-        const advanced = segmentIndex === segmentKeys.length - 1 ? delta : Math.floor(delta * progress + 1e-9);
-        return value + Math.min(delta, advanced);
-      });
-      const skillSum = startSum + (cumulativeTI[segmentIndex] || 0) / 10;
-      guessedRecords[key] = {
-        SI: key === endKey ? Number((_c2 = player2 == null ? void 0 : player2.asi) != null ? _c2 : 0) : Number((_e = (_d = graphRecordsByAgeKey == null ? void 0 : graphRecordsByAgeKey[key]) == null ? void 0 : _d.SI) != null ? _e : TmLib.calcASIFromSkillSum(skillSum, player2 == null ? void 0 : player2.isGK)),
-        TI: Number((_f = tiSeries[segmentIndex]) != null ? _f : 0),
-        skills: intSkills
-      };
-    });
-    const reconstructed = reconstructSkillHistory({
+    }
+    const existingEndTI = (_e = graphRecords[endKey]) == null ? void 0 : _e.TI;
+    guessedRecords[endKey] = {
+      SI: Number((_f = player2 == null ? void 0 : player2.asi) != null ? _f : 0),
+      TI: Math.round(Number(existingEndTI != null ? existingEndTI : liveTI != null ? liveTI : 0)),
+      routine: Number((_g = player2 == null ? void 0 : player2.routine) != null ? _g : 0),
+      skills: endSkills.map((v) => Math.floor(skillValue3(v) || 0))
+    };
+    return reconstructSkillHistory({
       player: player2,
       ageKeys: historyKeys,
       skillIndexHistory: historyKeys.map((key) => {
         var _a2, _b2;
-        return (_b2 = (_a2 = guessedRecords[key]) == null ? void 0 : _a2.SI) != null ? _b2 : 0;
+        return Number((_b2 = (_a2 = guessedRecords[key]) == null ? void 0 : _a2.SI) != null ? _b2 : 0);
       }),
       tiHistory: historyKeys.map((key) => {
         var _a2, _b2;
-        return (_b2 = (_a2 = guessedRecords[key]) == null ? void 0 : _a2.TI) != null ? _b2 : 0;
+        return Number((_b2 = (_a2 = guessedRecords[key]) == null ? void 0 : _a2.TI) != null ? _b2 : 0);
+      }),
+      routineHistory: historyKeys.map((key) => {
+        var _a2, _b2;
+        return Number((_b2 = (_a2 = guessedRecords[key]) == null ? void 0 : _a2.routine) != null ? _b2 : 0);
       }),
       skillHistoryByKey: statKeys.reduce((acc, statKey, statIndex) => {
         acc[statKey] = historyKeys.map((key) => {
@@ -5580,26 +5429,18 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         return acc;
       }, {})
     });
-    if (reconstructed[endKey]) {
-      reconstructed[endKey] = {
-        ...reconstructed[endKey],
-        SI: Number((_c = (_b = player2 == null ? void 0 : player2.asi) != null ? _b : reconstructed[endKey].SI) != null ? _c : 0),
-        skills: endSkills
-      };
-    }
-    console.log(player2.name, reconstructed);
-    return reconstructed;
   };
   var enrichHistoryRecords = (player2, history) => {
-    console.log(player2.name, history);
     const preferredPositions = player2.positions.filter((position) => position.preferred);
     const positionsForRatings = preferredPositions.length ? preferredPositions : player2.positions;
     Object.keys(history).forEach((ageKey) => {
+      var _a;
       const historyRecord = history[ageKey];
       const snapshot = {
         ...player2,
         asi: historyRecord.SI,
-        skills: historyRecord.skills
+        skills: historyRecord.skills,
+        routine: (_a = historyRecord.routine) != null ? _a : 0
       };
       let maxR5 = null;
       let maxRec = null;
@@ -5619,7 +5460,11 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   };
   var saveHistoryRecords = async (player2, DBPlayer, historyRecords) => {
     var _a, _b;
-    if (!historyRecords || !Object.keys(historyRecords).length) return historyRecords;
+    const mergedRecords = enrichHistoryRecords(player2, {
+      ...(DBPlayer == null ? void 0 : DBPlayer.records) || {},
+      ...historyRecords || {}
+    });
+    if (!Object.keys(mergedRecords).length) return historyRecords;
     const preferredPositions = player2.positions.filter((position) => position.preferred);
     await TmPlayerDB.set(player2.id, {
       ...DBPlayer || {},
@@ -5629,12 +5474,210 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         name: ((_a = DBPlayer == null ? void 0 : DBPlayer.meta) == null ? void 0 : _a.name) || player2.name,
         pos: ((_b = DBPlayer == null ? void 0 : DBPlayer.meta) == null ? void 0 : _b.pos) || (preferredPositions.length ? preferredPositions.map((position) => position.position).join(", ") : player2.positions.filter((position) => position.preferred || position.r5 != null).map((position) => position.position).join(", "))
       },
-      records: {
-        ...(DBPlayer == null ? void 0 : DBPlayer.records) || {},
-        ...historyRecords
-      }
+      records: mergedRecords
     });
-    return historyRecords;
+    return mergedRecords;
+  };
+
+  // src/workflows/player-history/sources.js
+  var { GRAPH_KEYS_OUT: GRAPH_KEYS_OUT4, GRAPH_KEYS_GK: GRAPH_KEYS_GK4 } = TmConst;
+  var { sortAgeKeys: sortAgeKeys4, skillValue: skillValue4 } = TmUtils;
+  var DEBUG_TI_PLAYER_ID = 145086218;
+  var logTIChange = (player2, stage, payload) => {
+    if (Number(player2 == null ? void 0 : player2.id) !== DEBUG_TI_PLAYER_ID) return;
+    console.log(`[TI:${DEBUG_TI_PLAYER_ID}] ${stage}`, payload);
+  };
+  var normalizeGraphNumber = (value) => Number.isFinite(Number(value)) ? Number(value) : null;
+  var deriveTIFromSkillIndex = (previousSkillIndex, currentSkillIndex, isGK) => {
+    if (!Number.isFinite(Number(previousSkillIndex)) || !Number.isFinite(Number(currentSkillIndex))) return null;
+    const previousSkillSum = TmLib.calcAsiSkillSum({ asi: Number(previousSkillIndex), isGK });
+    const currentSkillSum = TmLib.calcAsiSkillSum({ asi: Number(currentSkillIndex), isGK });
+    return Math.round((currentSkillSum - previousSkillSum) * 10);
+  };
+  var populateMissingTIFromSkillIndex = (player2, ageKeys, recordsByAgeKey) => {
+    var _a, _b, _c, _d, _e;
+    for (let index = 1; index < ageKeys.length; index += 1) {
+      const ageKey = ageKeys[index];
+      const previousKey = ageKeys[index - 1];
+      const derivedTI = deriveTIFromSkillIndex(
+        (_a = recordsByAgeKey[previousKey]) == null ? void 0 : _a.SI,
+        (_b = recordsByAgeKey[ageKey]) == null ? void 0 : _b.SI,
+        player2 == null ? void 0 : player2.isGK
+      );
+      if (derivedTI == null) continue;
+      const currentTI = normalizeGraphNumber((_c = recordsByAgeKey[ageKey]) == null ? void 0 : _c.TI);
+      if (currentTI != null) continue;
+      logTIChange(player2, "populateMissingTIFromSkillIndex", {
+        ageKey,
+        previousKey,
+        previousSI: (_d = recordsByAgeKey[previousKey]) == null ? void 0 : _d.SI,
+        currentSI: (_e = recordsByAgeKey[ageKey]) == null ? void 0 : _e.SI,
+        previousTI: currentTI,
+        nextTI: derivedTI
+      });
+      recordsByAgeKey[ageKey].TI = derivedTI;
+    }
+  };
+  var buildGraphAgeKeysFromSeries = (player2, graphData) => {
+    var _a, _b;
+    const graphLength = ((_a = graphData == null ? void 0 : graphData.ti) == null ? void 0 : _a.length) ? ((_b = graphData == null ? void 0 : graphData.ti) == null ? void 0 : _b.length) - 1 : 0;
+    if (!graphLength) return [];
+    return Array.from({ length: graphLength }, (_, index) => {
+      const totalMonths = player2.ageMonths - (graphLength - 1 - index);
+      return `${Math.floor(totalMonths / 12)}.${totalMonths % 12}`;
+    });
+  };
+  var fillLeadingGap = (records, gapKeys, firstKnownKey, isGK, gw) => {
+    var _a, _b, _c;
+    const count = isGK ? 11 : 14;
+    const maxIntegers = ((_b = (_a = records[firstKnownKey]) == null ? void 0 : _a.skills) != null ? _b : []).map((v) => Math.floor(Number(v) || 0));
+    const zeros = new Array(count).fill(0);
+    for (const key of gapKeys) {
+      const si = Number((_c = records[key]) == null ? void 0 : _c.SI);
+      if (!Number.isFinite(si) || si <= 0) continue;
+      records[key].skills = TmLib.calcSkillDecimals(zeros, si, isGK, gw, { maxIntegers }).map(Math.floor);
+    }
+  };
+  var fillInteriorGap = (records, gapKeys, startKey, endKey, isGK, gw) => {
+    var _a, _b, _c, _d, _e;
+    const count = isGK ? 11 : 14;
+    const startInts = ((_b = (_a = records[startKey]) == null ? void 0 : _a.skills) != null ? _b : []).map((v) => Math.floor(Number(v) || 0));
+    const endInts = ((_d = (_c = records[endKey]) == null ? void 0 : _c.skills) != null ? _d : []).map((v) => Math.floor(Number(v) || 0));
+    for (const key of gapKeys) {
+      const si = Number((_e = records[key]) == null ? void 0 : _e.SI);
+      if (!Number.isFinite(si) || si <= 0) continue;
+      records[key].skills = TmLib.calcSkillDecimals(startInts, si, isGK, gw, { maxIntegers: endInts }).map(Math.floor);
+    }
+  };
+  var fillTrailingGap = (records, gapKeys, startKey, liveInts, isGK, gw) => {
+    var _a, _b, _c;
+    const startInts = ((_b = (_a = records[startKey]) == null ? void 0 : _a.skills) != null ? _b : []).map((v) => Math.floor(Number(v) || 0));
+    for (const key of gapKeys) {
+      const si = Number((_c = records[key]) == null ? void 0 : _c.SI);
+      if (!Number.isFinite(si) || si <= 0) continue;
+      records[key].skills = TmLib.calcSkillDecimals(startInts, si, isGK, gw, { maxIntegers: liveInts }).map(Math.floor);
+    }
+  };
+  var estimateMissingRoutine = (player2, ageKeys, records) => {
+    var _a;
+    const n = ageKeys.length;
+    if (!n) return;
+    const liveRoutine = Math.round((Number(player2 == null ? void 0 : player2.routine) || 0) * 10) / 10;
+    const anchors = [{ idx: 0, value: 0 }];
+    for (let i = 1; i < n; i++) {
+      const rou = (_a = records[ageKeys[i]]) == null ? void 0 : _a.routine;
+      if (rou != null && Number.isFinite(Number(rou))) anchors.push({ idx: i, value: Number(rou) });
+    }
+    const lastIdx = n - 1;
+    const existingLast = anchors.findIndex((a) => a.idx === lastIdx);
+    if (existingLast >= 0) anchors[existingLast].value = liveRoutine;
+    else anchors.push({ idx: lastIdx, value: liveRoutine });
+    for (let ai = 0; ai < anchors.length - 1; ai++) {
+      const { idx: i1, value: v1 } = anchors[ai];
+      const { idx: i2, value: v2 } = anchors[ai + 1];
+      for (let i = i1; i <= i2; i++) {
+        const t = i2 > i1 ? (i - i1) / (i2 - i1) : 1;
+        records[ageKeys[i]].routine = Math.round((v1 + (v2 - v1) * t) * 10) / 10;
+      }
+    }
+  };
+  var estimateMissingSkills = (player2, ageKeys, records) => {
+    var _a, _b;
+    const { isGK } = player2;
+    const gw = normalizeTrainingWeights((_a = player2 == null ? void 0 : player2.training) != null ? _a : null, isGK);
+    const hasSkills = (key) => {
+      var _a2, _b2;
+      return (_b2 = (_a2 = records[key]) == null ? void 0 : _a2.skills) == null ? void 0 : _b2.some((v) => v != null);
+    };
+    const knownKeys = ageKeys.filter(hasSkills);
+    if (!knownKeys.length) return;
+    const firstKnownIdx = ageKeys.indexOf(knownKeys[0]);
+    const lastKnownIdx = ageKeys.indexOf(knownKeys[knownKeys.length - 1]);
+    const leadingKeys = ageKeys.slice(0, firstKnownIdx).filter((k) => !hasSkills(k));
+    if (leadingKeys.length) fillLeadingGap(records, leadingKeys, knownKeys[0], isGK, gw);
+    for (let i = 0; i < knownKeys.length - 1; i++) {
+      const sKey = knownKeys[i], eKey = knownKeys[i + 1];
+      const si = ageKeys.indexOf(sKey), ei = ageKeys.indexOf(eKey);
+      const gapKeys = ageKeys.slice(si + 1, ei).filter((k) => !hasSkills(k));
+      if (gapKeys.length) fillInteriorGap(records, gapKeys, sKey, eKey, isGK, gw);
+    }
+    const liveInts = (_b = player2.skills) == null ? void 0 : _b.map((s6) => Math.floor(skillValue4(s6) || 0));
+    const trailingKeys = ageKeys.slice(lastKnownIdx + 1).filter((k) => !hasSkills(k));
+    if (liveInts && trailingKeys.length) fillTrailingGap(records, trailingKeys, knownKeys[knownKeys.length - 1], liveInts, isGK, gw);
+  };
+  var buildPlayerGraphs = (player2, DBPlayer, rawGraphs = null) => {
+    var _a, _b;
+    const statKeys = (player2 == null ? void 0 : player2.isGK) ? GRAPH_KEYS_GK4 : GRAPH_KEYS_OUT4;
+    const dbKeys = sortAgeKeys4(Object.keys((DBPlayer == null ? void 0 : DBPlayer.records) || {}));
+    const recordsByAgeKey = rawGraphs ? {} : {};
+    if (!rawGraphs) {
+      dbKeys.forEach((ageKey) => {
+        var _a2;
+        const record = (_a2 = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _a2[ageKey];
+        recordsByAgeKey[ageKey] = {
+          SI: normalizeGraphNumber(record == null ? void 0 : record.SI),
+          TI: normalizeGraphNumber(record == null ? void 0 : record.TI),
+          skills: Array.isArray(record == null ? void 0 : record.skills) ? record.skills.map(skillValue4) : new Array(statKeys.length).fill(null)
+        };
+      });
+    }
+    const remoteAgeKeys = buildGraphAgeKeysFromSeries(player2, rawGraphs);
+    remoteAgeKeys.forEach((ageKey, graphIndex) => {
+      var _a2, _b2, _c, _d;
+      const existing = recordsByAgeKey[ageKey] || {
+        SI: null,
+        TI: null,
+        skills: new Array(statKeys.length).fill(null),
+        missing: !((_a2 = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _a2[ageKey])
+      };
+      const skillIndexValue = (_b2 = rawGraphs == null ? void 0 : rawGraphs.skill_index) == null ? void 0 : _b2[graphIndex];
+      if (skillIndexValue != null) existing.SI = Number(skillIndexValue);
+      const tiValue = (_c = rawGraphs == null ? void 0 : rawGraphs.TI) == null ? void 0 : _c[graphIndex + 1];
+      if (tiValue != null) {
+        existing.TI = Number(tiValue);
+      }
+      statKeys.forEach((statKey, statIndex) => {
+        var _a3;
+        const statValue = (_a3 = rawGraphs == null ? void 0 : rawGraphs[statKey]) == null ? void 0 : _a3[graphIndex];
+        if (statValue != null) existing.skills[statIndex] = Number(statValue);
+      });
+      if (!rawGraphs.strength) {
+        const record = (_d = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _d[ageKey];
+        if (record) {
+          existing.skills = record.skills.map(skillValue4);
+        }
+      }
+      recordsByAgeKey[ageKey] = existing;
+    });
+    const ageKeys = sortAgeKeys4(Object.keys(recordsByAgeKey));
+    if (!ageKeys.length) return null;
+    if (!rawGraphs) {
+      populateMissingTIFromSkillIndex(player2, ageKeys, recordsByAgeKey);
+    } else if (Array.isArray(player2.skills) && player2.skills.length) {
+      const liveKey = player2.ageMonthsString;
+      if (liveKey && recordsByAgeKey[liveKey] && !((_a = recordsByAgeKey[liveKey].skills) == null ? void 0 : _a.some((v) => v != null))) {
+        recordsByAgeKey[liveKey].skills = player2.skills.map(skillValue4);
+      }
+      estimateMissingSkills(player2, ageKeys, recordsByAgeKey);
+    }
+    estimateMissingRoutine(player2, ageKeys, recordsByAgeKey);
+    return {
+      source: (rawGraphs == null ? void 0 : rawGraphs.source) || (rawGraphs ? "remote" : "indexeddb"),
+      sparse: !rawGraphs || Boolean(rawGraphs == null ? void 0 : rawGraphs.sparse),
+      hasTIGraph: Boolean((_b = rawGraphs == null ? void 0 : rawGraphs.TI) == null ? void 0 : _b.length),
+      hasSkillGraphs: statKeys.some((statKey) => Array.isArray(rawGraphs == null ? void 0 : rawGraphs[statKey]) && rawGraphs[statKey].length > 0),
+      ageKeys,
+      recordsByAgeKey
+    };
+  };
+  var loadHistorySyncSources = async (player2, DBPlayer) => {
+    const [training, graphs] = await Promise.all([
+      TmPlayerService.fetchPlayerTrainingForSync(player2),
+      (player2 == null ? void 0 : player2.isOwnPlayer) ? TmPlayerService.fetchPlayerGraphs(player2) : Promise.resolve(null)
+    ]);
+    player2.training = training;
+    player2.graphs = buildPlayerGraphs(player2, DBPlayer, graphs);
+    return player2;
   };
 
   // src/workflows/player-history/strategies.js
@@ -5649,47 +5692,46 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     }
     return enrichHistoryRecords(player2, reconstructSkillHistoryFromGraph(player2, DBPlayer, graphs, records));
   };
-  var syncFromExactCurrentTI = ({ player: player2, DBPlayer, profile, options = {} }) => {
+  var syncFromExactCurrentTI = ({ player: player2, DBPlayer, profile }) => {
     var _a;
-    console.log("syncFromExactCurrentTI", { playerName: player2.name, playerId: player2.id, profile, options });
     return enrichHistoryRecords(player2, reconstructSkillHistoryFromEstimate(player2, DBPlayer, profile.missingAgeKeys, {
       graphRecordsByAgeKey: ((_a = player2 == null ? void 0 : player2.graphs) == null ? void 0 : _a.recordsByAgeKey) || null,
       liveTI: player2 == null ? void 0 : player2.ti,
-      exactLastTI: player2 == null ? void 0 : player2.ti,
-      forceFullSync: Boolean(options.forceFullSync)
+      exactLastTI: player2 == null ? void 0 : player2.ti
     }));
   };
-  var syncFromAnchoredEstimate = ({ player: player2, DBPlayer, profile, options = {} }) => {
+  var syncFromAnchoredEstimate = ({ player: player2, DBPlayer, profile }) => {
     var _a;
     return enrichHistoryRecords(player2, reconstructSkillHistoryFromEstimate(player2, DBPlayer, profile.missingAgeKeys, {
       graphRecordsByAgeKey: ((_a = player2 == null ? void 0 : player2.graphs) == null ? void 0 : _a.recordsByAgeKey) || null,
-      liveTI: Number.isFinite(Number(player2 == null ? void 0 : player2.ti)) ? player2.ti : null,
-      forceFullSync: Boolean(options.forceFullSync)
+      liveTI: Number.isFinite(Number(player2 == null ? void 0 : player2.ti)) ? player2.ti : null
     }));
   };
 
   // src/workflows/player-history/index.js
-  var executeHistorySyncStrategy = ({ player: player2, DBPlayer, profile, strategy, options = {} }) => {
+  var executeHistorySyncStrategy = ({ player: player2, DBPlayer, profile, strategy }) => {
     switch (strategy) {
       case HISTORY_SYNC_STRATEGY.NOOP:
         return {};
       case HISTORY_SYNC_STRATEGY.SKILL_GRAPHS:
         return syncFromSkillGraphs({ player: player2, DBPlayer, profile });
       case HISTORY_SYNC_STRATEGY.EXACT_CURRENT_TI:
-        return syncFromExactCurrentTI({ player: player2, DBPlayer, profile, options });
+        return syncFromExactCurrentTI({ player: player2, DBPlayer, profile });
       case HISTORY_SYNC_STRATEGY.ANCHORED_ESTIMATE:
-        return syncFromAnchoredEstimate({ player: player2, DBPlayer, profile, options });
+        return syncFromAnchoredEstimate({ player: player2, DBPlayer, profile });
       default:
         return {};
     }
   };
   var syncPlayerHistory = async (player2, DBPlayer, options = {}) => {
     const baseProfile = buildHistoryEvidenceProfile(player2, DBPlayer);
+    if (!baseProfile.hasMissingAgeKeys) return {};
     await loadHistorySyncSources(player2, DBPlayer);
     const profile = buildHistoryEvidenceProfile(player2, DBPlayer);
     const strategy = selectHistorySyncStrategy(profile);
     if (strategy === HISTORY_SYNC_STRATEGY.INSUFFICIENT_EVIDENCE) return {};
     const historyRecords = executeHistorySyncStrategy({ player: player2, DBPlayer, profile, strategy, options });
+    console.log(player2.name, player2.graphs, historyRecords);
     await saveHistoryRecords(player2, DBPlayer, historyRecords);
     return historyRecords;
   };
@@ -5717,17 +5759,19 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
             DBPlayer = await TmPlayerDB.get(player2.id);
           }
         }
+        player2.records = (DBPlayer == null ? void 0 : DBPlayer.records) || {};
         const latestRecord = (_a = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _a[player2.ageMonthsString];
         if (!Array.isArray(latestRecord == null ? void 0 : latestRecord.skills) || !((_b = player2.skills) == null ? void 0 : _b.length)) return player2;
         player2.skills = player2.skills.map((skill, skillIndex) => ({
           ...skill,
           value: latestRecord.skills[skillIndex] != null ? Number(latestRecord.skills[skillIndex]) : skill.value
         }));
-        player2.positions = player2.positions.map((position) => ({
-          ...position,
-          r5: TmLib.calculatePlayerR5(position, player2),
-          rec: TmLib.calculatePlayerREC(position, player2)
-        }));
+        applyPlayerPositionRatings(player2);
+        const last2Records = Object.values(player2.records).reverse().slice(0, 2);
+        if (Array.isArray(last2Records) && last2Records.length === 2) {
+          player2.ti = Number(last2Records[0].TI);
+          player2.TI_change = Number(last2Records[0].TI) - Number(last2Records[1].TI);
+        }
         return player2;
       }));
     }
@@ -5748,17 +5792,14 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       if (Object.keys(records || {}).length) {
         DBPlayer = await TmPlayerDB.get(playerId);
       }
+      player2.records = (DBPlayer == null ? void 0 : DBPlayer.records) || {};
       const latestRecord = (_a = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _a[player2.ageMonthsString];
       if (Array.isArray(latestRecord == null ? void 0 : latestRecord.skills) && ((_b = player2.skills) == null ? void 0 : _b.length)) {
         player2.skills = player2.skills.map((skill, index) => ({
           ...skill,
           value: latestRecord.skills[index] != null ? Number(latestRecord.skills[index]) : skill.value
         }));
-        player2.positions = player2.positions.map((position) => ({
-          ...position,
-          r5: TmLib.calculatePlayerR5(position, player2),
-          rec: TmLib.calculatePlayerREC(position, player2)
-        }));
+        applyPlayerPositionRatings(player2);
       }
       return player2;
     },
@@ -45995,6 +46036,12 @@ order:initial
             color: var(--tmu-text-strong);
             font-weight: 700;
         }
+        .tmvu-players-table .tmvu-players-r5-stack {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+        }
         .tmvu-players-table .tmvu-players-r5.is-pending {
             color: var(--tmu-text-faint);
         }
@@ -46071,29 +46118,54 @@ order:initial
   // src/pages/players.js
   var RESERVES_URL = "/players/#/a//b/true/";
   var escapeHtml33 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  var installJqueryBrowserCompat = () => {
-    const jq = window.jQuery || window.$;
-    if (!jq || jq.browser) return !!jq;
-    const ua = navigator.userAgent || "";
-    const msieMatch = ua.match(/(?:msie |rv:)(\d+(?:\.\d+)?)/i);
-    jq.browser = {
-      msie: /msie|trident/i.test(ua),
-      version: msieMatch ? msieMatch[1] : "0"
-    };
-    return true;
-  };
   var formatTiDelta = (value) => {
     const n = Number(value) || 0;
     if (!n) return "0";
     return `${n > 0 ? "+" : ""}${n}`;
   };
+  var getSkillValue = (player2, index) => {
+    var _a, _b;
+    return Number(((_b = (_a = player2.skills) == null ? void 0 : _a[index]) == null ? void 0 : _b.value) || 0);
+  };
+  var getLatestRecordPair = (player2) => {
+    var _a, _b;
+    const recordKeys = TmUtils.sortAgeKeys(Object.keys((player2 == null ? void 0 : player2.records) || {}));
+    if (recordKeys.length < 2) return { latestRecord: null, previousRecord: null };
+    return {
+      latestRecord: ((_a = player2.records) == null ? void 0 : _a[recordKeys.at(-1)]) || null,
+      previousRecord: ((_b = player2.records) == null ? void 0 : _b[recordKeys.at(-2)]) || null
+    };
+  };
+  var getSkillChanges = (player2) => {
+    const { latestRecord, previousRecord } = getLatestRecordPair(player2);
+    if (!Array.isArray(latestRecord == null ? void 0 : latestRecord.skills) || !Array.isArray(previousRecord == null ? void 0 : previousRecord.skills)) return [];
+    return latestRecord.skills.map((value, index) => {
+      const latestValue = Number(value);
+      const previousValue = Number(previousRecord.skills[index]);
+      if (!Number.isFinite(latestValue) || !Number.isFinite(previousValue)) return null;
+      const delta = latestValue - previousValue;
+      if (!delta) return null;
+      return {
+        index,
+        delta,
+        type: delta > 0 ? "pos" : "neg"
+      };
+    }).filter(Boolean);
+  };
+  var getR5Change = (player2) => {
+    const { latestRecord, previousRecord } = getLatestRecordPair(player2);
+    const latestValue = Number(latestRecord == null ? void 0 : latestRecord.R5);
+    const previousValue = Number(previousRecord == null ? void 0 : previousRecord.R5);
+    if (!Number.isFinite(latestValue) || !Number.isFinite(previousValue)) return null;
+    return latestValue - previousValue;
+  };
   var skillCellHtml = (player2, index) => {
-    var _a, _b, _c, _d, _e, _f;
-    const value = Number((_e = (_d = (_b = (_a = player2.skills) == null ? void 0 : _a[index]) == null ? void 0 : _b.value) != null ? _d : (_c = player2.skills) == null ? void 0 : _c[index]) != null ? _e : 0);
-    const change = ((_f = player2.skillChanges) == null ? void 0 : _f.find((item) => item.index === index)) || null;
+    var _a;
+    const value = getSkillValue(player2, index);
+    const change = ((_a = player2.skillChanges) == null ? void 0 : _a.find((item) => item.index === index)) || null;
     const toneCls = (change == null ? void 0 : change.type) ? ` ${change.type}` : "";
     const cls = `${value >= 20 ? " max" : value >= 19 ? " elite" : ""}${toneCls}`;
-    const label = value >= 20 ? "\u2605" : value >= 19 ? "\u2606" : value.toFixed(2);
+    const label = value >= 20 ? "\u2605" : value >= 19 ? `\u2606.${value.toFixed(2).split(".")[1]}` : value.toFixed(2);
     const title = value >= 19 ? String(value) : "";
     const deltaText = change ? `${change.delta > 0 ? "+" : ""}${change.delta.toFixed(2)}` : "";
     const deltaHtml = deltaText && deltaText !== "+0.00" && deltaText !== "-0.00" && deltaText !== "0.00" ? `<span class="tmvu-players-skill-delta ${change.delta > 0 ? "pos" : "neg"}">${deltaText}</span>` : "";
@@ -46106,15 +46178,12 @@ order:initial
     players: [],
     loaded: false,
     loading: false,
-    loadError: "",
-    syncState: "idle",
-    syncMessage: ""
+    loadError: ""
   });
   function initPlayersPage(main2) {
     if (!/^\/players\/?$/i.test(window.location.pathname)) return;
     if (document.getElementById("tmvu-players-shell")) return;
     injectPlayersPageStyles();
-    installJqueryBrowserCompat();
     const { SKILL_LABELS_OUT: SKILL_LABELS_OUT2, SKILL_NAMES_GK_SHORT: SKILL_NAMES_GK_SHORT2 } = TmConst;
     const sourceRoot3 = document.querySelector(".main_center") || document.body;
     const renderHost = main2 || sourceRoot3;
@@ -46136,7 +46205,6 @@ order:initial
     shell.appendChild(sectionsHost);
     renderHost.appendChild(shell);
     const state5 = {
-      metricsByPid: {},
       squads: {
         main: createSquadModel("main", "Main Squad", true),
         reserves: createSquadModel("reserves", "Reserves", false)
@@ -46145,7 +46213,8 @@ order:initial
     };
     const decoratePlayers2 = (players) => players.map((player2) => ({
       ...player2,
-      skillChanges: []
+      skillChanges: getSkillChanges(player2),
+      r5Change: getR5Change(player2)
     }));
     const createSectionHost = (title) => {
       const host = document.createElement("section");
@@ -46169,7 +46238,7 @@ order:initial
           width: "220px",
           defaultSortDir: 1,
           sort: (a, b) => String(a.name || "").localeCompare(String(b.name || "")),
-          render: (_, item) => `<div class="tmvu-players-name"><a href="/players/${escapeHtml33(item.id || item.player_id)}/">${escapeHtml33(item.name || item.player_name)}</a></div>`
+          render: (_, item) => `<div class="tmvu-players-name"><a href="/players/${escapeHtml33(item.id)}/">${escapeHtml33(item.name)}</a></div>`
         },
         {
           key: "ageMonths",
@@ -46178,7 +46247,7 @@ order:initial
           width: "60px",
           defaultSortDir: 1,
           sort: (a, b) => (Number(a.ageMonths) || 0) - (Number(b.ageMonths) || 0),
-          render: (_, item) => escapeHtml33(`${Number(item.age) || 0}.${Number(item.month) || 0}`)
+          render: (_, item) => escapeHtml33(item.ageMonthsString)
         },
         {
           key: "positions",
@@ -46186,7 +46255,7 @@ order:initial
           align: "c",
           width: "92px",
           defaultSortDir: 1,
-          render: (_, item) => TmPosition.chip((item.positions || []).filter((position) => position.preferred))
+          render: (_, item) => TmPosition.chip(item.positions.filter((position) => position.preferred))
         }
       ];
       const skillHeaders = skillLabels.map((label, index) => ({
@@ -46195,26 +46264,25 @@ order:initial
         align: "c",
         width: "42px",
         defaultSortDir: -1,
-        sort: (a, b) => {
-          var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
-          return (Number((_e = (_d = (_b = (_a = a.skills) == null ? void 0 : _a[index]) == null ? void 0 : _b.value) != null ? _d : (_c = a.skills) == null ? void 0 : _c[index]) != null ? _e : 0) || 0) - (Number((_j = (_i = (_g = (_f = b.skills) == null ? void 0 : _f[index]) == null ? void 0 : _g.value) != null ? _i : (_h = b.skills) == null ? void 0 : _h[index]) != null ? _j : 0) || 0);
-        },
+        sort: (a, b) => getSkillValue(a, index) - getSkillValue(b, index),
         render: (_, item) => skillCellHtml(item, index)
       }));
       return [
         ...baseHeaders,
         ...skillHeaders,
-        { key: "ti", label: "TI", align: "r", width: "54px", defaultSortDir: -1 },
         {
-          key: "TI_change",
-          label: "\u0394",
+          key: "ti",
+          label: "TI",
           align: "r",
           width: "54px",
           defaultSortDir: -1,
+          sort: (a, b) => (Number(a.ti) || -Infinity) - (Number(b.ti) || -Infinity),
           render: (_, item) => {
-            const value = Number(item.TI_change) || 0;
-            const cls = value > 0 ? " pos" : value < 0 ? " neg" : "";
-            return `<span class="tmvu-players-delta${cls}">${escapeHtml33(formatTiDelta(value))}</span>`;
+            const value = Number(item.ti);
+            if (!Number.isFinite(value)) return '<span class="tmvu-players-r5 is-pending">...</span>';
+            const delta = Number(item.TI_change);
+            const deltaHtml = Number.isFinite(delta) && delta !== 0 ? `<span class="tmvu-players-delta ${delta > 0 ? "pos" : "neg"}">${escapeHtml33(formatTiDelta(delta))}</span>` : "";
+            return `<span class="tmvu-players-r5-stack"><span class="tmvu-players-r5">${escapeHtml33(String(value))}</span>${deltaHtml}</span>`;
           }
         },
         {
@@ -46223,15 +46291,13 @@ order:initial
           align: "r",
           width: "64px",
           defaultSortDir: -1,
-          sort: (a, b) => {
-            var _a, _b, _c, _d, _e, _f;
-            return ((_c = (_b = (_a = state5.metricsByPid[String(a.id || a.player_id)]) == null ? void 0 : _a.r5) != null ? _b : a.r5) != null ? _c : -Infinity) - ((_f = (_e = (_d = state5.metricsByPid[String(b.id || b.player_id)]) == null ? void 0 : _d.r5) != null ? _e : b.r5) != null ? _f : -Infinity);
-          },
+          sort: (a, b) => (Number(a.r5) || -Infinity) - (Number(b.r5) || -Infinity),
           render: (_, item) => {
-            var _a, _b;
-            const value = (_b = (_a = state5.metricsByPid[String(item.id || item.player_id)]) == null ? void 0 : _a.r5) != null ? _b : item.r5;
+            const value = item.r5;
             if (value == null) return '<span class="tmvu-players-r5 is-pending">...</span>';
-            return `<span class="tmvu-players-r5">${escapeHtml33(TmUtils.formatR5(value))}</span>`;
+            const delta = Number(item.r5Change);
+            const deltaHtml = Number.isFinite(delta) && delta !== 0 ? `<span class="tmvu-players-delta ${delta > 0 ? "pos" : "neg"}">${escapeHtml33(`${delta > 0 ? "+" : ""}${delta.toFixed(2)}`)}</span>` : "";
+            return `<span class="tmvu-players-r5-stack"><span class="tmvu-players-r5">${escapeHtml33(TmUtils.formatR5(value))}</span>${deltaHtml}</span>`;
           }
         }
       ];
@@ -46313,7 +46379,6 @@ order:initial
     const fetchSquadForRender = async (clubId2) => {
       if (!clubId2) return [];
       const players = await TmClubModel2.fetchSquadRaw(clubId2, true) || [];
-      console.log(players);
       return decoratePlayers2(players);
     };
     const loadSquadFromIframe = (path) => new Promise((resolve, reject) => {

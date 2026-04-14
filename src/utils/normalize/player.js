@@ -3,6 +3,31 @@ import { TmLib } from '../../lib/tm-lib.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 import { normalizeClubFromTooltip } from './club.js';
 
+export const applyPlayerPositionRatings = (player) => {
+    player.positions = player.positions.map(position => ({
+        ...position,
+        r5: TmLib.calculatePlayerR5(position, player),
+        rec: TmLib.calculatePlayerREC(position, player),
+    }));
+
+    const preferredPositions = player.positions.filter(position => position.preferred);
+    const positionsForRatings = preferredPositions.length ? preferredPositions : player.positions;
+
+    player.r5 = positionsForRatings.reduce((best, position) => {
+        const value = Number(position?.r5);
+        if (!Number.isFinite(value)) return best;
+        return best == null || value > best ? value : best;
+    }, null);
+
+    player.rec = positionsForRatings.reduce((best, position) => {
+        const value = Number(position?.rec);
+        if (!Number.isFinite(value)) return best;
+        return best == null || value > best ? value : best;
+    }, null);
+
+    return player;
+};
+
 export const normalizeTooltipPlayer = (playerData) => {
     const player = Player.create();
     const rawClub = playerData.club ?? {};
@@ -29,11 +54,7 @@ export const normalizeTooltipPlayer = (playerData) => {
     TmUtils.applyTooltipSkills(player, playerTooltip.skills);
     TmUtils.applyPlayerPositions(player, playerTooltip.favposition);
     player.skills = TmLib.calcSkillDecimalsSimple(player);
-    player.positions = player.positions.map(position => ({
-        ...position,
-        r5: TmLib.calculatePlayerR5(position, player),
-        rec: TmLib.calculatePlayerREC(position, player),
-    }));
+    applyPlayerPositionRatings(player);
     player.isOwnPlayer = TmUtils.getOwnClubIds().includes(String(player.club_id));
     return player;
 };
@@ -51,7 +72,7 @@ export const normalizeSquadPlayer = (postPlayer) => {
     player.name = postPlayer.player_name;
     player.firstname = postPlayer.player_name.split(' ').filter(n => n !== postPlayer.lastname).join(' ');
     player.country = postPlayer.country;
-    player.routine = TmUtils.parseNum(postPlayer.rutine, null);
+    player.routine = TmUtils.parseNum(Number(postPlayer.rutine), 0);
     player.wage = TmUtils.parseNum(postPlayer.wage, null);
     player.asi = postPlayer.asi;
     player.no = postPlayer.no;
@@ -64,11 +85,7 @@ export const normalizeSquadPlayer = (postPlayer) => {
     player.transfer = postPlayer.transfer;
     TmUtils.applySquadSkills(player, postPlayer);
     TmUtils.applyPlayerPositions(player, postPlayer.favposition);
-    player.positions = player.positions.map(position => ({
-        ...position,
-        r5: TmLib.calculatePlayerR5(position, player),
-        rec: TmLib.calculatePlayerREC(position, player),
-    }));
+    applyPlayerPositionRatings(player);
     player.ti = TmLib.calculateTIPerSession(player);
     player.isOwnPlayer = TmUtils.getOwnClubIds().includes(String(player.club_id));
     return player;
@@ -128,7 +145,7 @@ export const normalizePlayerStats = (data) => ({
 
 const populateSkillIndexFromTI = (tiHistory, currentAsi, isGK = false) => {
     if (!Array.isArray(tiHistory) || !tiHistory.length || !Number.isFinite(Number(currentAsi))) return null;
-
+    tiHistory = tiHistory.slice(1);
     const skillIndex = new Array(tiHistory.length).fill(null);
     let currentSkillSum = TmLib.calcAsiSkillSum({ asi: Number(currentAsi), isGK });
     skillIndex[tiHistory.length - 1] = Number(currentAsi);
@@ -148,7 +165,7 @@ export const normalizePlayerGraphs = (graphs, player) => {
     const TI = graphs.TI ?? graphs.ti ?? null;
     return {
         ...graphs,
-        TI,
+        TI: TI,
         skill_index: graphs.skill_index ?? populateSkillIndexFromTI(TI, player?.asi, player?.isGK),
         one_on_ones: graphs.one_on_ones ?? graphs.oneonones ?? null,
         aerial_ability: graphs.aerial_ability ?? graphs.arialability ?? null,

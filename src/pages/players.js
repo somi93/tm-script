@@ -1,12 +1,15 @@
 import { TmTable } from '../components/shared/tm-table.js';
 import { TmCheckbox } from '../components/shared/tm-checkbox.js';
 import { TmConst } from '../lib/tm-constants.js';
+import { TmPlayerDB } from '../lib/tm-playerdb.js';
 import { TmPosition } from '../lib/tm-position.js';
 import { TmUtils } from '../lib/tm-utils.js';
 import { TmClubModel } from '../models/club.js';
 import { injectPlayersPageStyles } from './players-styles.js';
+import playerDbBackupSelected from '../../api_responses/playerdb-backup-selected-2026-04-06.json';
 
 const RESERVES_URL = '/players/#/a//b/true/';
+let backupSeedPromise = null;
 
 const escapeHtml = (value) => String(value || '')
     .replace(/&/g, '&amp;')
@@ -15,30 +18,61 @@ const escapeHtml = (value) => String(value || '')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
-const installJqueryBrowserCompat = () => {
-    const jq = window.jQuery || window.$;
-    if (!jq || jq.browser) return !!jq;
-    const ua = navigator.userAgent || '';
-    const msieMatch = ua.match(/(?:msie |rv:)(\d+(?:\.\d+)?)/i);
-    jq.browser = {
-        msie: /msie|trident/i.test(ua),
-        version: msieMatch ? msieMatch[1] : '0'
-    };
-    return true;
-};
-
 const formatTiDelta = (value) => {
     const n = Number(value) || 0;
     if (!n) return '0';
     return `${n > 0 ? '+' : ''}${n}`;
 };
 
+const getSkillValue = (player, index) => Number(player.skills?.[index]?.value || 0);
+
+const getLatestRecordPair = (player) => {
+    const recordKeys = TmUtils.sortAgeKeys(Object.keys(player?.records || {}));
+    if (recordKeys.length < 2) return { latestRecord: null, previousRecord: null };
+    // console.log(player.name, player.records?.[recordKeys.at(-1)], player.records?.[recordKeys.at(-2)]);
+    return {
+        latestRecord: player.records?.[recordKeys.at(-1)] || null,
+        previousRecord: player.records?.[recordKeys.at(-2)] || null,
+    };
+};
+
+const getSkillChanges = (player) => {
+    const { latestRecord, previousRecord } = getLatestRecordPair(player);
+    if (!Array.isArray(latestRecord?.skills) || !Array.isArray(previousRecord?.skills)) return [];
+
+    return latestRecord.skills
+        .map((value, index) => {
+            const latestValue = Number(value);
+            const previousValue = Number(previousRecord.skills[index]);
+            if (!Number.isFinite(latestValue) || !Number.isFinite(previousValue)) return null;
+
+            const delta = latestValue - previousValue;
+            if (!delta) return null;
+
+            return {
+                index,
+                delta,
+                type: delta > 0 ? 'pos' : 'neg',
+            };
+        })
+        .filter(Boolean);
+};
+
+const getR5Change = (player) => {
+    const { latestRecord, previousRecord } = getLatestRecordPair(player);
+    const latestValue = Number(latestRecord?.R5);
+    const previousValue = Number(previousRecord?.R5);
+    if (!Number.isFinite(latestValue) || !Number.isFinite(previousValue)) return null;
+
+    return latestValue - previousValue;
+};
+
 const skillCellHtml = (player, index) => {
-    const value = Number(player.skills?.[index]?.value ?? player.skills?.[index] ?? 0);
+    const value = getSkillValue(player, index);
     const change = player.skillChanges?.find((item) => item.index === index) || null;
     const toneCls = change?.type ? ` ${change.type}` : '';
     const cls = `${value >= 20 ? ' max' : value >= 19 ? ' elite' : ''}${toneCls}`;
-    const label = value >= 20 ? '★' : value >= 19 ? '☆' : value.toFixed(2);
+    const label = value >= 20 ? '★' : value >= 19 ? `☆.${value.toFixed(2).split('.')[1]}` : value.toFixed(2);
     const title = value >= 19 ? String(value) : '';
     const deltaText = change ? `${change.delta > 0 ? '+' : ''}${change.delta.toFixed(2)}` : '';
     const deltaHtml = deltaText && deltaText !== '+0.00' && deltaText !== '-0.00' && deltaText !== '0.00'
@@ -55,16 +89,26 @@ const createSquadModel = (key, label, defaultVisible) => ({
     loaded: false,
     loading: false,
     loadError: '',
-    syncState: 'idle',
-    syncMessage: '',
 });
+
+const seedPlayersFromBackup = async () => {
+    if (backupSeedPromise) return backupSeedPromise;
+
+    backupSeedPromise = Promise.all(
+        Object.entries(playerDbBackupSelected || {}).map(([playerId, data]) => TmPlayerDB.set(playerId, data))
+    ).catch((error) => {
+        backupSeedPromise = null;
+        throw error;
+    });
+
+    return backupSeedPromise;
+};
 
 export function initPlayersPage(main) {
     if (!/^\/players\/?$/i.test(window.location.pathname)) return;
     if (document.getElementById('tmvu-players-shell')) return;
 
     injectPlayersPageStyles();
-    installJqueryBrowserCompat();
 
     const { SKILL_LABELS_OUT, SKILL_NAMES_GK_SHORT } = TmConst;
 
@@ -93,7 +137,6 @@ export function initPlayersPage(main) {
     renderHost.appendChild(shell);
 
     const state = {
-        metricsByPid: {},
         squads: {
             main: createSquadModel('main', 'Main Squad', true),
             reserves: createSquadModel('reserves', 'Reserves', false),
@@ -103,7 +146,8 @@ export function initPlayersPage(main) {
 
     const decoratePlayers = (players) => players.map((player) => ({
         ...player,
-        skillChanges: [],
+        skillChanges: getSkillChanges(player),
+        r5Change: getR5Change(player),
     }));
 
 
@@ -130,7 +174,7 @@ export function initPlayersPage(main) {
                 width: '220px',
                 defaultSortDir: 1,
                 sort: (a, b) => String(a.name || '').localeCompare(String(b.name || '')),
-                render: (_, item) => `<div class="tmvu-players-name"><a href="/players/${escapeHtml(item.id || item.player_id)}/">${escapeHtml(item.name || item.player_name)}</a></div>`
+                render: (_, item) => `<div class="tmvu-players-name"><a href="/players/${escapeHtml(item.id)}/">${escapeHtml(item.name)}</a></div>`
             },
             {
                 key: 'ageMonths',
@@ -139,7 +183,7 @@ export function initPlayersPage(main) {
                 width: '60px',
                 defaultSortDir: 1,
                 sort: (a, b) => (Number(a.ageMonths) || 0) - (Number(b.ageMonths) || 0),
-                render: (_, item) => escapeHtml(`${Number(item.age) || 0}.${Number(item.month) || 0}`)
+                render: (_, item) => escapeHtml(item.ageMonthsString)
             },
             {
                 key: 'positions',
@@ -147,7 +191,7 @@ export function initPlayersPage(main) {
                 align: 'c',
                 width: '92px',
                 defaultSortDir: 1,
-                render: (_, item) => TmPosition.chip((item.positions || []).filter((position) => position.preferred))
+                render: (_, item) => TmPosition.chip(item.positions.filter((position) => position.preferred))
             },
         ];
 
@@ -157,24 +201,28 @@ export function initPlayersPage(main) {
             align: 'c',
             width: '42px',
             defaultSortDir: -1,
-            sort: (a, b) => (Number(a.skills?.[index]?.value ?? a.skills?.[index] ?? 0) || 0) - (Number(b.skills?.[index]?.value ?? b.skills?.[index] ?? 0) || 0),
+            sort: (a, b) => getSkillValue(a, index) - getSkillValue(b, index),
             render: (_, item) => skillCellHtml(item, index),
         }));
 
         return [
             ...baseHeaders,
             ...skillHeaders,
-            { key: 'ti', label: 'TI', align: 'r', width: '54px', defaultSortDir: -1 },
             {
-                key: 'TI_change',
-                label: 'Δ',
+                key: 'ti',
+                label: 'TI',
                 align: 'r',
                 width: '54px',
                 defaultSortDir: -1,
+                sort: (a, b) => (Number(a.ti) || -Infinity) - (Number(b.ti) || -Infinity),
                 render: (_, item) => {
-                    const value = Number(item.TI_change) || 0;
-                    const cls = value > 0 ? ' pos' : value < 0 ? ' neg' : '';
-                    return `<span class="tmvu-players-delta${cls}">${escapeHtml(formatTiDelta(value))}</span>`;
+                    const value = Number(item.ti);
+                    if (!Number.isFinite(value)) return '<span class="tmvu-players-r5 is-pending">...</span>';
+                    const delta = Number(item.TI_change);
+                    const deltaHtml = Number.isFinite(delta) && delta !== 0
+                        ? `<span class="tmvu-players-delta ${delta > 0 ? 'pos' : 'neg'}">${escapeHtml(formatTiDelta(delta))}</span>`
+                        : '';
+                    return `<span class="tmvu-players-r5-stack"><span class="tmvu-players-r5">${escapeHtml(String(value))}</span>${deltaHtml}</span>`;
                 }
             },
             {
@@ -183,11 +231,15 @@ export function initPlayersPage(main) {
                 align: 'r',
                 width: '64px',
                 defaultSortDir: -1,
-                sort: (a, b) => (((state.metricsByPid[String(a.id || a.player_id)]?.r5 ?? a.r5) ?? -Infinity) - (((state.metricsByPid[String(b.id || b.player_id)]?.r5 ?? b.r5) ?? -Infinity))),
+                sort: (a, b) => (Number(a.r5) || -Infinity) - (Number(b.r5) || -Infinity),
                 render: (_, item) => {
-                    const value = state.metricsByPid[String(item.id || item.player_id)]?.r5 ?? item.r5;
+                    const value = item.r5;
                     if (value == null) return '<span class="tmvu-players-r5 is-pending">...</span>';
-                    return `<span class="tmvu-players-r5">${escapeHtml(TmUtils.formatR5(value))}</span>`;
+                    const delta = Number(item.r5Change);
+                    const deltaHtml = Number.isFinite(delta) && delta !== 0
+                        ? `<span class="tmvu-players-delta ${delta > 0 ? 'pos' : 'neg'}">${escapeHtml(`${delta > 0 ? '+' : ''}${delta.toFixed(2)}`)}</span>`
+                        : '';
+                    return `<span class="tmvu-players-r5-stack"><span class="tmvu-players-r5">${escapeHtml(TmUtils.formatR5(value))}</span>${deltaHtml}</span>`;
                 }
             },
         ];
@@ -281,8 +333,8 @@ export function initPlayersPage(main) {
 
     const fetchSquadForRender = async (clubId) => {
         if (!clubId) return [];
+        // await seedPlayersFromBackup();
         const players = await TmClubModel.fetchSquadRaw(clubId, true) || [];
-        console.log(players);
         return decoratePlayers(players);
     };
 

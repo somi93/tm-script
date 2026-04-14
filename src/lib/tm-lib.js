@@ -228,7 +228,7 @@ const calcSkillDecimalsSimple = (player) => {
  * @param {number[]} [gw]      — training group weight array; defaults to equal weights
  * @returns {number[]} full (decimal) skill values
  */
-const calcSkillDecimals = (intSkills, asi, isGK, gw) => {
+const calcSkillDecimals = (intSkills, asi, isGK, gw, { maxIntegers } = {}) => {
     const N = intSkills.length;
     const GRP = isGK ? TRAINING_GROUPS_GK : TRAINING_GROUPS_OUT;
     const GRP_COUNT = GRP.length;
@@ -259,12 +259,16 @@ const calcSkillDecimals = (intSkills, asi, isGK, gw) => {
         let ovfl = 0, freeCount = 0;
         for (let i = 0; i < N; i++) {
             if (intSkills[i] >= 20) { dec[i] = 0; continue; }
-            if (dec[i] > CAP) { ovfl += dec[i] - CAP; dec[i] = CAP; }
-            else if (dec[i] < CAP) freeCount++;
+            const cap = maxIntegers ? Math.max(0, maxIntegers[i] - intSkills[i]) + CAP : CAP;
+            if (dec[i] > cap) { ovfl += dec[i] - cap; dec[i] = cap; }
+            else if (dec[i] < cap) freeCount++;
         }
         if (ovfl > 0.0001 && freeCount > 0) {
             const add = ovfl / freeCount;
-            for (let i = 0; i < N; i++) if (intSkills[i] < 20 && dec[i] < CAP) dec[i] += add;
+            for (let i = 0; i < N; i++) {
+                const cap = maxIntegers ? Math.max(0, maxIntegers[i] - intSkills[i]) + CAP : CAP;
+                if (intSkills[i] < 20 && dec[i] < cap) dec[i] += add;
+            }
         } else break;
     } while (++passes < 20);
     return intSkills.map((v, i) => v >= 20 ? 20 : v + dec[i]);
