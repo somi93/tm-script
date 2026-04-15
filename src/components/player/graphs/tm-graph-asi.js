@@ -1,41 +1,22 @@
+import { TmUtils } from '../../../lib/tm-utils.js';
 import { graphUiColors, buildAges, drawChart, attachTooltip } from './tm-graph-utils.js';
-import { TmLib } from '../../../lib/tm-lib.js';
 
 'use strict';
 
-export const buildAsiChart = (el, graphData, player) => {
-    let values, ages;
-    let enhanced = false;
-
-    if (!graphData.skill_index || graphData.skill_index.length < 2) {
-        /* Fallback: reconstruct ASI by stepping backwards through TI */
-        values = [player.asi];
-        (graphData.ti || []).map(Number).slice(2).reverse().forEach(ti => {
-            const previousASI = TmLib.calcASIProjection({
-                player: {
-                    asi: values[0]
-                },
-                trainings: 1,
-                avgTI: -ti
-            });
-            values.unshift(previousASI.newASI);
-        });
-    } else {
-        values = graphData.skill_index.map(Number);
-    }
-    if (!values.length) return;
-    ages = buildAges(values.length, player.age, player.month);
+export const buildAsiChart = (el, player) => {
+    const records = player.records || {};
+    const sortedKeys = TmUtils.sortAgeKeys(Object.keys(records));
+    const pairs = sortedKeys
+        .map(k => { const [y, m] = k.split('.').map(Number); return { age: y + m / 12, value: records[k]?.ASI ?? null }; })
+        .filter(p => p.value != null);
+    if (pairs.length < 2) return;
+    const ages = pairs.map(p => p.age);
+    const values = pairs.map(p => Number(p.value));
     const uiColors = graphUiColors();
-    const chartOpts = {
-        lineColor: uiColors.neutralLine,
-        fillColor: uiColors.chartFill,
-        formatY: v => v >= 1000 ? Math.round(v).toLocaleString() : String(Math.round(v))
-    };
-    const enhLabel = enhanced ? ' <span class="text-xs font-normal" style="color:var(--tmu-text-warm-accent)">(from TI)</span>' : '';
     const wrap = document.createElement('div');
     wrap.className = 'tmg-chart-wrap rounded-md';
-    wrap.innerHTML = `<div class="tmg-chart-title text-md font-bold">ASI${enhLabel}</div><canvas class="tmg-canvas" style="width:100%;height:260px;"></canvas><div class="tmg-tooltip py-1 px-2 rounded-sm text-sm"></div>`;
+    wrap.innerHTML = `<div class="tmg-chart-title text-md font-bold">ASI</div><canvas class="tmg-canvas" style="width:100%;height:260px;"></canvas><div class="tmg-tooltip py-1 px-2 rounded-sm text-sm"></div>`;
     el.appendChild(wrap);
     const canvas = wrap.querySelector('canvas');
-    requestAnimationFrame(() => { const info = drawChart(canvas, ages, values, chartOpts); attachTooltip(wrap, canvas, info); });
+    requestAnimationFrame(() => { const info = drawChart(canvas, ages, values, { lineColor: uiColors.neutralLine, fillColor: uiColors.chartFill, formatY: v => v >= 1000 ? Math.round(v).toLocaleString() : String(Math.round(v)) }); attachTooltip(wrap, canvas, info); });
 };

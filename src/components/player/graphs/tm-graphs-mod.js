@@ -1,8 +1,8 @@
 import { TmUI } from '../../shared/tm-ui.js';
-import { TmPlayerModel } from '../../../models/player.js';
 import { buildTiChart } from './tm-graph-ti.js';
 import { buildAsiChart } from './tm-graph-asi.js';
 import { buildRecChart } from './tm-graph-rec.js';
+import { buildR5Chart } from './tm-graph-r5.js';
 import { buildSkillsChart } from './tm-graph-skills.js';
 import { buildPeaksChart } from './tm-graph-peaks.js';
 
@@ -49,12 +49,10 @@ export const TmGraphsMod = (() => {
     let containerRef = null;
     let _player = null;
 
-    const buildR5Chart = () => { };
-
-    const render = (container, data, { player: tooltipPlayer } = {}) => {
+    const render = (container, player) => {
         containerRef = container;
-        lastData = data;
-        _player = tooltipPlayer;
+        lastData = player;
+        _player = player;
         if (container.dataset.tmgExportBound !== '1') {
             container.dataset.tmgExportBound = '1';
             container.addEventListener('click', (event) => {
@@ -80,30 +78,20 @@ export const TmGraphsMod = (() => {
             });
         }
         container.innerHTML = '';
-        const graphData = data.graphs;
-        const player = data.player;
-        const skillpoints = data.skillpoints;
-        if (!graphData || !player) { container.innerHTML = TmUI.empty('No graph data available'); return; }
+        if (!player) { container.innerHTML = TmUI.empty('No graph data available'); return; }
 
-        buildTiChart(container, graphData, player);
+        buildTiChart(container, player);
         buildR5Chart(container, player);
-        buildAsiChart(container, graphData, tooltipPlayer);
-        buildRecChart(container, graphData, player);
-        buildSkillsChart(container, graphData, player, skillpoints);
-        buildPeaksChart(container, graphData, player);
+        buildAsiChart(container, player);
+        buildRecChart(container, player);
+        buildSkillsChart(container, player);
+        buildPeaksChart(container, player);
     };
 
-    const reRender = () => { if (containerRef && lastData) render(containerRef, lastData, { player: _player }); };
+    const reRender = () => { if (containerRef && lastData) render(containerRef, lastData); };
 
     const load = (container, player) => {
-        container.innerHTML = TmUI.loading();
-        TmPlayerModel.fetchPlayerGraphs(player.id).then(data => {
-            if (!data) {
-                container.innerHTML = TmUI.error('Failed to load data');
-                return;
-            }
-            render(container, data, { player });
-        });
+        render(container, player);
     };
 
     return { render, reRender, load };

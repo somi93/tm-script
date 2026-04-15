@@ -25,7 +25,12 @@ export const TmPlayerService = {
 
     async fetchPlayerGraphs(player) {
         const data = await this.fetchPlayerInfo(player.id, 'graphs');
-        return normalizePlayerGraphs(data?.graphs, player);
+        if (!data) return null;
+        return {
+            graphs: normalizePlayerGraphs(data?.graphs, player),
+            player,
+            skillpoints: data?.skillpoints ?? null,
+        };
     },
 
     async fetchPlayerHistory(playerId) {

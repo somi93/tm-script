@@ -1,3 +1,5 @@
+import { TmUtils } from '../../../lib/tm-utils.js';
+import { GRAPH_KEYS_OUT, GRAPH_KEYS_GK } from '../../../constants/skills.js';
 import { buildAges, drawMultiLine, attachMultiTooltip, checkboxHtml, buildEnableCard } from './tm-graph-utils.js';
 
 'use strict';
@@ -29,8 +31,12 @@ const getPeaks = isGK => {
 }
 
 
-export const buildPeaksChart = (el, graphData, player) => {
-    const numberOfTrainings = (graphData.strength || []).length;
+export const buildPeaksChart = (el, player) => {
+    const records = player.records || {};
+    const sortedKeys = TmUtils.sortAgeKeys(Object.keys(records));
+    const statKeys = player.isGK ? GRAPH_KEYS_GK : GRAPH_KEYS_OUT;
+    const keyIdx = Object.fromEntries(statKeys.map((k, i) => [k, i]));
+    const numberOfTrainings = sortedKeys.length;
     if (!numberOfTrainings) {
         if (player.isOwnPlayer) {
             buildEnableCard(el, 'peaks', player.id);
@@ -48,14 +54,15 @@ export const buildPeaksChart = (el, graphData, player) => {
             ...peak,
             values: Array(numberOfTrainings).fill(0).map((_, i) => {
                 const peakTotal = peak.keys.reduce((total, skill) => {
-                    total += graphData[skill][i];
-                    return total
+                    const idx = keyIdx[skill];
+                    total += records[sortedKeys[i]]?.skills?.[idx] ?? 0;
+                    return total;
                 }, 0);
-                return peakTotal / (peak.keys.length * 20) * 100
+                return peakTotal / (peak.keys.length * 20) * 100;
             })
         }
     });
-    const ages = buildAges(numberOfTrainings, player.years, player.months);
+    const ages = sortedKeys.map(k => { const [y, m] = k.split('.').map(Number); return y + m / 12; });
     const wrap = document.createElement('div');
     wrap.className = 'tmg-chart-wrap rounded-md';
     let legendH = '<div class="tmg-legend tmg-legend-inline">';

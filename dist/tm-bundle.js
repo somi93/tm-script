@@ -5080,8 +5080,14 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       });
     },
     async fetchPlayerGraphs(player2) {
+      var _a;
       const data = await this.fetchPlayerInfo(player2.id, "graphs");
-      return normalizePlayerGraphs(data == null ? void 0 : data.graphs, player2);
+      if (!data) return null;
+      return {
+        graphs: normalizePlayerGraphs(data == null ? void 0 : data.graphs, player2),
+        player: player2,
+        skillpoints: (_a = data == null ? void 0 : data.skillpoints) != null ? _a : null
+      };
     },
     async fetchPlayerHistory(playerId) {
       const data = await this.fetchPlayerInfo(playerId, "history");
@@ -43218,12 +43224,6 @@ order:initial
     infoLine: themeColor("--tmu-info-strong", "var(--tmu-info-strong)"),
     infoFill: themeColor("--tmu-border-info", "var(--tmu-border-info)")
   });
-  var buildAges = (n, years, months) => {
-    const cur = years + months / 12;
-    const ages = [];
-    for (let i = 0; i < n; i++) ages.push(cur - (n - 1 - i) / 12);
-    return ages;
-  };
   var drawChart = (canvas, ages, values, opts = {}) => {
     const uiColors = graphUiColors();
     const { lineColor = uiColors.neutralLine, fillColor = uiColors.chartFill, gridColor = uiColors.grid, axisColor = uiColors.axis, dotRadius = 2.5, yMinOverride, yMaxOverride, formatY = (v) => String(Math.round(v)) } = opts;
@@ -43416,102 +43416,65 @@ order:initial
   };
 
   // src/components/player/graphs/tm-graph-ti.js
-  var asiK = (isGK) => isGK ? 48717927500 : Math.pow(2, 9) * Math.pow(5, 4) * Math.pow(7, 7);
-  var buildTiChart = (el2, graphData, player2) => {
-    let values, ages;
-    let enhanced = false;
-    if (!graphData.ti || graphData.ti.length < 2) {
-      if (graphData.skill_index && graphData.skill_index.length >= 2) {
-        try {
-          const K = asiK(player2.isGK);
-          const asiRaw = graphData.skill_index.map(Number);
-          const tiVals = [];
-          for (let i = 1; i < asiRaw.length; i++) {
-            const prev = Math.pow(asiRaw[i - 1] * K, 1 / 7);
-            const cur = Math.pow(asiRaw[i] * K, 1 / 7);
-            tiVals.push(Math.round((cur - prev) * 10));
-          }
-          if (tiVals.length >= 2) {
-            values = tiVals;
-            ages = buildAges(tiVals.length, player2.years, player2.months);
-            enhanced = true;
-            console.log(`[Graphs] TI computed from ASI graph (${tiVals.length} points)`);
-          }
-        } catch (e) {
-          console.warn("[Graphs] TI from ASI graph failed", e);
-        }
-      }
-      if (!values) return;
-    } else {
-      const raw = graphData.ti;
-      const v = [];
-      for (let i = 0; i < raw.length; i++) {
-        if (i === 0 && typeof raw[i] === "number" && Number(raw[i]) === 0) continue;
-        v.push(Number(raw[i]));
-      }
-      if (!v.length) return;
-      values = v;
-      ages = buildAges(values.length, player2.years, player2.months);
-    }
+  var buildTiChart = (el2, player2) => {
+    const records = player2.records || {};
+    const sortedKeys = TmUtils.sortAgeKeys(Object.keys(records));
+    const pairs = sortedKeys.map((k) => {
+      var _a, _b;
+      const [y, m] = k.split(".").map(Number);
+      return { age: y + m / 12, value: (_b = (_a = records[k]) == null ? void 0 : _a.TI) != null ? _b : null };
+    }).filter((p) => p.value != null);
+    if (pairs.length < 2) return;
+    const ages = pairs.map((p) => p.age);
+    const values = pairs.map((p) => Number(p.value));
     const uiColors = graphUiColors();
-    const chartOpts = { lineColor: uiColors.neutralLine, fillColor: uiColors.chartFill };
-    const enhLabel = enhanced ? ' <span class="text-xs font-normal" style="color:var(--tmu-text-warm-accent)">(from ASI)</span>' : "";
     const wrap = document.createElement("div");
     wrap.className = "tmg-chart-wrap rounded-md";
-    wrap.innerHTML = `<div class="tmg-chart-title text-md font-bold">Training Intensity${enhLabel}</div><canvas class="tmg-canvas" style="width:100%;height:260px;"></canvas><div class="tmg-tooltip py-1 px-2 rounded-sm text-sm"></div>`;
+    wrap.innerHTML = `<div class="tmg-chart-title text-md font-bold">Training Intensity</div><canvas class="tmg-canvas" style="width:100%;height:260px;"></canvas><div class="tmg-tooltip py-1 px-2 rounded-sm text-sm"></div>`;
     el2.appendChild(wrap);
     const canvas = wrap.querySelector("canvas");
     requestAnimationFrame(() => {
-      const info = drawChart(canvas, ages, values, chartOpts);
+      const info = drawChart(canvas, ages, values, { lineColor: uiColors.neutralLine, fillColor: uiColors.chartFill });
       attachTooltip(wrap, canvas, info);
     });
   };
 
   // src/components/player/graphs/tm-graph-asi.js
-  var buildAsiChart = (el2, graphData, player2) => {
-    let values, ages;
-    let enhanced = false;
-    if (!graphData.skill_index || graphData.skill_index.length < 2) {
-      values = [player2.asi];
-      (graphData.ti || []).map(Number).slice(2).reverse().forEach((ti) => {
-        const previousASI = TmLib.calcASIProjection({
-          player: {
-            asi: values[0]
-          },
-          trainings: 1,
-          avgTI: -ti
-        });
-        values.unshift(previousASI.newASI);
-      });
-    } else {
-      values = graphData.skill_index.map(Number);
-    }
-    if (!values.length) return;
-    ages = buildAges(values.length, player2.age, player2.month);
+  var buildAsiChart = (el2, player2) => {
+    const records = player2.records || {};
+    const sortedKeys = TmUtils.sortAgeKeys(Object.keys(records));
+    const pairs = sortedKeys.map((k) => {
+      var _a, _b;
+      const [y, m] = k.split(".").map(Number);
+      return { age: y + m / 12, value: (_b = (_a = records[k]) == null ? void 0 : _a.ASI) != null ? _b : null };
+    }).filter((p) => p.value != null);
+    if (pairs.length < 2) return;
+    const ages = pairs.map((p) => p.age);
+    const values = pairs.map((p) => Number(p.value));
     const uiColors = graphUiColors();
-    const chartOpts = {
-      lineColor: uiColors.neutralLine,
-      fillColor: uiColors.chartFill,
-      formatY: (v) => v >= 1e3 ? Math.round(v).toLocaleString() : String(Math.round(v))
-    };
-    const enhLabel = enhanced ? ' <span class="text-xs font-normal" style="color:var(--tmu-text-warm-accent)">(from TI)</span>' : "";
     const wrap = document.createElement("div");
     wrap.className = "tmg-chart-wrap rounded-md";
-    wrap.innerHTML = `<div class="tmg-chart-title text-md font-bold">ASI${enhLabel}</div><canvas class="tmg-canvas" style="width:100%;height:260px;"></canvas><div class="tmg-tooltip py-1 px-2 rounded-sm text-sm"></div>`;
+    wrap.innerHTML = `<div class="tmg-chart-title text-md font-bold">ASI</div><canvas class="tmg-canvas" style="width:100%;height:260px;"></canvas><div class="tmg-tooltip py-1 px-2 rounded-sm text-sm"></div>`;
     el2.appendChild(wrap);
     const canvas = wrap.querySelector("canvas");
     requestAnimationFrame(() => {
-      const info = drawChart(canvas, ages, values, chartOpts);
+      const info = drawChart(canvas, ages, values, { lineColor: uiColors.neutralLine, fillColor: uiColors.chartFill, formatY: (v) => v >= 1e3 ? Math.round(v).toLocaleString() : String(Math.round(v)) });
       attachTooltip(wrap, canvas, info);
     });
   };
 
   // src/components/player/graphs/tm-graph-rec.js
-  var buildRecChart = (el2, graphData, player2) => {
-    if (!graphData.recommendation || graphData.recommendation.length < 2) return;
-    const values = graphData.recommendation.map(Number);
-    if (!values.length) return;
-    const ages = buildAges(values.length, player2.years, player2.months);
+  var buildRecChart = (el2, player2) => {
+    const records = player2.records || {};
+    const sortedKeys = TmUtils.sortAgeKeys(Object.keys(records));
+    const pairs = sortedKeys.map((k) => {
+      var _a, _b;
+      const [y, m] = k.split(".").map(Number);
+      return { age: y + m / 12, value: (_b = (_a = records[k]) == null ? void 0 : _a.rec) != null ? _b : null };
+    }).filter((p) => p.value != null);
+    if (pairs.length < 2) return;
+    const ages = pairs.map((p) => p.age);
+    const values = pairs.map((p) => Number(p.value));
     const yMaxOverride = Math.max(6, Math.ceil(Math.max(...values) * 10) / 10);
     const uiColors = graphUiColors();
     const chartOpts = {
@@ -43519,7 +43482,7 @@ order:initial
       fillColor: uiColors.chartFill,
       yMinOverride: 0,
       yMaxOverride,
-      formatY: (v) => v.toFixed(1)
+      formatY: (v) => v.toFixed(2)
     };
     const wrap = document.createElement("div");
     wrap.className = "tmg-chart-wrap rounded-md";
@@ -43532,13 +43495,58 @@ order:initial
     });
   };
 
+  // src/components/player/graphs/tm-graph-r5.js
+  var buildR5Chart = (el2, player2) => {
+    const records = player2.records || {};
+    const sortedKeys = TmUtils.sortAgeKeys(Object.keys(records));
+    const pairs = sortedKeys.map((k) => {
+      var _a, _b;
+      const [y, m] = k.split(".").map(Number);
+      return { age: y + m / 12, value: (_b = (_a = records[k]) == null ? void 0 : _a.r5) != null ? _b : null };
+    }).filter((p) => p.value != null);
+    console.log(pairs);
+    if (pairs.length < 2) return;
+    const ages = pairs.map((p) => p.age);
+    const values = pairs.map((p) => Number(p.value));
+    const uiColors = graphUiColors();
+    const chartOpts = {
+      lineColor: uiColors.neutralLine,
+      fillColor: uiColors.chartFill,
+      yMinOverride: 20,
+      yMaxOverride: 125,
+      formatY: (v) => v.toFixed(2)
+    };
+    const wrap = document.createElement("div");
+    wrap.className = "tmg-chart-wrap rounded-md";
+    wrap.innerHTML = `<div class="tmg-chart-title text-md font-bold">R5</div><canvas class="tmg-canvas" style="width:100%;height:260px;"></canvas><div class="tmg-tooltip py-1 px-2 rounded-sm text-sm"></div>`;
+    el2.appendChild(wrap);
+    const canvas = wrap.querySelector("canvas");
+    requestAnimationFrame(() => {
+      const info = drawChart(canvas, ages, values, chartOpts);
+      attachTooltip(wrap, canvas, info);
+    });
+  };
+
   // src/components/player/graphs/tm-graph-skills.js
   var SKILL_META = SKILL_DEFS_OUT.map((s6) => ({ key: s6.key, label: s6.name, color: s6.color }));
   var SKILL_META_GK = SKILL_DEFS_GK.map((s6) => ({ key: s6.key2 || s6.key, label: s6.name, color: s6.color }));
-  var buildSkillsChart = (el2, graphData, player2, skillpoints) => {
+  var buildSkillsChart = (el2, player2) => {
     var _a;
+    const records = player2.records || {};
+    const sortedKeys = TmUtils.sortAgeKeys(Object.keys(records));
+    const statKeys = player2.isGK ? GRAPH_KEYS_GK : GRAPH_KEYS_OUT;
+    const keyIdx = Object.fromEntries(statKeys.map((k, i) => [k, i]));
     const sm = player2.isGK ? SKILL_META_GK : SKILL_META;
-    const seriesData = sm.map((m) => ({ key: m.key, label: m.label, color: m.color, values: (graphData[m.key] || []).map(Number), visible: true }));
+    const seriesData = sm.map((m) => ({
+      key: m.key,
+      label: m.label,
+      color: m.color,
+      visible: true,
+      values: sortedKeys.map((k) => {
+        var _a2, _b, _c;
+        return (_c = (_b = (_a2 = records[k]) == null ? void 0 : _a2.skills) == null ? void 0 : _b[keyIdx[m.key]]) != null ? _c : 0;
+      }).map(Number)
+    }));
     if (!seriesData.length || !seriesData[0].values.length) {
       if (player2.isOwnPlayer) {
         buildEnableCard(el2, "skills", player2.id);
@@ -43551,11 +43559,14 @@ order:initial
       }
       return;
     }
-    const ages = buildAges(seriesData[0].values.length, player2.years, player2.months);
+    const ages = sortedKeys.map((k) => {
+      const [y, m] = k.split(".").map(Number);
+      return y + m / 12;
+    });
     const wrap = document.createElement("div");
     wrap.className = "tmg-chart-wrap rounded-md";
-    const upSet = new Set((skillpoints == null ? void 0 : skillpoints.up) || []);
-    const downSet = new Set((skillpoints == null ? void 0 : skillpoints.down) || []);
+    const upSet = /* @__PURE__ */ new Set();
+    const downSet = /* @__PURE__ */ new Set();
     let legendH = '<div class="tmg-legend">';
     seriesData.forEach((s6, i) => {
       let arr = "";
@@ -43572,7 +43583,7 @@ order:initial
     el2.appendChild(wrap);
     const canvas = wrap.querySelector("canvas");
     let curInfo = null;
-    const opts = { yMinOverride: 0, yMaxOverride: 20, dotRadius: 1.5, yTickCount: 11 };
+    const opts = { yMinOverride: 0, yMaxOverride: 20, dotRadius: 1.5, yTickCount: 11, formatY: (v) => v.toFixed(2) };
     const redraw = () => {
       curInfo = drawMultiLine(canvas, ages, seriesData, opts);
     };
@@ -43630,8 +43641,12 @@ order:initial
       }
     ];
   };
-  var buildPeaksChart = (el2, graphData, player2) => {
-    const numberOfTrainings = (graphData.strength || []).length;
+  var buildPeaksChart = (el2, player2) => {
+    const records = player2.records || {};
+    const sortedKeys = TmUtils.sortAgeKeys(Object.keys(records));
+    const statKeys = player2.isGK ? GRAPH_KEYS_GK : GRAPH_KEYS_OUT;
+    const keyIdx = Object.fromEntries(statKeys.map((k, i) => [k, i]));
+    const numberOfTrainings = sortedKeys.length;
     if (!numberOfTrainings) {
       if (player2.isOwnPlayer) {
         buildEnableCard(el2, "peaks", player2.id);
@@ -43649,14 +43664,19 @@ order:initial
         ...peak,
         values: Array(numberOfTrainings).fill(0).map((_, i) => {
           const peakTotal = peak.keys.reduce((total, skill) => {
-            total += graphData[skill][i];
+            var _a, _b, _c;
+            const idx = keyIdx[skill];
+            total += (_c = (_b = (_a = records[sortedKeys[i]]) == null ? void 0 : _a.skills) == null ? void 0 : _b[idx]) != null ? _c : 0;
             return total;
           }, 0);
           return peakTotal / (peak.keys.length * 20) * 100;
         })
       };
     });
-    const ages = buildAges(numberOfTrainings, player2.years, player2.months);
+    const ages = sortedKeys.map((k) => {
+      const [y, m] = k.split(".").map(Number);
+      return y + m / 12;
+    });
     const wrap = document.createElement("div");
     wrap.className = "tmg-chart-wrap rounded-md";
     let legendH = '<div class="tmg-legend tmg-legend-inline">';
@@ -43734,12 +43754,10 @@ order:initial
     let lastData = null;
     let containerRef = null;
     let _player = null;
-    const buildR5Chart = () => {
-    };
-    const render17 = (container, data, { player: tooltipPlayer } = {}) => {
+    const render17 = (container, player2) => {
       containerRef = container;
-      lastData = data;
-      _player = tooltipPlayer;
+      lastData = player2;
+      _player = player2;
       if (container.dataset.tmgExportBound !== "1") {
         container.dataset.tmgExportBound = "1";
         container.addEventListener("click", (event) => {
@@ -43764,32 +43782,22 @@ order:initial
         });
       }
       container.innerHTML = "";
-      const graphData = data.graphs;
-      const player2 = data.player;
-      const skillpoints = data.skillpoints;
-      if (!graphData || !player2) {
+      if (!player2) {
         container.innerHTML = TmUI.empty("No graph data available");
         return;
       }
-      buildTiChart(container, graphData, player2);
+      buildTiChart(container, player2);
       buildR5Chart(container, player2);
-      buildAsiChart(container, graphData, tooltipPlayer);
-      buildRecChart(container, graphData, player2);
-      buildSkillsChart(container, graphData, player2, skillpoints);
-      buildPeaksChart(container, graphData, player2);
+      buildAsiChart(container, player2);
+      buildRecChart(container, player2);
+      buildSkillsChart(container, player2);
+      buildPeaksChart(container, player2);
     };
     const reRender2 = () => {
-      if (containerRef && lastData) render17(containerRef, lastData, { player: _player });
+      if (containerRef && lastData) render17(containerRef, lastData);
     };
     const load2 = (container, player2) => {
-      container.innerHTML = TmUI.loading();
-      TmPlayerModel.fetchPlayerGraphs(player2.id).then((data) => {
-        if (!data) {
-          container.innerHTML = TmUI.error("Failed to load data");
-          return;
-        }
-        render17(container, data, { player: player2 });
-      });
+      render17(container, player2);
     };
     return { render: render17, reRender: reRender2, load: load2 };
   })();
