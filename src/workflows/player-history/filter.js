@@ -41,19 +41,24 @@ const hasMissingMonths = (player, DBPlayer) => {
 
 /**
  * Step 3: For each player, load their DB entry and attach needSync + DBPlayer.
- * needSync is false only when current month has fullySynced: true AND no missing months exist.
+ * mode 'full' (default): needSync if missing months OR current record lacks fullySynced.
+ * mode 'missing-only': needSync only if there are missing months.
  *
  * @param {object[]} players - merged A+B team raw players with ageMonthsString
+ * @param {{ mode?: 'full'|'missing-only' }} [opts]
  * @returns {Promise<object[]>} same players array with needSync and DBPlayer attached
  */
-export const attachSyncStatus = async (players) => {
+export const attachSyncStatus = async (players, { mode = 'full' } = {}) => {
     return Promise.all(
         players.map(async (player) => {
             const DBPlayer = await TmPlayerDB.get(player.id);
             const currentRecord = DBPlayer?.records?.[player.ageMonthsString];
             const synced = currentRecord?.fullySynced === true;
             const missing = hasMissingMonths(player, DBPlayer);
-            return { ...player, needSync: !(synced && !missing), DBPlayer, records: DBPlayer?.records || {} };
+            const needSync = mode === 'missing-only'
+                ? missing
+                : !(synced && !missing);
+            return { ...player, needSync, DBPlayer, records: DBPlayer?.records || {} };
         })
     );
 };

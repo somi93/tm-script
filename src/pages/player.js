@@ -9,7 +9,8 @@ import { TmPlayerStyles } from '../components/player/card/tm-player-styles.js';
 import { TmScoutMod } from '../components/player/scout/tm-scout-mod.js';
 import { TmSkillsGrid } from '../components/player/skills/tm-skills-grid.js';
 import { TmTabsMod } from '../components/player/tabs/tm-tabs-mod.js';
-import { TmPlayerModel } from '../models/player.js';
+import { TmPlayerModel, refreshPlayerSkills } from '../models/player.js';
+import { runSyncPipeline } from '../workflows/player-history/sync-pipeline.js';
 import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 
 export function initPlayerPage(main) {
@@ -169,7 +170,17 @@ export function initPlayerPage(main) {
     bootstrapShell();
 
     TmPlayerModel.fetchPlayerTooltip(PLAYER_ID)
-        .then((data) => applyTooltip(data));
+        .then(async (data) => {
+            if (!data) return;
+            applyTooltip(data);
+
+            const [synced] = await runSyncPipeline([data], undefined, { mode: 'missing-only' });
+            if (synced.needSync) {
+                refreshPlayerSkills(synced);
+                player = synced;
+                renderPlayerChrome({ rerenderSkills: true });
+            }
+        });
 
     /* -----------------------------------------------------------
        SCOUT DATA — fetched once after tooltip, shared by Best Estimate

@@ -4,13 +4,7 @@ import { TmConst } from '../lib/tm-constants.js';
 import { TmPosition } from '../lib/tm-position.js';
 import { TmUtils } from '../lib/tm-utils.js';
 import { fetchRawPlayers } from '../models/club_new.js';
-import { attachSyncStatus } from '../workflows/player-history/filter_new.js';
-import { buildHistorySkeletons } from '../workflows/player-history/sources_new.js';
-import { fillTIandASI } from '../workflows/player-history/ti_asi_new.js';
-import { attachSkillsAnchor } from '../workflows/player-history/skills_new.js';
-import { attachRoutine } from '../workflows/player-history/routine_new.js';
-import { attachR5Rec } from '../workflows/player-history/r5rec_new.js';
-import { saveHistoryRecordsNew } from '../workflows/player-history/save_new.js';
+import { runSyncPipeline } from '../workflows/player-history/sync-pipeline.js';
 import { TmProgress } from '../components/shared/tm-progress.js';
 import { injectPlayersPageStyles } from './players-styles.js';
 
@@ -118,9 +112,9 @@ const skillCellHtml = (player, index) => {
     const wc = change?.weeklyChange;
     const bgCls = wc === 'one_up' ? ' gain-integer'
         : wc === 'part_up' ? ' gain-decimal'
-        : wc === 'one_down' ? ' loss-integer'
-        : wc === 'part_down' ? ' loss-decimal'
-        : '';
+            : wc === 'one_down' ? ' loss-integer'
+                : wc === 'part_down' ? ' loss-decimal'
+                    : '';
     const cls = `${value >= 20 ? ' max' : value >= 19 ? ' elite' : ''}${bgCls}`;
     const label = value >= 20 ? '★' : value >= 19 ? `☆.${value.toFixed(2).split('.')[1]}` : value.toFixed(2);
     const title = value >= 19 ? String(value) : '';
@@ -130,7 +124,7 @@ const skillCellHtml = (player, index) => {
         : '';
     const arrowHtml = wc === 'one_up' ? '<span class="tmvu-players-skill-arrow up">▲</span>'
         : wc === 'one_down' ? '<span class="tmvu-players-skill-arrow down">▼</span>'
-        : '';
+            : '';
     return `<span class="tmvu-players-skill-cell${cls}"${title ? ` title="${title}"` : ''}>${arrowHtml}<span class="tmvu-players-skill-main">${label}</span>${deltaHtml}</span>`;
 };
 
@@ -190,9 +184,11 @@ export function initPlayersPage(main) {
             ? (player.skills || []).map(skill => ({ ...skill, value: recordSkills[skill.id] ?? skill.value }))
             : player.skills;
         const latestTI = Number(latestRecord?.TI);
+        const latestR5 = Number(latestRecord?.r5);
         return {
             ...player,
             skills,
+            r5: Number.isFinite(latestR5) ? latestR5 : player.r5,
             ti: Number.isFinite(latestTI) ? latestTI : player.ti,
             TI_change: getTiChange(player),
             skillChanges: getSkillChanges(player),
@@ -449,60 +445,12 @@ export function initPlayersPage(main) {
         console.log(allPlayers);
         console.groupEnd();
 
-        // Step 3: Attach needSync + DBPlayer to each player
-        const allPlayersWithSync = await attachSyncStatus(allPlayers);
-
-        console.group('[Step 3] Sync status — total:', allPlayersWithSync.length);
-        console.log(allPlayersWithSync);
-        console.groupEnd();
-
-        // TODO: Step 4 — load graphs for own players that needSync
+        // Steps 3-11: sync pipeline
         const syncBar = TmProgress.progressBar({ title: '⚡ Syncing players' });
-        const allPlayersWithData = await buildHistorySkeletons(allPlayersWithSync, (done, total) => {
+        const allPlayersWithData = await runSyncPipeline(allPlayers, (done, total) => {
             syncBar.update(done, total, `Syncing ${done}/${total}`);
         });
         syncBar.done();
-
-        console.group('[Step 4] History skeletons built — needSync:', allPlayersWithData.filter(p => p.needSync).length);
-        console.log(allPlayersWithData.filter(p => p.needSync));
-        console.groupEnd();
-
-        // TODO: Step 5 — fill TI and ASI per month
-        fillTIandASI(allPlayersWithData);
-
-        console.group('[Step 5] TI + ASI filled');
-        console.log(allPlayersWithData.filter(p => p.needSync));
-        console.groupEnd();
-
-        // TODO: Step 6 — compute decimal skills per month
-        // Step 7a: Find anchor (first month with skills) + apply decimals at anchor
-        attachSkillsAnchor(allPlayersWithData);
-
-        console.group('[Step 7a] Anchor decimals applied');
-        console.log(allPlayersWithData.filter(p => p.needSync));
-        console.groupEnd();
-
-        // Step 9: Fill routine via linear interpolation between known points
-        attachRoutine(allPlayersWithData);
-
-        console.group('[Step 9] Routine filled');
-        console.log(allPlayersWithData.filter(p => p.needSync));
-        console.groupEnd();
-
-        // Step 10: Compute R5 and REC per month across preferred positions
-        // Step 11: Mark fullySynced on current month
-        const needSyncPlayers = allPlayersWithData.filter(p => p.needSync);
-        for (const player of needSyncPlayers) {
-            attachR5Rec([player]);
-            const currentRecord = player.records?.[player.ageMonthsString];
-            if (currentRecord) currentRecord.fullySynced = true;
-        }
-
-        console.group('[Step 10+11] R5/REC + fullySynced');
-        console.log(needSyncPlayers);
-        console.groupEnd();
-
-        await saveHistoryRecordsNew(allPlayersWithData);
 
         squad.players = decoratePlayers(allPlayersWithData);
         console.log(squad.players);

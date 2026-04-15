@@ -5,7 +5,7 @@ import { TmPlayerDB } from '../../lib/tm-playerdb.js';
  * Current month record gets fullySynced: true.
  * Merges new computed records on top of existing DBPlayer records.
  */
-export const saveHistoryRecordsNew = async (players) => {
+export const saveHistoryRecords = async (players) => {
     const tasks = players
         .filter(p => p.needSync && p.records)
         .map(async (player) => {

@@ -1,231 +1,141 @@
 import { TmConst } from '../../lib/tm-constants.js';
-import { TmLib } from '../../lib/tm-lib.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmPlayerService } from '../../services/player.js';
-import { normalizeTrainingWeights } from './shared.js';
 
 const { GRAPH_KEYS_OUT, GRAPH_KEYS_GK } = TmConst;
-const { sortAgeKeys, skillValue } = TmUtils;
+const { skillValue } = TmUtils;
 
-const DEBUG_TI_PLAYER_ID = 145086218;
-
-const logTIChange = (player, stage, payload) => {
-    if (Number(player?.id) !== DEBUG_TI_PLAYER_ID) return;
-    console.log(`[TI:${DEBUG_TI_PLAYER_ID}] ${stage}`, payload);
+const keyToAbs = (key) => {
+    const [a, m] = String(key).split('.').map(Number);
+    return a * 12 + m;
 };
 
-const normalizeGraphNumber = (value) => Number.isFinite(Number(value)) ? Number(value) : null;
+const absToKey = (abs) => `${Math.floor(abs / 12)}.${abs % 12}`;
 
-const deriveTIFromSkillIndex = (previousSkillIndex, currentSkillIndex, isGK) => {
-    if (!Number.isFinite(Number(previousSkillIndex)) || !Number.isFinite(Number(currentSkillIndex))) return null;
-    const previousSkillSum = TmLib.calcAsiSkillSum({ asi: Number(previousSkillIndex), isGK });
-    const currentSkillSum = TmLib.calcAsiSkillSum({ asi: Number(currentSkillIndex), isGK });
-    return Math.round((currentSkillSum - previousSkillSum) * 10);
-};
+/**
+ * Build sorted array of all age.month keys from first to current (no gaps).
+ * Own players: range derived from graph TI length.
+ * Foreign players: range from DB records, or just current month.
+ */
+const buildMonthKeys = (player, graphData, DBPlayer) => {
+    const currentAbs = keyToAbs(player.ageMonthsString);
+    let firstAbs;
 
-const populateMissingTIFromSkillIndex = (player, ageKeys, recordsByAgeKey) => {
-    for (let index = 1; index < ageKeys.length; index += 1) {
-        const ageKey = ageKeys[index];
-        const previousKey = ageKeys[index - 1];
-        const derivedTI = deriveTIFromSkillIndex(
-            recordsByAgeKey[previousKey]?.SI,
-            recordsByAgeKey[ageKey]?.SI,
-            player?.isGK,
-        );
+    // graph.TI[0] = current TI (unused here), TI[1..n] = history → n months back
+    const graphMonths = graphData?.TI?.length ? graphData.TI.length - 1 : 0;
 
-        if (derivedTI == null) continue;
-
-        const currentTI = normalizeGraphNumber(recordsByAgeKey[ageKey]?.TI);
-        if (currentTI != null) continue;
-
-        logTIChange(player, 'populateMissingTIFromSkillIndex', {
-            ageKey,
-            previousKey,
-            previousSI: recordsByAgeKey[previousKey]?.SI,
-            currentSI: recordsByAgeKey[ageKey]?.SI,
-            previousTI: currentTI,
-            nextTI: derivedTI,
-        });
-        recordsByAgeKey[ageKey].TI = derivedTI;
-    }
-};
-
-const buildGraphAgeKeysFromSeries = (player, graphData) => {
-    const graphLength = graphData?.ti?.length ? graphData?.ti?.length - 1 : 0;
-    if (!graphLength) return [];
-
-    return Array.from({ length: graphLength }, (_, index) => {
-        const totalMonths = player.ageMonths - (graphLength - 1 - index);
-        return `${Math.floor(totalMonths / 12)}.${totalMonths % 12}`;
-    });
-};
-
-// Group 1: Leading missing (no prior known record) — forward from zeros, capped at first anchor
-const fillLeadingGap = (records, gapKeys, firstKnownKey, isGK, gw) => {
-    const count = isGK ? 11 : 14;
-    const maxIntegers = (records[firstKnownKey]?.skills ?? []).map(v => Math.floor(Number(v) || 0));
-    const zeros = new Array(count).fill(0);
-    for (const key of gapKeys) {
-        const si = Number(records[key]?.SI);
-        if (!Number.isFinite(si) || si <= 0) continue;
-        records[key].skills = TmLib.calcSkillDecimals(zeros, si, isGK, gw, { maxIntegers }).map(Math.floor);
-    }
-};
-
-// Group 2: Interior gap (prior AND next known record) — forward from start anchor, capped at end anchor
-const fillInteriorGap = (records, gapKeys, startKey, endKey, isGK, gw) => {
-    const count = isGK ? 11 : 14;
-    const startInts = (records[startKey]?.skills ?? []).map(v => Math.floor(Number(v) || 0));
-    const endInts = (records[endKey]?.skills ?? []).map(v => Math.floor(Number(v) || 0));
-    for (const key of gapKeys) {
-        const si = Number(records[key]?.SI);
-        if (!Number.isFinite(si) || si <= 0) continue;
-        records[key].skills = TmLib.calcSkillDecimals(startInts, si, isGK, gw, { maxIntegers: endInts }).map(Math.floor);
-    }
-};
-
-// Group 3: Trailing missing (no next known record) — forward from last anchor, capped at live player
-const fillTrailingGap = (records, gapKeys, startKey, liveInts, isGK, gw) => {
-    const startInts = (records[startKey]?.skills ?? []).map(v => Math.floor(Number(v) || 0));
-    for (const key of gapKeys) {
-        const si = Number(records[key]?.SI);
-        if (!Number.isFinite(si) || si <= 0) continue;
-        records[key].skills = TmLib.calcSkillDecimals(startInts, si, isGK, gw, { maxIntegers: liveInts }).map(Math.floor);
-    }
-};
-
-const estimateMissingRoutine = (player, ageKeys, records) => {
-    const n = ageKeys.length;
-    if (!n) return;
-    const liveRoutine = Math.round((Number(player?.routine) || 0) * 10) / 10;
-
-    // Anchors: idx → value. first record = 0, last record = liveRoutine, DB records with routine = their value
-    const anchors = [{ idx: 0, value: 0 }];
-    for (let i = 1; i < n; i++) {
-        const rou = records[ageKeys[i]]?.routine;
-        if (rou != null && Number.isFinite(Number(rou))) anchors.push({ idx: i, value: Number(rou) });
-    }
-    const lastIdx = n - 1;
-    const existingLast = anchors.findIndex(a => a.idx === lastIdx);
-    if (existingLast >= 0) anchors[existingLast].value = liveRoutine;
-    else anchors.push({ idx: lastIdx, value: liveRoutine });
-
-    for (let ai = 0; ai < anchors.length - 1; ai++) {
-        const { idx: i1, value: v1 } = anchors[ai];
-        const { idx: i2, value: v2 } = anchors[ai + 1];
-        for (let i = i1; i <= i2; i++) {
-            const t = i2 > i1 ? (i - i1) / (i2 - i1) : 1;
-            records[ageKeys[i]].routine = Math.round((v1 + (v2 - v1) * t) * 10) / 10;
-        }
-    }
-};
-
-const estimateMissingSkills = (player, ageKeys, records) => {
-    const { isGK } = player;
-    const gw = normalizeTrainingWeights(player?.training ?? null, isGK);
-    const hasSkills = key => records[key]?.skills?.some(v => v != null);
-    const knownKeys = ageKeys.filter(hasSkills);
-    if (!knownKeys.length) return;
-
-    const firstKnownIdx = ageKeys.indexOf(knownKeys[0]);
-    const lastKnownIdx = ageKeys.indexOf(knownKeys[knownKeys.length - 1]);
-
-    // Group 1: Before first known record
-    const leadingKeys = ageKeys.slice(0, firstKnownIdx).filter(k => !hasSkills(k));
-    if (leadingKeys.length) fillLeadingGap(records, leadingKeys, knownKeys[0], isGK, gw);
-
-    // Group 2: Between consecutive known records
-    for (let i = 0; i < knownKeys.length - 1; i++) {
-        const sKey = knownKeys[i], eKey = knownKeys[i + 1];
-        const si = ageKeys.indexOf(sKey), ei = ageKeys.indexOf(eKey);
-        const gapKeys = ageKeys.slice(si + 1, ei).filter(k => !hasSkills(k));
-        if (gapKeys.length) fillInteriorGap(records, gapKeys, sKey, eKey, isGK, gw);
+    if (player.isOwnPlayer && graphMonths > 0) {
+        firstAbs = currentAbs - graphMonths + 1;
+    } else {
+        const dbKeys = Object.keys(DBPlayer?.records || {});
+        firstAbs = dbKeys.length
+            ? Math.min(...dbKeys.map(keyToAbs))
+            : currentAbs;
     }
 
-    // Group 3: After last known record
-    const liveInts = player.skills?.map(s => Math.floor(skillValue(s) || 0));
-    const trailingKeys = ageKeys.slice(lastKnownIdx + 1).filter(k => !hasSkills(k));
-    if (liveInts && trailingKeys.length) fillTrailingGap(records, trailingKeys, knownKeys[knownKeys.length - 1], liveInts, isGK, gw);
+    const keys = [];
+    for (let abs = firstAbs; abs <= currentAbs; abs++) {
+        keys.push(absToKey(abs));
+    }
+    return keys;
 };
 
-const buildPlayerGraphs = (player, DBPlayer, rawGraphs = null) => {
-    const statKeys = player?.isGK ? GRAPH_KEYS_GK : GRAPH_KEYS_OUT;
-    const dbKeys = sortAgeKeys(Object.keys(DBPlayer?.records || {}));
-    const recordsByAgeKey = rawGraphs ? {} : {};
+/**
+ * Build records skeleton for all month keys.
+ * Skills priority per month:
+ *   current month → live player.skills (floored)
+ *   other months  → graph integers → DB integers → null
+ * weeklyChanges:
+ *   current month → player.weeklyChanges
+ *   other months  → DBPlayer.records[key].weeklyChanges
+ */
+const buildRecordSkeleton = (player, monthKeys, graphData, DBPlayer) => {
+    const statKeys = player.isGK ? GRAPH_KEYS_GK : GRAPH_KEYS_OUT;
+    const skillCount = statKeys.length;
+    const currentAbs = keyToAbs(player.ageMonthsString);
 
-    if (!rawGraphs) {
-        dbKeys.forEach((ageKey) => {
-            const record = DBPlayer?.records?.[ageKey];
-            recordsByAgeKey[ageKey] = {
-                SI: normalizeGraphNumber(record?.SI),
-                TI: normalizeGraphNumber(record?.TI),
-                skills: Array.isArray(record?.skills) ? record.skills.map(skillValue) : new Array(statKeys.length).fill(null),
-                weeklyChanges: record?.weeklyChanges || null,
-            };
-        });
+    // Map age.month → graph array index (index 0 = oldest historical month)
+    const graphMonths = graphData?.TI?.length ? graphData.TI.length - 1 : 0;
+    const graphKeyMap = new Map();
+    for (let i = 0; i < graphMonths; i++) {
+        const abs = currentAbs - graphMonths + 1 + i;
+        graphKeyMap.set(absToKey(abs), i);
     }
 
-    const remoteAgeKeys = buildGraphAgeKeysFromSeries(player, rawGraphs);
-    remoteAgeKeys.forEach((ageKey, graphIndex) => {
-        const existing = recordsByAgeKey[ageKey] || {
-            SI: null,
-            TI: null,
-            skills: new Array(statKeys.length).fill(null),
-            missing: !DBPlayer?.records?.[ageKey],
-        };
-        const skillIndexValue = rawGraphs?.skill_index?.[graphIndex];
-        if (skillIndexValue != null) existing.SI = Number(skillIndexValue);
-        const tiValue = rawGraphs?.TI?.[graphIndex + 1];
-        if (tiValue != null) {
-            existing.TI = Number(tiValue);
-        }
+    const records = {};
+    for (const key of monthKeys) {
+        const isCurrentMonth = key === player.ageMonthsString;
+        const graphIndex = graphKeyMap.get(key);
+        const dbRecord = DBPlayer?.records?.[key];
 
-        statKeys.forEach((statKey, statIndex) => {
-            const statValue = rawGraphs?.[statKey]?.[graphIndex];
-            if (statValue != null) existing.skills[statIndex] = Number(statValue);
-        });
-        if (!rawGraphs.strength) {
-            const record = DBPlayer?.records?.[ageKey];
-            if (record) {
-                existing.skills = record.skills.map(skillValue);
-                if (record.weeklyChanges) existing.weeklyChanges = record.weeklyChanges;
+        let skills = null;
+
+        if (isCurrentMonth) {
+            skills = Array.isArray(player.skills)
+                ? player.skills.map(s => Math.floor(skillValue(s) || 0))
+                : new Array(skillCount).fill(null);
+        } else if (graphIndex != null && graphData) {
+            const fromGraph = statKeys.map(sk => {
+                const v = graphData[sk]?.[graphIndex];
+                return v != null ? Number(v) : null;
+            });
+            if (fromGraph.some(v => v != null)) {
+                skills = fromGraph;
             }
         }
-        recordsByAgeKey[ageKey] = existing;
-    });
-    const ageKeys = sortAgeKeys(Object.keys(recordsByAgeKey));
-    if (!ageKeys.length) return null;
 
-    if (!rawGraphs) {
-        populateMissingTIFromSkillIndex(player, ageKeys, recordsByAgeKey);
-    } else if (Array.isArray(player.skills) && player.skills.length) {
-        // Anchor live player skills on the current-month record if empty
-        const liveKey = player.ageMonthsString;
-        if (liveKey && recordsByAgeKey[liveKey] && !recordsByAgeKey[liveKey].skills?.some(v => v != null)) {
-            recordsByAgeKey[liveKey].skills = player.skills.map(skillValue);
+        if (skills === null && dbRecord?.skills) {
+            skills = dbRecord.skills.map(s => Math.floor(skillValue(s) || 0));
         }
-        estimateMissingSkills(player, ageKeys, recordsByAgeKey);
+
+        const weeklyChanges = isCurrentMonth
+            ? (player.weeklyChanges || null)
+            : (dbRecord?.weeklyChanges || null);
+
+        const routine = isCurrentMonth
+            ? (dbRecord?.routine ?? player.routine ?? null)
+            : (dbRecord?.routine ?? null);
+
+        records[key] = { TI: null, ASI: null, skills, weeklyChanges, routine };
     }
 
-    estimateMissingRoutine(player, ageKeys, recordsByAgeKey);
-
-    return {
-        source: rawGraphs?.source || (rawGraphs ? 'remote' : 'indexeddb'),
-        sparse: !rawGraphs || Boolean(rawGraphs?.sparse),
-        hasTIGraph: Boolean(rawGraphs?.TI?.length),
-        hasSkillGraphs: statKeys.some((statKey) => Array.isArray(rawGraphs?.[statKey]) && rawGraphs[statKey].length > 0),
-        ageKeys,
-        recordsByAgeKey,
-    };
+    return records;
 };
 
-export const loadHistorySyncSources = async (player, DBPlayer) => {
-    const [training, graphs] = await Promise.all([
-        TmPlayerService.fetchPlayerTrainingForSync(player),
-        player?.isOwnPlayer ? TmPlayerService.fetchPlayerGraphs(player) : Promise.resolve(null),
-    ]);
+/**
+ * Step 4: For each player with needSync, fetch graphs + training (own players only),
+ * build full monthKeys list and records skeleton.
+ * Players with needSync: false are returned unchanged.
+ *
+ * @param {object[]} players - from attachSyncStatus (have needSync + DBPlayer)
+ * @returns {Promise<object[]>}
+ */
+export const buildHistorySkeletons = async (players, onProgress) => {
+    const total = players.filter(p => p.needSync && p.isOwnPlayer).length;
+    let done = 0;
 
-    player.training = training;
-    player.graphs = buildPlayerGraphs(player, DBPlayer, graphs);
-    return player;
+    const fetches = await Promise.all(
+        players.map(async (player) => {
+            if (!player.needSync || !player.isOwnPlayer) {
+                return { graphData: null, training: null };
+            }
+            const [graphData, training] = await Promise.all([
+                TmPlayerService.fetchPlayerGraphs(player),
+                TmPlayerService.fetchPlayerTrainingForSync(player),
+            ]);
+            done++;
+            onProgress?.(done, total);
+            return { graphData, training };
+        })
+    );
+
+    return players.map((player, i) => {
+        if (!player.needSync) return player;
+
+        const { graphData, training } = fetches[i];
+        const monthKeys = buildMonthKeys(player, graphData, player.DBPlayer);
+        const records = buildRecordSkeleton(player, monthKeys, graphData, player.DBPlayer);
+
+        return { ...player, graphData, training, monthKeys, records };
+    });
 };
