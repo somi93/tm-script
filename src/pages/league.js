@@ -43,35 +43,32 @@ export function initLeaguePage(main) {
         };
     };
 
-    // ─── Squad fetching via TmApi (one call per club per run) ─────────────
-    const squadCache = new Map(); // clubId → Promise<{post:{id:player}}>
+    // ─── Squad fetching (one call per club per analysis run) ───────────────
+    // Each entry resolves to {id, name, squad: [normalizedPlayer, ...]}
+    const squadCache = new Map(); // clubId → Promise<{id, name, squad}>
 
-    const fetchSquad = clubId => {
+    const fetchSquad = (clubId, name = '') => {
         if (!squadCache.has(clubId)) {
-            squadCache.set(clubId, fetchRawPlayers(clubId).then(data => {
-                const post = {};
-                (data || []).forEach(p => { post[String(p.id)] = p; });
-                return { post };
-            }).catch(() => ({ post: {} })));
+            squadCache.set(clubId, fetchRawPlayers(clubId).then(players => {
+                const result = { id: String(clubId), name, squad: players || [] };
+                if (!result.squad.length) squadCache.delete(clubId);
+                return result;
+            }).catch(() => {
+                squadCache.delete(clubId);
+                return { id: String(clubId), name, squad: [] };
+            }));
         }
         return squadCache.get(clubId);
     };
 
     // ─── Per-player R5 resolution ─────────────────────────────────────────
-    // squadPost is the full fetchSquad response: {post: {pid: normalizedPlayer}}.
-    // Players in post are already normalized by fetchSquadRaw (r5/rec/positions/ageMonths present).
-    // Tooltip fallback only for players no longer in the current squad (transferred), with a cache.
-    const tooltipCache = new Map(); // pid → Promise<player|null>
-
-    const getPlayerDataFromSquad = async (pid, squadPost, matchPos) => {
-
-        let player = squadPost.post?.[String(pid)];
+    // squadData is the fetchSquad result: {id, name, squad: [normalizedPlayer]}.
+    // Players are already normalized by fetchRawPlayers (r5/rec/positions/ageMonths present).
+    // Tooltip fallback (via TmPlayerModel.fetchTooltipCached) for transferred players.
+    const getPlayerDataFromSquad = async (pid, squadData, matchPos) => {
+        let player = (squadData.squad || []).find(p => String(p.id) === String(pid));
         if (!player) {
-            if (!tooltipCache.has(pid)) {
-                tooltipCache.set(pid, TmPlayerModel.fetchPlayerTooltip(pid)
-                    .then(r => r?.player ?? null).catch(() => null));
-            }
-            player = await tooltipCache.get(pid);
+            player = await TmPlayerModel.fetchTooltipCached(pid).catch(() => null);
         }
         if (!player) return { Age: 0, R5: 0, REC: 0, isGK: false, skills: [], routine: 0 };
         const posData = player.positions?.find(p => p.position?.toLowerCase() === matchPos);
@@ -81,11 +78,11 @@ export function initLeaguePage(main) {
     };
 
     // ─── Team statistics (average R5 of 11 starters) ─────────────────────
-    const computeTeamStats = async (playerIds, lineup, squadPost) => {
+    const computeTeamStats = async (playerIds, lineup, squadData) => {
         const starters = playerIds.filter(id => !lineup[id].position.includes('sub'));
         const players = await Promise.all(starters.map(async id => {
             const matchPos = lineup[id].position;
-            const p = await getPlayerDataFromSquad(id, squadPost, matchPos);
+            const p = await getPlayerDataFromSquad(id, squadData, matchPos);
             return { id, name: lineup[id].name || String(id), pos: matchPos, ...p };
         }));
         const totals = { Age: 0, REC: 0, R5: 0 };
@@ -387,7 +384,6 @@ export function initLeaguePage(main) {
         clubMap = new Map();
         clubPlayersMap = new Map();
         squadCache.clear();
-        tooltipCache.clear();
         totalExpected = 0;
         totalProcessed = 0;
         skillData = [];
@@ -414,9 +410,6 @@ export function initLeaguePage(main) {
         prepareLeagueLayout();
         initLeagueFeed();
         leagueBootstrapped = true;
-
-        // Capture native round data from the hidden TM source before our custom widgets render.
-        TmLeagueRounds.captureNativeRounds();
 
         const initUI = () => {
             const clubLinks = Array.from(document.querySelectorAll('#overall_table td a[club_link]'));
@@ -449,14 +442,14 @@ export function initLeaguePage(main) {
                     <div class="tsa-controls">
                         <span>Last</span>
                         ${inputHtml({
-                id: 'tm_script_num_matches',
-                type: 'number',
-                size: 'xs',
-                align: 'center',
-                value: numLastRounds,
-                min: 1,
-                max: 34,
-            })}
+                    id: 'tm_script_num_matches',
+                    type: 'number',
+                    size: 'xs',
+                    align: 'center',
+                    value: numLastRounds,
+                    min: 1,
+                    max: 34,
+                })}
                         <span>rounds</span>
                         <span id="tm_script_analyze_mount"></span>
                         <span id="tm_script_progress" class="tsa-progress"></span>

@@ -627,7 +627,7 @@ export function mountInternationalCupCoefficientsPage(main) {
             .map(({ index }) => index);
         const currentWindowIndex = rangeColumnIndexes[0] ?? -1;
         const rollingWindowIndex = rangeColumnIndexes[1] ?? -1;
-        const formatTableNumber = (value) => Number.isFinite(value) ? value.toFixed(3) : '—';
+        const formatTableNumber = (value) => Number.isFinite(value) ? value.toFixed(3) : '0.000';
         const bodyRows = Array.from(table.querySelectorAll('tbody tr'))
             .map(row => ({ row, cells: Array.from(row.querySelectorAll('td')) }))
             .filter(({ cells }) => cells.length);
@@ -714,7 +714,7 @@ export function mountInternationalCupCoefficientsPage(main) {
         });
     };
 
-    const formatCoefficientValue = (value) => Number.isFinite(value) ? value.toFixed(3) : '—';
+    const formatCoefficientValue = (value) => Number.isFinite(value) ? value.toFixed(3) : '0.000';
 
     const findCoefficientPanel = (root, labelPattern) => {
         const tab = Array.from(root.querySelectorAll('[data-tab-target]')).find(node => labelPattern.test(cleanText(node.textContent)));
@@ -788,14 +788,13 @@ export function mountInternationalCupCoefficientsPage(main) {
             const nextWindowTotalCell = document.createElement('td');
             nextWindowTotalCell.dataset.tmvuNextWindowTotalCell = '1';
             nextWindowTotalCell.className = 'align_right tmvu-icup-coeff-current';
-            nextWindowTotalCell.textContent = '—';
+            nextWindowTotalCell.textContent = '0.000';
             totalCell.after(nextWindowTotalCell);
 
-            if (Number.isFinite(currentValue)) {
-                const rollingTotal = seasonValues.slice(1).reduce((sum, value) => sum + value, 0) + currentValue;
-                nextWindowTotalCell.textContent = formatCoefficientValue(rollingTotal);
-                nextWindowTotalCell.title = rollingLabel;
-            }
+            const effectiveCurrentValue = Number.isFinite(currentValue) ? currentValue : 0;
+            const rollingTotal = seasonValues.slice(1).reduce((sum, value) => sum + value, 0) + effectiveCurrentValue;
+            nextWindowTotalCell.textContent = formatCoefficientValue(rollingTotal);
+            nextWindowTotalCell.title = rollingLabel;
         });
     };
 

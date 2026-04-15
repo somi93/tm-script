@@ -71,15 +71,21 @@ const STAT_COLS = [
             }
             const entries = s.clubDatas.get(id);
             let avgREC = 0, avgR5 = 0, avgAge = 0;
-            entries.forEach(cd => {
+            const matchBreakdown = [];
+            entries.forEach((cd, i) => {
+                const matchR5 = cd.R5 / 11;
                 avgREC += cd.REC / 11;
-                avgR5  += cd.R5  / 11;
+                avgR5  += matchR5;
                 avgAge += cd.Age / 11 / 12;
+                matchBreakdown.push(`  [${i + 1}] R5/11=${matchR5.toFixed(2)}  (raw R5=${cd.R5}, REC/11=${(cd.REC/11).toFixed(2)}, players=${cd.playerCount ?? 11})`);
             });
             const n = entries.length;
             const teamREC = avgREC / n;
             const teamR5  = avgR5  / n;
             const teamAge = avgAge / n;
+            console.groupCollapsed(`[Squad Analysis] ${name}  →  R5=${teamR5.toFixed(2)}  REC=${teamREC.toFixed(2)}  Age=${teamAge.toFixed(1)}  (${n} matches)`);
+            matchBreakdown.forEach(line => console.log(line));
+            console.groupEnd();
             s.skillData.push({ name, REC: teamREC, R5: teamR5, Age: teamAge });
         });
 

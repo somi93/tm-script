@@ -27065,15 +27065,22 @@ order:initial
       }
       const entries = s6.clubDatas.get(id);
       let avgREC = 0, avgR5 = 0, avgAge = 0;
-      entries.forEach((cd) => {
+      const matchBreakdown = [];
+      entries.forEach((cd, i) => {
+        var _a;
+        const matchR5 = cd.R5 / 11;
         avgREC += cd.REC / 11;
-        avgR5 += cd.R5 / 11;
+        avgR5 += matchR5;
         avgAge += cd.Age / 11 / 12;
+        matchBreakdown.push(`  [${i + 1}] R5/11=${matchR5.toFixed(2)}  (raw R5=${cd.R5}, REC/11=${(cd.REC / 11).toFixed(2)}, players=${(_a = cd.playerCount) != null ? _a : 11})`);
       });
       const n = entries.length;
       const teamREC = avgREC / n;
       const teamR5 = avgR5 / n;
       const teamAge = avgAge / n;
+      console.groupCollapsed(`[Squad Analysis] ${name}  \u2192  R5=${teamR5.toFixed(2)}  REC=${teamREC.toFixed(2)}  Age=${teamAge.toFixed(1)}  (${n} matches)`);
+      matchBreakdown.forEach((line) => console.log(line));
+      console.groupEnd();
       s6.skillData.push({ name, REC: teamREC, R5: teamR5, Age: teamAge });
     });
     s6.sortData(s6.skillData, s6.skillSortCol, s6.skillSortAsc);
@@ -27083,80 +27090,8 @@ order:initial
 
   // src/components/league/tm-league-rounds.js
   var roundMatchCache = /* @__PURE__ */ new Map();
-  var nativeRoundsCache = null;
-  var parseRoundFromDOM = (containerId, tableId) => {
-    const table2 = document.getElementById(tableId);
-    if (!table2) return null;
-    const container = document.getElementById(containerId) || table2.parentElement;
-    let isoDate = null;
-    const strongEl = container && container.querySelector("strong");
-    if (strongEl) {
-      const m = strongEl.textContent.trim().match(/^(\d+)\.\s*([A-Za-z]+)/);
-      if (m) {
-        const MONTHS = [
-          "january",
-          "february",
-          "march",
-          "april",
-          "may",
-          "june",
-          "july",
-          "august",
-          "september",
-          "october",
-          "november",
-          "december"
-        ];
-        const monthIdx = MONTHS.indexOf(m[2].toLowerCase());
-        if (monthIdx !== -1) {
-          const yr = (/* @__PURE__ */ new Date()).getFullYear();
-          isoDate = `${yr}-${String(monthIdx + 1).padStart(2, "0")}-${String(parseInt(m[1], 10)).padStart(2, "0")}`;
-        }
-      }
-    }
-    if (!isoDate) return null;
-    const matches = [];
-    table2.querySelectorAll("tbody tr").forEach((row) => {
-      const clubLinks = row.querySelectorAll("a[club_link]");
-      if (clubLinks.length < 2) return;
-      const matchLink = row.querySelector('a.match_link, a[href*="/matches/"]');
-      const matchHref = (matchLink == null ? void 0 : matchLink.getAttribute("href")) || "";
-      const idMatch = matchHref.match(/\/matches\/(\d+)\//);
-      const scoreText = (matchLink == null ? void 0 : matchLink.textContent.trim()) || "";
-      const result = /^\d+-\d+$/.test(scoreText) ? scoreText : null;
-      matches.push({
-        id: idMatch ? idMatch[1] : null,
-        date: isoDate,
-        hometeam: clubLinks[0].getAttribute("club_link"),
-        hometeam_name: clubLinks[0].textContent.trim(),
-        awayteam: clubLinks[1].getAttribute("club_link"),
-        awayteam_name: clubLinks[1].textContent.trim(),
-        result,
-        _playoff: true
-      });
-    });
-    return matches.length ? { date: isoDate, matches } : null;
-  };
   var buildRounds2 = (fixtures) => {
     const s6 = window.TmLeagueCtx;
-    const domRounds = (nativeRoundsCache || []).filter(Boolean);
-    if (domRounds.length) {
-      const existingIds = /* @__PURE__ */ new Set();
-      Object.values(fixtures || {}).forEach((month) => {
-        ((month == null ? void 0 : month.matches) || []).forEach((m) => {
-          if (m.id) existingIds.add(String(m.id));
-        });
-      });
-      let extra = {};
-      domRounds.forEach((round, i) => {
-        const newMatches = round.matches.filter((m) => !m.id || !existingIds.has(String(m.id)));
-        if (newMatches.length) extra[`__dom_${i}__`] = { matches: newMatches };
-      });
-      if (Object.keys(extra).length) {
-        fixtures = Object.assign({}, fixtures, extra);
-        s6.fixturesCache = fixtures;
-      }
-    }
     const currentSeason5 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const highlightClubId = typeof SESSION !== "undefined" && SESSION.main_id ? String(SESSION.main_id) : "";
     const roundPanel = document.getElementById("rnd-panel");
@@ -27206,12 +27141,35 @@ order:initial
     }
     const homeLineup = data.lineup.home;
     const awayLineup = data.lineup.away;
-    Promise.all([s6.fetchSquad(homeId), s6.fetchSquad(awayId)]).then(([homeSquad, awaySquad]) => {
+    const homeKeys = Object.keys(homeLineup || {});
+    const awayKeys = Object.keys(awayLineup || {});
+    const homeStarters = homeKeys.filter((id) => {
+      var _a2, _b2;
+      return !((_b2 = (_a2 = homeLineup[id]) == null ? void 0 : _a2.position) == null ? void 0 : _b2.includes("sub"));
+    });
+    const awayStarters = awayKeys.filter((id) => {
+      var _a2, _b2;
+      return !((_b2 = (_a2 = awayLineup[id]) == null ? void 0 : _a2.position) == null ? void 0 : _b2.includes("sub"));
+    });
+    if (!homeStarters.length || !awayStarters.length) {
+      console.warn(`[League] match=${matchId} lineup problem \u2014 home keys=${homeKeys.length} starters=${homeStarters.length}, away keys=${awayKeys.length} starters=${awayStarters.length}`);
+      console.log("[League] homeLineup sample:", homeKeys.slice(0, 3).map((id) => {
+        var _a2;
+        return { id, pos: (_a2 = homeLineup[id]) == null ? void 0 : _a2.position };
+      }));
+    }
+    Promise.all([s6.fetchSquad(homeId, data.club.home.club_name), s6.fetchSquad(awayId, data.club.away.club_name)]).then(([homeSquad, awaySquad]) => {
       return Promise.all([
         s6.computeTeamStats(Object.keys(homeLineup), homeLineup, homeSquad),
         s6.computeTeamStats(Object.keys(awayLineup), awayLineup, awaySquad)
-      ]);
-    }).then(([homeResult, awayResult]) => {
+      ]).then(([homeResult, awayResult]) => ({ homeResult, awayResult, homeSquad, awaySquad }));
+    }).then(({ homeResult, awayResult, homeSquad, awaySquad }) => {
+      if (homeResult.totals.R5 === 0) {
+        console.log(homeResult, homeSquad);
+      }
+      if (awayResult.totals.R5 === 0) {
+        console.log(awayResult, awaySquad);
+      }
       if (!s6.clubDatas.has(homeId)) s6.clubDatas.set(homeId, []);
       if (!s6.clubDatas.has(awayId)) s6.clubDatas.set(awayId, []);
       s6.clubDatas.get(homeId).push(homeResult.totals);
@@ -27240,6 +27198,9 @@ order:initial
       }));
       const homeR5 = Number((homeResult.totals.R5 / 11).toFixed(2));
       const awayR5 = Number((awayResult.totals.R5 / 11).toFixed(2));
+      if (!homeR5) {
+        console.warn(`[League] Home team ${data.club.home.club_name} has R5=0 in match ${matchId}`);
+      }
       roundMatchCache.set(String(matchId), { homeR5, awayR5, data });
       fillRatingCells(String(matchId), homeR5, awayR5);
       s6.totalProcessed += 2;
@@ -27267,15 +27228,24 @@ order:initial
         (byDate[m.date] = byDate[m.date] || []).push(m);
       });
       const dates = Object.keys(byDate).sort((a, b) => new Date(b) - new Date(a)).slice(0, s6.numLastRounds);
-      const matchIds = dates.flatMap((d) => byDate[d].map((m) => String(m.id)));
-      s6.totalExpected = matchIds.length * 2;
-      s6.updateProgress(`Loading ${matchIds.length} matches (${dates.length} rounds)...`);
-      matchIds.forEach((id) => {
-        TmMatchService.fetchMatchCached(id).then((data) => {
-          if (data) processMatchData(id, data);
-          else s6.totalProcessed += 2;
-        }).catch(() => {
-          s6.totalProcessed += 2;
+      const selectedMatches = dates.flatMap((d) => byDate[d]);
+      const matchIds = selectedMatches.map((m) => String(m.id));
+      const clubsToFetch = /* @__PURE__ */ new Map();
+      selectedMatches.forEach((m) => {
+        if (m.hometeam) clubsToFetch.set(String(m.hometeam), m.hometeam_name || "");
+        if (m.awayteam) clubsToFetch.set(String(m.awayteam), m.awayteam_name || "");
+      });
+      s6.updateProgress(`Fetching ${clubsToFetch.size} squads...`);
+      Promise.all([...clubsToFetch.entries()].map(([id, name]) => s6.fetchSquad(id, name))).then(() => {
+        s6.totalExpected = matchIds.length * 2;
+        s6.updateProgress(`Loading ${matchIds.length} matches (${dates.length} rounds)...`);
+        matchIds.forEach((id) => {
+          TmMatchService.fetchMatchCached(id, { dbSync: false }).then((data) => {
+            if (data) processMatchData(id, data);
+            else s6.totalProcessed += 2;
+          }).catch(() => {
+            s6.totalProcessed += 2;
+          });
         });
       });
       if (s6.analysisInterval) clearInterval(s6.analysisInterval);
@@ -27299,15 +27269,8 @@ order:initial
       });
     }
   };
-  var captureNativeRounds = () => {
-    nativeRoundsCache = [
-      parseRoundFromDOM("last_round", "last_round_table"),
-      parseRoundFromDOM("next_round", "next_round_table")
-    ];
-  };
   var TmLeagueRounds = {
-    startAnalysis,
-    captureNativeRounds
+    startAnalysis
   };
 
   // src/components/league/tm-league-styles.js
@@ -28417,45 +28380,39 @@ order:initial
       };
     };
     const squadCache2 = /* @__PURE__ */ new Map();
-    const fetchSquad2 = (clubId2) => {
+    const fetchSquad2 = (clubId2, name = "") => {
       if (!squadCache2.has(clubId2)) {
-        squadCache2.set(clubId2, fetchRawPlayers(clubId2).then((data) => {
-          const post = {};
-          (data || []).forEach((p) => {
-            post[String(p.id)] = p;
-          });
-          return { post };
-        }).catch(() => ({ post: {} })));
+        squadCache2.set(clubId2, fetchRawPlayers(clubId2).then((players) => {
+          const result = { id: String(clubId2), name, squad: players || [] };
+          if (!result.squad.length) squadCache2.delete(clubId2);
+          return result;
+        }).catch(() => {
+          squadCache2.delete(clubId2);
+          return { id: String(clubId2), name, squad: [] };
+        }));
       }
       return squadCache2.get(clubId2);
     };
-    const tooltipCache3 = /* @__PURE__ */ new Map();
-    const getPlayerDataFromSquad2 = async (pid, squadPost, matchPos) => {
-      var _a, _b, _c, _d, _e, _f;
-      let player2 = (_a = squadPost.post) == null ? void 0 : _a[String(pid)];
+    const getPlayerDataFromSquad2 = async (pid, squadData, matchPos) => {
+      var _a, _b, _c, _d, _e;
+      let player2 = (squadData.squad || []).find((p) => String(p.id) === String(pid));
       if (!player2) {
-        if (!tooltipCache3.has(pid)) {
-          tooltipCache3.set(pid, TmPlayerModel.fetchPlayerTooltip(pid).then((r) => {
-            var _a2;
-            return (_a2 = r == null ? void 0 : r.player) != null ? _a2 : null;
-          }).catch(() => null));
-        }
-        player2 = await tooltipCache3.get(pid);
+        player2 = await TmPlayerModel.fetchTooltipCached(pid).catch(() => null);
       }
       if (!player2) return { Age: 0, R5: 0, REC: 0, isGK: false, skills: [], routine: 0 };
-      const posData = (_b = player2.positions) == null ? void 0 : _b.find((p) => {
+      const posData = (_a = player2.positions) == null ? void 0 : _a.find((p) => {
         var _a2;
         return ((_a2 = p.position) == null ? void 0 : _a2.toLowerCase()) === matchPos;
       });
-      const r5 = Number((_d = (_c = posData == null ? void 0 : posData.r5) != null ? _c : player2.r5) != null ? _d : 0);
-      const rec = Number((_f = (_e = posData == null ? void 0 : posData.rec) != null ? _e : player2.rec) != null ? _f : 0);
+      const r5 = Number((_c = (_b = posData == null ? void 0 : posData.r5) != null ? _b : player2.r5) != null ? _c : 0);
+      const rec = Number((_e = (_d = posData == null ? void 0 : posData.rec) != null ? _d : player2.rec) != null ? _e : 0);
       return { Age: player2.ageMonths, R5: r5, REC: rec, isGK: player2.isGK, skills: player2.skills, routine: player2.routine };
     };
-    const computeTeamStats2 = async (playerIds, lineup, squadPost) => {
+    const computeTeamStats2 = async (playerIds, lineup, squadData) => {
       const starters = playerIds.filter((id) => !lineup[id].position.includes("sub"));
       const players = await Promise.all(starters.map(async (id) => {
         const matchPos = lineup[id].position;
-        const p = await getPlayerDataFromSquad2(id, squadPost, matchPos);
+        const p = await getPlayerDataFromSquad2(id, squadData, matchPos);
         return { id, name: lineup[id].name || String(id), pos: matchPos, ...p };
       }));
       const totals = { Age: 0, REC: 0, R5: 0 };
@@ -28938,7 +28895,6 @@ order:initial
       clubMap = /* @__PURE__ */ new Map();
       clubPlayersMap = /* @__PURE__ */ new Map();
       squadCache2.clear();
-      tooltipCache3.clear();
       totalExpected = 0;
       totalProcessed = 0;
       skillData = [];
@@ -28963,7 +28919,6 @@ order:initial
       prepareLeagueLayout();
       initLeagueFeed();
       leagueBootstrapped = true;
-      TmLeagueRounds.captureNativeRounds();
       const initUI = () => {
         const clubLinks = Array.from(document.querySelectorAll("#overall_table td a[club_link]"));
         if (!clubLinks.length) return;
@@ -38646,7 +38601,7 @@ order:initial
       const rangeColumnIndexes = headers.map((header2, index) => ({ index, label: header2.label })).filter(({ label }) => /^\d+\s*-\s*\d+$/.test(label)).map(({ index }) => index);
       const currentWindowIndex = (_b = rangeColumnIndexes[0]) != null ? _b : -1;
       const rollingWindowIndex = (_c = rangeColumnIndexes[1]) != null ? _c : -1;
-      const formatTableNumber = (value) => Number.isFinite(value) ? value.toFixed(3) : "\u2014";
+      const formatTableNumber = (value) => Number.isFinite(value) ? value.toFixed(3) : "0.000";
       const bodyRows = Array.from(table2.querySelectorAll("tbody tr")).map((row) => ({ row, cells: Array.from(row.querySelectorAll("td")) })).filter(({ cells }) => cells.length);
       const breakRowIndexes = new Set(
         bodyRows.map(({ row }, rowIndex) => row.dataset.tmvuBreakBefore === "1" || row.classList.contains("tmvu-icup-coeff-break") ? rowIndex : -1).filter((index) => index > 0)
@@ -38720,7 +38675,7 @@ order:initial
         shell.dataset.tmvuTableUpgraded = "1";
       });
     };
-    const formatCoefficientValue = (value) => Number.isFinite(value) ? value.toFixed(3) : "\u2014";
+    const formatCoefficientValue = (value) => Number.isFinite(value) ? value.toFixed(3) : "0.000";
     const findCoefficientPanel = (root2, labelPattern) => {
       const tab = Array.from(root2.querySelectorAll("[data-tab-target]")).find((node) => labelPattern.test(cleanText28(node.textContent)));
       const panelId = (tab == null ? void 0 : tab.getAttribute("data-tab-target")) || "";
@@ -38785,13 +38740,12 @@ order:initial
         const nextWindowTotalCell = document.createElement("td");
         nextWindowTotalCell.dataset.tmvuNextWindowTotalCell = "1";
         nextWindowTotalCell.className = "align_right tmvu-icup-coeff-current";
-        nextWindowTotalCell.textContent = "\u2014";
+        nextWindowTotalCell.textContent = "0.000";
         totalCell.after(nextWindowTotalCell);
-        if (Number.isFinite(currentValue)) {
-          const rollingTotal = seasonValues.slice(1).reduce((sum, value) => sum + value, 0) + currentValue;
-          nextWindowTotalCell.textContent = formatCoefficientValue(rollingTotal);
-          nextWindowTotalCell.title = rollingLabel;
-        }
+        const effectiveCurrentValue = Number.isFinite(currentValue) ? currentValue : 0;
+        const rollingTotal = seasonValues.slice(1).reduce((sum, value) => sum + value, 0) + effectiveCurrentValue;
+        nextWindowTotalCell.textContent = formatCoefficientValue(rollingTotal);
+        nextWindowTotalCell.title = rollingLabel;
       });
     };
     const hydrateCurrentSeasonCoefficientData = async ({ root: root2, box, tournamentIds = [] }) => {
