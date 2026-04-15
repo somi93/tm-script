@@ -50,22 +50,24 @@ const applyDecimalsToAnchor = (player) => {
  */
 const balanceSkillsToASI = (newSkills, caps, floors, asi, isGK) => {
     if (asi == null) return;
+    const hardCap = 20;
     const base = Math.pow(asi * ASI_WEIGHT_OUTFIELD, 1 / 7);
     const expectedSum = isGK ? base / 14 * 11 : base;
     let delta = expectedSum - newSkills.reduce((s, v) => s + v, 0);
     let passes = 0;
     while (Math.abs(delta) > 0.0001 && passes++ < 20) {
         const eligible = newSkills
-            .map((v, si) => (delta > 0 ? v < caps[si] : v > floors[si]) ? si : -1)
+            .map((v, si) => (delta > 0 ? v < Math.min(caps[si], hardCap) : v > floors[si]) ? si : -1)
             .filter(si => si >= 0);
         if (!eligible.length) break;
         const share = delta / eligible.length;
         let remaining = 0;
         for (const si of eligible) {
+            const effectiveCap = Math.min(caps[si], hardCap);
             const candidate = newSkills[si] + share;
-            if (delta > 0 && candidate > caps[si]) {
-                remaining += candidate - caps[si];
-                newSkills[si] = caps[si];
+            if (delta > 0 && candidate > effectiveCap) {
+                remaining += candidate - effectiveCap;
+                newSkills[si] = effectiveCap;
             } else if (delta < 0 && candidate < floors[si]) {
                 remaining += candidate - floors[si];
                 newSkills[si] = floors[si];
@@ -111,10 +113,10 @@ const fillSkillsBackward = (player) => {
         const floors = new Array(N);
         for (let si = 0; si < N; si++) {
             if (knownInts?.[si] != null) {
-                caps[si]   = knownInts[si] + 0.99;
+                caps[si]   = Math.min(knownInts[si] + 0.99, 20);
                 floors[si] = knownInts[si];
             } else {
-                caps[si]   = curSkills[si]; // can't exceed next (newer) month
+                caps[si]   = Math.min(curSkills[si], 20);
                 floors[si] = 1.0;
             }
         }
@@ -237,6 +239,7 @@ const fillSkillsForward = (player) => {
                 floors[si] = 1.0;
             }
             if (curInt >= 20) { caps[si] = 20; floors[si] = 20; }
+            caps[si] = Math.min(caps[si], 20);
         }
 
         // apply gain clamped to [floor, cap]

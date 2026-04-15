@@ -1,5 +1,6 @@
 import { TmTable } from '../components/shared/tm-table.js';
 import { TmCheckbox } from '../components/shared/tm-checkbox.js';
+import { TmUI } from '../components/shared/tm-ui.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmPosition } from '../lib/tm-position.js';
 import { TmUtils } from '../lib/tm-utils.js';
@@ -291,6 +292,27 @@ export function initPlayersPage(main) {
         ];
     };
 
+    const resyncAll = async () => {
+        const squad = state.squads.main;
+        if (!squad.rawPlayers?.length || squad.loading) return;
+        squad.loading = true;
+        render();
+        const syncBar = TmProgress.progressBar({ title: '⚡ Force resyncing players' });
+        try {
+            const resynced = await runSyncPipeline(squad.rawPlayers, (done, total) => {
+                syncBar.update(done, total, `Resyncing ${done}/${total}`);
+            }, { mode: 'force-resync' });
+            syncBar.done();
+            squad.rawPlayers = resynced;
+            squad.players = decoratePlayers(resynced);
+        } catch (err) {
+            syncBar.done();
+            squad.loadError = err?.message || 'Resync failed.';
+        }
+        squad.loading = false;
+        render();
+    };
+
     const renderControls = () => {
         controlsHost.innerHTML = '';
         const row = document.createElement('div');
@@ -316,6 +338,18 @@ export function initPlayersPage(main) {
 
         row.appendChild(mainToggle);
         row.appendChild(reserveToggle);
+
+        const resyncBtn = TmUI.button({
+            label: 'Resync All',
+            color: 'primary',
+            size: 'sm',
+            cls: 'tmvu-players-resync-btn',
+            disabled: !state.squads.main.rawPlayers?.length || state.squads.main.loading,
+            onClick: () => resyncAll(),
+        });
+        resyncBtn.style.marginLeft = 'auto';
+        row.appendChild(resyncBtn);
+
         controlsHost.appendChild(row);
     };
 
@@ -453,6 +487,7 @@ export function initPlayersPage(main) {
         syncBar.done();
 
         squad.players = decoratePlayers(allPlayersWithData);
+        squad.rawPlayers = allPlayersWithData;
         console.log(squad.players);
         squad.loaded = true;
         squad.syncMessage = null;

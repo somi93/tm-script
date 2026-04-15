@@ -152,15 +152,17 @@ export const ENABLE_INFO = {
     peaks: { title: 'Peaks', desc: 'See what % of weekly training went into each peak area.', enableKey: 'peaks' }
 };
 
-export const buildEnableCard = (container, key, playerId) => {
-    console.log('[Graphs] Building enable card for', key);
+export const buildEnableCard = (container, key, playerId, { onEnable } = {}) => {
     const info = ENABLE_INFO[key];
     if (!info) return;
     const card = document.createElement('div');
     card.className = 'tmg-enable-card rounded-md py-4 px-4';
     card.innerHTML = `<tm-row data-justify="space-between" data-align="center" data-gap="12px"><div><div class="tmg-enable-title text-md font-bold">${info.title}</div><div class="tmg-enable-desc text-sm">${info.desc}</div></div><tm-button data-variant="primary" data-size="sm" data-cls="font-bold uppercase px-4" data-action="enableGraph">Enable <img src="/pics/pro_icon.png" class="pro_icon"></tm-button></tm-row>`;
     TmUI?.render(card, undefined, {
-        enableGraph: () => { if (typeof window.graph_enable === 'function') window.graph_enable(playerId, info.enableKey); }
+        enableGraph: () => {
+            if (typeof window.graph_enable === 'function') window.graph_enable(playerId, info.enableKey);
+            onEnable?.();
+        }
     });
     container.appendChild(card);
 };

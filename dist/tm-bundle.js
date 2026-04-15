@@ -43399,9 +43399,8 @@ order:initial
     skills: { title: "Skills", desc: "Monitor when a player gained a point in a certain skill.", enableKey: "skills" },
     peaks: { title: "Peaks", desc: "See what % of weekly training went into each peak area.", enableKey: "peaks" }
   };
-  var buildEnableCard = (container, key, playerId) => {
+  var buildEnableCard = (container, key, playerId, { onEnable } = {}) => {
     var _a;
-    console.log("[Graphs] Building enable card for", key);
     const info = ENABLE_INFO[key];
     if (!info) return;
     const card = document.createElement("div");
@@ -43410,6 +43409,7 @@ order:initial
     (_a = TmUI) == null ? void 0 : _a.render(card, void 0, {
       enableGraph: () => {
         if (typeof window.graph_enable === "function") window.graph_enable(playerId, info.enableKey);
+        onEnable == null ? void 0 : onEnable();
       }
     });
     container.appendChild(card);
@@ -43504,7 +43504,6 @@ order:initial
       const [y, m] = k.split(".").map(Number);
       return { age: y + m / 12, value: (_b = (_a = records[k]) == null ? void 0 : _a.r5) != null ? _b : null };
     }).filter((p) => p.value != null);
-    console.log(pairs);
     if (pairs.length < 2) return;
     const ages = pairs.map((p) => p.age);
     const values = pairs.map((p) => Number(p.value));
@@ -43530,24 +43529,11 @@ order:initial
   // src/components/player/graphs/tm-graph-skills.js
   var SKILL_META = SKILL_DEFS_OUT.map((s6) => ({ key: s6.key, label: s6.name, color: s6.color }));
   var SKILL_META_GK = SKILL_DEFS_GK.map((s6) => ({ key: s6.key2 || s6.key, label: s6.name, color: s6.color }));
-  var buildSkillsChart = (el2, player2) => {
-    var _a;
-    const records = player2.records || {};
-    const sortedKeys = TmUtils.sortAgeKeys(Object.keys(records));
-    const statKeys = player2.isGK ? GRAPH_KEYS_GK : GRAPH_KEYS_OUT;
-    const keyIdx = Object.fromEntries(statKeys.map((k, i) => [k, i]));
-    const sm = player2.isGK ? SKILL_META_GK : SKILL_META;
-    const seriesData = sm.map((m) => ({
-      key: m.key,
-      label: m.label,
-      color: m.color,
-      visible: true,
-      values: sortedKeys.map((k) => {
-        var _a2, _b, _c;
-        return (_c = (_b = (_a2 = records[k]) == null ? void 0 : _a2.skills) == null ? void 0 : _b[keyIdx[m.key]]) != null ? _c : 0;
-      }).map(Number)
-    }));
-    if (!seriesData.length || !seriesData[0].values.length) {
+  var buildSkillsChart = async (el2, player2) => {
+    var _a, _b;
+    const graphData = await TmPlayerService.fetchPlayerGraphs(player2);
+    const hasSkillsGraph = ((_a = graphData == null ? void 0 : graphData.graphs) == null ? void 0 : _a.strength) != null;
+    if (!hasSkillsGraph) {
       if (player2.isOwnPlayer) {
         buildEnableCard(el2, "skills", player2.id);
       } else {
@@ -43559,6 +43545,22 @@ order:initial
       }
       return;
     }
+    const records = player2.records || {};
+    const sortedKeys = TmUtils.sortAgeKeys(Object.keys(records));
+    const statKeys = player2.isGK ? GRAPH_KEYS_GK : GRAPH_KEYS_OUT;
+    const keyIdx = Object.fromEntries(statKeys.map((k, i) => [k, i]));
+    const sm = player2.isGK ? SKILL_META_GK : SKILL_META;
+    const seriesData = sm.map((m) => ({
+      key: m.key,
+      label: m.label,
+      color: m.color,
+      visible: true,
+      values: sortedKeys.map((k) => {
+        var _a2, _b2, _c;
+        return (_c = (_b2 = (_a2 = records[k]) == null ? void 0 : _a2.skills) == null ? void 0 : _b2[keyIdx[m.key]]) != null ? _c : 0;
+      }).map(Number)
+    }));
+    if (!seriesData.length || !seriesData[0].values.length) return;
     const ages = sortedKeys.map((k) => {
       const [y, m] = k.split(".").map(Number);
       return y + m / 12;
@@ -43587,7 +43589,7 @@ order:initial
     const redraw = () => {
       curInfo = drawMultiLine(canvas, ages, seriesData, opts);
     };
-    (_a = TmUI) == null ? void 0 : _a.render(wrap, void 0, {
+    (_b = TmUI) == null ? void 0 : _b.render(wrap, void 0, {
       all: () => {
         seriesData.forEach((s6) => s6.visible = true);
         wrap.querySelectorAll(".tmg-legend .tmu-checkbox").forEach((cb) => {
@@ -45212,6 +45214,11 @@ order:initial
     return age * 12 + month;
   };
   var absToKey = (abs) => `${Math.floor(abs / 12)}.${abs % 12}`;
+  var hasNullTiAsi = (DBPlayer) => {
+    const records = DBPlayer == null ? void 0 : DBPlayer.records;
+    if (!records) return false;
+    return Object.values(records).some((r) => r.TI == null && r.ASI == null);
+  };
   var hasMissingMonths = (player2, DBPlayer) => {
     const records = DBPlayer == null ? void 0 : DBPlayer.records;
     if (!records) return false;
@@ -45232,7 +45239,8 @@ order:initial
         const currentRecord = (_a = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _a[player2.ageMonthsString];
         const synced = (currentRecord == null ? void 0 : currentRecord.fullySynced) === true;
         const missing = hasMissingMonths(player2, DBPlayer);
-        const needSync = mode === "missing-only" ? missing : !(synced && !missing);
+        const nullTiAsi = hasNullTiAsi(DBPlayer);
+        const needSync = mode === "missing-only" ? missing : mode === "force-resync" ? true : !(synced && !missing) || nullTiAsi;
         return { ...player2, needSync, DBPlayer, records: (DBPlayer == null ? void 0 : DBPlayer.records) || {} };
       })
     );
@@ -45319,8 +45327,10 @@ order:initial
       })
     );
     return players.map((player2, i) => {
+      var _a;
       if (!player2.needSync) return player2;
-      const { graphData, training } = fetches[i];
+      const { graphData: rawGraphData, training } = fetches[i];
+      const graphData = (_a = rawGraphData == null ? void 0 : rawGraphData.graphs) != null ? _a : null;
       const monthKeys = buildMonthKeys(player2, graphData, player2.DBPlayer);
       const records = buildRecordSkeleton(player2, monthKeys, graphData, player2.DBPlayer);
       return { ...player2, graphData, training, monthKeys, records };
@@ -45492,20 +45502,22 @@ order:initial
   };
   var balanceSkillsToASI = (newSkills, caps, floors, asi, isGK) => {
     if (asi == null) return;
+    const hardCap = 20;
     const base = Math.pow(asi * ASI_WEIGHT_OUTFIELD3, 1 / 7);
     const expectedSum = isGK ? base / 14 * 11 : base;
     let delta = expectedSum - newSkills.reduce((s6, v) => s6 + v, 0);
     let passes = 0;
     while (Math.abs(delta) > 1e-4 && passes++ < 20) {
-      const eligible = newSkills.map((v, si) => (delta > 0 ? v < caps[si] : v > floors[si]) ? si : -1).filter((si) => si >= 0);
+      const eligible = newSkills.map((v, si) => (delta > 0 ? v < Math.min(caps[si], hardCap) : v > floors[si]) ? si : -1).filter((si) => si >= 0);
       if (!eligible.length) break;
       const share = delta / eligible.length;
       let remaining = 0;
       for (const si of eligible) {
+        const effectiveCap = Math.min(caps[si], hardCap);
         const candidate = newSkills[si] + share;
-        if (delta > 0 && candidate > caps[si]) {
-          remaining += candidate - caps[si];
-          newSkills[si] = caps[si];
+        if (delta > 0 && candidate > effectiveCap) {
+          remaining += candidate - effectiveCap;
+          newSkills[si] = effectiveCap;
         } else if (delta < 0 && candidate < floors[si]) {
           remaining += candidate - floors[si];
           newSkills[si] = floors[si];
@@ -45544,10 +45556,10 @@ order:initial
       const floors = new Array(N);
       for (let si = 0; si < N; si++) {
         if ((knownInts == null ? void 0 : knownInts[si]) != null) {
-          caps[si] = knownInts[si] + 0.99;
+          caps[si] = Math.min(knownInts[si] + 0.99, 20);
           floors[si] = knownInts[si];
         } else {
-          caps[si] = curSkills[si];
+          caps[si] = Math.min(curSkills[si], 20);
           floors[si] = 1;
         }
       }
@@ -45645,6 +45657,7 @@ order:initial
           caps[si] = 20;
           floors[si] = 20;
         }
+        caps[si] = Math.min(caps[si], 20);
       }
       const newSkills = curSkills.map(
         (v, si) => Math.max(floors[si], Math.min(caps[si], v + gain[si]))
@@ -45743,16 +45756,19 @@ order:initial
   };
 
   // src/workflows/player-history/save.js
-  var saveHistoryRecords = async (players) => {
+  var saveHistoryRecords = async (players, { writeFullySynced = true } = {}) => {
     const tasks = players.filter((p) => p.needSync && p.records).map(async (player2) => {
       var _a, _b;
       const { DBPlayer, records, ageMonthsString } = player2;
       const merged = { ...(DBPlayer == null ? void 0 : DBPlayer.records) || {}, ...records };
       if (ageMonthsString && merged[ageMonthsString]) {
-        merged[ageMonthsString] = {
-          ...merged[ageMonthsString],
-          fullySynced: true
-        };
+        if (writeFullySynced) {
+          merged[ageMonthsString] = { ...merged[ageMonthsString], fullySynced: true };
+        } else {
+          const cur = { ...merged[ageMonthsString] };
+          delete cur.fullySynced;
+          merged[ageMonthsString] = cur;
+        }
       }
       const preferredPositions = (player2.positions || []).filter((p) => p.preferred);
       await TmPlayerDB.set(player2.id, {
@@ -45785,7 +45801,7 @@ order:initial
         if (currentRecord) currentRecord.fullySynced = true;
       }
     }
-    await saveHistoryRecords(withData);
+    await saveHistoryRecords(withData, { writeFullySynced: mode === "full" });
     return withData;
   };
 
@@ -46336,7 +46352,29 @@ order:initial
         }
       ];
     };
+    const resyncAll = async () => {
+      var _a;
+      const squad = state5.squads.main;
+      if (!((_a = squad.rawPlayers) == null ? void 0 : _a.length) || squad.loading) return;
+      squad.loading = true;
+      render17();
+      const syncBar = TmProgress.progressBar({ title: "\u26A1 Force resyncing players" });
+      try {
+        const resynced = await runSyncPipeline(squad.rawPlayers, (done, total) => {
+          syncBar.update(done, total, `Resyncing ${done}/${total}`);
+        }, { mode: "force-resync" });
+        syncBar.done();
+        squad.rawPlayers = resynced;
+        squad.players = decoratePlayers2(resynced);
+      } catch (err) {
+        syncBar.done();
+        squad.loadError = (err == null ? void 0 : err.message) || "Resync failed.";
+      }
+      squad.loading = false;
+      render17();
+    };
     const renderControls = () => {
+      var _a;
       controlsHost.innerHTML = "";
       const row = document.createElement("div");
       row.className = "tmvu-players-controls";
@@ -46358,6 +46396,16 @@ order:initial
       });
       row.appendChild(mainToggle);
       row.appendChild(reserveToggle);
+      const resyncBtn = TmUI.button({
+        label: "Resync All",
+        color: "primary",
+        size: "sm",
+        cls: "tmvu-players-resync-btn",
+        disabled: !((_a = state5.squads.main.rawPlayers) == null ? void 0 : _a.length) || state5.squads.main.loading,
+        onClick: () => resyncAll()
+      });
+      resyncBtn.style.marginLeft = "auto";
+      row.appendChild(resyncBtn);
       controlsHost.appendChild(row);
     };
     const renderSections = () => {
@@ -46474,6 +46522,7 @@ order:initial
       });
       syncBar.done();
       squad.players = decoratePlayers2(allPlayersWithData);
+      squad.rawPlayers = allPlayersWithData;
       console.log(squad.players);
       squad.loaded = true;
       squad.syncMessage = null;

@@ -1,6 +1,7 @@
 import { TmUI } from '../../shared/tm-ui.js';
 import { SKILL_DEFS_OUT, SKILL_DEFS_GK, GRAPH_KEYS_OUT, GRAPH_KEYS_GK } from '../../../constants/skills.js';
 import { TmUtils } from '../../../lib/tm-utils.js';
+import { TmPlayerService } from '../../../services/player.js';
 import { buildAges, drawMultiLine, attachMultiTooltip, checkboxHtml, buildEnableCard } from './tm-graph-utils.js';
 
 'use strict';
@@ -8,18 +9,12 @@ import { buildAges, drawMultiLine, attachMultiTooltip, checkboxHtml, buildEnable
 const SKILL_META = SKILL_DEFS_OUT.map(s => ({ key: s.key, label: s.name, color: s.color }));
 const SKILL_META_GK = SKILL_DEFS_GK.map(s => ({ key: s.key2 || s.key, label: s.name, color: s.color }));
 
-export const buildSkillsChart = (el, player) => {
-    const records = player.records || {};
-    const sortedKeys = TmUtils.sortAgeKeys(Object.keys(records));
-    const statKeys = player.isGK ? GRAPH_KEYS_GK : GRAPH_KEYS_OUT;
-    const keyIdx = Object.fromEntries(statKeys.map((k, i) => [k, i]));
-    const sm = player.isGK ? SKILL_META_GK : SKILL_META;
-    const seriesData = sm.map(m => ({
-        key: m.key, label: m.label, color: m.color, visible: true,
-        values: sortedKeys.map(k => records[k]?.skills?.[keyIdx[m.key]] ?? 0).map(Number),
-    }));
+export const buildSkillsChart = async (el, player) => {
+    // Check via live endpoint if skills graph is enabled for this player
+    const graphData = await TmPlayerService.fetchPlayerGraphs(player);
+    const hasSkillsGraph = graphData?.graphs?.strength != null;
 
-    if (!seriesData.length || !seriesData[0].values.length) {
+    if (!hasSkillsGraph) {
         if (player.isOwnPlayer) {
             buildEnableCard(el, 'skills', player.id);
         } else {
@@ -31,6 +26,18 @@ export const buildSkillsChart = (el, player) => {
         }
         return;
     }
+
+    const records = player.records || {};
+    const sortedKeys = TmUtils.sortAgeKeys(Object.keys(records));
+    const statKeys = player.isGK ? GRAPH_KEYS_GK : GRAPH_KEYS_OUT;
+    const keyIdx = Object.fromEntries(statKeys.map((k, i) => [k, i]));
+    const sm = player.isGK ? SKILL_META_GK : SKILL_META;
+    const seriesData = sm.map(m => ({
+        key: m.key, label: m.label, color: m.color, visible: true,
+        values: sortedKeys.map(k => records[k]?.skills?.[keyIdx[m.key]] ?? 0).map(Number),
+    }));
+
+    if (!seriesData.length || !seriesData[0].values.length) return;
 
     const ages = sortedKeys.map(k => { const [y, m] = k.split('.').map(Number); return y + m / 12; });
     const wrap = document.createElement('div');

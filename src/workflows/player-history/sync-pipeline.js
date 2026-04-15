@@ -42,7 +42,7 @@ export const runSyncPipeline = async (players, onProgress, { mode = 'full' } = {
     }
 
     // Save to DB
-    await saveHistoryRecords(withData);
+    await saveHistoryRecords(withData, { writeFullySynced: mode === 'full' });
 
     return withData;
 };

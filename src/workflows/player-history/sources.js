@@ -132,7 +132,8 @@ export const buildHistorySkeletons = async (players, onProgress) => {
     return players.map((player, i) => {
         if (!player.needSync) return player;
 
-        const { graphData, training } = fetches[i];
+        const { graphData: rawGraphData, training } = fetches[i];
+        const graphData = rawGraphData?.graphs ?? null;
         const monthKeys = buildMonthKeys(player, graphData, player.DBPlayer);
         const records = buildRecordSkeleton(player, monthKeys, graphData, player.DBPlayer);
 

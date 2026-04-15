@@ -5,7 +5,7 @@ import { TmPlayerDB } from '../../lib/tm-playerdb.js';
  * Current month record gets fullySynced: true.
  * Merges new computed records on top of existing DBPlayer records.
  */
-export const saveHistoryRecords = async (players) => {
+export const saveHistoryRecords = async (players, { writeFullySynced = true } = {}) => {
     const tasks = players
         .filter(p => p.needSync && p.records)
         .map(async (player) => {
@@ -14,12 +14,14 @@ export const saveHistoryRecords = async (players) => {
             // Merge: existing DB records as base, new computed records on top
             const merged = { ...(DBPlayer?.records || {}), ...records };
 
-            // Mark current month as fully synced
             if (ageMonthsString && merged[ageMonthsString]) {
-                merged[ageMonthsString] = {
-                    ...merged[ageMonthsString],
-                    fullySynced: true,
-                };
+                if (writeFullySynced) {
+                    merged[ageMonthsString] = { ...merged[ageMonthsString], fullySynced: true };
+                } else {
+                    const cur = { ...merged[ageMonthsString] };
+                    delete cur.fullySynced;
+                    merged[ageMonthsString] = cur;
+                }
             }
 
             const preferredPositions = (player.positions || []).filter(p => p.preferred);

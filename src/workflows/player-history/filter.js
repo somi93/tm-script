@@ -24,6 +24,12 @@ const absToKey = (abs) => `${Math.floor(abs / 12)}.${abs % 12}`;
  * @param {object|null} DBPlayer - indexed DB entry with .records
  * @returns {boolean}
  */
+const hasNullTiAsi = (DBPlayer) => {
+    const records = DBPlayer?.records;
+    if (!records) return false;
+    return Object.values(records).some(r => r.TI == null && r.ASI == null);
+};
+
 const hasMissingMonths = (player, DBPlayer) => {
     const records = DBPlayer?.records;
     if (!records) return false;
@@ -55,9 +61,12 @@ export const attachSyncStatus = async (players, { mode = 'full' } = {}) => {
             const currentRecord = DBPlayer?.records?.[player.ageMonthsString];
             const synced = currentRecord?.fullySynced === true;
             const missing = hasMissingMonths(player, DBPlayer);
+            const nullTiAsi = hasNullTiAsi(DBPlayer);
             const needSync = mode === 'missing-only'
                 ? missing
-                : !(synced && !missing);
+                : mode === 'force-resync'
+                    ? true
+                    : !(synced && !missing) || nullTiAsi;
             return { ...player, needSync, DBPlayer, records: DBPlayer?.records || {} };
         })
     );
