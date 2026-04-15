@@ -5057,6 +5057,59 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     return { custom: customTraining, standard: null };
   };
 
+  // src/models/club_new.js
+  var fetchRawPlayers = async (clubId2) => {
+    if (!clubId2) return [];
+    const post = await TmClubService.fetchSquadPost(clubId2);
+    if (!post) return [];
+    return Object.values(post).map(normalizeSquadPlayer);
+  };
+
+  // src/services/player.js
+  var TmPlayerService = {
+    async fetchPlayerTooltip(playerId) {
+      const data = await _post("/ajax/tooltip.ajax.php", { player_id: playerId });
+      return data ? normalizeTooltipPlayer(data) : null;
+    },
+    async fetchPlayerInfo(pid, type, extra = {}) {
+      return _post("/ajax/players_get_info.ajax.php", {
+        player_id: pid,
+        type,
+        show_non_pro_graphs: true,
+        ...extra
+      });
+    },
+    async fetchPlayerGraphs(player2) {
+      const data = await this.fetchPlayerInfo(player2.id, "graphs");
+      return normalizePlayerGraphs(data == null ? void 0 : data.graphs, player2);
+    },
+    async fetchPlayerHistory(playerId) {
+      const data = await this.fetchPlayerInfo(playerId, "history");
+      return data ? normalizePlayerStats(data) : null;
+    },
+    async fetchPlayerTraining(playerId) {
+      const data = await this.fetchPlayerInfo(playerId, "training");
+      return data ? normalizePlayerTraining(data) : null;
+    },
+    async fetchPlayerTrainingForSync(player2) {
+      var _a;
+      if (player2 == null ? void 0 : player2.isOwnPlayer) {
+        return this.fetchPlayerTraining(player2.id);
+      }
+      const data = await _post("/ajax/players_get_select.ajax.php", {
+        type: "change",
+        club_id: player2 == null ? void 0 : player2.club_id
+      });
+      return normalizeSquadPlayerTraining((_a = data == null ? void 0 : data.post) == null ? void 0 : _a[player2.id]);
+    },
+    normalizeSquadPlayer(postPlayer) {
+      return normalizeSquadPlayer(postPlayer);
+    },
+    normalizePlayer(player2) {
+      return player2;
+    }
+  };
+
   // src/workflows/player-history/profile.js
   var { sortAgeKeys: sortAgeKeys2 } = TmUtils;
   var HISTORY_SYNC_STRATEGY = {
@@ -5103,51 +5156,6 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   };
   var selectHistorySyncStrategy = (profile) => {
     return profile.hasSkillGraphs ? HISTORY_SYNC_STRATEGY.SKILL_GRAPHS : profile.hasReliableCurrentTI && profile.hasCurrentSnapshot ? HISTORY_SYNC_STRATEGY.EXACT_CURRENT_TI : profile.hasLeftAnchor && profile.hasCurrentSnapshot ? HISTORY_SYNC_STRATEGY.ANCHORED_ESTIMATE : HISTORY_SYNC_STRATEGY.INSUFFICIENT_EVIDENCE;
-  };
-
-  // src/services/player.js
-  var TmPlayerService = {
-    async fetchPlayerTooltip(playerId) {
-      const data = await _post("/ajax/tooltip.ajax.php", { player_id: playerId });
-      return data ? normalizeTooltipPlayer(data) : null;
-    },
-    async fetchPlayerInfo(pid, type, extra = {}) {
-      return _post("/ajax/players_get_info.ajax.php", {
-        player_id: pid,
-        type,
-        show_non_pro_graphs: true,
-        ...extra
-      });
-    },
-    async fetchPlayerGraphs(player2) {
-      const data = await this.fetchPlayerInfo(player2.id, "graphs");
-      return normalizePlayerGraphs(data == null ? void 0 : data.graphs, player2);
-    },
-    async fetchPlayerHistory(playerId) {
-      const data = await this.fetchPlayerInfo(playerId, "history");
-      return data ? normalizePlayerStats(data) : null;
-    },
-    async fetchPlayerTraining(playerId) {
-      const data = await this.fetchPlayerInfo(playerId, "training");
-      return data ? normalizePlayerTraining(data) : null;
-    },
-    async fetchPlayerTrainingForSync(player2) {
-      var _a;
-      if (player2 == null ? void 0 : player2.isOwnPlayer) {
-        return this.fetchPlayerTraining(player2.id);
-      }
-      const data = await _post("/ajax/players_get_select.ajax.php", {
-        type: "change",
-        club_id: player2 == null ? void 0 : player2.club_id
-      });
-      return normalizeSquadPlayerTraining((_a = data == null ? void 0 : data.post) == null ? void 0 : _a[player2.id]);
-    },
-    normalizeSquadPlayer(postPlayer) {
-      return normalizeSquadPlayer(postPlayer);
-    },
-    normalizePlayer(player2) {
-      return player2;
-    }
   };
 
   // src/workflows/player-history/shared.js
@@ -5869,42 +5877,6 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     loadHistorySyncSources
   };
 
-  // src/models/club.js
-  var TmClubModel2 = {
-    async fetchSquadRaw(clubId2, sync = false, skillChangesMap = null) {
-      const post = await TmClubService.fetchSquadPost(clubId2);
-      if (!post) return null;
-      const players = Object.values(post).map((player2) => normalizeSquadPlayer(player2));
-      return Promise.all(players.map(async (player2) => {
-        var _a, _b;
-        player2.weeklyChanges = (skillChangesMap == null ? void 0 : skillChangesMap.get(player2.id)) || null;
-        if (Number(player2.id) === 140907932) console.log("[WC:2 fetchSquadRaw] player.weeklyChanges", player2.weeklyChanges, "skillChangesMap has it:", skillChangesMap == null ? void 0 : skillChangesMap.has(player2.id));
-        const initialDBPlayer = await TmPlayerDB.get(player2.id);
-        let DBPlayer = initialDBPlayer;
-        if (sync) {
-          const records = await TmPlayerHistorySyncWorkflow.syncMissingRecords(player2, initialDBPlayer);
-          if (Object.keys(records || {}).length) {
-            DBPlayer = await TmPlayerDB.get(player2.id);
-          }
-        }
-        player2.records = (DBPlayer == null ? void 0 : DBPlayer.records) || {};
-        const latestRecord = (_a = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _a[player2.ageMonthsString];
-        if (!Array.isArray(latestRecord == null ? void 0 : latestRecord.skills) || !((_b = player2.skills) == null ? void 0 : _b.length)) return player2;
-        player2.skills = player2.skills.map((skill, skillIndex) => ({
-          ...skill,
-          value: latestRecord.skills[skillIndex] != null ? Number(latestRecord.skills[skillIndex]) : skill.value
-        }));
-        applyPlayerPositionRatings(player2);
-        const last2Records = Object.values(player2.records).reverse().slice(0, 2);
-        if (Array.isArray(last2Records) && last2Records.length === 2) {
-          player2.ti = Number(last2Records[0].TI);
-          player2.TI_change = Number(last2Records[0].TI) - Number(last2Records[1].TI);
-        }
-        return player2;
-      }));
-    }
-  };
-
   // src/models/player.js
   var tooltipCache = /* @__PURE__ */ new Map();
   var TmPlayerModel = {
@@ -6185,8 +6157,8 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       if (dbSync) {
         (async () => {
           const [homeData, awayData] = await Promise.all([
-            TmClubModel2.fetchSquadRaw(homeClubId).catch(() => null),
-            TmClubModel2.fetchSquadRaw(awayClubId).catch(() => null)
+            fetchRawPlayers(homeClubId).catch(() => null),
+            fetchRawPlayers(awayClubId).catch(() => null)
           ]);
           console.log("Squad data fetched", { homeData, awayData });
           const squadMap = {};
@@ -11349,6 +11321,34 @@ order:initial
   var TmMatchHoverCard = {
     injectStyles: injectStyles10,
     bind
+  };
+
+  // src/models/club.js
+  var TmClubModel2 = {
+    async fetchSquadRaw(clubId2, skillChangesMap = null) {
+      const post = await TmClubService.fetchSquadPost(clubId2);
+      if (!post) return null;
+      const players = Object.values(post).map((player2) => normalizeSquadPlayer(player2));
+      return Promise.all(players.map(async (player2) => {
+        var _a, _b;
+        player2.weeklyChanges = (skillChangesMap == null ? void 0 : skillChangesMap.get(player2.id)) || null;
+        const initialDBPlayer = await TmPlayerDB.get(player2.id);
+        player2.records = (initialDBPlayer == null ? void 0 : initialDBPlayer.records) || {};
+        const latestRecord = (_a = initialDBPlayer == null ? void 0 : initialDBPlayer.records) == null ? void 0 : _a[player2.ageMonthsString];
+        if (!Array.isArray(latestRecord == null ? void 0 : latestRecord.skills) || !((_b = player2.skills) == null ? void 0 : _b.length)) return player2;
+        player2.skills = player2.skills.map((skill, skillIndex) => ({
+          ...skill,
+          value: latestRecord.skills[skillIndex] != null ? Number(latestRecord.skills[skillIndex]) : skill.value
+        }));
+        applyPlayerPositionRatings(player2);
+        const last2Records = Object.values(player2.records).reverse().slice(0, 2);
+        if (Array.isArray(last2Records) && last2Records.length === 2) {
+          player2.ti = Number(last2Records[0].TI);
+          player2.TI_change = Number(last2Records[0].TI) - Number(last2Records[1].TI);
+        }
+        return player2;
+      }));
+    }
   };
 
   // src/components/shared/tm-match-ratings.js
@@ -29198,7 +29198,7 @@ order:initial
     const squadCache2 = /* @__PURE__ */ new Map();
     const fetchSquad2 = (clubId2) => {
       if (!squadCache2.has(clubId2)) {
-        squadCache2.set(clubId2, TmClubModel2.fetchSquadRaw(clubId2).then((data) => {
+        squadCache2.set(clubId2, fetchRawPlayers(clubId2).then((data) => {
           const post = {};
           (data || []).forEach((p) => {
             post[String(p.id)] = p;
@@ -46090,14 +46090,6 @@ order:initial
     };
   }
 
-  // src/models/club_new.js
-  var fetchRawPlayers = async (clubId2) => {
-    if (!clubId2) return [];
-    const post = await TmClubService.fetchSquadPost(clubId2);
-    if (!post) return [];
-    return Object.values(post).map(normalizeSquadPlayer);
-  };
-
   // src/workflows/player-history/filter_new.js
   var parseKey = (key) => {
     const [age, month] = String(key).split(".").map(Number);
@@ -46124,7 +46116,7 @@ order:initial
         const currentRecord = (_a = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _a[player2.ageMonthsString];
         const synced = (currentRecord == null ? void 0 : currentRecord.fullySynced) === true;
         const missing = hasMissingMonths(player2, DBPlayer);
-        return { ...player2, needSync: !(synced && !missing), DBPlayer };
+        return { ...player2, needSync: !(synced && !missing), DBPlayer, records: (DBPlayer == null ? void 0 : DBPlayer.records) || {} };
       })
     );
   };
@@ -46876,7 +46868,6 @@ order:initial
     loadError: ""
   });
   function initPlayersPage(main2) {
-    var _a;
     if (!/^\/players\/?$/i.test(window.location.pathname)) return;
     if (document.getElementById("tmvu-players-shell")) return;
     injectPlayersPageStyles();
@@ -46904,15 +46895,14 @@ order:initial
       squads: {
         main: createSquadModel("main", "Main Squad", true),
         reserves: createSquadModel("reserves", "Reserves", true)
-      },
-      reserveLoadStarted: false
+      }
     };
     const decoratePlayers2 = (players) => (players || []).map((player2) => {
       const { latestRecord } = getLatestRecordPair(player2);
       const recordSkills = Array.isArray(latestRecord == null ? void 0 : latestRecord.skills) ? latestRecord.skills : null;
       const skills = recordSkills ? (player2.skills || []).map((skill) => {
-        var _a2;
-        return { ...skill, value: (_a2 = recordSkills[skill.id]) != null ? _a2 : skill.value };
+        var _a;
+        return { ...skill, value: (_a = recordSkills[skill.id]) != null ? _a : skill.value };
       }) : player2.skills;
       const latestTI = Number(latestRecord == null ? void 0 : latestRecord.TI);
       return {
@@ -47085,9 +47075,6 @@ order:initial
       renderControls();
       renderSections();
     };
-    const fetchSquadForRender = async (clubId2, skillChangesMap = null) => {
-      if (!clubId2) return [];
-    };
     const waitForSkillChanges = (doc, timeout = 5e3) => new Promise((resolve) => {
       const getRowCount = () => doc.querySelectorAll("[player_link]").length;
       const finish = (map) => {
@@ -47122,16 +47109,15 @@ order:initial
         }
       }, 200);
     });
-    const reserveClubId = String(((_a = window.SESSION) == null ? void 0 : _a.b_team) || "").trim();
     const loadMainSquad = async () => {
-      var _a2, _b, _c;
+      var _a, _b, _c;
       const squad = state5.squads.main;
       squad.loading = true;
       squad.loadError = "";
       render17();
       const skillChangesMap = await waitForSkillChanges(document);
       console.log("[Step 1] Skill changes parsed from DOM \u2014 total:", skillChangesMap);
-      const mainClubId = String(((_a2 = window.SESSION) == null ? void 0 : _a2.main_id) || "").trim();
+      const mainClubId = String(((_a = window.SESSION) == null ? void 0 : _a.main_id) || "").trim();
       const bTeamId = String(((_b = window.SESSION) == null ? void 0 : _b.b_team) || "").trim();
       const [mainPlayers, reservePlayers] = await Promise.all([
         fetchRawPlayers(mainClubId),
@@ -47186,24 +47172,6 @@ order:initial
       squad.syncMessage = null;
       squad.loading = false;
       render17();
-    };
-    const loadReserveSquad = async () => {
-      const squad = state5.squads.reserves;
-      if (state5.reserveLoadStarted) return;
-      state5.reserveLoadStarted = true;
-      squad.loading = true;
-      squad.loadError = "";
-      render17();
-      try {
-        squad.players = await fetchSquadForRender(reserveClubId, null);
-        squad.loaded = true;
-      } catch (error) {
-        state5.reserveLoadStarted = false;
-        squad.loadError = (error == null ? void 0 : error.message) || "Could not load reserves.";
-      } finally {
-        squad.loading = false;
-        render17();
-      }
     };
     render17();
     loadMainSquad().catch((error) => {

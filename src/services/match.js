@@ -2,7 +2,7 @@ import { _post, _get } from './engine.js';
 import { TmStatsMatchProcessor } from '../components/stats/tm-stats-match-processor.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmMatchCacheDB } from '../lib/tm-playerdb.js';
-import { TmClubModel } from '../models/club.js';
+import { fetchRawPlayers } from '../models/club_new.js';
 import { TmPlayerModel } from '../models/player.js';
 import { TmMatchUtils } from '../utils/match.js';
 
@@ -259,8 +259,8 @@ export const TmMatchService = {
             (async () => {
                 // Fetch both squads in parallel — covers the vast majority of players
                 const [homeData, awayData] = await Promise.all([
-                    TmClubModel.fetchSquadRaw(homeClubId).catch(() => null),
-                    TmClubModel.fetchSquadRaw(awayClubId).catch(() => null),
+                    fetchRawPlayers(homeClubId).catch(() => null),
+                    fetchRawPlayers(awayClubId).catch(() => null),
                 ]);
 
                 console.log('Squad data fetched', { homeData, awayData });

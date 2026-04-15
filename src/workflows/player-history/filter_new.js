@@ -53,7 +53,7 @@ export const attachSyncStatus = async (players) => {
             const currentRecord = DBPlayer?.records?.[player.ageMonthsString];
             const synced = currentRecord?.fullySynced === true;
             const missing = hasMissingMonths(player, DBPlayer);
-            return { ...player, needSync: !(synced && !missing), DBPlayer };
+            return { ...player, needSync: !(synced && !missing), DBPlayer, records: DBPlayer?.records || {} };
         })
     );
 };

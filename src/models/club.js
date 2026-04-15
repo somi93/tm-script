@@ -1,30 +1,20 @@
-import { TmLib } from '../lib/tm-lib.js';
 import { TmPlayerDB } from '../lib/tm-playerdb.js';
 import { TmClubService } from '../services/club.js';
 import { applyPlayerPositionRatings, normalizeSquadPlayer } from '../utils/normalize/player.js';
-import { TmPlayerHistorySyncWorkflow } from '../workflows/player-history-sync.js';
 
 export const TmClubModel = {
-    async fetchSquadRaw(clubId, sync = false, skillChangesMap = null) {
+    async fetchSquadRaw(clubId, skillChangesMap = null) {
         const post = await TmClubService.fetchSquadPost(clubId);
         if (!post) return null;
 
         const players = Object.values(post).map((player) => normalizeSquadPlayer(player));
         return Promise.all(players.map(async (player) => {
             player.weeklyChanges = skillChangesMap?.get(player.id) || null;
-            if (Number(player.id) === 140907932) console.log('[WC:2 fetchSquadRaw] player.weeklyChanges', player.weeklyChanges, 'skillChangesMap has it:', skillChangesMap?.has(player.id));
             const initialDBPlayer = await TmPlayerDB.get(player.id);
-            let DBPlayer = initialDBPlayer;
-            if (sync) {
-                const records = await TmPlayerHistorySyncWorkflow.syncMissingRecords(player, initialDBPlayer);
-                if (Object.keys(records || {}).length) {
-                    DBPlayer = await TmPlayerDB.get(player.id);
-                }
-            }
 
-            player.records = DBPlayer?.records || {};
+            player.records = initialDBPlayer?.records || {};
 
-            const latestRecord = DBPlayer?.records?.[player.ageMonthsString];
+            const latestRecord = initialDBPlayer?.records?.[player.ageMonthsString];
             if (!Array.isArray(latestRecord?.skills) || !player.skills?.length) return player;
 
             player.skills = player.skills.map((skill, skillIndex) => ({

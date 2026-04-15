@@ -1,10 +1,8 @@
 import { TmTable } from '../components/shared/tm-table.js';
 import { TmCheckbox } from '../components/shared/tm-checkbox.js';
 import { TmConst } from '../lib/tm-constants.js';
-import { TmPlayerDB } from '../lib/tm-playerdb.js';
 import { TmPosition } from '../lib/tm-position.js';
 import { TmUtils } from '../lib/tm-utils.js';
-import { TmClubModel } from '../models/club.js';
 import { fetchRawPlayers } from '../models/club_new.js';
 import { attachSyncStatus } from '../workflows/player-history/filter_new.js';
 import { buildHistorySkeletons } from '../workflows/player-history/sources_new.js';
@@ -14,12 +12,7 @@ import { attachRoutine } from '../workflows/player-history/routine_new.js';
 import { attachR5Rec } from '../workflows/player-history/r5rec_new.js';
 import { saveHistoryRecordsNew } from '../workflows/player-history/save_new.js';
 import { TmProgress } from '../components/shared/tm-progress.js';
-import { TmPlayerHistorySyncWorkflow } from '../workflows/player-history-sync.js';
 import { injectPlayersPageStyles } from './players-styles.js';
-import playerDbBackupSelected from '../../api_responses/playerdb-backup-selected-2026-04-06.json';
-
-const RESERVES_URL = '/players/#/a//b/true/';
-let backupSeedPromise = null;
 
 const parseSquadPageSkillChanges = (doc = document) => {
     const result = new Map();
@@ -188,7 +181,6 @@ export function initPlayersPage(main) {
             main: createSquadModel('main', 'Main Squad', true),
             reserves: createSquadModel('reserves', 'Reserves', true),
         },
-        reserveLoadStarted: false,
     };
 
     const decoratePlayers = (players) => (players || []).map((player) => {
@@ -392,13 +384,6 @@ export function initPlayersPage(main) {
         renderSections();
     };
 
-    const fetchSquadForRender = async (clubId, skillChangesMap = null) => {
-        if (!clubId) return [];
-        // await seedPlayersFromBackup();
-        // const players = await TmClubModel.fetchSquadRaw(clubId, true, skillChangesMap) || [];
-        // return decoratePlayers(players);
-    };
-
     const waitForSkillChanges = (doc, timeout = 5000) => new Promise((resolve) => {
         const getRowCount = () => doc.querySelectorAll('[player_link]').length;
         const finish = (map) => { console.log('[WC:0 waitForSkillChanges] resolved, map.size:', map.size); resolve(map); };
@@ -430,8 +415,6 @@ export function initPlayersPage(main) {
             }
         }, 200);
     });
-
-    const reserveClubId = String(window.SESSION?.b_team || '').trim();
 
     const loadMainSquad = async () => {
         const squad = state.squads.main;
@@ -527,26 +510,6 @@ export function initPlayersPage(main) {
         squad.syncMessage = null;
         squad.loading = false;
         render();
-    };
-
-    const loadReserveSquad = async () => {
-        const squad = state.squads.reserves;
-        if (state.reserveLoadStarted) return;
-        state.reserveLoadStarted = true;
-        squad.loading = true;
-        squad.loadError = '';
-        render();
-
-        try {
-            squad.players = await fetchSquadForRender(reserveClubId, null);
-            squad.loaded = true;
-        } catch (error) {
-            state.reserveLoadStarted = false;
-            squad.loadError = error?.message || 'Could not load reserves.';
-        } finally {
-            squad.loading = false;
-            render();
-        }
     };
 
     render();

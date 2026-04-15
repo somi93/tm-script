@@ -7,7 +7,7 @@ import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { createSocialFeedController } from '../components/shared/tm-social-feed.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmConst } from '../lib/tm-constants.js';
-import { TmClubModel } from '../models/club.js';
+import { fetchRawPlayers } from '../models/club_new.js';
 import { TmApi } from '../services/index.js';
 import { TmPlayerModel } from '../models/player.js';
 import { TmUtils } from '../lib/tm-utils.js';
@@ -48,7 +48,7 @@ export function initLeaguePage(main) {
 
     const fetchSquad = clubId => {
         if (!squadCache.has(clubId)) {
-            squadCache.set(clubId, TmClubModel.fetchSquadRaw(clubId).then(data => {
+            squadCache.set(clubId, fetchRawPlayers(clubId).then(data => {
                 const post = {};
                 (data || []).forEach(p => { post[String(p.id)] = p; });
                 return { post };
