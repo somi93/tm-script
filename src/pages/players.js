@@ -5,11 +5,52 @@ import { TmPlayerDB } from '../lib/tm-playerdb.js';
 import { TmPosition } from '../lib/tm-position.js';
 import { TmUtils } from '../lib/tm-utils.js';
 import { TmClubModel } from '../models/club.js';
+import { fetchRawPlayers } from '../models/club_new.js';
+import { attachSyncStatus } from '../workflows/player-history/filter_new.js';
+import { buildHistorySkeletons } from '../workflows/player-history/sources_new.js';
+import { fillTIandASI } from '../workflows/player-history/ti_asi_new.js';
+import { attachSkillsAnchor } from '../workflows/player-history/skills_new.js';
+import { attachRoutine } from '../workflows/player-history/routine_new.js';
+import { attachR5Rec } from '../workflows/player-history/r5rec_new.js';
+import { saveHistoryRecordsNew } from '../workflows/player-history/save_new.js';
+import { TmProgress } from '../components/shared/tm-progress.js';
+import { TmPlayerHistorySyncWorkflow } from '../workflows/player-history-sync.js';
 import { injectPlayersPageStyles } from './players-styles.js';
 import playerDbBackupSelected from '../../api_responses/playerdb-backup-selected-2026-04-06.json';
 
 const RESERVES_URL = '/players/#/a//b/true/';
 let backupSeedPromise = null;
+
+const parseSquadPageSkillChanges = (doc = document) => {
+    const result = new Map();
+    const links = [...doc.querySelectorAll('[player_link]')];
+    links.forEach(link => {
+        const row = link.closest('tr');
+        if (!row) return;
+        const playerId = Number(link.getAttribute('player_link'));
+        if (!playerId) return;
+        const skillDivs = [...row.querySelectorAll('div.skill.training')];
+        const skillCount = skillDivs.length === 14 ? 14 : skillDivs.length === 11 ? 11 : null;
+        if (!skillCount) return; // not an outfield (14) or GK (11) row
+        const cells = [...row.querySelectorAll('td')];
+        const ageText = cells[2]?.textContent?.trim() || '';
+        const ageMonthsString = /^\d+\.\d+$/.test(ageText) ? ageText : null;
+        const intSkills = new Array(skillCount).fill(0);
+        const skillChanges = new Array(skillCount).fill(null);
+        skillDivs.forEach((div, i) => {
+            const img = div.querySelector('img');
+            intSkills[i] = img
+                ? (img.src.includes('star_silver') ? 19 : 20)
+                : (parseInt(div.textContent.trim(), 10) || 0);
+            if (div.classList.contains('one_up')) skillChanges[i] = 'one_up';
+            else if (div.classList.contains('part_up')) skillChanges[i] = 'part_up';
+            else if (div.classList.contains('one_down')) skillChanges[i] = 'one_down';
+            else if (div.classList.contains('part_down')) skillChanges[i] = 'part_down';
+        });
+        result.set(playerId, { intSkills, skillChanges, ageMonthsString });
+    });
+    return result;
+};
 
 const escapeHtml = (value) => String(value || '')
     .replace(/&/g, '&amp;')
@@ -40,19 +81,23 @@ const getSkillChanges = (player) => {
     const { latestRecord, previousRecord } = getLatestRecordPair(player);
     if (!Array.isArray(latestRecord?.skills) || !Array.isArray(previousRecord?.skills)) return [];
 
-    return latestRecord.skills
+    const weeklyChanges = player.weeklyChanges?.skillChanges || [];
+
+    return (latestRecord.skills || [])
         .map((value, index) => {
             const latestValue = Number(value);
             const previousValue = Number(previousRecord.skills[index]);
             if (!Number.isFinite(latestValue) || !Number.isFinite(previousValue)) return null;
 
             const delta = latestValue - previousValue;
-            if (!delta) return null;
+            const weeklyChange = weeklyChanges[index] || null;
+            if (!delta && !weeklyChange) return null;
 
             return {
                 index,
                 delta,
                 type: delta > 0 ? 'pos' : 'neg',
+                weeklyChange,
             };
         })
         .filter(Boolean);
@@ -60,25 +105,40 @@ const getSkillChanges = (player) => {
 
 const getR5Change = (player) => {
     const { latestRecord, previousRecord } = getLatestRecordPair(player);
-    const latestValue = Number(latestRecord?.R5);
-    const previousValue = Number(previousRecord?.R5);
+    const latestValue = Number(latestRecord?.r5);
+    const previousValue = Number(previousRecord?.r5);
     if (!Number.isFinite(latestValue) || !Number.isFinite(previousValue)) return null;
 
     return latestValue - previousValue;
 };
+const getTiChange = (player) => {
+    const { latestRecord, previousRecord } = getLatestRecordPair(player);
+    const latestValue = Number(latestRecord?.TI);
+    const previousValue = Number(previousRecord?.TI);
+    if (!Number.isFinite(latestValue) || !Number.isFinite(previousValue)) return null;
 
+    return latestValue - previousValue;
+};
 const skillCellHtml = (player, index) => {
     const value = getSkillValue(player, index);
     const change = player.skillChanges?.find((item) => item.index === index) || null;
-    const toneCls = change?.type ? ` ${change.type}` : '';
-    const cls = `${value >= 20 ? ' max' : value >= 19 ? ' elite' : ''}${toneCls}`;
+    const wc = change?.weeklyChange;
+    const bgCls = wc === 'one_up' ? ' gain-integer'
+        : wc === 'part_up' ? ' gain-decimal'
+        : wc === 'one_down' ? ' loss-integer'
+        : wc === 'part_down' ? ' loss-decimal'
+        : '';
+    const cls = `${value >= 20 ? ' max' : value >= 19 ? ' elite' : ''}${bgCls}`;
     const label = value >= 20 ? '★' : value >= 19 ? `☆.${value.toFixed(2).split('.')[1]}` : value.toFixed(2);
     const title = value >= 19 ? String(value) : '';
-    const deltaText = change ? `${change.delta > 0 ? '+' : ''}${change.delta.toFixed(2)}` : '';
+    const deltaText = change?.delta ? `${change.delta > 0 ? '+' : ''}${change.delta.toFixed(2)}` : '';
     const deltaHtml = deltaText && deltaText !== '+0.00' && deltaText !== '-0.00' && deltaText !== '0.00'
         ? `<span class="tmvu-players-skill-delta ${change.delta > 0 ? 'pos' : 'neg'}">${deltaText}</span>`
         : '';
-    return `<span class="tmvu-players-skill-cell${cls}"${title ? ` title="${title}"` : ''}><span class="tmvu-players-skill-main">${label}</span>${deltaHtml}</span>`;
+    const arrowHtml = wc === 'one_up' ? '<span class="tmvu-players-skill-arrow up">▲</span>'
+        : wc === 'one_down' ? '<span class="tmvu-players-skill-arrow down">▼</span>'
+        : '';
+    return `<span class="tmvu-players-skill-cell${cls}"${title ? ` title="${title}"` : ''}>${arrowHtml}<span class="tmvu-players-skill-main">${label}</span>${deltaHtml}</span>`;
 };
 
 const createSquadModel = (key, label, defaultVisible) => ({
@@ -90,19 +150,6 @@ const createSquadModel = (key, label, defaultVisible) => ({
     loading: false,
     loadError: '',
 });
-
-const seedPlayersFromBackup = async () => {
-    if (backupSeedPromise) return backupSeedPromise;
-
-    backupSeedPromise = Promise.all(
-        Object.entries(playerDbBackupSelected || {}).map(([playerId, data]) => TmPlayerDB.set(playerId, data))
-    ).catch((error) => {
-        backupSeedPromise = null;
-        throw error;
-    });
-
-    return backupSeedPromise;
-};
 
 export function initPlayersPage(main) {
     if (!/^\/players\/?$/i.test(window.location.pathname)) return;
@@ -139,16 +186,27 @@ export function initPlayersPage(main) {
     const state = {
         squads: {
             main: createSquadModel('main', 'Main Squad', true),
-            reserves: createSquadModel('reserves', 'Reserves', false),
+            reserves: createSquadModel('reserves', 'Reserves', true),
         },
         reserveLoadStarted: false,
     };
 
-    const decoratePlayers = (players) => players.map((player) => ({
-        ...player,
-        skillChanges: getSkillChanges(player),
-        r5Change: getR5Change(player),
-    }));
+    const decoratePlayers = (players) => (players || []).map((player) => {
+        const { latestRecord } = getLatestRecordPair(player);
+        const recordSkills = Array.isArray(latestRecord?.skills) ? latestRecord.skills : null;
+        const skills = recordSkills
+            ? (player.skills || []).map(skill => ({ ...skill, value: recordSkills[skill.id] ?? skill.value }))
+            : player.skills;
+        const latestTI = Number(latestRecord?.TI);
+        return {
+            ...player,
+            skills,
+            ti: Number.isFinite(latestTI) ? latestTI : player.ti,
+            TI_change: getTiChange(player),
+            skillChanges: getSkillChanges(player),
+            r5Change: getR5Change(player),
+        };
+    });
 
 
     const createSectionHost = (title) => {
@@ -195,7 +253,7 @@ export function initPlayersPage(main) {
             },
         ];
 
-        const skillHeaders = skillLabels.map((label, index) => ({
+        const skillHeaders = (skillLabels || []).map((label, index) => ({
             key: `skill_${index}`,
             label,
             align: 'c',
@@ -264,9 +322,6 @@ export function initPlayersPage(main) {
             label: 'Reserves',
             onChange: (event) => {
                 state.squads.reserves.visible = !!event.target.checked;
-                if (state.squads.reserves.visible && !state.reserveLoadStarted) {
-                    loadReserveSquad().catch((error) => console.error('[Players] Reserve load failed:', error));
-                }
                 render();
             },
         });
@@ -279,50 +334,56 @@ export function initPlayersPage(main) {
     const renderSections = () => {
         sectionsHost.innerHTML = '';
 
-        const activeSquads = Object.values(state.squads).filter((squad) => squad.visible);
-        if (!activeSquads.length) {
+        const showMain = state.squads.main.visible;
+        const showReserves = state.squads.reserves.visible;
+        const mainSquad = state.squads.main;
+
+        if (!showMain && !showReserves) {
             const body = createSectionHost('No Squad Selected');
             body.innerHTML = '<div class="tmvu-players-empty">No squad is selected.</div>';
             return;
         }
 
-        activeSquads.forEach((squad) => {
-            if (squad.loading && !squad.players.length) {
-                const body = createSectionHost(squad.label);
-                body.innerHTML = '<div class="tmvu-players-empty">Loading players...</div>';
-                return;
-            }
+        if (mainSquad.loading && !mainSquad.players.length) {
+            const body = createSectionHost('Players');
+            body.innerHTML = `<div class="tmvu-players-empty">${escapeHtml(mainSquad.syncMessage || 'Loading players...')}</div>`;
+            return;
+        }
 
-            if (squad.loadError && !squad.players.length) {
-                const body = createSectionHost(squad.label);
-                body.innerHTML = `<div class="tmvu-players-empty">${escapeHtml(squad.loadError)}</div>`;
-                return;
-            }
+        if (mainSquad.loadError && !mainSquad.players.length) {
+            const body = createSectionHost('Players');
+            body.innerHTML = `<div class="tmvu-players-empty">${escapeHtml(mainSquad.loadError)}</div>`;
+            return;
+        }
 
-            const sections = [
-                { title: `${squad.label} • Outfield`, isGK: false, players: squad.players.filter((player) => !player.isGK) },
-                { title: `${squad.label} • Goalkeepers`, isGK: true, players: squad.players.filter((player) => player.isGK) },
-            ].filter((section) => section.players.length);
+        const visiblePlayers = mainSquad.players.filter(player => {
+            if (player.b) return showReserves;
+            return showMain;
+        });
 
-            if (!sections.length) {
-                const body = createSectionHost(squad.label);
-                body.innerHTML = '<div class="tmvu-players-empty">No players available.</div>';
-                return;
-            }
+        const sections = [
+            { title: 'Outfield', isGK: false, players: visiblePlayers.filter((player) => !player.isGK) },
+            { title: 'Goalkeepers', isGK: true, players: visiblePlayers.filter((player) => player.isGK) },
+        ].filter((section) => section.players.length);
 
-            sections.forEach((section) => {
-                const body = createSectionHost(section.title);
-                const table = TmTable.table({
-                    headers: buildTableHeaders(section.isGK),
-                    items: section.players,
-                    density: 'tight',
-                    cls: 'tmvu-players-table',
-                    sortKey: 'no',
-                    sortDir: 1,
-                    emptyText: 'No players found.',
-                });
-                body.appendChild(table);
+        if (!sections.length) {
+            const body = createSectionHost('Players');
+            body.innerHTML = '<div class="tmvu-players-empty">No players available.</div>';
+            return;
+        }
+
+        sections.forEach((section) => {
+            const body = createSectionHost(section.title);
+            const table = TmTable.table({
+                headers: buildTableHeaders(section.isGK),
+                items: section.players,
+                density: 'tight',
+                cls: 'tmvu-players-table',
+                sortKey: 'no',
+                sortDir: 1,
+                emptyText: 'No players found.',
             });
+            body.appendChild(table);
         });
     };
 
@@ -331,52 +392,46 @@ export function initPlayersPage(main) {
         renderSections();
     };
 
-    const fetchSquadForRender = async (clubId) => {
+    const fetchSquadForRender = async (clubId, skillChangesMap = null) => {
         if (!clubId) return [];
         // await seedPlayersFromBackup();
-        const players = await TmClubModel.fetchSquadRaw(clubId, true) || [];
-        return decoratePlayers(players);
+        // const players = await TmClubModel.fetchSquadRaw(clubId, true, skillChangesMap) || [];
+        // return decoratePlayers(players);
     };
 
-    const loadSquadFromIframe = (path) => new Promise((resolve, reject) => {
-        const frame = document.createElement('iframe');
-        frame.className = 'tmvu-players-source-frame';
-        frame.src = `${window.location.origin}${path}`;
-        document.body.appendChild(frame);
-
-        let pollTimer = null;
-        let timeoutTimer = null;
-
-        const cleanup = () => {
-            if (pollTimer) window.clearInterval(pollTimer);
-            if (timeoutTimer) window.clearTimeout(timeoutTimer);
-            frame.remove();
-        };
-
-        const tryParse = () => {
-            try {
-                const doc = frame.contentDocument;
-                if (!hasSquadRows(doc)) return;
-                const parsed = parseSquadDocument(doc);
-                if (parsed?.length) {
-                    cleanup();
-                    resolve(parsed);
-                }
-            } catch (error) {
-                cleanup();
-                reject(error);
+    const waitForSkillChanges = (doc, timeout = 5000) => new Promise((resolve) => {
+        const getRowCount = () => doc.querySelectorAll('[player_link]').length;
+        const finish = (map) => { console.log('[WC:0 waitForSkillChanges] resolved, map.size:', map.size); resolve(map); };
+        let lastCount = -1;
+        let stableFor = 0;
+        const limit = window.setTimeout(() => {
+            window.clearInterval(timer);
+            const count = getRowCount();
+            if (count > 0) {
+                console.log('[WC:0 waitForSkillChanges] TIMEOUT — using partial rows:', count);
+                finish(parseSquadPageSkillChanges(doc));
+            } else {
+                console.log('[WC:0 waitForSkillChanges] TIMEOUT — no rows found in', timeout, 'ms');
+                resolve(new Map());
             }
-        };
-
-        frame.addEventListener('load', () => {
-            tryParse();
-            pollTimer = window.setInterval(tryParse, 300);
-            timeoutTimer = window.setTimeout(() => {
-                cleanup();
-                reject(new Error('Reserve squad table did not load in time.'));
-            }, 20000);
-        }, { once: true });
+        }, timeout);
+        const timer = window.setInterval(() => {
+            const count = getRowCount();
+            if (count > 0 && count === lastCount) {
+                stableFor++;
+                if (stableFor >= 2) {
+                    window.clearInterval(timer);
+                    window.clearTimeout(limit);
+                    finish(parseSquadPageSkillChanges(doc));
+                }
+            } else {
+                lastCount = count;
+                stableFor = 0;
+            }
+        }, 200);
     });
+
+    const reserveClubId = String(window.SESSION?.b_team || '').trim();
 
     const loadMainSquad = async () => {
         const squad = state.squads.main;
@@ -384,19 +439,93 @@ export function initPlayersPage(main) {
         squad.loadError = '';
         render();
 
-        const clubId = String(window.SESSION?.main_id || window.SESSION?.club_id || '').trim();
-        const players = await fetchSquadForRender(clubId);
+        // Step 1: Parse skill changes from DOM
+        // /players/#/a/true/b/true/ renders both A and B team in the same table,
+        // so one waitForSkillChanges call covers all own players.
+        const skillChangesMap = await waitForSkillChanges(document);
 
-        squad.loading = false;
+        console.log('[Step 1] Skill changes parsed from DOM — total:', skillChangesMap);
 
-        if (!players.length) {
-            squad.loadError = 'Main squad endpoint returned no players.';
-            render();
-            return;
+        // Step 2: Load players — main + reserves in parallel, merge, attach skill changes
+        const mainClubId = String(window.SESSION?.main_id || '').trim();
+        const bTeamId = String(window.SESSION?.b_team || '').trim();
+
+        const [mainPlayers, reservePlayers] = await Promise.all([
+            fetchRawPlayers(mainClubId),
+            bTeamId ? fetchRawPlayers(bTeamId) : Promise.resolve([]),
+        ]);
+
+        const reserveIds = new Set(reservePlayers.map(p => p.id));
+        const allPlayers = [...mainPlayers, ...reservePlayers].map(player => ({
+            ...player,
+            b: reserveIds.has(player.id) ? true : undefined,
+            weeklyChanges: skillChangesMap.get(player.id) || null,
+        }));
+
+        console.group('[Step 2] Players loaded — total:', allPlayers.length);
+        console.log(allPlayers);
+        console.groupEnd();
+
+        // Step 3: Attach needSync + DBPlayer to each player
+        const allPlayersWithSync = await attachSyncStatus(allPlayers);
+
+        console.group('[Step 3] Sync status — total:', allPlayersWithSync.length);
+        console.log(allPlayersWithSync);
+        console.groupEnd();
+
+        // TODO: Step 4 — load graphs for own players that needSync
+        const syncBar = TmProgress.progressBar({ title: '⚡ Syncing players' });
+        const allPlayersWithData = await buildHistorySkeletons(allPlayersWithSync, (done, total) => {
+            syncBar.update(done, total, `Syncing ${done}/${total}`);
+        });
+        syncBar.done();
+
+        console.group('[Step 4] History skeletons built — needSync:', allPlayersWithData.filter(p => p.needSync).length);
+        console.log(allPlayersWithData.filter(p => p.needSync));
+        console.groupEnd();
+
+        // TODO: Step 5 — fill TI and ASI per month
+        fillTIandASI(allPlayersWithData);
+
+        console.group('[Step 5] TI + ASI filled');
+        console.log(allPlayersWithData.filter(p => p.needSync));
+        console.groupEnd();
+
+        // TODO: Step 6 — compute decimal skills per month
+        // Step 7a: Find anchor (first month with skills) + apply decimals at anchor
+        attachSkillsAnchor(allPlayersWithData);
+
+        console.group('[Step 7a] Anchor decimals applied');
+        console.log(allPlayersWithData.filter(p => p.needSync));
+        console.groupEnd();
+
+        // Step 9: Fill routine via linear interpolation between known points
+        attachRoutine(allPlayersWithData);
+
+        console.group('[Step 9] Routine filled');
+        console.log(allPlayersWithData.filter(p => p.needSync));
+        console.groupEnd();
+
+        // Step 10: Compute R5 and REC per month across preferred positions
+        // Step 11: Mark fullySynced on current month
+        const needSyncPlayers = allPlayersWithData.filter(p => p.needSync);
+        for (const player of needSyncPlayers) {
+            attachR5Rec([player]);
+            const currentRecord = player.records?.[player.ageMonthsString];
+            if (currentRecord) currentRecord.fullySynced = true;
         }
 
-        squad.players = players;
+        console.group('[Step 10+11] R5/REC + fullySynced');
+        console.log(needSyncPlayers);
+        console.groupEnd();
+
+        await saveHistoryRecordsNew(allPlayersWithData);
+
+        squad.players = decoratePlayers(allPlayersWithData);
+        console.log(squad.players);
         squad.loaded = true;
+        squad.syncMessage = null;
+        squad.loading = false;
         render();
     };
 
@@ -409,12 +538,11 @@ export function initPlayersPage(main) {
         render();
 
         try {
-            const clubId = String(window.SESSION?.b_team || '').trim();
-            squad.players = await fetchSquadForRender(clubId);
+            squad.players = await fetchSquadForRender(reserveClubId, null);
             squad.loaded = true;
         } catch (error) {
             state.reserveLoadStarted = false;
-            squad.loadError = error?.message || `Could not load reserves from ${RESERVES_URL}.`;
+            squad.loadError = error?.message || 'Could not load reserves.';
         } finally {
             squad.loading = false;
             render();

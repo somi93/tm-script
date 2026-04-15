@@ -5102,7 +5102,6 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     };
   };
   var selectHistorySyncStrategy = (profile) => {
-    if (!(profile == null ? void 0 : profile.hasMissingAgeKeys)) return HISTORY_SYNC_STRATEGY.NOOP;
     return profile.hasSkillGraphs ? HISTORY_SYNC_STRATEGY.SKILL_GRAPHS : profile.hasReliableCurrentTI && profile.hasCurrentSnapshot ? HISTORY_SYNC_STRATEGY.EXACT_CURRENT_TI : profile.hasLeftAnchor && profile.hasCurrentSnapshot ? HISTORY_SYNC_STRATEGY.ANCHORED_ESTIMATE : HISTORY_SYNC_STRATEGY.INSUFFICIENT_EVIDENCE;
   };
 
@@ -5303,7 +5302,8 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     skillHistoryByKey,
     tiHistory = null,
     routineHistory = null,
-    ageKeys = null
+    ageKeys = null,
+    weeklyChangesMap = null
   }) => {
     if (!Array.isArray(skillIndexHistory) || !skillIndexHistory.length) {
       throw new Error("skillIndexHistory is required");
@@ -5339,44 +5339,110 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     );
     const reconstructed = {};
     resolvedAgeKeys.forEach((key, monthIndex) => {
-      var _a, _b;
+      var _a, _b, _c, _d, _e, _f, _g;
       const intSkills = safeGrowthSkills2(records[key].skills);
+      const wc = weeklyChangesMap == null ? void 0 : weeklyChangesMap[key];
+      const ti = Number((_a = tiHistory == null ? void 0 : tiHistory[monthIndex]) != null ? _a : 0);
+      const totalAdded = ti / 10;
+      let skillWeights = null;
+      if (((_b = wc == null ? void 0 : wc.skillChanges) == null ? void 0 : _b.length) && totalAdded > 0) {
+        const groups = (player2 == null ? void 0 : player2.isGK) ? TRAINING_GROUPS_GK3 : TRAINING_GROUPS_OUT3;
+        const gw = normalizeTrainingWeights((_c = player2 == null ? void 0 : player2.training) != null ? _c : null, player2 == null ? void 0 : player2.isGK);
+        const upIndices = wc.skillChanges.map((c, i) => c === "part_up" || c === "one_up" ? i : -1).filter((i) => i >= 0 && intSkills[i] < 20);
+        if (upIndices.length) {
+          skillWeights = new Array(intSkills.length).fill(0);
+          for (let gi = 0; gi < groups.length; gi++) {
+            const active = groups[gi].filter((idx) => upIndices.includes(idx));
+            if (!active.length) continue;
+            const perSkill = gw[gi] / active.length;
+            for (const idx of active) skillWeights[idx] += perSkill;
+          }
+          const tw = skillWeights.reduce((s6, v) => s6 + v, 0);
+          if (tw > 0) skillWeights = skillWeights.map((w) => w / tw);
+          else skillWeights = null;
+        }
+      }
+      if (Number(player2 == null ? void 0 : player2.id) === 140907932) console.log("[WC:dec]", key, (_d = decimals[key]) == null ? void 0 : _d.map((d) => +d.toFixed(3)), "wc:", (_e = wc == null ? void 0 : wc.skillChanges) != null ? _e : null);
+      const prevSkills = monthIndex > 0 ? (_f = reconstructed[resolvedAgeKeys[monthIndex - 1]]) == null ? void 0 : _f.skills : null;
       reconstructed[key] = {
         ageKey: key,
         SI: records[key].SI,
-        TI: Math.round(Number((_a = tiHistory == null ? void 0 : tiHistory[monthIndex]) != null ? _a : 0)),
-        routine: Number((_b = routineHistory == null ? void 0 : routineHistory[monthIndex]) != null ? _b : 0),
-        skills: intSkills.map((value, index) => value + decimals[key][index])
+        TI: Math.round(ti),
+        routine: Number((_g = routineHistory == null ? void 0 : routineHistory[monthIndex]) != null ? _g : 0),
+        skills: intSkills.map((value, index) => {
+          const probDec = decimals[key][index];
+          if (!skillWeights) return value + probDec;
+          const change = wc.skillChanges[index];
+          if (change === "part_up" || change === "one_up") {
+            const gain = totalAdded * skillWeights[index];
+            const base = prevSkills != null ? Number(prevSkills[index]) : value;
+            return Math.min(value + 0.99, base + gain);
+          }
+          return value + probDec;
+        })
       };
     });
     return reconstructed;
   };
   var reconstructSkillHistoryFromGraph = (player2, DBPlayer, graphData, records) => {
+    var _a, _b, _c;
     const historyKeys = Array.isArray(graphData == null ? void 0 : graphData.ageKeys) && graphData.ageKeys.length ? sortAgeKeys3(graphData.ageKeys) : getMergedHistoryKeys(DBPlayer, records);
     const statKeys = getHistoryStatKeys(player2 == null ? void 0 : player2.isGK);
     const graphRecords = (graphData == null ? void 0 : graphData.recordsByAgeKey) || {};
+    const weeklyChangesMap = {};
+    for (const key of historyKeys) {
+      const wc = (_a = graphRecords[key]) == null ? void 0 : _a.weeklyChanges;
+      if (((_b = wc == null ? void 0 : wc.intSkills) == null ? void 0 : _b.length) && ((_c = wc == null ? void 0 : wc.skillChanges) == null ? void 0 : _c.length)) weeklyChangesMap[key] = wc;
+    }
     return reconstructSkillHistory({
       player: player2,
       ageKeys: historyKeys,
       skillIndexHistory: historyKeys.map((key) => {
-        var _a, _b;
-        return Number((_b = (_a = graphRecords[key]) == null ? void 0 : _a.SI) != null ? _b : 0);
+        var _a2, _b2;
+        return Number((_b2 = (_a2 = graphRecords[key]) == null ? void 0 : _a2.SI) != null ? _b2 : 0);
       }),
       tiHistory: historyKeys.map((key) => {
-        var _a, _b;
-        return Number((_b = (_a = graphRecords[key]) == null ? void 0 : _a.TI) != null ? _b : 0);
+        var _a2, _b2;
+        return Number((_b2 = (_a2 = graphRecords[key]) == null ? void 0 : _a2.TI) != null ? _b2 : 0);
       }),
       skillHistoryByKey: statKeys.reduce((acc, statKey, statIndex) => {
         acc[statKey] = historyKeys.map((key) => {
-          var _a, _b, _c;
-          return Number((_c = (_b = (_a = graphRecords[key]) == null ? void 0 : _a.skills) == null ? void 0 : _b[statIndex]) != null ? _c : 0);
+          var _a2, _b2, _c2;
+          return Number((_c2 = (_b2 = (_a2 = graphRecords[key]) == null ? void 0 : _a2.skills) == null ? void 0 : _b2[statIndex]) != null ? _c2 : 0);
         });
         return acc;
-      }, {})
+      }, {}),
+      weeklyChangesMap: Object.keys(weeklyChangesMap).length ? weeklyChangesMap : null
     });
   };
+  var buildWeightedIntegerSeries = (total, count, liveTI = null) => {
+    const safeTotal = Math.round(Number(total) || 0);
+    if (count <= 0) return [];
+    if (count === 1) return [safeTotal];
+    const sign = safeTotal < 0 ? -1 : 1;
+    const magnitude = Math.abs(safeTotal);
+    const avg2 = magnitude / count;
+    const liveRaw = Number.isFinite(Number(liveTI)) ? Math.round(Number(liveTI)) : sign * avg2;
+    const live = Math.abs(liveRaw);
+    const slope = Math.min(0.75, Math.abs(live - avg2) / Math.max(1, avg2 || 1));
+    const rawWeights = Array.from({ length: count }, (_, index) => {
+      const progress = count === 1 ? 1 : index / (count - 1);
+      const directional = live >= avg2 ? progress : 1 - progress;
+      return 1 + directional * slope;
+    });
+    const rawTotal = rawWeights.reduce((sum, weight) => sum + weight, 0) || 1;
+    const quotas = rawWeights.map((weight) => magnitude * weight / rawTotal);
+    const series = quotas.map((value) => Math.floor(value));
+    let remainder = magnitude - series.reduce((sum, value) => sum + value, 0);
+    quotas.map((value, index) => ({ index, frac: value - Math.floor(value) })).sort((a, b) => b.frac - a.frac).forEach(({ index }) => {
+      if (remainder <= 0) return;
+      series[index] += 1;
+      remainder -= 1;
+    });
+    return series.map((value) => value * sign);
+  };
   var reconstructSkillHistoryFromEstimate = (player2, DBPlayer, missingKeys, options = {}) => {
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
     if (player2.id === 137234654) console.log(player2.graphs);
     const { graphRecordsByAgeKey = null, liveTI = player2 == null ? void 0 : player2.ti } = options;
     const graphRecords = graphRecordsByAgeKey || {};
@@ -5390,22 +5456,28 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     const guessedRecords = {};
     for (const key of allGraphKeys) {
       const rec = graphRecords[key];
-      if ((_a = rec == null ? void 0 : rec.skills) == null ? void 0 : _a.some((v) => v != null)) {
+      const obsInts = (_a = rec == null ? void 0 : rec.weeklyChanges) == null ? void 0 : _a.intSkills;
+      if (((_b = rec == null ? void 0 : rec.skills) == null ? void 0 : _b.some((v) => v != null)) || obsInts) {
         guessedRecords[key] = {
-          SI: Number((_b = rec.SI) != null ? _b : 0),
-          TI: Number((_c = rec.TI) != null ? _c : 0),
-          routine: Number((_d = rec.routine) != null ? _d : 0),
-          skills: rec.skills.map((v) => Math.floor(skillValue3(v) || 0))
+          SI: Number((_c = rec.SI) != null ? _c : 0),
+          TI: Number((_d = rec.TI) != null ? _d : 0),
+          routine: Number((_e = rec.routine) != null ? _e : 0),
+          skills: obsInts ? obsInts.map((v) => Math.floor(Number(v) || 0)) : rec.skills.map((v) => Math.floor(skillValue3(v) || 0))
         };
       }
     }
-    const existingEndTI = (_e = graphRecords[endKey]) == null ? void 0 : _e.TI;
+    const existingEndTI = (_f = graphRecords[endKey]) == null ? void 0 : _f.TI;
     guessedRecords[endKey] = {
-      SI: Number((_f = player2 == null ? void 0 : player2.asi) != null ? _f : 0),
+      SI: Number((_g = player2 == null ? void 0 : player2.asi) != null ? _g : 0),
       TI: Math.round(Number(existingEndTI != null ? existingEndTI : liveTI != null ? liveTI : 0)),
-      routine: Number((_g = player2 == null ? void 0 : player2.routine) != null ? _g : 0),
+      routine: Number((_h = player2 == null ? void 0 : player2.routine) != null ? _h : 0),
       skills: endSkills.map((v) => Math.floor(skillValue3(v) || 0))
     };
+    const wcMap = {};
+    for (const key of historyKeys) {
+      const wc = (_i = graphRecords[key]) == null ? void 0 : _i.weeklyChanges;
+      if (((_j = wc == null ? void 0 : wc.intSkills) == null ? void 0 : _j.length) && ((_k = wc == null ? void 0 : wc.skillChanges) == null ? void 0 : _k.length)) wcMap[key] = wc;
+    }
     return reconstructSkillHistory({
       player: player2,
       ageKeys: historyKeys,
@@ -5427,7 +5499,8 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
           return (_c2 = (_b2 = (_a2 = guessedRecords[key]) == null ? void 0 : _a2.skills) == null ? void 0 : _b2[statIndex]) != null ? _c2 : 0;
         });
         return acc;
-      }, {})
+      }, {}),
+      weeklyChangesMap: Object.keys(wcMap).length ? wcMap : null
     });
   };
   var enrichHistoryRecords = (player2, history) => {
@@ -5436,6 +5509,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     Object.keys(history).forEach((ageKey) => {
       var _a;
       const historyRecord = history[ageKey];
+      if (!Array.isArray(historyRecord == null ? void 0 : historyRecord.skills)) return;
       const snapshot = {
         ...player2,
         asi: historyRecord.SI,
@@ -5458,21 +5532,49 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     });
     return history;
   };
+  var saveWeeklySkillChanges = async (player2, DBPlayer, weeklyData) => {
+    var _a, _b, _c, _d;
+    const currentKey = player2 == null ? void 0 : player2.ageMonthsString;
+    if (!currentKey || !((_a = weeklyData == null ? void 0 : weeklyData.skillChanges) == null ? void 0 : _a.length) || !((_b = weeklyData == null ? void 0 : weeklyData.intSkills) == null ? void 0 : _b.length)) return;
+    if ((_d = (_c = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _c[currentKey]) == null ? void 0 : _d.weeklyChanges) return;
+    const records = { ...(DBPlayer == null ? void 0 : DBPlayer.records) || {} };
+    records[currentKey] = {
+      ...records[currentKey] || {},
+      weeklyChanges: {
+        intSkills: weeklyData.intSkills,
+        skillChanges: weeklyData.skillChanges,
+        ts: Date.now()
+      }
+    };
+    await TmPlayerDB.set(player2.id, { ...DBPlayer || {}, records });
+  };
   var saveHistoryRecords = async (player2, DBPlayer, historyRecords) => {
-    var _a, _b;
+    var _a, _b, _c, _d, _e;
     const mergedRecords = enrichHistoryRecords(player2, {
       ...(DBPlayer == null ? void 0 : DBPlayer.records) || {},
       ...historyRecords || {}
     });
     if (!Object.keys(mergedRecords).length) return historyRecords;
+    const weeklyKey = player2 == null ? void 0 : player2.ageMonthsString;
+    const weeklyData = player2 == null ? void 0 : player2.weeklyChanges;
+    if (weeklyKey && mergedRecords[weeklyKey] && ((_a = weeklyData == null ? void 0 : weeklyData.intSkills) == null ? void 0 : _a.length) && ((_b = weeklyData == null ? void 0 : weeklyData.skillChanges) == null ? void 0 : _b.length) && !((_c = mergedRecords[weeklyKey]) == null ? void 0 : _c.weeklyChanges)) {
+      mergedRecords[weeklyKey] = {
+        ...mergedRecords[weeklyKey] || {},
+        weeklyChanges: {
+          intSkills: weeklyData.intSkills,
+          skillChanges: weeklyData.skillChanges,
+          ts: weeklyData.ts || Date.now()
+        }
+      };
+    }
     const preferredPositions = player2.positions.filter((position) => position.preferred);
     await TmPlayerDB.set(player2.id, {
       ...DBPlayer || {},
       _v: (DBPlayer == null ? void 0 : DBPlayer._v) || 1,
       meta: {
         ...(DBPlayer == null ? void 0 : DBPlayer.meta) || {},
-        name: ((_a = DBPlayer == null ? void 0 : DBPlayer.meta) == null ? void 0 : _a.name) || player2.name,
-        pos: ((_b = DBPlayer == null ? void 0 : DBPlayer.meta) == null ? void 0 : _b.pos) || (preferredPositions.length ? preferredPositions.map((position) => position.position).join(", ") : player2.positions.filter((position) => position.preferred || position.r5 != null).map((position) => position.position).join(", "))
+        name: ((_d = DBPlayer == null ? void 0 : DBPlayer.meta) == null ? void 0 : _d.name) || player2.name,
+        pos: ((_e = DBPlayer == null ? void 0 : DBPlayer.meta) == null ? void 0 : _e.pos) || (preferredPositions.length ? preferredPositions.map((position) => position.position).join(", ") : player2.positions.filter((position) => position.preferred || position.r5 != null).map((position) => position.position).join(", "))
       },
       records: mergedRecords
     });
@@ -5617,7 +5719,8 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         recordsByAgeKey[ageKey] = {
           SI: normalizeGraphNumber(record == null ? void 0 : record.SI),
           TI: normalizeGraphNumber(record == null ? void 0 : record.TI),
-          skills: Array.isArray(record == null ? void 0 : record.skills) ? record.skills.map(skillValue4) : new Array(statKeys.length).fill(null)
+          skills: Array.isArray(record == null ? void 0 : record.skills) ? record.skills.map(skillValue4) : new Array(statKeys.length).fill(null),
+          weeklyChanges: (record == null ? void 0 : record.weeklyChanges) || null
         };
       });
     }
@@ -5645,6 +5748,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         const record = (_d = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _d[ageKey];
         if (record) {
           existing.skills = record.skills.map(skillValue4);
+          if (record.weeklyChanges) existing.weeklyChanges = record.weeklyChanges;
         }
       }
       recordsByAgeKey[ageKey] = existing;
@@ -5724,20 +5828,42 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     }
   };
   var syncPlayerHistory = async (player2, DBPlayer, options = {}) => {
+    var _a, _b, _c;
     const baseProfile = buildHistoryEvidenceProfile(player2, DBPlayer);
-    if (!baseProfile.hasMissingAgeKeys) return {};
     await loadHistorySyncSources(player2, DBPlayer);
     const profile = buildHistoryEvidenceProfile(player2, DBPlayer);
     const strategy = selectHistorySyncStrategy(profile);
     if (strategy === HISTORY_SYNC_STRATEGY.INSUFFICIENT_EVIDENCE) return {};
     const historyRecords = executeHistorySyncStrategy({ player: player2, DBPlayer, profile, strategy, options });
-    console.log(player2.name, player2.graphs, historyRecords);
+    if (Number(player2.id) === 140907932) {
+      const prev = (DBPlayer == null ? void 0 : DBPlayer.records) || {};
+      const wc = player2 == null ? void 0 : player2.weeklyChanges;
+      const SKILL_KEYS = player2.isGK ? ["str", "sta", "pac", "han", "one", "ref", "aer", "jum", "com", "kic", "thr"] : ["str", "sta", "pac", "mar", "tac", "wor", "pos", "pas", "cro", "tec", "hea", "fin", "lon", "set"];
+      const allKeys = [.../* @__PURE__ */ new Set([...Object.keys(prev), ...Object.keys(historyRecords)])].sort();
+      console.group("[WC:DEBUG] 140907932 resync diff | strategy:", strategy, "| weeklyChanges:", (_a = wc == null ? void 0 : wc.skillChanges) != null ? _a : "none");
+      for (const key of allKeys) {
+        const before = (_b = prev[key]) == null ? void 0 : _b.skills;
+        const after = (_c = historyRecords[key]) == null ? void 0 : _c.skills;
+        if (!after) continue;
+        const changes = SKILL_KEYS.map((k, i) => {
+          var _a2, _b2;
+          const b = (before == null ? void 0 : before[i]) != null ? Number(before[i]) : null;
+          const a = Number(after[i]);
+          const delta = b != null ? a - b : null;
+          const wcTag = (_b2 = (_a2 = wc == null ? void 0 : wc.skillChanges) == null ? void 0 : _a2[i]) != null ? _b2 : null;
+          return `${k}:${b != null ? b.toFixed(2) : "?"}\u2192${a.toFixed(2)}${delta != null ? `(${delta >= 0 ? "+" : ""}${delta.toFixed(2)})` : ""}${wcTag ? `[${wcTag}]` : ""}`;
+        });
+        console.log(`  ${key}:`, changes.join("  "));
+      }
+      console.groupEnd();
+    }
     await saveHistoryRecords(player2, DBPlayer, historyRecords);
     return historyRecords;
   };
   var TmPlayerHistorySyncWorkflow = {
     syncPlayerHistory,
     syncMissingRecords: syncPlayerHistory,
+    saveWeeklySkillChanges,
     buildHistoryEvidenceProfile,
     selectHistorySyncStrategy,
     loadHistorySyncSources
@@ -5745,12 +5871,14 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
 
   // src/models/club.js
   var TmClubModel2 = {
-    async fetchSquadRaw(clubId2, sync = false) {
+    async fetchSquadRaw(clubId2, sync = false, skillChangesMap = null) {
       const post = await TmClubService.fetchSquadPost(clubId2);
       if (!post) return null;
       const players = Object.values(post).map((player2) => normalizeSquadPlayer(player2));
       return Promise.all(players.map(async (player2) => {
         var _a, _b;
+        player2.weeklyChanges = (skillChangesMap == null ? void 0 : skillChangesMap.get(player2.id)) || null;
+        if (Number(player2.id) === 140907932) console.log("[WC:2 fetchSquadRaw] player.weeklyChanges", player2.weeklyChanges, "skillChangesMap has it:", skillChangesMap == null ? void 0 : skillChangesMap.has(player2.id));
         const initialDBPlayer = await TmPlayerDB.get(player2.id);
         let DBPlayer = initialDBPlayer;
         if (sync) {
@@ -45962,6 +46090,518 @@ order:initial
     };
   }
 
+  // src/models/club_new.js
+  var fetchRawPlayers = async (clubId2) => {
+    if (!clubId2) return [];
+    const post = await TmClubService.fetchSquadPost(clubId2);
+    if (!post) return [];
+    return Object.values(post).map(normalizeSquadPlayer);
+  };
+
+  // src/workflows/player-history/filter_new.js
+  var parseKey = (key) => {
+    const [age, month] = String(key).split(".").map(Number);
+    return age * 12 + month;
+  };
+  var absToKey = (abs) => `${Math.floor(abs / 12)}.${abs % 12}`;
+  var hasMissingMonths = (player2, DBPlayer) => {
+    const records = DBPlayer == null ? void 0 : DBPlayer.records;
+    if (!records) return false;
+    const keys = Object.keys(records);
+    if (!keys.length) return false;
+    const currentAbs = parseKey(player2.ageMonthsString);
+    const firstAbs = Math.min(...keys.map(parseKey));
+    for (let abs = firstAbs; abs <= currentAbs; abs++) {
+      if (!records[absToKey(abs)]) return true;
+    }
+    return false;
+  };
+  var attachSyncStatus = async (players) => {
+    return Promise.all(
+      players.map(async (player2) => {
+        var _a;
+        const DBPlayer = await TmPlayerDB.get(player2.id);
+        const currentRecord = (_a = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _a[player2.ageMonthsString];
+        const synced = (currentRecord == null ? void 0 : currentRecord.fullySynced) === true;
+        const missing = hasMissingMonths(player2, DBPlayer);
+        return { ...player2, needSync: !(synced && !missing), DBPlayer };
+      })
+    );
+  };
+
+  // src/workflows/player-history/sources_new.js
+  var { GRAPH_KEYS_OUT: GRAPH_KEYS_OUT5, GRAPH_KEYS_GK: GRAPH_KEYS_GK5 } = TmConst;
+  var { skillValue: skillValue5 } = TmUtils;
+  var keyToAbs = (key) => {
+    const [a, m] = String(key).split(".").map(Number);
+    return a * 12 + m;
+  };
+  var absToKey2 = (abs) => `${Math.floor(abs / 12)}.${abs % 12}`;
+  var buildMonthKeys = (player2, graphData, DBPlayer) => {
+    var _a;
+    const currentAbs = keyToAbs(player2.ageMonthsString);
+    let firstAbs;
+    const graphMonths = ((_a = graphData == null ? void 0 : graphData.TI) == null ? void 0 : _a.length) ? graphData.TI.length - 1 : 0;
+    if (player2.isOwnPlayer && graphMonths > 0) {
+      firstAbs = currentAbs - graphMonths + 1;
+    } else {
+      const dbKeys = Object.keys((DBPlayer == null ? void 0 : DBPlayer.records) || {});
+      firstAbs = dbKeys.length ? Math.min(...dbKeys.map(keyToAbs)) : currentAbs;
+    }
+    const keys = [];
+    for (let abs = firstAbs; abs <= currentAbs; abs++) {
+      keys.push(absToKey2(abs));
+    }
+    return keys;
+  };
+  var buildRecordSkeleton = (player2, monthKeys, graphData, DBPlayer) => {
+    var _a, _b, _c, _d, _e;
+    const statKeys = player2.isGK ? GRAPH_KEYS_GK5 : GRAPH_KEYS_OUT5;
+    const skillCount = statKeys.length;
+    const currentAbs = keyToAbs(player2.ageMonthsString);
+    const graphMonths = ((_a = graphData == null ? void 0 : graphData.TI) == null ? void 0 : _a.length) ? graphData.TI.length - 1 : 0;
+    const graphKeyMap = /* @__PURE__ */ new Map();
+    for (let i = 0; i < graphMonths; i++) {
+      const abs = currentAbs - graphMonths + 1 + i;
+      graphKeyMap.set(absToKey2(abs), i);
+    }
+    const records = {};
+    for (const key of monthKeys) {
+      const isCurrentMonth = key === player2.ageMonthsString;
+      const graphIndex = graphKeyMap.get(key);
+      const dbRecord = (_b = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _b[key];
+      let skills = null;
+      if (isCurrentMonth) {
+        skills = Array.isArray(player2.skills) ? player2.skills.map((s6) => Math.floor(skillValue5(s6) || 0)) : new Array(skillCount).fill(null);
+      } else if (graphIndex != null && graphData) {
+        const fromGraph = statKeys.map((sk) => {
+          var _a2;
+          const v = (_a2 = graphData[sk]) == null ? void 0 : _a2[graphIndex];
+          return v != null ? Number(v) : null;
+        });
+        if (fromGraph.some((v) => v != null)) {
+          skills = fromGraph;
+        }
+      }
+      if (skills === null && (dbRecord == null ? void 0 : dbRecord.skills)) {
+        skills = dbRecord.skills.map((s6) => Math.floor(skillValue5(s6) || 0));
+      }
+      const weeklyChanges = isCurrentMonth ? player2.weeklyChanges || null : (dbRecord == null ? void 0 : dbRecord.weeklyChanges) || null;
+      const routine = isCurrentMonth ? (_d = (_c = dbRecord == null ? void 0 : dbRecord.routine) != null ? _c : player2.routine) != null ? _d : null : (_e = dbRecord == null ? void 0 : dbRecord.routine) != null ? _e : null;
+      records[key] = { TI: null, ASI: null, skills, weeklyChanges, routine };
+    }
+    return records;
+  };
+  var buildHistorySkeletons = async (players, onProgress) => {
+    const total = players.filter((p) => p.needSync && p.isOwnPlayer).length;
+    let done = 0;
+    const fetches = await Promise.all(
+      players.map(async (player2) => {
+        if (!player2.needSync || !player2.isOwnPlayer) {
+          return { graphData: null, training: null };
+        }
+        const [graphData, training] = await Promise.all([
+          TmPlayerService.fetchPlayerGraphs(player2),
+          TmPlayerService.fetchPlayerTrainingForSync(player2)
+        ]);
+        done++;
+        onProgress == null ? void 0 : onProgress(done, total);
+        return { graphData, training };
+      })
+    );
+    return players.map((player2, i) => {
+      if (!player2.needSync) return player2;
+      const { graphData, training } = fetches[i];
+      const monthKeys = buildMonthKeys(player2, graphData, player2.DBPlayer);
+      const records = buildRecordSkeleton(player2, monthKeys, graphData, player2.DBPlayer);
+      return { ...player2, graphData, training, monthKeys, records };
+    });
+  };
+
+  // src/workflows/player-history/ti_asi_new.js
+  var keyToAbs2 = (key) => {
+    const [a, m] = String(key).split(".").map(Number);
+    return a * 12 + m;
+  };
+  var absToKey3 = (abs) => `${Math.floor(abs / 12)}.${abs % 12}`;
+  var asiOneMonthBack = (asi, ti, isGK) => TmLib.calcASIProjection({ player: { asi, isGK }, trainings: 1, avgTI: -ti }).newASI;
+  var fillOwnPlayerTIandASI = (player2) => {
+    var _a, _b, _c;
+    const { monthKeys, records, graphData } = player2;
+    const currentKey = player2.ageMonthsString;
+    const currentAbs = keyToAbs2(currentKey);
+    const graphMonths = ((_a = graphData == null ? void 0 : graphData.TI) == null ? void 0 : _a.length) ? graphData.TI.length - 1 : 0;
+    for (let i = 0; i < graphMonths; i++) {
+      const abs = currentAbs - graphMonths + 1 + i;
+      const key = absToKey3(abs);
+      if (records[key]) {
+        const ti = graphData.TI[i + 1];
+        records[key].TI = ti != null ? Number(ti) : null;
+      }
+    }
+    records[currentKey].ASI = player2.asi;
+    for (let i = monthKeys.length - 2; i >= 0; i--) {
+      const key = monthKeys[i];
+      const nextKey = monthKeys[i + 1];
+      const nextASI = (_b = records[nextKey]) == null ? void 0 : _b.ASI;
+      const nextTI = (_c = records[nextKey]) == null ? void 0 : _c.TI;
+      if (nextASI == null || nextTI == null) continue;
+      records[key].ASI = asiOneMonthBack(nextASI, nextTI, player2.isGK);
+    }
+  };
+  var fillForeignPlayerTIandASI = (player2) => {
+    var _a, _b, _c;
+    const { monthKeys, records, DBPlayer } = player2;
+    const currentKey = player2.ageMonthsString;
+    const liveTI = (_a = player2.ti) != null ? _a : null;
+    records[currentKey].ASI = player2.asi;
+    const anchors = monthKeys.map((key) => {
+      var _a2, _b2, _c2;
+      const asi = key === currentKey ? player2.asi : (_c2 = (_b2 = (_a2 = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _a2[key]) == null ? void 0 : _b2.SI) != null ? _c2 : null;
+      return asi != null && Number.isFinite(Number(asi)) ? { key, abs: keyToAbs2(key), asi: Number(asi) } : null;
+    }).filter(Boolean);
+    for (let ai = 0; ai < anchors.length - 1; ai++) {
+      const startA = anchors[ai];
+      const endA = anchors[ai + 1];
+      const gapKeys = monthKeys.filter((k) => {
+        const abs = keyToAbs2(k);
+        return abs > startA.abs && abs <= endA.abs;
+      });
+      if (!gapKeys.length) continue;
+      const totalTI = Math.round(
+        TmLib.calcASIProjection({ player: { asi: startA.asi, isGK: player2.isGK }, trainings: gapKeys.length, avgTI: liveTI }).newASI === endA.asi ? liveTI * gapKeys.length : (endA.asi - startA.asi) * 10
+      );
+      const series = buildWeightedIntegerSeries(totalTI, gapKeys.length, liveTI);
+      gapKeys.forEach((key, i) => {
+        records[key].TI = series[i];
+      });
+    }
+    for (let i = monthKeys.length - 2; i >= 0; i--) {
+      const key = monthKeys[i];
+      const nextKey = monthKeys[i + 1];
+      const nextASI = (_b = records[nextKey]) == null ? void 0 : _b.ASI;
+      const nextTI = (_c = records[nextKey]) == null ? void 0 : _c.TI;
+      if (nextASI == null || nextTI == null) continue;
+      records[key].ASI = asiOneMonthBack(nextASI, nextTI, player2.isGK);
+    }
+  };
+  var fillTIandASI = (players) => {
+    var _a, _b;
+    for (const player2 of players) {
+      if (!player2.needSync) continue;
+      if (player2.isOwnPlayer && ((_b = (_a = player2.graphData) == null ? void 0 : _a.TI) == null ? void 0 : _b.length)) {
+        fillOwnPlayerTIandASI(player2);
+      } else {
+        fillForeignPlayerTIandASI(player2);
+      }
+    }
+    return players;
+  };
+
+  // src/workflows/player-history/skills_new.js
+  var { TRAINING_GROUPS_OUT: TRAINING_GROUPS_OUT4, TRAINING_GROUPS_GK: TRAINING_GROUPS_GK4, GRAPH_KEYS_OUT: GRAPH_KEYS_OUT6, GRAPH_KEYS_GK: GRAPH_KEYS_GK6, ASI_WEIGHT_OUTFIELD: ASI_WEIGHT_OUTFIELD4 } = TmConst;
+  var findSkillsAnchor = (monthKeys, records) => {
+    var _a;
+    for (const key of monthKeys) {
+      const skills = (_a = records[key]) == null ? void 0 : _a.skills;
+      if (Array.isArray(skills) && skills.some((v) => v != null)) return key;
+    }
+    return null;
+  };
+  var applyDecimalsToAnchor = (player2) => {
+    const { skillsAnchorKey, records, isGK } = player2;
+    if (!skillsAnchorKey) return;
+    const record = records[skillsAnchorKey];
+    if (!record) return;
+    const intSkills = record.skills;
+    const anchorASI = record.ASI;
+    if (!Array.isArray(intSkills) || anchorASI == null) return;
+    const skillCount = isGK ? 11 : 14;
+    record.skills = TmLib.calcSkillDecimalsSimple({
+      asi: anchorASI,
+      isGK,
+      skills: intSkills.slice(0, skillCount).map((v) => ({ value: v != null ? v : 0 }))
+    }).map((s6) => s6.value);
+  };
+  var balanceSkillsToASI = (newSkills, caps, floors, asi, isGK) => {
+    if (asi == null) return;
+    const base = Math.pow(asi * ASI_WEIGHT_OUTFIELD4, 1 / 7);
+    const expectedSum = isGK ? base / 14 * 11 : base;
+    let delta = expectedSum - newSkills.reduce((s6, v) => s6 + v, 0);
+    let passes = 0;
+    while (Math.abs(delta) > 1e-4 && passes++ < 20) {
+      const eligible = newSkills.map((v, si) => (delta > 0 ? v < caps[si] : v > floors[si]) ? si : -1).filter((si) => si >= 0);
+      if (!eligible.length) break;
+      const share = delta / eligible.length;
+      let remaining = 0;
+      for (const si of eligible) {
+        const candidate = newSkills[si] + share;
+        if (delta > 0 && candidate > caps[si]) {
+          remaining += candidate - caps[si];
+          newSkills[si] = caps[si];
+        } else if (delta < 0 && candidate < floors[si]) {
+          remaining += candidate - floors[si];
+          newSkills[si] = floors[si];
+        } else {
+          newSkills[si] = candidate;
+        }
+      }
+      delta = remaining;
+    }
+  };
+  var fillSkillsBackward = (player2) => {
+    var _a, _b;
+    const { monthKeys, records, isGK, training, skillsAnchorKey } = player2;
+    if (!skillsAnchorKey) return;
+    const anchorIdx = monthKeys.indexOf(skillsAnchorKey);
+    if (anchorIdx <= 0) return;
+    const GRP = isGK ? TRAINING_GROUPS_GK4 : TRAINING_GROUPS_OUT4;
+    const N = isGK ? 11 : 14;
+    const gw = normalizeTrainingWeights(training != null ? training : null, isGK);
+    const skillShare = new Array(N).fill(0);
+    for (let gi = 0; gi < GRP.length; gi++) {
+      const perSkill = gw[gi] / GRP[gi].length;
+      for (const si of GRP[gi]) {
+        if (si < N) skillShare[si] = perSkill;
+      }
+    }
+    let curSkills = records[skillsAnchorKey].skills.map(Number);
+    for (let i = anchorIdx - 1; i >= 0; i--) {
+      const key = monthKeys[i];
+      const nextKey = monthKeys[i + 1];
+      const ti = (_b = (_a = records[nextKey]) == null ? void 0 : _a.TI) != null ? _b : 0;
+      const totalGain = ti / 10;
+      const hasKnown = records[key].skills != null && records[key].skills.some((v) => v != null);
+      const knownInts = hasKnown ? records[key].skills.map((v) => v != null ? Math.floor(Number(v)) : null) : null;
+      const caps = new Array(N);
+      const floors = new Array(N);
+      for (let si = 0; si < N; si++) {
+        if ((knownInts == null ? void 0 : knownInts[si]) != null) {
+          caps[si] = knownInts[si] + 0.99;
+          floors[si] = knownInts[si];
+        } else {
+          caps[si] = curSkills[si];
+          floors[si] = 1;
+        }
+      }
+      const newSkills = curSkills.map(
+        (v, si) => Math.max(floors[si], Math.min(caps[si], v - skillShare[si] * totalGain))
+      );
+      balanceSkillsToASI(newSkills, caps, floors, records[key].ASI, isGK);
+      records[key].skills = newSkills;
+      curSkills = newSkills;
+    }
+    const tableKeys = monthKeys.slice(0, anchorIdx + 1);
+    console.groupCollapsed(`[Step 7b] \u2190 ${player2.name} (${tableKeys.length} months to anchor)`);
+    console.log(player2.records);
+    console.groupEnd();
+  };
+  var fillSkillsForward = (player2) => {
+    var _a, _b, _c;
+    const { monthKeys, records, isGK, training, skillsAnchorKey } = player2;
+    if (!skillsAnchorKey) return;
+    const anchorIdx = monthKeys.indexOf(skillsAnchorKey);
+    if (anchorIdx < 0 || anchorIdx >= monthKeys.length - 1) return;
+    const GRP = isGK ? TRAINING_GROUPS_GK4 : TRAINING_GROUPS_OUT4;
+    const N = isGK ? 11 : 14;
+    const gw = normalizeTrainingWeights(training != null ? training : null, isGK);
+    const defaultShare = new Array(N).fill(0);
+    for (let gi = 0; gi < GRP.length; gi++) {
+      const perSkill = gw[gi] / GRP[gi].length;
+      for (const si of GRP[gi]) {
+        if (si < N) defaultShare[si] = perSkill;
+      }
+    }
+    let curSkills = records[skillsAnchorKey].skills.map(Number);
+    for (let i = anchorIdx + 1; i < monthKeys.length; i++) {
+      const key = monthKeys[i];
+      const record = records[key];
+      if (!record) continue;
+      const ti = (_a = record.TI) != null ? _a : 0;
+      const totalGain = ti / 10;
+      const wc = record.weeklyChanges;
+      let gain = defaultShare.map((w) => w * totalGain);
+      if ((_b = wc == null ? void 0 : wc.skillChanges) == null ? void 0 : _b.length) {
+        const upIdxs = wc.skillChanges.map((c, idx) => (c === "one_up" || c === "part_up") && idx < N ? idx : -1).filter((idx) => idx >= 0);
+        const downIdxs = wc.skillChanges.map((c, idx) => (c === "one_down" || c === "part_down") && idx < N ? idx : -1).filter((idx) => idx >= 0);
+        if (upIdxs.length > 0 || downIdxs.length > 0) {
+          gain = new Array(N).fill(0);
+          if (upIdxs.length > 0 && downIdxs.length > 0) {
+            const nominalTotal = (upIdxs.length - downIdxs.length) * 0.1;
+            const excess = totalGain - nominalTotal;
+            if (excess >= 0) {
+              const upGainPer = 0.1 + excess / upIdxs.length;
+              for (const si of upIdxs) gain[si] = upGainPer;
+              for (const si of downIdxs) gain[si] = -0.1;
+            } else {
+              const downGainPer = -0.1 + excess / downIdxs.length;
+              for (const si of upIdxs) gain[si] = 0.1;
+              for (const si of downIdxs) gain[si] = downGainPer;
+            }
+          } else if (upIdxs.length > 0) {
+            const upGainPer = totalGain / upIdxs.length;
+            for (const si of upIdxs) gain[si] = upGainPer;
+          } else {
+            const downGainPer = totalGain / downIdxs.length;
+            for (const si of downIdxs) gain[si] = downGainPer;
+          }
+        }
+      }
+      const hasKnown = record.skills != null && record.skills.some((v) => v != null);
+      const knownInts = hasKnown ? record.skills.map((v) => v != null ? Math.floor(Number(v)) : null) : null;
+      let futureInts = null;
+      if (!hasKnown) {
+        for (let j = i + 1; j < monthKeys.length; j++) {
+          const fSkills = (_c = records[monthKeys[j]]) == null ? void 0 : _c.skills;
+          if (fSkills && fSkills.some((v) => v != null)) {
+            futureInts = fSkills.map((v) => v != null ? Math.floor(Number(v)) : null);
+            break;
+          }
+        }
+      }
+      const caps = new Array(N);
+      const floors = new Array(N);
+      for (let si = 0; si < N; si++) {
+        const curInt = Math.floor(curSkills[si]);
+        if ((knownInts == null ? void 0 : knownInts[si]) != null) {
+          caps[si] = knownInts[si] + 0.99;
+          floors[si] = knownInts[si];
+        } else if ((futureInts == null ? void 0 : futureInts[si]) != null) {
+          const futInt = futureInts[si];
+          caps[si] = ti >= 0 && futInt === curInt ? curInt + 0.99 : ti < 0 ? curInt + 0.99 : Infinity;
+          floors[si] = ti < 0 ? futInt : curInt;
+        } else {
+          caps[si] = Infinity;
+          floors[si] = 1;
+        }
+        if (curInt >= 20) {
+          caps[si] = 20;
+          floors[si] = 20;
+        }
+      }
+      const newSkills = curSkills.map(
+        (v, si) => Math.max(floors[si], Math.min(caps[si], v + gain[si]))
+      );
+      balanceSkillsToASI(newSkills, caps, floors, record.ASI, isGK);
+      record.skills = newSkills;
+      curSkills = newSkills;
+    }
+    const tableKeys = monthKeys.slice(anchorIdx);
+    console.groupCollapsed(`[Step 7c] \u2192 ${player2.name} (${tableKeys.length} months from anchor)`);
+    console.log(player2.records);
+    console.groupEnd();
+  };
+  var attachSkillsAnchor = (players) => {
+    for (const player2 of players) {
+      if (!player2.needSync) continue;
+      player2.skillsAnchorKey = findSkillsAnchor(player2.monthKeys, player2.records);
+      applyDecimalsToAnchor(player2);
+      fillSkillsBackward(player2);
+      fillSkillsForward(player2);
+    }
+    return players;
+  };
+
+  // src/workflows/player-history/routine_new.js
+  var attachRoutine = (players) => {
+    var _a, _b, _c, _d;
+    for (const player2 of players) {
+      if (!player2.needSync) continue;
+      const { monthKeys, records } = player2;
+      if (!(monthKeys == null ? void 0 : monthKeys.length)) continue;
+      const n = monthKeys.length;
+      const anchors = [{ idx: 0, value: 0 }];
+      for (let i = 1; i < n; i++) {
+        const rou = (_a = records[monthKeys[i]]) == null ? void 0 : _a.routine;
+        if (rou != null && Number.isFinite(Number(rou))) {
+          anchors.push({ idx: i, value: Number(rou) });
+        }
+      }
+      const firstRecordRoutine = (_b = records[monthKeys[0]]) == null ? void 0 : _b.routine;
+      if (firstRecordRoutine != null && Number.isFinite(Number(firstRecordRoutine))) {
+        anchors[0].value = Number(firstRecordRoutine);
+      }
+      const lastIdx = n - 1;
+      const existingLast = anchors.findIndex((a) => a.idx === lastIdx);
+      const lastValue = Number((_d = (_c = records[monthKeys[lastIdx]]) == null ? void 0 : _c.routine) != null ? _d : 0);
+      if (existingLast >= 0) {
+        anchors[existingLast].value = lastValue;
+      } else {
+        anchors.push({ idx: lastIdx, value: lastValue });
+      }
+      for (let ai = 0; ai < anchors.length - 1; ai++) {
+        const { idx: i1, value: v1 } = anchors[ai];
+        const { idx: i2, value: v2 } = anchors[ai + 1];
+        for (let i = i1; i <= i2; i++) {
+          const t = i2 > i1 ? (i - i1) / (i2 - i1) : 1;
+          const interpolated = Math.round((v1 + (v2 - v1) * t) * 10) / 10;
+          if (records[monthKeys[i]]) {
+            records[monthKeys[i]].routine = interpolated;
+          }
+        }
+      }
+    }
+    return players;
+  };
+
+  // src/workflows/player-history/r5rec_new.js
+  var attachR5Rec = (players) => {
+    var _a;
+    for (const player2 of players) {
+      if (!player2.needSync) continue;
+      if (!Array.isArray(player2.positions)) continue;
+      const preferredPositions = player2.positions.filter((p) => p.preferred);
+      const positionsForRatings = preferredPositions.length ? preferredPositions : player2.positions;
+      for (const key of player2.monthKeys) {
+        const record = player2.records[key];
+        if (!record || !Array.isArray(record.skills)) continue;
+        const snapshot = {
+          skills: record.skills,
+          asi: record.ASI,
+          routine: (_a = record.routine) != null ? _a : 0
+        };
+        let maxR5 = null;
+        let maxRec = null;
+        for (const position of positionsForRatings) {
+          const r5 = Number(TmLib.calculatePlayerR5(position, snapshot));
+          const rec = Number(TmLib.calculatePlayerREC(position, snapshot));
+          if (Number.isFinite(r5) && (maxR5 === null || r5 > maxR5)) maxR5 = r5;
+          if (Number.isFinite(rec) && (maxRec === null || rec > maxRec)) maxRec = rec;
+        }
+        record.r5 = maxR5;
+        record.rec = maxRec;
+      }
+    }
+    return players;
+  };
+
+  // src/workflows/player-history/save_new.js
+  var saveHistoryRecordsNew = async (players) => {
+    const tasks = players.filter((p) => p.needSync && p.records).map(async (player2) => {
+      var _a, _b;
+      const { DBPlayer, records, ageMonthsString } = player2;
+      const merged = { ...(DBPlayer == null ? void 0 : DBPlayer.records) || {}, ...records };
+      if (ageMonthsString && merged[ageMonthsString]) {
+        merged[ageMonthsString] = {
+          ...merged[ageMonthsString],
+          fullySynced: true
+        };
+      }
+      const preferredPositions = (player2.positions || []).filter((p) => p.preferred);
+      await TmPlayerDB.set(player2.id, {
+        ...DBPlayer || {},
+        _v: (DBPlayer == null ? void 0 : DBPlayer._v) || 1,
+        meta: {
+          ...(DBPlayer == null ? void 0 : DBPlayer.meta) || {},
+          name: ((_a = DBPlayer == null ? void 0 : DBPlayer.meta) == null ? void 0 : _a.name) || player2.name,
+          pos: ((_b = DBPlayer == null ? void 0 : DBPlayer.meta) == null ? void 0 : _b.pos) || (preferredPositions.length ? preferredPositions.map((p) => p.position).join(", ") : (player2.positions || []).map((p) => p.position).join(", "))
+        },
+        records: merged
+      });
+    });
+    await Promise.all(tasks);
+  };
+
   // src/pages/players-styles.js
   var STYLE_ID49 = "tmvu-players-page-style";
   var injectPlayersPageStyles = () => {
@@ -46061,21 +46701,35 @@ order:initial
             justify-content: center;
             gap: 1px;
             min-width: 44px;
-            width: 100%;
-            padding: 3px 4px;
+            width: calc(100% - 4px);
+            margin: 0 2px;
+            padding: 2px;
             border-radius: var(--tmu-space-xs);
             font-weight: 700;
             color: var(--tmu-text-main);
+            position: relative;
         }
+        .tmvu-players-skill-arrow {
+            position: absolute;
+            left: 3px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 9px;
+            line-height: 1;
+        }
+        .tmvu-players-skill-arrow.up { color: var(--tmu-success-strong); }
+        .tmvu-players-skill-arrow.down { color: var(--tmu-danger); }
         .tmvu-players-skill-cell.gain-decimal {
-            background: color-mix(in srgb, var(--tmu-success) 14%, transparent);
+            background: color-mix(in srgb, var(--tmu-success) 8%, transparent);
         }
         .tmvu-players-skill-cell.gain-integer {
-            background: color-mix(in srgb, var(--tmu-success) 28%, transparent);
+            background: color-mix(in srgb, var(--tmu-success) 40%, transparent);
         }
-        .tmvu-players-skill-cell.loss-decimal,
+        .tmvu-players-skill-cell.loss-decimal {
+            background: color-mix(in srgb, var(--tmu-danger) 8%, transparent);
+        }
         .tmvu-players-skill-cell.loss-integer {
-            background: color-mix(in srgb, var(--tmu-danger) 12%, transparent);
+            background: color-mix(in srgb, var(--tmu-danger) 30%, transparent);
         }
         .tmvu-players-skill-cell.max {
             color: var(--tmu-metal-gold);
@@ -46116,7 +46770,35 @@ order:initial
   };
 
   // src/pages/players.js
-  var RESERVES_URL = "/players/#/a//b/true/";
+  var parseSquadPageSkillChanges = (doc = document) => {
+    const result = /* @__PURE__ */ new Map();
+    const links = [...doc.querySelectorAll("[player_link]")];
+    links.forEach((link) => {
+      var _a, _b;
+      const row = link.closest("tr");
+      if (!row) return;
+      const playerId = Number(link.getAttribute("player_link"));
+      if (!playerId) return;
+      const skillDivs = [...row.querySelectorAll("div.skill.training")];
+      const skillCount = skillDivs.length === 14 ? 14 : skillDivs.length === 11 ? 11 : null;
+      if (!skillCount) return;
+      const cells = [...row.querySelectorAll("td")];
+      const ageText = ((_b = (_a = cells[2]) == null ? void 0 : _a.textContent) == null ? void 0 : _b.trim()) || "";
+      const ageMonthsString = /^\d+\.\d+$/.test(ageText) ? ageText : null;
+      const intSkills = new Array(skillCount).fill(0);
+      const skillChanges = new Array(skillCount).fill(null);
+      skillDivs.forEach((div, i) => {
+        const img = div.querySelector("img");
+        intSkills[i] = img ? img.src.includes("star_silver") ? 19 : 20 : parseInt(div.textContent.trim(), 10) || 0;
+        if (div.classList.contains("one_up")) skillChanges[i] = "one_up";
+        else if (div.classList.contains("part_up")) skillChanges[i] = "part_up";
+        else if (div.classList.contains("one_down")) skillChanges[i] = "one_down";
+        else if (div.classList.contains("part_down")) skillChanges[i] = "part_down";
+      });
+      result.set(playerId, { intSkills, skillChanges, ageMonthsString });
+    });
+    return result;
+  };
   var escapeHtml33 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var formatTiDelta = (value) => {
     const n = Number(value) || 0;
@@ -46137,25 +46819,36 @@ order:initial
     };
   };
   var getSkillChanges = (player2) => {
+    var _a;
     const { latestRecord, previousRecord } = getLatestRecordPair(player2);
     if (!Array.isArray(latestRecord == null ? void 0 : latestRecord.skills) || !Array.isArray(previousRecord == null ? void 0 : previousRecord.skills)) return [];
-    return latestRecord.skills.map((value, index) => {
+    const weeklyChanges = ((_a = player2.weeklyChanges) == null ? void 0 : _a.skillChanges) || [];
+    return (latestRecord.skills || []).map((value, index) => {
       const latestValue = Number(value);
       const previousValue = Number(previousRecord.skills[index]);
       if (!Number.isFinite(latestValue) || !Number.isFinite(previousValue)) return null;
       const delta = latestValue - previousValue;
-      if (!delta) return null;
+      const weeklyChange = weeklyChanges[index] || null;
+      if (!delta && !weeklyChange) return null;
       return {
         index,
         delta,
-        type: delta > 0 ? "pos" : "neg"
+        type: delta > 0 ? "pos" : "neg",
+        weeklyChange
       };
     }).filter(Boolean);
   };
   var getR5Change = (player2) => {
     const { latestRecord, previousRecord } = getLatestRecordPair(player2);
-    const latestValue = Number(latestRecord == null ? void 0 : latestRecord.R5);
-    const previousValue = Number(previousRecord == null ? void 0 : previousRecord.R5);
+    const latestValue = Number(latestRecord == null ? void 0 : latestRecord.r5);
+    const previousValue = Number(previousRecord == null ? void 0 : previousRecord.r5);
+    if (!Number.isFinite(latestValue) || !Number.isFinite(previousValue)) return null;
+    return latestValue - previousValue;
+  };
+  var getTiChange = (player2) => {
+    const { latestRecord, previousRecord } = getLatestRecordPair(player2);
+    const latestValue = Number(latestRecord == null ? void 0 : latestRecord.TI);
+    const previousValue = Number(previousRecord == null ? void 0 : previousRecord.TI);
     if (!Number.isFinite(latestValue) || !Number.isFinite(previousValue)) return null;
     return latestValue - previousValue;
   };
@@ -46163,13 +46856,15 @@ order:initial
     var _a;
     const value = getSkillValue(player2, index);
     const change = ((_a = player2.skillChanges) == null ? void 0 : _a.find((item) => item.index === index)) || null;
-    const toneCls = (change == null ? void 0 : change.type) ? ` ${change.type}` : "";
-    const cls = `${value >= 20 ? " max" : value >= 19 ? " elite" : ""}${toneCls}`;
+    const wc = change == null ? void 0 : change.weeklyChange;
+    const bgCls = wc === "one_up" ? " gain-integer" : wc === "part_up" ? " gain-decimal" : wc === "one_down" ? " loss-integer" : wc === "part_down" ? " loss-decimal" : "";
+    const cls = `${value >= 20 ? " max" : value >= 19 ? " elite" : ""}${bgCls}`;
     const label = value >= 20 ? "\u2605" : value >= 19 ? `\u2606.${value.toFixed(2).split(".")[1]}` : value.toFixed(2);
     const title = value >= 19 ? String(value) : "";
-    const deltaText = change ? `${change.delta > 0 ? "+" : ""}${change.delta.toFixed(2)}` : "";
+    const deltaText = (change == null ? void 0 : change.delta) ? `${change.delta > 0 ? "+" : ""}${change.delta.toFixed(2)}` : "";
     const deltaHtml = deltaText && deltaText !== "+0.00" && deltaText !== "-0.00" && deltaText !== "0.00" ? `<span class="tmvu-players-skill-delta ${change.delta > 0 ? "pos" : "neg"}">${deltaText}</span>` : "";
-    return `<span class="tmvu-players-skill-cell${cls}"${title ? ` title="${title}"` : ""}><span class="tmvu-players-skill-main">${label}</span>${deltaHtml}</span>`;
+    const arrowHtml = wc === "one_up" ? '<span class="tmvu-players-skill-arrow up">\u25B2</span>' : wc === "one_down" ? '<span class="tmvu-players-skill-arrow down">\u25BC</span>' : "";
+    return `<span class="tmvu-players-skill-cell${cls}"${title ? ` title="${title}"` : ""}>${arrowHtml}<span class="tmvu-players-skill-main">${label}</span>${deltaHtml}</span>`;
   };
   var createSquadModel = (key, label, defaultVisible) => ({
     key,
@@ -46181,6 +46876,7 @@ order:initial
     loadError: ""
   });
   function initPlayersPage(main2) {
+    var _a;
     if (!/^\/players\/?$/i.test(window.location.pathname)) return;
     if (document.getElementById("tmvu-players-shell")) return;
     injectPlayersPageStyles();
@@ -46207,15 +46903,27 @@ order:initial
     const state5 = {
       squads: {
         main: createSquadModel("main", "Main Squad", true),
-        reserves: createSquadModel("reserves", "Reserves", false)
+        reserves: createSquadModel("reserves", "Reserves", true)
       },
       reserveLoadStarted: false
     };
-    const decoratePlayers2 = (players) => players.map((player2) => ({
-      ...player2,
-      skillChanges: getSkillChanges(player2),
-      r5Change: getR5Change(player2)
-    }));
+    const decoratePlayers2 = (players) => (players || []).map((player2) => {
+      const { latestRecord } = getLatestRecordPair(player2);
+      const recordSkills = Array.isArray(latestRecord == null ? void 0 : latestRecord.skills) ? latestRecord.skills : null;
+      const skills = recordSkills ? (player2.skills || []).map((skill) => {
+        var _a2;
+        return { ...skill, value: (_a2 = recordSkills[skill.id]) != null ? _a2 : skill.value };
+      }) : player2.skills;
+      const latestTI = Number(latestRecord == null ? void 0 : latestRecord.TI);
+      return {
+        ...player2,
+        skills,
+        ti: Number.isFinite(latestTI) ? latestTI : player2.ti,
+        TI_change: getTiChange(player2),
+        skillChanges: getSkillChanges(player2),
+        r5Change: getR5Change(player2)
+      };
+    });
     const createSectionHost = (title) => {
       const host = document.createElement("section");
       const heading = document.createElement("h3");
@@ -46258,7 +46966,7 @@ order:initial
           render: (_, item) => TmPosition.chip(item.positions.filter((position) => position.preferred))
         }
       ];
-      const skillHeaders = skillLabels.map((label, index) => ({
+      const skillHeaders = (skillLabels || []).map((label, index) => ({
         key: `skill_${index}`,
         label,
         align: "c",
@@ -46319,9 +47027,6 @@ order:initial
         label: "Reserves",
         onChange: (event) => {
           state5.squads.reserves.visible = !!event.target.checked;
-          if (state5.squads.reserves.visible && !state5.reserveLoadStarted) {
-            loadReserveSquad().catch((error) => console.error("[Players] Reserve load failed:", error));
-          }
           render17();
         }
       });
@@ -46331,111 +47036,158 @@ order:initial
     };
     const renderSections = () => {
       sectionsHost.innerHTML = "";
-      const activeSquads = Object.values(state5.squads).filter((squad) => squad.visible);
-      if (!activeSquads.length) {
+      const showMain = state5.squads.main.visible;
+      const showReserves = state5.squads.reserves.visible;
+      const mainSquad = state5.squads.main;
+      if (!showMain && !showReserves) {
         const body = createSectionHost("No Squad Selected");
         body.innerHTML = '<div class="tmvu-players-empty">No squad is selected.</div>';
         return;
       }
-      activeSquads.forEach((squad) => {
-        if (squad.loading && !squad.players.length) {
-          const body = createSectionHost(squad.label);
-          body.innerHTML = '<div class="tmvu-players-empty">Loading players...</div>';
-          return;
-        }
-        if (squad.loadError && !squad.players.length) {
-          const body = createSectionHost(squad.label);
-          body.innerHTML = `<div class="tmvu-players-empty">${escapeHtml33(squad.loadError)}</div>`;
-          return;
-        }
-        const sections = [
-          { title: `${squad.label} \u2022 Outfield`, isGK: false, players: squad.players.filter((player2) => !player2.isGK) },
-          { title: `${squad.label} \u2022 Goalkeepers`, isGK: true, players: squad.players.filter((player2) => player2.isGK) }
-        ].filter((section) => section.players.length);
-        if (!sections.length) {
-          const body = createSectionHost(squad.label);
-          body.innerHTML = '<div class="tmvu-players-empty">No players available.</div>';
-          return;
-        }
-        sections.forEach((section) => {
-          const body = createSectionHost(section.title);
-          const table2 = TmTable.table({
-            headers: buildTableHeaders(section.isGK),
-            items: section.players,
-            density: "tight",
-            cls: "tmvu-players-table",
-            sortKey: "no",
-            sortDir: 1,
-            emptyText: "No players found."
-          });
-          body.appendChild(table2);
+      if (mainSquad.loading && !mainSquad.players.length) {
+        const body = createSectionHost("Players");
+        body.innerHTML = `<div class="tmvu-players-empty">${escapeHtml33(mainSquad.syncMessage || "Loading players...")}</div>`;
+        return;
+      }
+      if (mainSquad.loadError && !mainSquad.players.length) {
+        const body = createSectionHost("Players");
+        body.innerHTML = `<div class="tmvu-players-empty">${escapeHtml33(mainSquad.loadError)}</div>`;
+        return;
+      }
+      const visiblePlayers = mainSquad.players.filter((player2) => {
+        if (player2.b) return showReserves;
+        return showMain;
+      });
+      const sections = [
+        { title: "Outfield", isGK: false, players: visiblePlayers.filter((player2) => !player2.isGK) },
+        { title: "Goalkeepers", isGK: true, players: visiblePlayers.filter((player2) => player2.isGK) }
+      ].filter((section) => section.players.length);
+      if (!sections.length) {
+        const body = createSectionHost("Players");
+        body.innerHTML = '<div class="tmvu-players-empty">No players available.</div>';
+        return;
+      }
+      sections.forEach((section) => {
+        const body = createSectionHost(section.title);
+        const table2 = TmTable.table({
+          headers: buildTableHeaders(section.isGK),
+          items: section.players,
+          density: "tight",
+          cls: "tmvu-players-table",
+          sortKey: "no",
+          sortDir: 1,
+          emptyText: "No players found."
         });
+        body.appendChild(table2);
       });
     };
     const render17 = () => {
       renderControls();
       renderSections();
     };
-    const fetchSquadForRender = async (clubId2) => {
+    const fetchSquadForRender = async (clubId2, skillChangesMap = null) => {
       if (!clubId2) return [];
-      const players = await TmClubModel2.fetchSquadRaw(clubId2, true) || [];
-      return decoratePlayers2(players);
     };
-    const loadSquadFromIframe = (path) => new Promise((resolve, reject) => {
-      const frame = document.createElement("iframe");
-      frame.className = "tmvu-players-source-frame";
-      frame.src = `${window.location.origin}${path}`;
-      document.body.appendChild(frame);
-      let pollTimer = null;
-      let timeoutTimer = null;
-      const cleanup = () => {
-        if (pollTimer) window.clearInterval(pollTimer);
-        if (timeoutTimer) window.clearTimeout(timeoutTimer);
-        frame.remove();
+    const waitForSkillChanges = (doc, timeout = 5e3) => new Promise((resolve) => {
+      const getRowCount = () => doc.querySelectorAll("[player_link]").length;
+      const finish = (map) => {
+        console.log("[WC:0 waitForSkillChanges] resolved, map.size:", map.size);
+        resolve(map);
       };
-      const tryParse = () => {
-        try {
-          const doc = frame.contentDocument;
-          if (!hasSquadRows(doc)) return;
-          const parsed = parseSquadDocument(doc);
-          if (parsed == null ? void 0 : parsed.length) {
-            cleanup();
-            resolve(parsed);
-          }
-        } catch (error) {
-          cleanup();
-          reject(error);
+      let lastCount = -1;
+      let stableFor = 0;
+      const limit = window.setTimeout(() => {
+        window.clearInterval(timer);
+        const count = getRowCount();
+        if (count > 0) {
+          console.log("[WC:0 waitForSkillChanges] TIMEOUT \u2014 using partial rows:", count);
+          finish(parseSquadPageSkillChanges(doc));
+        } else {
+          console.log("[WC:0 waitForSkillChanges] TIMEOUT \u2014 no rows found in", timeout, "ms");
+          resolve(/* @__PURE__ */ new Map());
         }
-      };
-      frame.addEventListener("load", () => {
-        tryParse();
-        pollTimer = window.setInterval(tryParse, 300);
-        timeoutTimer = window.setTimeout(() => {
-          cleanup();
-          reject(new Error("Reserve squad table did not load in time."));
-        }, 2e4);
-      }, { once: true });
+      }, timeout);
+      const timer = window.setInterval(() => {
+        const count = getRowCount();
+        if (count > 0 && count === lastCount) {
+          stableFor++;
+          if (stableFor >= 2) {
+            window.clearInterval(timer);
+            window.clearTimeout(limit);
+            finish(parseSquadPageSkillChanges(doc));
+          }
+        } else {
+          lastCount = count;
+          stableFor = 0;
+        }
+      }, 200);
     });
+    const reserveClubId = String(((_a = window.SESSION) == null ? void 0 : _a.b_team) || "").trim();
     const loadMainSquad = async () => {
-      var _a, _b;
+      var _a2, _b, _c;
       const squad = state5.squads.main;
       squad.loading = true;
       squad.loadError = "";
       render17();
-      const clubId2 = String(((_a = window.SESSION) == null ? void 0 : _a.main_id) || ((_b = window.SESSION) == null ? void 0 : _b.club_id) || "").trim();
-      const players = await fetchSquadForRender(clubId2);
-      squad.loading = false;
-      if (!players.length) {
-        squad.loadError = "Main squad endpoint returned no players.";
-        render17();
-        return;
+      const skillChangesMap = await waitForSkillChanges(document);
+      console.log("[Step 1] Skill changes parsed from DOM \u2014 total:", skillChangesMap);
+      const mainClubId = String(((_a2 = window.SESSION) == null ? void 0 : _a2.main_id) || "").trim();
+      const bTeamId = String(((_b = window.SESSION) == null ? void 0 : _b.b_team) || "").trim();
+      const [mainPlayers, reservePlayers] = await Promise.all([
+        fetchRawPlayers(mainClubId),
+        bTeamId ? fetchRawPlayers(bTeamId) : Promise.resolve([])
+      ]);
+      const reserveIds = new Set(reservePlayers.map((p) => p.id));
+      const allPlayers3 = [...mainPlayers, ...reservePlayers].map((player2) => ({
+        ...player2,
+        b: reserveIds.has(player2.id) ? true : void 0,
+        weeklyChanges: skillChangesMap.get(player2.id) || null
+      }));
+      console.group("[Step 2] Players loaded \u2014 total:", allPlayers3.length);
+      console.log(allPlayers3);
+      console.groupEnd();
+      const allPlayersWithSync = await attachSyncStatus(allPlayers3);
+      console.group("[Step 3] Sync status \u2014 total:", allPlayersWithSync.length);
+      console.log(allPlayersWithSync);
+      console.groupEnd();
+      const syncBar = TmProgress.progressBar({ title: "\u26A1 Syncing players" });
+      const allPlayersWithData = await buildHistorySkeletons(allPlayersWithSync, (done, total) => {
+        syncBar.update(done, total, `Syncing ${done}/${total}`);
+      });
+      syncBar.done();
+      console.group("[Step 4] History skeletons built \u2014 needSync:", allPlayersWithData.filter((p) => p.needSync).length);
+      console.log(allPlayersWithData.filter((p) => p.needSync));
+      console.groupEnd();
+      fillTIandASI(allPlayersWithData);
+      console.group("[Step 5] TI + ASI filled");
+      console.log(allPlayersWithData.filter((p) => p.needSync));
+      console.groupEnd();
+      attachSkillsAnchor(allPlayersWithData);
+      console.group("[Step 7a] Anchor decimals applied");
+      console.log(allPlayersWithData.filter((p) => p.needSync));
+      console.groupEnd();
+      attachRoutine(allPlayersWithData);
+      console.group("[Step 9] Routine filled");
+      console.log(allPlayersWithData.filter((p) => p.needSync));
+      console.groupEnd();
+      const needSyncPlayers = allPlayersWithData.filter((p) => p.needSync);
+      for (const player2 of needSyncPlayers) {
+        attachR5Rec([player2]);
+        const currentRecord = (_c = player2.records) == null ? void 0 : _c[player2.ageMonthsString];
+        if (currentRecord) currentRecord.fullySynced = true;
       }
-      squad.players = players;
+      console.group("[Step 10+11] R5/REC + fullySynced");
+      console.log(needSyncPlayers);
+      console.groupEnd();
+      await saveHistoryRecordsNew(allPlayersWithData);
+      squad.players = decoratePlayers2(allPlayersWithData);
+      console.log(squad.players);
       squad.loaded = true;
+      squad.syncMessage = null;
+      squad.loading = false;
       render17();
     };
     const loadReserveSquad = async () => {
-      var _a;
       const squad = state5.squads.reserves;
       if (state5.reserveLoadStarted) return;
       state5.reserveLoadStarted = true;
@@ -46443,12 +47195,11 @@ order:initial
       squad.loadError = "";
       render17();
       try {
-        const clubId2 = String(((_a = window.SESSION) == null ? void 0 : _a.b_team) || "").trim();
-        squad.players = await fetchSquadForRender(clubId2);
+        squad.players = await fetchSquadForRender(reserveClubId, null);
         squad.loaded = true;
       } catch (error) {
         state5.reserveLoadStarted = false;
-        squad.loadError = (error == null ? void 0 : error.message) || `Could not load reserves from ${RESERVES_URL}.`;
+        squad.loadError = (error == null ? void 0 : error.message) || "Could not load reserves.";
       } finally {
         squad.loading = false;
         render17();

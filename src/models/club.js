@@ -5,12 +5,14 @@ import { applyPlayerPositionRatings, normalizeSquadPlayer } from '../utils/norma
 import { TmPlayerHistorySyncWorkflow } from '../workflows/player-history-sync.js';
 
 export const TmClubModel = {
-    async fetchSquadRaw(clubId, sync = false) {
+    async fetchSquadRaw(clubId, sync = false, skillChangesMap = null) {
         const post = await TmClubService.fetchSquadPost(clubId);
         if (!post) return null;
 
         const players = Object.values(post).map((player) => normalizeSquadPlayer(player));
         return Promise.all(players.map(async (player) => {
+            player.weeklyChanges = skillChangesMap?.get(player.id) || null;
+            if (Number(player.id) === 140907932) console.log('[WC:2 fetchSquadRaw] player.weeklyChanges', player.weeklyChanges, 'skillChangesMap has it:', skillChangesMap?.has(player.id));
             const initialDBPlayer = await TmPlayerDB.get(player.id);
             let DBPlayer = initialDBPlayer;
             if (sync) {
@@ -37,6 +39,7 @@ export const TmClubModel = {
                 // if(player.ti === 0) console.log(player.id, player.graphs, player.records);
                 player.TI_change = Number(last2Records[0].TI) - Number(last2Records[1].TI);
             }
+
             return player;
         }));
     },

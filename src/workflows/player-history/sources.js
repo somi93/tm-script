@@ -160,6 +160,7 @@ const buildPlayerGraphs = (player, DBPlayer, rawGraphs = null) => {
                 SI: normalizeGraphNumber(record?.SI),
                 TI: normalizeGraphNumber(record?.TI),
                 skills: Array.isArray(record?.skills) ? record.skills.map(skillValue) : new Array(statKeys.length).fill(null),
+                weeklyChanges: record?.weeklyChanges || null,
             };
         });
     }
@@ -187,6 +188,7 @@ const buildPlayerGraphs = (player, DBPlayer, rawGraphs = null) => {
             const record = DBPlayer?.records?.[ageKey];
             if (record) {
                 existing.skills = record.skills.map(skillValue);
+                if (record.weeklyChanges) existing.weeklyChanges = record.weeklyChanges;
             }
         }
         recordsByAgeKey[ageKey] = existing;

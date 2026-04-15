@@ -172,6 +172,7 @@ export const reconstructSkillHistory = ({
     tiHistory = null,
     routineHistory = null,
     ageKeys = null,
+    weeklyChangesMap = null,
 }) => {
 
     // if (player.id === 140811640) console.log(skillHistoryByKey);
@@ -208,12 +209,47 @@ export const reconstructSkillHistory = ({
     const reconstructed = {};
     resolvedAgeKeys.forEach((key, monthIndex) => {
         const intSkills = safeGrowthSkills(records[key].skills);
+        const wc = weeklyChangesMap?.[key];
+        const ti = Number(tiHistory?.[monthIndex] ?? 0);
+        const totalAdded = ti / 10;
+        let skillWeights = null;
+        if (wc?.skillChanges?.length && totalAdded > 0) {
+            const groups = player?.isGK ? TRAINING_GROUPS_GK : TRAINING_GROUPS_OUT;
+            const gw = normalizeTrainingWeights(player?.training ?? null, player?.isGK);
+            const upIndices = wc.skillChanges
+                .map((c, i) => (c === 'part_up' || c === 'one_up') ? i : -1)
+                .filter(i => i >= 0 && intSkills[i] < 20);
+            if (upIndices.length) {
+                skillWeights = new Array(intSkills.length).fill(0);
+                for (let gi = 0; gi < groups.length; gi++) {
+                    const active = groups[gi].filter(idx => upIndices.includes(idx));
+                    if (!active.length) continue;
+                    const perSkill = gw[gi] / active.length;
+                    for (const idx of active) skillWeights[idx] += perSkill;
+                }
+                const tw = skillWeights.reduce((s, v) => s + v, 0);
+                if (tw > 0) skillWeights = skillWeights.map(w => w / tw);
+                else skillWeights = null;
+            }
+        }
+        if (Number(player?.id) === 140907932) console.log('[WC:dec]', key, decimals[key]?.map(d => +d.toFixed(3)), 'wc:', wc?.skillChanges ?? null);
+        const prevSkills = monthIndex > 0 ? reconstructed[resolvedAgeKeys[monthIndex - 1]]?.skills : null;
         reconstructed[key] = {
             ageKey: key,
             SI: records[key].SI,
-            TI: Math.round(Number(tiHistory?.[monthIndex] ?? 0)),
+            TI: Math.round(ti),
             routine: Number(routineHistory?.[monthIndex] ?? 0),
-            skills: intSkills.map((value, index) => value + decimals[key][index]),
+            skills: intSkills.map((value, index) => {
+                const probDec = decimals[key][index];
+                if (!skillWeights) return value + probDec;
+                const change = wc.skillChanges[index];
+                if (change === 'part_up' || change === 'one_up') {
+                    const gain = totalAdded * skillWeights[index];
+                    const base = prevSkills != null ? Number(prevSkills[index]) : value;
+                    return Math.min(value + 0.99, base + gain);
+                }
+                return value + probDec;
+            }),
         };
     });
 
@@ -227,6 +263,11 @@ export const reconstructSkillHistoryFromGraph = (player, DBPlayer, graphData, re
     const statKeys = getHistoryStatKeys(player?.isGK);
     const graphRecords = graphData?.recordsByAgeKey || {};
 
+    const weeklyChangesMap = {};
+    for (const key of historyKeys) {
+        const wc = graphRecords[key]?.weeklyChanges;
+        if (wc?.intSkills?.length && wc?.skillChanges?.length) weeklyChangesMap[key] = wc;
+    }
     return reconstructSkillHistory({
         player,
         ageKeys: historyKeys,
@@ -236,6 +277,7 @@ export const reconstructSkillHistoryFromGraph = (player, DBPlayer, graphData, re
             acc[statKey] = historyKeys.map((key) => Number(graphRecords[key]?.skills?.[statIndex] ?? 0));
             return acc;
         }, {}),
+        weeklyChangesMap: Object.keys(weeklyChangesMap).length ? weeklyChangesMap : null,
     });
 };
 
@@ -272,6 +314,7 @@ export const buildWeightedIntegerSeries = (total, count, liveTI = null) => {
     return series.map(value => value * sign);
 };
 
+
 export const reconstructSkillHistoryFromEstimate = (player, DBPlayer, missingKeys, options = {}) => {
     if (player.id === 137234654) console.log(player.graphs);
     const { graphRecordsByAgeKey = null, liveTI = player?.ti } = options;
@@ -287,16 +330,19 @@ export const reconstructSkillHistoryFromEstimate = (player, DBPlayer, missingKey
     const historyKeys = sortAgeKeys([...allGraphKeys, ...(allGraphKeys.includes(endKey) ? [] : [endKey])]);
     const statKeys = getHistoryStatKeys(player?.isGK);
 
-    // All records with any skill data serve as anchors (pre-estimated by buildPlayerGraphs)
+    // All records with any skill data serve as anchors; weeklyChanges.intSkills takes priority
     const guessedRecords = {};
     for (const key of allGraphKeys) {
         const rec = graphRecords[key];
-        if (rec?.skills?.some(v => v != null)) {
+        const obsInts = rec?.weeklyChanges?.intSkills;
+        if (rec?.skills?.some(v => v != null) || obsInts) {
             guessedRecords[key] = {
                 SI: Number(rec.SI ?? 0),
                 TI: Number(rec.TI ?? 0),
                 routine: Number(rec.routine ?? 0),
-                skills: rec.skills.map(v => Math.floor(skillValue(v) || 0)),
+                skills: obsInts
+                    ? obsInts.map(v => Math.floor(Number(v) || 0))
+                    : rec.skills.map(v => Math.floor(skillValue(v) || 0)),
             };
         }
     }
@@ -310,6 +356,11 @@ export const reconstructSkillHistoryFromEstimate = (player, DBPlayer, missingKey
         skills: endSkills.map(v => Math.floor(skillValue(v) || 0)),
     };
 
+    const wcMap = {};
+    for (const key of historyKeys) {
+        const wc = graphRecords[key]?.weeklyChanges;
+        if (wc?.intSkills?.length && wc?.skillChanges?.length) wcMap[key] = wc;
+    }
     return reconstructSkillHistory({
         player,
         ageKeys: historyKeys,
@@ -320,6 +371,7 @@ export const reconstructSkillHistoryFromEstimate = (player, DBPlayer, missingKey
             acc[statKey] = historyKeys.map(key => guessedRecords[key]?.skills?.[statIndex] ?? 0);
             return acc;
         }, {}),
+        weeklyChangesMap: Object.keys(wcMap).length ? wcMap : null,
     });
 };
 
@@ -328,6 +380,7 @@ export const enrichHistoryRecords = (player, history) => {
     const positionsForRatings = preferredPositions.length ? preferredPositions : player.positions;
     Object.keys(history).forEach((ageKey) => {
         const historyRecord = history[ageKey];
+        if (!Array.isArray(historyRecord?.skills)) return;
         const snapshot = {
             ...player,
             asi: historyRecord.SI,
@@ -354,15 +407,48 @@ export const enrichHistoryRecords = (player, history) => {
     return history;
 };
 
+export const saveWeeklySkillChanges = async (player, DBPlayer, weeklyData) => {
+    const currentKey = player?.ageMonthsString;
+    if (!currentKey || !weeklyData?.skillChanges?.length || !weeklyData?.intSkills?.length) return;
+
+    // Don't overwrite if already saved for this ageKey
+    if (DBPlayer?.records?.[currentKey]?.weeklyChanges) return;
+
+    const records = { ...(DBPlayer?.records || {}) };
+    records[currentKey] = {
+        ...(records[currentKey] || {}),
+        weeklyChanges: {
+            intSkills: weeklyData.intSkills,
+            skillChanges: weeklyData.skillChanges,
+            ts: Date.now(),
+        },
+    };
+
+    await TmPlayerDB.set(player.id, { ...(DBPlayer || {}), records });
+};
+
 export const saveHistoryRecords = async (player, DBPlayer, historyRecords) => {
     const mergedRecords = enrichHistoryRecords(player, {
         ...(DBPlayer?.records || {}),
         ...(historyRecords || {}),
     });
     if (!Object.keys(mergedRecords).length) return historyRecords;
-    // if (player.id === 145086218) {
-    //     console.log('saveHistoryRecords', player.name, historyRecords, mergedRecords);
-    // }
+
+    // Save weeklyChanges together in the same write — only if the record already exists
+    const weeklyKey = player?.ageMonthsString;
+    const weeklyData = player?.weeklyChanges;
+    if (weeklyKey && mergedRecords[weeklyKey] && weeklyData?.intSkills?.length && weeklyData?.skillChanges?.length
+        && !mergedRecords[weeklyKey]?.weeklyChanges) {
+        mergedRecords[weeklyKey] = {
+            ...(mergedRecords[weeklyKey] || {}),
+            weeklyChanges: {
+                intSkills: weeklyData.intSkills,
+                skillChanges: weeklyData.skillChanges,
+                ts: weeklyData.ts || Date.now(),
+            },
+        };
+    }
+
     const preferredPositions = player.positions.filter(position => position.preferred);
     await TmPlayerDB.set(player.id, {
         ...(DBPlayer || {}),

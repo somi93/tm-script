@@ -51,7 +51,7 @@ export const buildHistoryEvidenceProfile = (player, DBPlayer) => {
 };
 
 export const selectHistorySyncStrategy = (profile) => {
-    if (!profile?.hasMissingAgeKeys) return HISTORY_SYNC_STRATEGY.NOOP;
+    // if (!profile?.hasMissingAgeKeys) return HISTORY_SYNC_STRATEGY.NOOP;
     return profile.hasSkillGraphs
         ? HISTORY_SYNC_STRATEGY.SKILL_GRAPHS
         : profile.hasReliableCurrentTI && profile.hasCurrentSnapshot

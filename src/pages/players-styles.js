@@ -98,21 +98,35 @@ export const injectPlayersPageStyles = () => {
             justify-content: center;
             gap: 1px;
             min-width: 44px;
-            width: 100%;
-            padding: 3px 4px;
+            width: calc(100% - 4px);
+            margin: 0 2px;
+            padding: 2px;
             border-radius: var(--tmu-space-xs);
             font-weight: 700;
             color: var(--tmu-text-main);
+            position: relative;
         }
+        .tmvu-players-skill-arrow {
+            position: absolute;
+            left: 3px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 9px;
+            line-height: 1;
+        }
+        .tmvu-players-skill-arrow.up { color: var(--tmu-success-strong); }
+        .tmvu-players-skill-arrow.down { color: var(--tmu-danger); }
         .tmvu-players-skill-cell.gain-decimal {
-            background: color-mix(in srgb, var(--tmu-success) 14%, transparent);
+            background: color-mix(in srgb, var(--tmu-success) 8%, transparent);
         }
         .tmvu-players-skill-cell.gain-integer {
-            background: color-mix(in srgb, var(--tmu-success) 28%, transparent);
+            background: color-mix(in srgb, var(--tmu-success) 40%, transparent);
         }
-        .tmvu-players-skill-cell.loss-decimal,
+        .tmvu-players-skill-cell.loss-decimal {
+            background: color-mix(in srgb, var(--tmu-danger) 8%, transparent);
+        }
         .tmvu-players-skill-cell.loss-integer {
-            background: color-mix(in srgb, var(--tmu-danger) 12%, transparent);
+            background: color-mix(in srgb, var(--tmu-danger) 30%, transparent);
         }
         .tmvu-players-skill-cell.max {
             color: var(--tmu-metal-gold);
