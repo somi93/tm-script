@@ -2,61 +2,9 @@ import { TmTable, injectTmTableCss } from './tm-table.js';
 import { TmPosition } from '../../lib/tm-position.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmConst } from '../../lib/tm-constants.js';
-import { TmUI } from './tm-ui.js';
 import { TmBidsDialog } from '../bids/tm-bids-dialog.js';
 
 'use strict';
-
-const FP_EXPAND = { d: 'dc', dm: 'dmc', m: 'mc', om: 'omc', f: 'fc', gk: 'gk' };
-
-function parseFp(fp) {
-    if (!fp) return [];
-    const keys = [];
-    for (const seg of String(fp).split(',').map(s => s.trim()).filter(Boolean)) {
-        for (const part of seg.split('/').map(p => p.replace(/\s+/g, '').toLowerCase())) {
-            if (part) keys.push(FP_EXPAND[part] || part);
-        }
-    }
-    return keys;
-}
-
-export function normalizeRow(p) {
-    const hasRichPositions = Array.isArray(p.positions) && p.positions.length && typeof p.positions[0] === 'object';
-    const fpString = p.fp || p.position || '';
-    const positions = hasRichPositions
-        ? p.positions
-        : parseFp(fpString).map(k => {
-            const entry = TmConst.POSITION_MAP[k];
-            return entry ? { ...entry } : { position: k.toUpperCase(), color: 'var(--tmu-text-disabled)', ordering: 99 };
-        });
-
-    let ageYears = 0, ageMonths = 0;
-    if (typeof p.age === 'number') {
-        ageYears = p.age;
-        ageMonths = p.months || 0;
-    } else {
-        const parts = String(p.age || '').replace(',', '.').split('.');
-        ageYears = parseInt(parts[0]) || 0;
-        ageMonths = parseInt(parts[1]) || 0;
-    }
-
-    return {
-        ...p,
-        positions,
-        ageYears,
-        ageMonths,
-        country: (p.country || p.countryCode || '').toLowerCase(),
-        timeleft: Number(p.timeleft) || 0,
-        timeleft_string: p.timeleft_string || p.timeLeft || '',
-        curbid: p.curbid || p.bid || '',
-        href: p.href || (p.id ? `/players/${p.id}/` : '#'),
-        asi: p.asi != null ? p.asi : null,
-        r5: p.r5 != null ? p.r5 : null,
-        rec: p.rec != null ? p.rec : null,
-        ti: p.ti !== undefined ? p.ti : null,
-        routine: p.routine != null ? p.routine : null,
-    };
-}
 
 export function injectPlayersTableCSS() {
     if (document.getElementById('tmpt-style')) return;
@@ -81,7 +29,12 @@ export function injectPlayersTableCSS() {
 function posBarCol() {
     return {
         key: '_bar', label: '', sortable: false, cls: 'tmpt-pb-cell', thCls: 'tmpt-pb-cell',
-        render: (_, p) => `<span class="tmpt-pb-inner" style="background:${(p.positions || [])[0]?.color ?? 'var(--tmu-text-dim)'}"></span>`,
+        render: (_, p) => {
+            const all = p.positions || [];
+            const preferred = all.filter(pos => pos.preferred);
+            const color = (preferred.length ? preferred : all)[0]?.color ?? 'var(--tmu-text-dim)';
+            return `<span class="tmpt-pb-inner" style="background:${color}"></span>`;
+        },
     };
 }
 
@@ -97,12 +50,12 @@ function posBarCol() {
  * @param {Function} [opts.nameDecorator]     — (p) => extraHtml appended after player link
  */
 export function buildPlayerHeaders(opts = {}) {
-    const showAsi      = opts.asi      !== false;
-    const showRtn      = opts.rtn      !== false;
+    const showAsi = opts.asi !== false;
+    const showRtn = opts.rtn !== false;
     const showTimeleft = opts.timeleft !== false && !opts.lastSeen;
-    const showCurbid   = opts.curbid   !== false && !opts.lastSeen;
+    const showCurbid = opts.curbid !== false && !opts.lastSeen;
     const showLastSeen = !!opts.lastSeen;
-    const tiLabel      = opts.tiLabel || 'TI';
+    const tiLabel = opts.tiLabel || 'TI';
     const nameDecorator = typeof opts.nameDecorator === 'function' ? opts.nameDecorator : null;
     const gc = TmUtils.getColor;
     const { R5_THRESHOLDS, REC_THRESHOLDS, TI_THRESHOLDS, RTN_THRESHOLDS } = TmConst;
@@ -114,34 +67,34 @@ export function buildPlayerHeaders(opts = {}) {
             key: 'name', label: 'Player',
             sort: (a, b) => String(a.name).localeCompare(String(b.name)),
             render: (_, p) => {
-                const flag = p.country ? `<ib class="tmpt-flag flag-img-${p.country}"></ib>` : '';
+                const country = (p.country || p.countryCode || '').toLowerCase();
+                const href = p.href || (p.id ? `/players/${p.id}/` : '#');
+                const flag = country ? `<ib class="tmpt-flag flag-img-${country}"></ib>` : '';
                 const extra = nameDecorator ? nameDecorator(p) : '';
-                return `${flag}<a href="${p.href}" class="tmpt-link" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">${p.name}</a>${extra}`;
+                return `${flag}<a href="${href}" class="tmpt-link" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">${p.name}</a>${extra}`;
             },
         },
         {
             key: 'pos', label: 'Pos', align: 'c',
             sort: (a, b) => {
-                const ao = (a.positions || [])[0]?.ordering ?? 99;
-                const bo = (b.positions || [])[0]?.ordering ?? 99;
-                const ao2 = (a.positions || [])[1]?.ordering ?? 0;
-                const bo2 = (b.positions || [])[1]?.ordering ?? 0;
-                const as = ao * 100 + (a.positions?.length > 1 ? 50 + ao2 : 0);
-                const bs = bo * 100 + (b.positions?.length > 1 ? 50 + bo2 : 0);
-                return as - bs;
+                const pa = a.positions.filter(p => p.preferred);
+                const pb = b.positions.filter(p => p.preferred);
+                return (pa[0]?.ordering ?? 99) - (pb[0]?.ordering ?? 99);
             },
-            render: (_, p) => TmPosition.chip(p.positions || []),
+            render: (_, p) => {
+                const all = p.positions || [];
+                const preferred = all.filter(pos => pos.preferred);
+                return TmPosition.chip(preferred.length ? preferred : all);
+            },
         },
         {
             key: 'age', label: 'Age', align: 'r',
             sort: (a, b) => {
-                const ay = (a.ageYears ?? a.age ?? 0) * 12 + (a.ageMonths ?? a.months ?? 0);
-                const by = (b.ageYears ?? b.age ?? 0) * 12 + (b.ageMonths ?? b.months ?? 0);
-                return ay - by;
+                return a.ageMonths - b.ageMonths;
             },
             render: (_, p) => {
-                const yr = p.ageYears ?? p.age ?? 0;
-                const mo = p.ageMonths ?? p.months ?? 0;
+                const yr = p.age || 0;
+                const mo = p.month || 0;
                 return `<span class="tmu-tabular" style="color:${gc(yr + mo / 12, AGE_THRESHOLDS)}">${yr}.${mo}</span>`;
             },
         },
@@ -150,7 +103,7 @@ export function buildPlayerHeaders(opts = {}) {
     if (showAsi) cols.push({
         key: 'asi', label: 'ASI', align: 'r',
         render: (_, p) => p.asi != null
-            ? `<span class="tmu-tabular" style="color:var(--tmu-text-strong)">${p.asi.toLocaleString ? p.asi.toLocaleString() : p.asi}</span>`
+            ? `<span class="tmu-tabular" style="color:var(--tmu-text-strong)">${(p.asi || 0).toLocaleString()}</span>`
             : '<span style="color:var(--tmu-text-dim)">—</span>',
     });
 
@@ -171,7 +124,7 @@ export function buildPlayerHeaders(opts = {}) {
             key: 'ti', label: tiLabel, align: 'r',
             sort: (a, b) => (a.ti ?? -Infinity) - (b.ti ?? -Infinity),
             render: (_, p) => p.ti != null
-                ? `<span class="tmu-tabular" style="color:${gc(p.ti, TI_THRESHOLDS)}">${p.ti.toFixed ? p.ti.toFixed(1) : p.ti}</span>`
+                ? `<span class="tmu-tabular" style="color:${gc(p.ti, TI_THRESHOLDS)}">${(p.ti || 0).toFixed(1)}</span>`
                 : '<span style="color:var(--tmu-text-dim)">—</span>',
         },
     );
@@ -179,22 +132,22 @@ export function buildPlayerHeaders(opts = {}) {
     if (showRtn) cols.push({
         key: 'routine', label: 'RTN', align: 'r',
         render: (_, p) => p.routine != null
-            ? `<span class="tmu-tabular" style="color:${gc(p.routine, RTN_THRESHOLDS)}">${p.routine.toFixed ? p.routine.toFixed(1) : p.routine}</span>`
+            ? `<span class="tmu-tabular" style="color:${gc(p.routine, RTN_THRESHOLDS)}">${(p.routine || 0).toFixed(1)}</span>`
             : '<span style="color:var(--tmu-text-dim)">—</span>',
     });
 
     if (showTimeleft) cols.push({
         key: 'timeleft', label: 'Time', align: 'r',
-        sort: (a, b) => (a.timeleft > 0 ? a.timeleft : 999999999) - (b.timeleft > 0 ? b.timeleft : 999999999),
-        render: (_, p) => p.timeleft > 0
-            ? `<span class="tmu-tabular${p.timeleft < 3600 ? ' tmpt-time-exp' : ''}">${p.timeleft_string || ''}</span>`
+        sort: (a, b) => (Number(a.timeleft) > 0 ? Number(a.timeleft) : 999999999) - (Number(b.timeleft) > 0 ? Number(b.timeleft) : 999999999),
+        render: (_, p) => Number(p.timeleft) > 0
+            ? `<span class="tmu-tabular${Number(p.timeleft) < 3600 ? ' tmpt-time-exp' : ''}">${p.timeleft_string || ''}</span>`
             : '<span style="color:var(--tmu-text-dim)">—</span>',
     });
 
     if (showCurbid) cols.push({
         key: 'curbid', label: 'Cur Bid', align: 'r',
-        render: (_, p) => p.curbid
-            ? `<span class="tmu-tabular" style="color:var(--tmu-text-strong)">${p.curbid}</span>`
+        render: (_, p) => (p.curbid || p.bid)
+            ? `<span class="tmu-tabular" style="color:var(--tmu-text-strong)">${p.curbid || p.bid}</span>`
             : '<span style="color:var(--tmu-text-dim)">—</span>',
     });
 
@@ -212,7 +165,6 @@ export function buildPlayerHeaders(opts = {}) {
 
 export const TmPlayersTable = {
     headers: buildPlayerHeaders,
-    normalizeRow,
     injectCSS: injectPlayersTableCSS,
 
     /**
@@ -233,7 +185,7 @@ export const TmPlayersTable = {
         injectTmTableCss();
         injectPlayersTableCSS();
 
-        const rows = (players || []).map(normalizeRow);
+        const rows = [...(players || [])];
         const headers = [
             ...(opts.extraColsBefore || []),
             ...buildPlayerHeaders({
@@ -253,11 +205,11 @@ export const TmPlayersTable = {
             emptyText: opts.emptyText || 'No players found.',
             rowCls: opts.rowCls !== undefined
                 ? opts.rowCls
-                : (p) => p.timeleft > 0 ? 'tmpt-row-clickable' : null,
+                : (p) => Number(p.timeleft) > 0 ? 'tmpt-row-clickable' : null,
             rowAttrs: opts.rowAttrs || null,
             onRowClick: opts.onRowClick !== undefined
                 ? opts.onRowClick
-                : (p) => { if (p.timeleft > 0) TmBidsDialog.open({ ...p, sectionTitle }); },
+                : (p) => { if (Number(p.timeleft) > 0) TmBidsDialog.open({ ...p, sectionTitle }); },
         });
 
         const wrap = document.createElement('div');
@@ -266,7 +218,7 @@ export const TmPlayersTable = {
         container.appendChild(wrap);
 
         wrap.refresh = (newPlayers) => {
-            const updated = (newPlayers || []).map(normalizeRow);
+            const updated = [...(newPlayers || [])];
             rows.length = 0;
             updated.forEach(r => rows.push(r));
             tableEl.refresh();

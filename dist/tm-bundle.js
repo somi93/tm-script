@@ -4798,6 +4798,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         ageMonthsString: null,
         asi: null,
         routine: null,
+        r5: null,
         ti: null,
         wage: null,
         retire: null,
@@ -8227,10 +8228,10 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     const minimumBid = formatBidValue(transfer.next_bid || row.bid);
     const currentBid = formatBidValue(row.bid);
     const age = cleanText3(player2.ageMonthsString || player2.age || row.age);
-    const FP_EXPAND2 = { d: "dc", dm: "dmc", m: "mc", om: "omc", f: "fc" };
+    const FP_EXPAND = { d: "dc", dm: "dmc", m: "mc", om: "omc", f: "fc" };
     const normFp = (raw) => (raw || "").split(",").map((p) => {
       const k = p.trim().replace(/\s+/g, "").toLowerCase();
-      return FP_EXPAND2[k] || k;
+      return FP_EXPAND[k] || k;
     }).filter(Boolean);
     const hasRichPositions = Array.isArray(player2.positions) && player2.positions.length && typeof player2.positions[0] === "object";
     const rawPositions = hasRichPositions ? player2.positions : player2.fp ? normFp(player2.fp) : null;
@@ -8504,50 +8505,6 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   };
 
   // src/components/shared/tm-players-table.js
-  var FP_EXPAND = { d: "dc", dm: "dmc", m: "mc", om: "omc", f: "fc", gk: "gk" };
-  function parseFp(fp) {
-    if (!fp) return [];
-    const keys = [];
-    for (const seg of String(fp).split(",").map((s6) => s6.trim()).filter(Boolean)) {
-      for (const part of seg.split("/").map((p) => p.replace(/\s+/g, "").toLowerCase())) {
-        if (part) keys.push(FP_EXPAND[part] || part);
-      }
-    }
-    return keys;
-  }
-  function normalizeRow(p) {
-    const hasRichPositions = Array.isArray(p.positions) && p.positions.length && typeof p.positions[0] === "object";
-    const fpString = p.fp || p.position || "";
-    const positions = hasRichPositions ? p.positions : parseFp(fpString).map((k) => {
-      const entry = TmConst.POSITION_MAP[k];
-      return entry ? { ...entry } : { position: k.toUpperCase(), color: "var(--tmu-text-disabled)", ordering: 99 };
-    });
-    let ageYears = 0, ageMonths = 0;
-    if (typeof p.age === "number") {
-      ageYears = p.age;
-      ageMonths = p.months || 0;
-    } else {
-      const parts = String(p.age || "").replace(",", ".").split(".");
-      ageYears = parseInt(parts[0]) || 0;
-      ageMonths = parseInt(parts[1]) || 0;
-    }
-    return {
-      ...p,
-      positions,
-      ageYears,
-      ageMonths,
-      country: (p.country || p.countryCode || "").toLowerCase(),
-      timeleft: Number(p.timeleft) || 0,
-      timeleft_string: p.timeleft_string || p.timeLeft || "",
-      curbid: p.curbid || p.bid || "",
-      href: p.href || (p.id ? `/players/${p.id}/` : "#"),
-      asi: p.asi != null ? p.asi : null,
-      r5: p.r5 != null ? p.r5 : null,
-      rec: p.rec != null ? p.rec : null,
-      ti: p.ti !== void 0 ? p.ti : null,
-      routine: p.routine != null ? p.routine : null
-    };
-  }
   function injectPlayersTableCSS() {
     if (document.getElementById("tmpt-style")) return;
     const s6 = document.createElement("style");
@@ -8576,7 +8533,10 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       thCls: "tmpt-pb-cell",
       render: (_, p) => {
         var _a, _b;
-        return `<span class="tmpt-pb-inner" style="background:${(_b = (_a = (p.positions || [])[0]) == null ? void 0 : _a.color) != null ? _b : "var(--tmu-text-dim)"}"></span>`;
+        const all = p.positions || [];
+        const preferred = all.filter((pos) => pos.preferred);
+        const color = (_b = (_a = (preferred.length ? preferred : all)[0]) == null ? void 0 : _a.color) != null ? _b : "var(--tmu-text-dim)";
+        return `<span class="tmpt-pb-inner" style="background:${color}"></span>`;
       }
     };
   }
@@ -8598,9 +8558,11 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         label: "Player",
         sort: (a, b) => String(a.name).localeCompare(String(b.name)),
         render: (_, p) => {
-          const flag = p.country ? `<ib class="tmpt-flag flag-img-${p.country}"></ib>` : "";
+          const country = (p.country || p.countryCode || "").toLowerCase();
+          const href = p.href || (p.id ? `/players/${p.id}/` : "#");
+          const flag = country ? `<ib class="tmpt-flag flag-img-${country}"></ib>` : "";
           const extra = nameDecorator ? nameDecorator(p) : "";
-          return `${flag}<a href="${p.href}" class="tmpt-link" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">${p.name}</a>${extra}`;
+          return `${flag}<a href="${href}" class="tmpt-link" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">${p.name}</a>${extra}`;
         }
       },
       {
@@ -8608,31 +8570,27 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         label: "Pos",
         align: "c",
         sort: (a, b) => {
-          var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
-          const ao = (_b = (_a = (a.positions || [])[0]) == null ? void 0 : _a.ordering) != null ? _b : 99;
-          const bo = (_d = (_c = (b.positions || [])[0]) == null ? void 0 : _c.ordering) != null ? _d : 99;
-          const ao2 = (_f = (_e = (a.positions || [])[1]) == null ? void 0 : _e.ordering) != null ? _f : 0;
-          const bo2 = (_h = (_g = (b.positions || [])[1]) == null ? void 0 : _g.ordering) != null ? _h : 0;
-          const as = ao * 100 + (((_i = a.positions) == null ? void 0 : _i.length) > 1 ? 50 + ao2 : 0);
-          const bs = bo * 100 + (((_j = b.positions) == null ? void 0 : _j.length) > 1 ? 50 + bo2 : 0);
-          return as - bs;
+          var _a, _b, _c, _d;
+          const pa = a.positions.filter((p) => p.preferred);
+          const pb = b.positions.filter((p) => p.preferred);
+          return ((_b = (_a = pa[0]) == null ? void 0 : _a.ordering) != null ? _b : 99) - ((_d = (_c = pb[0]) == null ? void 0 : _c.ordering) != null ? _d : 99);
         },
-        render: (_, p) => TmPosition.chip(p.positions || [])
+        render: (_, p) => {
+          const all = p.positions || [];
+          const preferred = all.filter((pos) => pos.preferred);
+          return TmPosition.chip(preferred.length ? preferred : all);
+        }
       },
       {
         key: "age",
         label: "Age",
         align: "r",
         sort: (a, b) => {
-          var _a, _b, _c, _d, _e, _f, _g, _h;
-          const ay = ((_b = (_a = a.ageYears) != null ? _a : a.age) != null ? _b : 0) * 12 + ((_d = (_c = a.ageMonths) != null ? _c : a.months) != null ? _d : 0);
-          const by = ((_f = (_e = b.ageYears) != null ? _e : b.age) != null ? _f : 0) * 12 + ((_h = (_g = b.ageMonths) != null ? _g : b.months) != null ? _h : 0);
-          return ay - by;
+          return a.ageMonths - b.ageMonths;
         },
         render: (_, p) => {
-          var _a, _b, _c, _d;
-          const yr = (_b = (_a = p.ageYears) != null ? _a : p.age) != null ? _b : 0;
-          const mo = (_d = (_c = p.ageMonths) != null ? _c : p.months) != null ? _d : 0;
+          const yr = p.age || 0;
+          const mo = p.month || 0;
           return `<span class="tmu-tabular" style="color:${gc2(yr + mo / 12, AGE_THRESHOLDS2)}">${yr}.${mo}</span>`;
         }
       }
@@ -8641,7 +8599,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       key: "asi",
       label: "ASI",
       align: "r",
-      render: (_, p) => p.asi != null ? `<span class="tmu-tabular" style="color:var(--tmu-text-strong)">${p.asi.toLocaleString ? p.asi.toLocaleString() : p.asi}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
+      render: (_, p) => p.asi != null ? `<span class="tmu-tabular" style="color:var(--tmu-text-strong)">${(p.asi || 0).toLocaleString()}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
     });
     cols.push(
       {
@@ -8664,27 +8622,27 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
           var _a, _b;
           return ((_a = a.ti) != null ? _a : -Infinity) - ((_b = b.ti) != null ? _b : -Infinity);
         },
-        render: (_, p) => p.ti != null ? `<span class="tmu-tabular" style="color:${gc2(p.ti, TI_THRESHOLDS2)}">${p.ti.toFixed ? p.ti.toFixed(1) : p.ti}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
+        render: (_, p) => p.ti != null ? `<span class="tmu-tabular" style="color:${gc2(p.ti, TI_THRESHOLDS2)}">${(p.ti || 0).toFixed(1)}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
       }
     );
     if (showRtn) cols.push({
       key: "routine",
       label: "RTN",
       align: "r",
-      render: (_, p) => p.routine != null ? `<span class="tmu-tabular" style="color:${gc2(p.routine, RTN_THRESHOLDS2)}">${p.routine.toFixed ? p.routine.toFixed(1) : p.routine}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
+      render: (_, p) => p.routine != null ? `<span class="tmu-tabular" style="color:${gc2(p.routine, RTN_THRESHOLDS2)}">${(p.routine || 0).toFixed(1)}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
     });
     if (showTimeleft) cols.push({
       key: "timeleft",
       label: "Time",
       align: "r",
-      sort: (a, b) => (a.timeleft > 0 ? a.timeleft : 999999999) - (b.timeleft > 0 ? b.timeleft : 999999999),
-      render: (_, p) => p.timeleft > 0 ? `<span class="tmu-tabular${p.timeleft < 3600 ? " tmpt-time-exp" : ""}">${p.timeleft_string || ""}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
+      sort: (a, b) => (Number(a.timeleft) > 0 ? Number(a.timeleft) : 999999999) - (Number(b.timeleft) > 0 ? Number(b.timeleft) : 999999999),
+      render: (_, p) => Number(p.timeleft) > 0 ? `<span class="tmu-tabular${Number(p.timeleft) < 3600 ? " tmpt-time-exp" : ""}">${p.timeleft_string || ""}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
     });
     if (showCurbid) cols.push({
       key: "curbid",
       label: "Cur Bid",
       align: "r",
-      render: (_, p) => p.curbid ? `<span class="tmu-tabular" style="color:var(--tmu-text-strong)">${p.curbid}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
+      render: (_, p) => p.curbid || p.bid ? `<span class="tmu-tabular" style="color:var(--tmu-text-strong)">${p.curbid || p.bid}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
     });
     if (showLastSeen) cols.push({
       key: "lastSeen",
@@ -8700,7 +8658,6 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   }
   var TmPlayersTable = {
     headers: buildPlayerHeaders,
-    normalizeRow,
     injectCSS: injectPlayersTableCSS,
     /**
      * Mount a sortable player table into container.
@@ -8719,7 +8676,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     mount(container, players, opts = {}) {
       injectTmTableCss();
       injectPlayersTableCSS();
-      const rows = (players || []).map(normalizeRow);
+      const rows = [...players || []];
       const headers = [
         ...opts.extraColsBefore || [],
         ...buildPlayerHeaders({
@@ -8736,10 +8693,10 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         sortDir: opts.sortDir !== void 0 ? opts.sortDir : 1,
         density: "cozy",
         emptyText: opts.emptyText || "No players found.",
-        rowCls: opts.rowCls !== void 0 ? opts.rowCls : (p) => p.timeleft > 0 ? "tmpt-row-clickable" : null,
+        rowCls: opts.rowCls !== void 0 ? opts.rowCls : (p) => Number(p.timeleft) > 0 ? "tmpt-row-clickable" : null,
         rowAttrs: opts.rowAttrs || null,
         onRowClick: opts.onRowClick !== void 0 ? opts.onRowClick : (p) => {
-          if (p.timeleft > 0) TmBidsDialog.open({ ...p, sectionTitle });
+          if (Number(p.timeleft) > 0) TmBidsDialog.open({ ...p, sectionTitle });
         }
       });
       const wrap = document.createElement("div");
@@ -8747,7 +8704,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       wrap.appendChild(tableEl);
       container.appendChild(wrap);
       wrap.refresh = (newPlayers) => {
-        const updated = (newPlayers || []).map(normalizeRow);
+        const updated = [...newPlayers || []];
         rows.length = 0;
         updated.forEach((r) => rows.push(r));
         tableEl.refresh();
@@ -16966,7 +16923,7 @@ order:initial
   })();
 
   // src/components/shared/tm-training-dots.js
-  var TRN_LABELS = TmConst.TRAINING_LABELS;
+  var TRN_LABELS = TRAINING_CUSTOM.map((g) => g.label);
   var DOT_COLORS = ["var(--tmu-text-dim)", "var(--tmu-danger)", "var(--tmu-warning-soft)", "var(--tmu-warning)", "var(--tmu-accent)", "var(--tmu-success-strong)"];
   var STYLE_ID33 = "tm-trn-dots-style";
   var injectCSS = () => {
@@ -16995,11 +16952,10 @@ order:initial
     const lg = size === "lg";
     const dotCls = lg ? "tm-trn-dot tm-trn-dot-lg" : "tm-trn-dot";
     const gap = lg ? "gap:var(--tmu-space-xs)" : "gap:2px";
-    const title = tc.split("").map((d, i) => `${TRN_LABELS[i]}: ${d}`).join("  ");
-    let h = `<span class="tm-trn-dots" style="${gap}" title="${title}">`;
+    let h = `<span class="tm-trn-dots" style="${gap}">`;
     for (let i = 0; i < 6; i++) {
       const v = parseInt(tc[i]) || 0;
-      h += `<span class="${dotCls}" style="background:${DOT_COLORS[v]}">${v}</span>`;
+      h += `<span class="${dotCls}" style="background:${DOT_COLORS[v]}" title="${TRN_LABELS[i]}: ${v}">${v}</span>`;
     }
     h += "</span>";
     return h;
@@ -18323,30 +18279,37 @@ order:initial
     display: none; position: fixed; z-index: 9999;
     background: var(--tmu-color-accent);
     isolation: isolate;
-    border: 1px solid var(--tmu-border-success); border-radius: var(--tmu-space-sm);
-    padding: var(--tmu-space-md); min-width: 200px; max-width: 280px;
+    border-radius: var(--tmu-space-sm);
+    padding: var(--tmu-space-md); 
+    min-width: 300px; 
+    max-width: 400px;
     box-shadow: 0 6px 24px var(--tmu-shadow-panel);
-    pointer-events: none; font-size: var(--tmu-font-xs); color: var(--tmu-text-main);
+    pointer-events: none;
+    font-size: var(--tmu-font-sm); 
+    color: var(--tmu-text-main);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     box-sizing: border-box;
 }
 .tmpt-header {
-    display: flex; align-items: center; gap: var(--tmu-space-sm);
+    display: flex; align-items: center; gap: var(--tmu-space-md);
     margin-bottom: var(--tmu-space-sm); padding-bottom: var(--tmu-space-sm);
     border-bottom: 1px solid var(--tmu-border-soft-alpha-strong);
 }
-.tmpt-name { font-size: var(--tmu-font-sm); font-weight: 700; color: var(--tmu-text-strong); }
-.tmpt-pos  { font-size: var(--tmu-font-xs); color: var(--tmu-success); font-weight: 600; }
-.tmpt-badges { display: flex; gap: var(--tmu-space-sm); margin-left: auto; }
-.tmpt-badges .tmu-badge { white-space: nowrap; }
+.tmpt-header-left { flex: 1; min-width: 0; }
+.tmpt-name { font-size: var(--tmu-font-sm); font-weight: 700; color: var(--tmu-text-strong); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tmpt-no-row { display: flex; align-items: center; gap: var(--tmu-space-xs); margin-top: var(--tmu-space-xs); flex-wrap: wrap; }
+.tmpt-header-right {
+    display: flex; flex-direction: column; gap: var(--tmu-space-xs);
+    align-items: flex-end; flex-shrink: 0;
+}
 .tmpt-skills { display: flex; gap: var(--tmu-space-md); margin-bottom: var(--tmu-space-sm); }
 .tmpt-skills-col { flex: 1; min-width: 0; }
 .tmpt-skill {
     display: flex; justify-content: space-between;
     padding: 0; border-bottom: 1px solid var(--tmu-border-soft-alpha);
 }
-.tmpt-skill-name { color: var(--tmu-success); font-size: var(--tmu-font-xs); }
-.tmpt-skill-val  { font-weight: 700; font-size: var(--tmu-font-xs); }
+.tmpt-skill-name { color: var(--tmu-text-muted); font-size: var(--tmu-font-sm); }
+.tmpt-skill-val  { font-weight: 700; font-size: var(--tmu-font-sm); }
 .tmpt-footer {
     display: flex; gap: var(--tmu-space-sm); justify-content: center;
     padding-top: var(--tmu-space-sm); border-top: 1px solid var(--tmu-border-soft-alpha-strong);
@@ -18359,26 +18322,33 @@ order:initial
   styleEl.textContent = CSS3;
   document.head.appendChild(styleEl);
   var renderHTML = (player2) => {
+    var _a;
     const { getColor: getColor6 } = TmUtils;
     const { R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
-    const badgeHtml7 = (opts, tone = "muted") => TmUI.badge({ size: "sm", shape: "rounded", weight: "bold", ...opts }, tone);
-    let h = '<div class="tmpt-header">';
-    h += `<div><div class="tmpt-name">${player2.name}</div>`;
-    const noStr = player2.no ? ` \xB7 #${player2.no}` : "";
-    h += `<div class="tmpt-pos">${(player2.positions || []).map((pos) => pos.position).join(", ")}${noStr} \xB7 Age ${player2.ageMonthsString}</div></div>`;
-    h += '<div class="tmpt-badges">';
-    if (player2.r5 != null) {
-      h += badgeHtml7({ slot: `<span class="tmu-badge-label">R5</span><span class="tmu-badge-value" style="color:${getColor6(player2.r5, R5_THRESHOLDS5)}">${TmUtils.formatR5(player2.r5)}</span>` });
-    } else if (player2.r5Range) {
+    const { AGE_THRESHOLDS: AGE_THRESHOLDS2 } = TmConst;
+    const badge = (label, val, color) => TmUI.badge({ label, value: val, size: "sm", shape: "rounded", weight: "bold" }, "muted").replace('tmu-badge-tone-muted"', `tmu-badge-tone-muted" style="color:${color}"`);
+    const prefPositions = (player2.positions || []).filter((p) => p.preferred);
+    const posChip2 = TmPosition.chip(prefPositions);
+    const ageColor = getColor6(player2.age + player2.month / 12, AGE_THRESHOLDS2);
+    const r5Val = player2.r5 != null ? TmUtils.formatR5(player2.r5) : player2.r5Range ? (() => {
       const { lo, hi } = player2.r5Range;
       const loStr = TmUtils.formatR5(lo, "");
       const hiStr = TmUtils.formatR5(hi, "");
-      const rangeStr = lo != null && loStr !== hiStr ? `${loStr}\u2013${hiStr}` : hiStr;
-      h += badgeHtml7({ slot: `<span class="tmu-badge-label">R5</span><span class="tmu-badge-value" style="color:${getColor6(hi != null ? hi : 0, R5_THRESHOLDS5)}">${rangeStr}</span>` });
-    }
-    if (player2.ti != null)
-      h += badgeHtml7({ slot: `<span class="tmu-badge-label">TI</span><span class="tmu-badge-value" style="color:${getColor6(player2.ti, TI_THRESHOLDS2)}">${player2.ti.toFixed(1)}</span>` });
-    h += "</div></div>";
+      return lo != null && loStr !== hiStr ? `${loStr}\u2013${hiStr}` : hiStr;
+    })() : null;
+    const r5Color3 = player2.r5 != null ? getColor6(player2.r5, R5_THRESHOLDS5) : player2.r5Range ? getColor6((_a = player2.r5Range.hi) != null ? _a : 0, R5_THRESHOLDS5) : "var(--tmu-text-dim)";
+    let h = '<div class="tmpt-header">';
+    h += `<div class="tmpt-header-left">`;
+    h += `<div class="tmpt-name">${player2.name}</div>`;
+    h += `<div class="tmpt-no-row">`;
+    h += badge("Age", player2.ageMonthsString, ageColor);
+    h += posChip2;
+    h += `</div></div>`;
+    h += `<div class="tmpt-header-right">`;
+    h += r5Val != null ? badge("R5", r5Val, r5Color3) : "";
+    h += player2.ti != null ? badge("TI", player2.ti.toFixed(1), getColor6(player2.ti, TI_THRESHOLDS2)) : "";
+    h += `</div>`;
+    h += "</div>";
     const fieldLeft = [0, 1, 2, 3, 4, 5, 6];
     const fieldRight = [7, 8, 9, 10, 11, 12, 13];
     const gkLeft = [0, 3, 1];
@@ -18414,22 +18384,35 @@ order:initial
     return h;
   };
   var el = null;
+  var _hideTimer = null;
+  var cancelHide = () => {
+    clearTimeout(_hideTimer);
+    _hideTimer = null;
+  };
+  var scheduleHide = () => {
+    _hideTimer = setTimeout(() => {
+      if (el) el.style.display = "none";
+    }, 120);
+  };
   var ensureEl = () => {
     if (el) return;
     el = document.createElement("div");
     el.className = "tmpt-tip";
+    el.addEventListener("mouseenter", cancelHide);
+    el.addEventListener("mouseleave", scheduleHide);
     document.body.appendChild(el);
   };
   var show2 = (anchor, player2) => {
+    cancelHide();
     ensureEl();
     el.innerHTML = renderHTML(player2);
     el.style.display = "block";
     TmUI.positionTooltip(el, anchor);
   };
   var hide = () => {
-    if (el) el.style.display = "none";
+    scheduleHide();
   };
-  var TmPlayerTooltip = { show: show2, hide };
+  var TmPlayerTooltip = { show: show2, hide, cancelHide };
 
   // src/components/shortlist/tm-shortlist-filters.js
   var inputHtml3 = (opts = {}) => TmUI.input({ type: "number", size: "sm", density: "regular", ...opts }).outerHTML;
@@ -19301,7 +19284,7 @@ order:initial
     rowCls: null,
     nameDecorator: (p) => playerStatusIconsHtml({ ...p, onSale: _onSaleIds.has(String(p.id)) }),
     extraColsBefore: [{ key: "no", label: "#", align: "r" }],
-    extraColsAfter: _showTraining ? [{ key: "trainingCustom", label: "Training", align: "c", sortable: false, render: (v) => PlayerTrainingDots.render(v) }] : []
+    extraColsAfter: _showTraining ? [{ key: "training", label: "Training", align: "c", sortable: false, render: (v) => PlayerTrainingDots.render(Array.isArray(v == null ? void 0 : v.custom) ? v.custom.join("") : "") }] : []
   });
   var _doRender = () => {
     const seniors = _allPlayers.filter((p) => p.age > 21);
@@ -19369,7 +19352,9 @@ order:initial
     _titleHtml = titleHtml;
     _showTraining = showTraining;
     container.addEventListener("mouseover", (e) => {
-      const link = e.target.closest(".tmpt-link");
+      const row = e.target.closest("tr");
+      if (!row) return;
+      const link = row.querySelector(".tmpt-link");
       if (!link || !TmPlayerTooltip) return;
       const m = link.href.match(/\/players\/(\d+)/);
       if (!m) return;
@@ -19377,7 +19362,11 @@ order:initial
       if (p) TmPlayerTooltip.show(link, p);
     });
     container.addEventListener("mouseout", (e) => {
-      if (e.target.closest(".tmsq-link") && TmPlayerTooltip) TmPlayerTooltip.hide();
+      if (!TmPlayerTooltip) return;
+      const row = e.target.closest("tr");
+      if (!row) return;
+      if (row.contains(e.relatedTarget)) return;
+      TmPlayerTooltip.hide();
     });
     _doRender();
   };
@@ -19557,17 +19546,6 @@ order:initial
     (_a = getSquadContainer()) == null ? void 0 : _a.classList.toggle("tmvu-squad-pending", pending);
   };
   var waitForSquadContainer = () => Promise.resolve(getSquadContainer());
-  var waitForJQuery = () => new Promise((resolve) => {
-    if (window.jQuery) {
-      resolve(window.jQuery);
-      return;
-    }
-    const poll = window.setInterval(() => {
-      if (!window.jQuery) return;
-      window.clearInterval(poll);
-      resolve(window.jQuery);
-    }, 50);
-  });
   var scanForSales = () => {
     document.querySelectorAll('img[src*="auction_hammer"]').forEach((img) => {
       const tr = img.closest("tr");
@@ -19614,7 +19592,6 @@ order:initial
     if (processed) return;
     const clubId2 = (_a = location.pathname.match(/\/club\/(\d+)/)) == null ? void 0 : _a[1];
     if (!clubId2) return;
-    await waitForJQuery();
     const data = await TmClubModel2.fetchSquadRaw(clubId2);
     if (data == null ? void 0 : data.length) {
       allPlayers2 = data;

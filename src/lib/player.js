@@ -47,6 +47,7 @@ export const Player = {
             ageMonthsString: null,
             asi: null,
             routine: null,
+            r5: null,
             ti: null,
             wage: null,
             retire: null,

@@ -21,7 +21,7 @@ const buildSummary = players => {
     const tiPlayers = players.filter(p => p.ti !== null);
     const avgTI = tiPlayers.length ? tiPlayers.reduce((s, p) => s + p.ti, 0) / tiPlayers.length : 0;
 
-    return TmSummaryStrip.render([
+    return TmSummaryStrip.render([ 
         { label: 'Players', value: String(n) },
         { label: 'Avg R5', value: avgR5.toFixed(2), valueStyle: `color:${getColor(avgR5, R5_THRESHOLDS)}` },
         { label: 'Avg REC', value: avgRec.toFixed(2), valueStyle: `color:${getColor(avgRec, REC_THRESHOLDS)}` },
@@ -45,7 +45,7 @@ const _tableOpts = () => ({
     nameDecorator: p => playerStatusIconsHtml({ ...p, onSale: _onSaleIds.has(String(p.id)) }),
     extraColsBefore: [{ key: 'no', label: '#', align: 'r' }],
     extraColsAfter: _showTraining
-        ? [{ key: 'trainingCustom', label: 'Training', align: 'c', sortable: false, render: v => PlayerTrainingDots.render(v) }]
+        ? [{ key: 'training', label: 'Training', align: 'c', sortable: false, render: (v) => PlayerTrainingDots.render(Array.isArray(v?.custom) ? v.custom.join('') : '') }]
         : [],
 });
 
@@ -134,7 +134,9 @@ const render = (container, players, { onSaleIds = new Set(), titleHtml = '', sho
 
     // Tooltip delegation — survives sort re-renders
     container.addEventListener('mouseover', e => {
-        const link = e.target.closest('.tmpt-link');
+        const row = e.target.closest('tr');
+        if (!row) return;
+        const link = row.querySelector('.tmpt-link');
         if (!link || !TmPlayerTooltip) return;
         const m = link.href.match(/\/players\/(\d+)/);
         if (!m) return;
@@ -142,7 +144,11 @@ const render = (container, players, { onSaleIds = new Set(), titleHtml = '', sho
         if (p) TmPlayerTooltip.show(link, p);
     });
     container.addEventListener('mouseout', e => {
-        if (e.target.closest('.tmsq-link') && TmPlayerTooltip) TmPlayerTooltip.hide();
+        if (!TmPlayerTooltip) return;
+        const row = e.target.closest('tr');
+        if (!row) return;
+        if (row.contains(e.relatedTarget)) return;
+        TmPlayerTooltip.hide();
     });
 
     _doRender();

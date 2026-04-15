@@ -32,19 +32,6 @@ const getSquadContainer = () => {
 
     const waitForSquadContainer = () => Promise.resolve(getSquadContainer());
 
-    const waitForJQuery = () => new Promise(resolve => {
-        if (window.jQuery) {
-            resolve(window.jQuery);
-            return;
-        }
-
-        const poll = window.setInterval(() => {
-            if (!window.jQuery) return;
-            window.clearInterval(poll);
-            resolve(window.jQuery);
-        }, 50);
-    });
-
     const scanForSales = () => {
         document.querySelectorAll('img[src*="auction_hammer"]').forEach(img => {
             const tr = img.closest('tr');
@@ -107,7 +94,6 @@ const getSquadContainer = () => {
         const clubId = location.pathname.match(/\/club\/(\d+)/)?.[1];
         if (!clubId) return;
 
-        await waitForJQuery();
         const data = await TmClubModel.fetchSquadRaw(clubId);
         if (data?.length) {
             allPlayers = data;

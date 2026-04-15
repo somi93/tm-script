@@ -1,6 +1,6 @@
-import { TmConst } from '../../lib/tm-constants.js';
+import { TRAINING_CUSTOM } from '../../constants/training.js';
 
-const TRN_LABELS = TmConst.TRAINING_LABELS;
+const TRN_LABELS = TRAINING_CUSTOM.map(g => g.label);
 export const DOT_COLORS = ['var(--tmu-text-dim)', 'var(--tmu-danger)', 'var(--tmu-warning-soft)', 'var(--tmu-warning)', 'var(--tmu-accent)', 'var(--tmu-success-strong)'];
 
 const STYLE_ID = 'tm-trn-dots-style';
@@ -38,11 +38,10 @@ const render = (tc, size) => {
     const lg = size === 'lg';
     const dotCls = lg ? 'tm-trn-dot tm-trn-dot-lg' : 'tm-trn-dot';
     const gap = lg ? 'gap:var(--tmu-space-xs)' : 'gap:2px';
-    const title = tc.split('').map((d, i) => `${TRN_LABELS[i]}: ${d}`).join('  ');
-    let h = `<span class="tm-trn-dots" style="${gap}" title="${title}">`;
+    let h = `<span class="tm-trn-dots" style="${gap}">`;
     for (let i = 0; i < 6; i++) {
         const v = parseInt(tc[i]) || 0;
-        h += `<span class="${dotCls}" style="background:${DOT_COLORS[v]}">${v}</span>`;
+        h += `<span class="${dotCls}" style="background:${DOT_COLORS[v]}" title="${TRN_LABELS[i]}: ${v}">${v}</span>`;
     }
     h += '</span>';
     return h;
