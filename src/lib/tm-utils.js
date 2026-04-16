@@ -184,7 +184,7 @@ const applyPlayerPositions = (player, favposition = '') => {
 
     const preferredKeys = new Set(String(favposition || '')
         .split(',')
-        .map(value => value.trim().toLowerCase())
+        .map(value => value.trim().toLowerCase().replace(/\s+/g, ''))
         .filter(Boolean));
 
     player.positions = player.positions

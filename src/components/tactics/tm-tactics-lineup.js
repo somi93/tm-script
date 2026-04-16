@@ -5,15 +5,17 @@ import { TmUtils } from '../../lib/tm-utils.js';
 import { TmAlert } from '../shared/tm-alert.js';
 import { TmStars } from '../shared/tm-stars.js';
 import { TmPlayerTooltip } from '../player/tooltip/tm-player-tooltip.js';
+import { playerStatusIconsHtml } from '../shared/tm-player-status-icons.js';
+import { CountryFlag } from '../shared/country-flag.js';
 
 'use strict';
 
 // From player.js (via TmConst barrel) — imported once here for clarity
-const FIELD_ZONES   = TmConst.FIELD_ZONES;    // FWD-first array, each has { key, row, cols: [posKey|null ×5] }
-const BENCH_SLOTS   = TmConst.BENCH_SLOTS;    // ['sub1'..'sub5']
+const FIELD_ZONES = TmConst.FIELD_ZONES;    // FWD-first array, each has { key, row, cols: [posKey|null ×5] }
+const BENCH_SLOTS = TmConst.BENCH_SLOTS;    // ['sub1'..'sub5']
 const SPECIAL_SLOTS = TmConst.SPECIAL_SLOTS;  // ['captain','corner','penalty','freekick']
-const ALL_BENCH     = [...BENCH_SLOTS, ...SPECIAL_SLOTS];
-const BENCH_LABELS  = TmConst.BENCH_LABELS;
+const ALL_BENCH = [...BENCH_SLOTS, ...SPECIAL_SLOTS];
+const BENCH_LABELS = TmConst.BENCH_LABELS;
 
 // Lookup: posKey → zone key (e.g. 'dcl' → 'def')
 const POSKEY_TO_ZONE = {};
@@ -63,9 +65,9 @@ function encodeNested(obj, prefix = '') {
 
 async function postSave(assoc, changedPlayers, reserves, national, miniGameId) {
     return fetch('/ajax/tactics_post.ajax.php', {
-        method:  'POST',
+        method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-        body:    encodeNested({ on_field: assoc, players: changedPlayers, reserves, national, miniGameId }),
+        body: encodeNested({ on_field: assoc, players: changedPlayers, reserves, national, miniGameId }),
     });
 }
 
@@ -79,6 +81,34 @@ export function mountTacticsLineup(container, data, opts = {}) {
     const { reserves = 0, national = 0, miniGameId = 0 } = opts;
     const { players_by_id = {} } = data;
     const { R5_THRESHOLDS, RTN_THRESHOLDS, REC_THRESHOLDS } = TmConst;
+
+    // Foreign player rule: max 5 foreigners across all 16 squad players (11 field + 5 subs)
+    const clubCountry = String(window.SESSION?.country || '').trim().toLowerCase();
+    const isForeigner = (p) => !!clubCountry && String(p?.country || '').trim().toLowerCase() !== clubCountry;
+
+    // Count how many foreigners are currently in the full 16-man squad (field + bench).
+    function countSquadForeigners(excludePosKey) {
+        let count = 0;
+        for (const pk of getOccupiedFieldKeys()) {
+            if (pk === excludePosKey) continue;
+            const p = players_by_id[String(assignment[pk])];
+            if (p && isForeigner(p)) count++;
+        }
+        for (const role of BENCH_SLOTS) {
+            const pid = assignment[role];
+            if (!pid) continue;
+            const p = players_by_id[String(pid)];
+            if (p && isForeigner(p)) count++;
+        }
+        return count;
+    }
+
+    // Returns projected foreigner count if `incomingPid` is placed on the field,
+    // accounting for `vacatingPosKey` being freed (field swap).
+    function projectedForeigners(incomingPid, vacatingPosKey) {
+        const base = countSquadForeigners(vacatingPosKey);
+        return base + (isForeigner(players_by_id[String(incomingPid)]) ? 1 : 0);
+    }
 
     // ══════════════════════════════════════════════════════════════════════
     // SINGLE SOURCE OF TRUTH
@@ -231,38 +261,67 @@ export function mountTacticsLineup(container, data, opts = {}) {
     // SQUAD TABLE DATA
     // ══════════════════════════════════════════════════════════════════════
     const sortedPlayers = () => {
+        // Bench players are represented entirely by their dedicated slot rows below —
+        // exclude them from the main player list to avoid duplication.
         const rows = Object.values(data.players || {}).map(p => {
-            const fmPosKey  = getFieldPosKey(p.player_id);
+            const fmPosKey = getFieldPosKey(p.player_id);
             const benchRole = !fmPosKey ? getBenchRole(p.player_id) : null;
-            // For R5/REC: use field posKey if on field, else favposition
-            const posStr = fmPosKey
-                ? fmPosKey
-                : String(p.favposition || '').split(',')[0]?.trim().toLowerCase() || '';
-            const rating = getPositionRating(p, posStr);
-            const _fmR5 = rating?.r5 != null ? parseFloat(rating.r5) : null;
-            const _fmRec = getSlotRecommendation(p, posStr);
+
+            let _fmR5, _fmRec;
+            if (fmPosKey) {
+                const rating = getPositionRating(p, fmPosKey);
+                _fmR5 = rating?.r5 != null ? parseFloat(rating.r5) : null;
+                if (_fmR5 == null) { const v = parseFloat(p.r5); if (Number.isFinite(v)) _fmR5 = v; }
+                _fmRec = getSlotRecommendation(p, fmPosKey);
+                if (_fmRec == null) { const v = parseFloat(p.rec); if (Number.isFinite(v)) _fmRec = v; }
+            } else {
+                const v5 = parseFloat(p.r5);   _fmR5  = Number.isFinite(v5)  ? v5  : null;
+                const vR = parseFloat(p.rec);   _fmRec = Number.isFinite(vR)  ? vR  : null;
+            }
             return {
                 ...p,
-                _fmOrder:   getSortKey(p.player_id),
-                _fmPosKey:  fmPosKey,
+                _fmOrder: getSortKey(p.player_id),
+                _fmPosKey: fmPosKey,
                 _benchRole: benchRole,
                 _fmR5,
                 _fmRec,
             };
-        }).sort((a, b) => a._fmOrder - b._fmOrder);
+        }).filter(p => !p._benchRole)   // bench players rendered via slot rows below
+          .sort((a, b) => a._fmOrder - b._fmOrder);
 
-        _firstSubPid = rows.find(p => BENCH_SLOTS.some(r => assignment[r] != null && String(assignment[r]) === String(p.player_id)))?.player_id ?? null;
-        _firstOutPid = rows.find(p => getFieldPosKey(p.player_id) === null && getBenchRole(p.player_id) === null)?.player_id ?? null;
+        _firstOutPid = rows.find(p => getFieldPosKey(p.player_id) === null)?.player_id ?? null;
 
-        // Placeholder rows for empty sub slots
+        // Always render all 5 sub slot rows. Occupied slots show the player; empty slots
+        // show a ghost drop-target. This gives a permanently visible bench section.
         BENCH_SLOTS.forEach((role, idx) => {
-            if (assignment[role] == null)
+            const pid = assignment[role];
+            const player = pid ? (players_by_id[String(pid)] || null) : null;
+            if (player) {
+                const v5 = parseFloat(player.r5); const vR = parseFloat(player.rec);
                 rows.push({
-                    _isBenchPlaceholder: true, _benchRole: role, _fmOrder: 100 + idx,
+                    ...player,
+                    _isBenchPlaceholder: true,
+                    _benchSlotFilled: true,
+                    _benchRole: role,
+                    _fmOrder: 100 + idx,
+                    _fmPosKey: null,
+                    _fmR5:  Number.isFinite(v5) ? v5 : null,
+                    _fmRec: Number.isFinite(vR)  ? vR : null,
+                });
+            } else {
+                rows.push({
+                    _isBenchPlaceholder: true,
+                    _benchSlotFilled: false,
+                    _benchRole: role,
+                    _fmOrder: 100 + idx,
                     player_id: `_bench_${role}`, no: '', name: '', lastname: '',
                     rec_sort: null, _fmR5: null, _fmRec: null, routine: null,
                 });
+            }
         });
+
+        _firstSubPid = rows.find(p => p._isBenchPlaceholder && p._benchSlotFilled)?.player_id ?? null;
+
         rows.sort((a, b) => a._fmOrder - b._fmOrder);
 
         let _ms = false, _mo = false;
@@ -306,24 +365,21 @@ export function mountTacticsLineup(container, data, opts = {}) {
         host.dataset.tmtcTooltipBound = '1';
 
         host.addEventListener('mouseover', event => {
-            const hoverEl = event.target.closest('.tmtc-slot[data-player-id], .tmtc-bench-inner[data-player-id], tr[data-player-id]');
+            const hoverEl = event.target.closest('.tmtc-slot[data-player-id], .tmtc-bench-inner[data-player-id]');
             if (!hoverEl || !host.contains(hoverEl) || hoverEl.contains(event.relatedTarget)) return;
 
             const playerId = hoverEl.dataset.playerId || '';
             const player = adaptTooltipPlayer(players_by_id[String(playerId)] || null);
             if (!player) return;
-            const anchor = hoverEl.matches('tr[data-player-id]')
-                ? (hoverEl.querySelector('a[href*="/players/"]') || hoverEl)
-                : hoverEl;
 
             clearPlayerTooltip();
             hoverTooltipTimer = setTimeout(() => {
-                TmPlayerTooltip.show(anchor, player);
+                TmPlayerTooltip.show(hoverEl, player);
             }, 80);
         });
 
         host.addEventListener('mouseout', event => {
-            const hoverEl = event.target.closest('.tmtc-slot[data-player-id], .tmtc-bench-inner[data-player-id], tr[data-player-id]');
+            const hoverEl = event.target.closest('.tmtc-slot[data-player-id], .tmtc-bench-inner[data-player-id]');
             if (!hoverEl || !host.contains(hoverEl) || hoverEl.contains(event.relatedTarget)) return;
             clearPlayerTooltip();
         });
@@ -379,7 +435,7 @@ export function mountTacticsLineup(container, data, opts = {}) {
             if (age > 0) { totalAge += age; countAge++; }
         }
         const gc = TmUtils.getColor;
-        const r5  = countR5  > 0 ? (totalR5  / countR5).toFixed(2) : null;
+        const r5 = countR5 > 0 ? (totalR5 / countR5).toFixed(2) : null;
         const rtn = countRtn > 0 ? (totalRtn / countRtn).toFixed(1) : null;
         const age = countAge > 0 ? (totalAge / countAge).toFixed(1) : null;
         const sep = `<span class="tmtc-fob-sep">·</span>`;
@@ -388,7 +444,7 @@ export function mountTacticsLineup(container, data, opts = {}) {
         fieldOverlayBar.innerHTML = [
             `<span class="tmtc-fob-formation">${getFormationStr()}</span>`,
             sep,
-            item('R5',  r5  ?? '—', r5  ? gc(parseFloat(r5),  TmConst.R5_THRESHOLDS)  : 'var(--tmu-text-faint)'),
+            item('R5', r5 ?? '—', r5 ? gc(parseFloat(r5), TmConst.R5_THRESHOLDS) : 'var(--tmu-text-faint)'),
             sep,
             item('Rtn', rtn ?? '—', rtn ? gc(parseFloat(rtn), TmConst.RTN_THRESHOLDS) : 'var(--tmu-text-faint)'),
             sep,
@@ -396,9 +452,9 @@ export function mountTacticsLineup(container, data, opts = {}) {
         ].join('');
     }
 
-    const slotEls      = {};   // posKey  → fieldSlotEl
+    const slotEls = {};   // posKey  → fieldSlotEl
     const benchSlotEls = {};   // roleKey → benchSlotEl
-    let tblWrap        = null;
+    let tblWrap = null;
 
     // Build (or rebuild) field DOM. All 6 zones are always rendered so empty slots are
     // available as ghost drop-targets when a field player is being dragged.
@@ -448,7 +504,7 @@ export function mountTacticsLineup(container, data, opts = {}) {
         if (!occupied.length) return;
 
         const targetRanks = getTargetRanks(centerPks.length, occupied.length);
-        const targetPks   = targetRanks.map(r => centerPks[r]);
+        const targetPks = targetRanks.map(r => centerPks[r]);
         if (occupied.every((pk, i) => pk === targetPks[i])) return; // already symmetric
 
         const pids = occupied.map(pk => String(assignment[pk]));
@@ -469,10 +525,10 @@ export function mountTacticsLineup(container, data, opts = {}) {
     // ══════════════════════════════════════════════════════════════════════
 
     function makeFieldSlot(posKey) {
-        const pid    = assignment[posKey];
+        const pid = assignment[posKey];
         const player = pid ? (players_by_id[pid] || null) : null;
         const slotEl = document.createElement('div');
-        slotEl.className  = 'tmtc-slot';
+        slotEl.className = 'tmtc-slot';
         slotEl.dataset.posKey = posKey;
         renderFieldSlot(slotEl, player, posKey);
         setupDropTarget(slotEl, posKey);
@@ -496,7 +552,7 @@ export function mountTacticsLineup(container, data, opts = {}) {
             const moodPenalty = getMoodPenalty(player, posKey);
             slotEl.innerHTML = `
                 <span class="tmtc-slot-no">${escHtml(slotRating)}</span>
-                <span class="tmtc-slot-name">${escHtml(player.lastname || player.name || '')}</span>
+                <span class="tmtc-slot-name">${escHtml(player.lastname || player.name || '')}${playerStatusIconsHtml(player)}</span>
                 ${TmPosition.chip([posKey || ''])}
                 <span class="tmtc-slot-meta">
                     <span class="tmtc-slot-rec">${TmStars.recommendation(slotRec, 'tmtc-rec-stars tmtc-rec-stars-sm') || '<span class="tmtc-slot-rec-empty">—</span>'}</span>
@@ -512,10 +568,10 @@ export function mountTacticsLineup(container, data, opts = {}) {
     }
 
     function makeBenchSlot(role) {
-        const el     = document.createElement('div');
+        const el = document.createElement('div');
         el.className = 'tmtc-bench-slot';
         el.dataset.role = role;
-        const pid    = assignment[role];
+        const pid = assignment[role];
         const player = pid ? (players_by_id[pid] || null) : null;
         renderBenchSlot(el, player, BENCH_LABELS[role] || role);
         setupBenchDropTarget(el, role);
@@ -526,7 +582,7 @@ export function mountTacticsLineup(container, data, opts = {}) {
         el.innerHTML = '';
         el.classList.toggle('has-player', !!player);
         const roleEl = document.createElement('span');
-        roleEl.className  = 'tmtc-bench-role';
+        roleEl.className = 'tmtc-bench-role';
         roleEl.textContent = label;
         el.appendChild(roleEl);
 
@@ -535,12 +591,12 @@ export function mountTacticsLineup(container, data, opts = {}) {
             inner.setAttribute('draggable', 'true');
             inner.dataset.playerId = player.player_id;
             inner.className = 'tmtc-bench-inner';
-            inner.innerHTML = `<span class="tmtc-bench-name">${escHtml(player.lastname || player.name || '')}</span>`;
+            inner.innerHTML = `<span class="tmtc-bench-name">${escHtml(player.lastname || player.name || '')}${playerStatusIconsHtml(player)}</span>`;
             inner.addEventListener('dragstart', onBenchDragStart);
             el.appendChild(inner);
         } else {
             const emptyEl = document.createElement('span');
-            emptyEl.className   = 'tmtc-bench-empty';
+            emptyEl.className = 'tmtc-bench-empty';
             emptyEl.textContent = '—';
             el.appendChild(emptyEl);
         }
@@ -548,25 +604,30 @@ export function mountTacticsLineup(container, data, opts = {}) {
 
     function buildSquadTable() {
         const wrap = TmTable.table({
-            items:    sortedPlayers(),
-            sortKey:  '_fmOrder',
-            sortDir:  1,
-            density:  'tight',
-            rowAttrs: p => p._isBenchPlaceholder
-                ? { 'data-bench-role': p._benchRole }
-                : { draggable: 'true', 'data-player-id': p.player_id },
-            rowCls:   p => {
+            items: sortedPlayers(),
+            sortKey: '_fmOrder',
+            sortDir: 1,
+            density: 'tight',
+            rowAttrs: p => {
+                if (p._isBenchPlaceholder && p._benchSlotFilled)
+                    return { draggable: 'true', 'data-player-id': p.player_id, 'data-bench-role': p._benchRole };
+                if (p._isBenchPlaceholder)
+                    return { 'data-bench-role': p._benchRole };
+                return { draggable: 'true', 'data-player-id': p.player_id };
+            },
+            rowCls: p => {
                 const sep = p._needsSep ? ' tmtc-row-sep' : '';
-                if (p._isBenchPlaceholder)            return 'tmtc-row-bench-placeholder' + sep;
-                if (getFieldPosKey(p.player_id))      return 'tmtc-row-on-field' + sep;
-                if (getBenchRole(p.player_id))        return 'tmtc-row-on-bench' + sep;
+                if (p._isBenchPlaceholder && p._benchSlotFilled) return 'tmtc-row-on-bench' + sep;
+                if (p._isBenchPlaceholder) return 'tmtc-row-bench-placeholder' + sep;
+                if (getFieldPosKey(p.player_id)) return 'tmtc-row-on-field' + sep;
                 return 'tmtc-row-out' + sep;
             },
-            headers:  [
+            headers: [
                 {
                     key: '_bar', label: '', sortable: false, cls: 'tmtc-pb-cell', thCls: 'tmtc-pb-cell',
                     render: (_, p) => {
-                        if (p._isBenchPlaceholder) return '<span class="tmtc-pb-inner" style="background:var(--tmu-border-soft-alpha)"></span>';
+                        if (p._isBenchPlaceholder && !p._benchSlotFilled)
+                            return '<span class="tmtc-pb-inner" style="background:var(--tmu-border-soft-alpha)"></span>';
                         const posStr = (p._fmPosKey || String(p.favposition || '').split(',')[0]?.trim() || '').toLowerCase();
                         const color = TmConst.POSITION_MAP[posStr]?.color || 'var(--tmu-text-dim)';
                         return `<span class="tmtc-pb-inner" style="background:${color}"></span>`;
@@ -574,13 +635,13 @@ export function mountTacticsLineup(container, data, opts = {}) {
                 },
                 {
                     key: 'no', label: '#', align: 'r', width: '28px', sortable: false,
-                    render: (v, p) => p._isBenchPlaceholder ? '' : `<span style="color:var(--tmu-text-muted);font-variant-numeric:tabular-nums">${escHtml(v)}</span>`,
+                    render: (v, p) => (p._isBenchPlaceholder && !p._benchSlotFilled) ? '' : `<span style="color:var(--tmu-text-muted);font-variant-numeric:tabular-nums">${escHtml(v)}</span>`,
                 },
                 {
                     key: '_fmPosKey', label: 'Pos', align: 'c', width: '68px', sortable: false,
                     render: (v, p) => {
                         if (p._isBenchPlaceholder)
-                            return `<span class="tmtc-sub-badge" style="opacity:.5">${escHtml(BENCH_LABELS[p._benchRole] || p._benchRole)}</span>`;
+                            return `<span class="tmtc-sub-badge"${!p._benchSlotFilled ? ' style="opacity:.55"' : ''}>${escHtml(BENCH_LABELS[p._benchRole] || p._benchRole)}</span>`;
                         if (p._benchRole)
                             return `<span class="tmtc-sub-badge">${escHtml(BENCH_LABELS[p._benchRole] || p._benchRole)}</span>`;
                         if (!v) {
@@ -594,14 +655,15 @@ export function mountTacticsLineup(container, data, opts = {}) {
                 {
                     key: 'name', label: 'Player',
                     render: (_, p) => {
-                        if (p._isBenchPlaceholder) return '<span style="color:var(--tmu-text-disabled);font-style:italic">drop player here</span>';
-                        return `<a href="/players/${p.player_id}/" style="color:var(--tmu-text-inverse);text-decoration:none;font-weight:600" onclick="event.stopPropagation()">${escHtml(p.lastname || p.name || '')}</a>`;
+                        if (p._isBenchPlaceholder && !p._benchSlotFilled)
+                            return '<span style="color:var(--tmu-text-disabled);font-style:italic">drop player here</span>';
+                        return `${CountryFlag.render(p.country, 'tmtc-player-flag')}<a href="/players/${p.player_id}/" style="color:var(--tmu-text-inverse);text-decoration:none;font-weight:600" onclick="event.stopPropagation()">${escHtml(p.lastname || p.name || '')}</a>${playerStatusIconsHtml(p)}`;
                     },
                 },
                 {
                     key: 'rec_sort', label: '★', align: 'c', width: '58px',
                     render: (v, p) => {
-                        if (p._isBenchPlaceholder) return '';
+                        if (p._isBenchPlaceholder && !p._benchSlotFilled) return '';
                         const starValue = p._fmRec != null ? p._fmRec : v;
                         return TmStars.recommendation(starValue, 'tmtc-rec-stars tmtc-rec-stars-sm') || '—';
                     },
@@ -609,20 +671,20 @@ export function mountTacticsLineup(container, data, opts = {}) {
                 {
                     key: '_fmRec', label: 'REC', align: 'r', width: '40px',
                     sortable: false,
-                    render: (v, p) => p._isBenchPlaceholder ? '' : v != null
+                    render: (v, p) => (p._isBenchPlaceholder && !p._benchSlotFilled) ? '' : v != null
                         ? `<span class="tmu-tabular" style="color:${gc(v, REC_THRESHOLDS)};font-weight:700">${v.toFixed(2)}</span>`
                         : `<span style="color:var(--tmu-text-dim)">—</span>`,
                 },
                 {
                     key: '_fmR5', label: 'R5', align: 'r', width: '40px',
                     sortable: false,
-                    render: (v, p) => p._isBenchPlaceholder ? '' : v != null
+                    render: (v, p) => (p._isBenchPlaceholder && !p._benchSlotFilled) ? '' : v != null
                         ? `<span class="tmu-tabular" style="color:${gc(v, R5_THRESHOLDS)};font-weight:700">${TmUtils.formatR5(v)}</span>`
                         : `<span style="color:var(--tmu-text-dim)">—</span>`,
                 },
                 {
                     key: 'routine', label: 'Routine', align: 'r', width: '42px',
-                    render: (v, p) => p._isBenchPlaceholder ? '' : v != null && v > 0
+                    render: (v, p) => (p._isBenchPlaceholder && !p._benchSlotFilled) ? '' : v != null && v > 0
                         ? `<span class="tmu-tabular" style="color:${gc(v, RTN_THRESHOLDS)};font-weight:700">${Number(v).toFixed(1)}</span>`
                         : `<span style="color:var(--tmu-text-dim)">—</span>`,
                 },
@@ -635,8 +697,9 @@ export function mountTacticsLineup(container, data, opts = {}) {
             const tr = e.target.closest('tr[data-player-id]');
             if (!tr || !wrap.contains(tr)) return;
             const pid = tr.dataset.playerId;
-            if (!pid) return;
-            dragState = { pid, fromType: 'sidebar' };
+            if (!pid || pid.startsWith('_bench_')) return;
+            const fromRoleKey = tr.dataset.benchRole || null;
+            dragState = { pid, fromType: 'sidebar', fromRoleKey };
             e.dataTransfer.effectAllowed = 'move';
             e.dataTransfer.setData('text/plain', pid);
             tr.classList.add('tmtc-drag-source');
@@ -662,7 +725,7 @@ export function mountTacticsLineup(container, data, opts = {}) {
         });
         wrap.addEventListener('drop', async e => {
             _setHovRow(null);
-            const benchTr  = e.target.closest('tr[data-bench-role]');
+            const benchTr = e.target.closest('tr[data-bench-role]');
             const playerTr = !benchTr && e.target.closest('tr[data-player-id]');
             if (!benchTr && !playerTr) return;
             e.preventDefault();
@@ -670,7 +733,7 @@ export function mountTacticsLineup(container, data, opts = {}) {
             const ds = dragState; dragState = null;
             if (!ds) return;
             const { pid } = ds;
-            const player  = players_by_id[pid];
+            const player = players_by_id[pid];
             if (!player) return;
             const changed = {};
 
@@ -679,6 +742,15 @@ export function mountTacticsLineup(container, data, opts = {}) {
                 const roleKey = benchTr.dataset.benchRole;
                 const prevPid = assignment[roleKey] ? String(assignment[roleKey]) : null;
                 if (prevPid === String(pid)) { refreshSquadTable(); return; }
+                // Foreign limit: bench counts toward squad-of-16
+                if (clubCountry && isForeigner(player)) {
+                    const freeing = prevPid && isForeigner(players_by_id[prevPid]);
+                    const alreadyIn = [...getOccupiedFieldKeys(), ...BENCH_SLOTS].some(k => String(assignment[k]) === String(pid));
+                    if (!freeing && !alreadyIn && countSquadForeigners() >= 5) {
+                        TmAlert.show({ message: 'Foreign player limit is 5 (squad of 16)', tone: 'warning', duration: 3000 });
+                        return;
+                    }
+                }
                 clearSourceOldSpot(ds, changed);
                 if (prevPid) backfillDisplaced(prevPid, ds, changed);
                 assignment[roleKey] = pid;
@@ -688,19 +760,32 @@ export function mountTacticsLineup(container, data, opts = {}) {
 
             } else {
                 // Drop on player row
-                const targetPid       = playerTr.dataset.playerId;
+                const targetPid = playerTr.dataset.playerId;
                 if (!targetPid || targetPid === String(pid)) { refreshSquadTable(); return; }
-                const targetPosKey    = getFieldPosKey(targetPid);
+                const targetPosKey = getFieldPosKey(targetPid);
                 const targetBenchRole = !targetPosKey ? getBenchRole(targetPid) : null;
 
                 if (targetPosKey) {
                     // Take their field slot
+                    const vacatingPosKey = ds.fromType === 'field' ? ds.fromPosKey : null;
+                    if (clubCountry && projectedForeigners(pid, vacatingPosKey) > 5) {
+                        TmAlert.show({ message: 'Foreign player limit is 5 (squad of 16)', tone: 'warning', duration: 3000 });
+                        return;
+                    }
                     clearSourceOldSpot(ds, changed);
                     backfillDisplaced(targetPid, ds, changed);
                     assignment[targetPosKey] = pid;
                     changed[pid] = targetPosKey;
                     renderFieldSlot(slotEls[targetPosKey], player, targetPosKey);
                     for (const zone of FIELD_ZONES) normalizeZone(zone.key, changed);
+                    refreshSquadTable();
+                    try {
+                        const outPid = Object.keys(changed).find(p => changed[p] === 'out') || null;
+                        await postSave(buildAssocForSave(outPid), changed, reserves, national, miniGameId);
+                        TmAlert.show({ message: 'Saved', tone: 'success' });
+                        notifyChange();
+                    } catch { TmAlert.show({ message: 'Save failed', tone: 'error' }); }
+                    return;
 
                 } else if (targetBenchRole && BENCH_SLOTS.includes(targetBenchRole)) {
                     // Take their bench sub role
@@ -749,7 +834,7 @@ export function mountTacticsLineup(container, data, opts = {}) {
     let dragState = null;
 
     function onFieldDragStart(e) {
-        const pid    = e.currentTarget.dataset.playerId;
+        const pid = e.currentTarget.dataset.playerId;
         const posKey = e.currentTarget.dataset.posKey;
         if (!pid) { e.preventDefault(); return; }
         dragState = { pid, fromType: 'field', fromPosKey: posKey };
@@ -761,7 +846,7 @@ export function mountTacticsLineup(container, data, opts = {}) {
 
     function onBenchDragStart(e) {
         e.stopPropagation();
-        const pid     = e.currentTarget.dataset.playerId;
+        const pid = e.currentTarget.dataset.playerId;
         const roleKey = e.currentTarget.closest('.tmtc-bench-slot')?.dataset.role || '';
         if (!pid) { e.preventDefault(); return; }
         dragState = { pid, fromType: 'bench', fromRoleKey: roleKey };
@@ -793,19 +878,20 @@ export function mountTacticsLineup(container, data, opts = {}) {
             if (oldRole) {
                 assignment[oldRole] = null;
                 renderBenchSlot(benchSlotEls[oldRole], null, BENCH_LABELS[oldRole] || oldRole);
+                ds.fromRoleKey = oldRole; // so backfillDisplaced can swap
             }
         }
     }
 
     // Send the player displaced from the target slot back to the drag-source slot (swap),
-    // or record 'out' if there's no field source slot to send them to.
+    // or record 'out' if there's no source slot to send them to.
     function backfillDisplaced(displacedPid, ds, changed) {
         const { fromType, fromPosKey, fromRoleKey } = ds;
         if (fromType === 'field' && fromPosKey) {
             assignment[fromPosKey] = displacedPid;
             if (slotEls[fromPosKey]) renderFieldSlot(slotEls[fromPosKey], players_by_id[displacedPid] || null, fromPosKey);
             changed[displacedPid] = fromPosKey;
-        } else if (fromType === 'bench' && fromRoleKey) {
+        } else if ((fromType === 'bench' || fromType === 'sidebar') && fromRoleKey) {
             assignment[fromRoleKey] = displacedPid;
             renderBenchSlot(benchSlotEls[fromRoleKey], players_by_id[displacedPid] || null, BENCH_LABELS[fromRoleKey] || fromRoleKey);
             changed[displacedPid] = fromRoleKey;
@@ -817,8 +903,8 @@ export function mountTacticsLineup(container, data, opts = {}) {
     function setupDropTarget(slotEl, posKey) {
         let n = 0;
         slotEl.addEventListener('dragenter', e => { e.preventDefault(); if (++n === 1) slotEl.classList.add('tmtc-drag-over'); });
-        slotEl.addEventListener('dragleave', ()  => { if (--n <= 0) { n = 0; slotEl.classList.remove('tmtc-drag-over'); } });
-        slotEl.addEventListener('dragover',  e => e.preventDefault());
+        slotEl.addEventListener('dragleave', () => { if (--n <= 0) { n = 0; slotEl.classList.remove('tmtc-drag-over'); } });
+        slotEl.addEventListener('dragover', e => e.preventDefault());
         slotEl.addEventListener('drop', async e => {
             e.preventDefault();
             n = 0; slotEl.classList.remove('tmtc-drag-over');
@@ -827,7 +913,7 @@ export function mountTacticsLineup(container, data, opts = {}) {
             if (!ds) return;
 
             const { pid } = ds;
-            const player  = players_by_id[pid];
+            const player = players_by_id[pid];
             if (!player) return;
 
             const prevPid = assignment[posKey] ? String(assignment[posKey]) : null;
@@ -836,6 +922,13 @@ export function mountTacticsLineup(container, data, opts = {}) {
             // Empty slots only accept players already on the field (prevents adding a 12th player).
             // If the slot is empty AND the source is not from the field, only block when the field is already full (11).
             if (!prevPid && ds.fromType !== 'field' && getOccupiedFieldKeys().size >= 11) return;
+
+            // Foreign player limit: max 5 across the full 16-man squad.
+            const vacatingPosKey = ds.fromType === 'field' ? ds.fromPosKey : null;
+            if (clubCountry && projectedForeigners(pid, vacatingPosKey) > 5) {
+                TmAlert.show({ message: 'Foreign player limit is 5 (squad of 16)', tone: 'warning', duration: 3000 });
+                return;
+            }
 
             const changed = {};
 
@@ -863,8 +956,8 @@ export function mountTacticsLineup(container, data, opts = {}) {
     function setupBenchDropTarget(el, roleKey) {
         let n = 0;
         el.addEventListener('dragenter', e => { e.preventDefault(); if (++n === 1) el.classList.add('tmtc-drag-over'); });
-        el.addEventListener('dragleave', ()  => { if (--n <= 0) { n = 0; el.classList.remove('tmtc-drag-over'); } });
-        el.addEventListener('dragover',  e => e.preventDefault());
+        el.addEventListener('dragleave', () => { if (--n <= 0) { n = 0; el.classList.remove('tmtc-drag-over'); } });
+        el.addEventListener('dragover', e => e.preventDefault());
         el.addEventListener('drop', async e => {
             e.preventDefault();
             n = 0; el.classList.remove('tmtc-drag-over');
@@ -873,11 +966,25 @@ export function mountTacticsLineup(container, data, opts = {}) {
             if (!ds) return;
 
             const { pid } = ds;
-            const player  = players_by_id[pid];
+            const player = players_by_id[pid];
             if (!player) return;
 
             const prevPid = assignment[roleKey] ? String(assignment[roleKey]) : null;
             if (prevPid === String(pid)) return;
+
+            // Foreign player limit: bench counts toward the squad-of-16 limit.
+            // If the slot was already occupied by this or another foreigner, that slot is vacated first.
+            if (clubCountry && isForeigner(player)) {
+                const currentlyOccupyingForeigner = prevPid && isForeigner(players_by_id[prevPid]);
+                const alreadyOnBench = BENCH_SLOTS.some(r => r !== roleKey && assignment[r] != null && String(assignment[r]) === String(pid));
+                const alreadyOnField = !!getOccupiedFieldKeys().size && [...getOccupiedFieldKeys()].some(pk => String(assignment[pk]) === String(pid));
+                if (!alreadyOnBench && !alreadyOnField && !currentlyOccupyingForeigner) {
+                    if (countSquadForeigners() >= 5) {
+                        TmAlert.show({ message: 'Foreign player limit is 5 (squad of 16)', tone: 'warning', duration: 3000 });
+                        return;
+                    }
+                }
+            }
 
             const changed = {};
 
@@ -1043,7 +1150,7 @@ export function mountTacticsLineup(container, data, opts = {}) {
             let _n = 0;
             slot.addEventListener('dragenter', e => { e.preventDefault(); if (++_n === 1) slot.classList.add('tmtc-drag-over'); });
             slot.addEventListener('dragleave', () => { if (--_n <= 0) { _n = 0; slot.classList.remove('tmtc-drag-over'); } });
-            slot.addEventListener('dragover',  e => e.preventDefault());
+            slot.addEventListener('dragover', e => e.preventDefault());
             slot.addEventListener('drop', async e => {
                 e.preventDefault();
                 _n = 0; slot.classList.remove('tmtc-drag-over');

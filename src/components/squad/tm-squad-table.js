@@ -36,7 +36,7 @@ const buildSummary = players => {
 /* ═══════════════════════════════════════════════════════════
    INTERNAL STATE
    ═══════════════════════════════════════════════════════════ */
-let _container, _allPlayers, _onSaleIds, _titleHtml, _showTraining;
+let _container, _allPlayers, _onSaleIds, _titleHtml, _showTraining, _showSummary, _splitBy;
 
 const _tableOpts = () => ({
     columns: { timeleft: false, curbid: false },
@@ -49,10 +49,17 @@ const _tableOpts = () => ({
         : [],
 });
 
-const _doRender = () => {
-    const seniors = _allPlayers.filter(p => p.age > 21);
-    const youth = _allPlayers.filter(p => p.age <= 21);
+const _appendSection = (body, label, players, marginTop = false) => {
+    const lbl = document.createElement('div');
+    lbl.className = 'tmsq-section-lbl';
+    if (marginTop) lbl.style.marginTop = 'var(--tmu-space-lg)';
+    lbl.textContent = label;
+    body.appendChild(lbl);
+    if (_showSummary) body.insertAdjacentHTML('beforeend', buildSummary(players));
+    TmPlayersTable.mount(body, players, _tableOpts());
+};
 
+const _doRender = () => {
     const body = _container;
 
     const heading = document.createElement('div');
@@ -60,20 +67,17 @@ const _doRender = () => {
     heading.innerHTML = _titleHtml || '<span class="tmsq-page-title-icon">⚽️</span> Squad Overview';
     body.appendChild(heading);
 
-    const senLbl = document.createElement('div');
-    senLbl.className = 'tmsq-section-lbl';
-    senLbl.textContent = `Seniors (${seniors.length})`;
-    body.appendChild(senLbl);
-    body.insertAdjacentHTML('beforeend', buildSummary(seniors));
-    TmPlayersTable.mount(body, seniors, _tableOpts());
-
-    const youthLbl = document.createElement('div');
-    youthLbl.className = 'tmsq-section-lbl';
-    youthLbl.style.marginTop = 'var(--tmu-space-lg)';
-    youthLbl.textContent = `Youth ≤21 (${youth.length})`;
-    body.appendChild(youthLbl);
-    body.insertAdjacentHTML('beforeend', buildSummary(youth));
-    TmPlayersTable.mount(body, youth, _tableOpts());
+    if (_splitBy === 'team') {
+        const aTeam = _allPlayers.filter(p => !p.b);
+        const bTeam = _allPlayers.filter(p => p.b);
+        _appendSection(body, `A Team (${aTeam.length})`, aTeam);
+        if (bTeam.length) _appendSection(body, `B Team (${bTeam.length})`, bTeam, true);
+    } else {
+        const seniors = _allPlayers.filter(p => p.age > 21);
+        const youth = _allPlayers.filter(p => p.age <= 21);
+        _appendSection(body, `Seniors (${seniors.length})`, seniors);
+        _appendSection(body, `Youth ≤21 (${youth.length})`, youth, true);
+    }
 };
 
 /* ═══════════════════════════════════════════════════════════
@@ -124,13 +128,15 @@ let cssInjected = false;
  * @param {Object}      [options]
  * @param {Set}         [options.onSaleIds]  - Set of player id strings currently on sale
  */
-const render = (container, players, { onSaleIds = new Set(), titleHtml = '', showTraining = true } = {}) => {
+const render = (container, players, { onSaleIds = new Set(), titleHtml = '', showTraining = true, showSummary = true, splitBy = 'age' } = {}) => {
     if (!cssInjected) { injectCSS(); cssInjected = true; }
     _container = container;
     _allPlayers = players;
     _onSaleIds = onSaleIds;
     _titleHtml = titleHtml;
     _showTraining = showTraining;
+    _showSummary = showSummary;
+    _splitBy = splitBy;
 
     // Tooltip delegation — survives sort re-renders
     container.addEventListener('mouseover', e => {

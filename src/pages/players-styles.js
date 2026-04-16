@@ -10,6 +10,19 @@ export const injectPlayersPageStyles = () => {
             display: flex;
             flex-direction: column;
             gap: var(--tmu-space-lg);
+        }
+        .tmvu-players-no {
+            cursor: pointer;
+            color: var(--tmu-text-muted);
+            font-weight: 700;
+            border-radius: 3px;
+            padding: 1px 4px;
+            transition: background 0.15s, color 0.15s;
+        }
+        .tmvu-players-no:hover {
+            background: var(--tmu-surface-item-hover);
+            color: var(--tmu-text-strong);
+        }
             width: 100%;
             min-width: 0;
         }
@@ -31,7 +44,6 @@ export const injectPlayersPageStyles = () => {
             flex-wrap: wrap;
             align-items: center;
             gap: var(--tmu-space-md);
-            margin-bottom: var(--tmu-space-md);
         }
         .tmvu-players-sections {
             display: flex;
@@ -49,47 +61,66 @@ export const injectPlayersPageStyles = () => {
             overflow-x: auto;
             overflow-y: hidden;
         }
+        .tmvu-players-team-panel { margin-bottom: var(--tmu-space-lg); }
+        .tmvu-players-panel-body { padding: var(--tmu-space-md) var(--tmu-space-md) var(--tmu-space-sm); }
+        .tmvu-players-team-title { font-size: var(--tmu-font-md); font-weight: 700; color: var(--tmu-text-strong); }
+        .tmvu-players-team-count { color: var(--tmu-text-muted); font-weight: 400; margin-left: var(--tmu-space-xs); }
         .tmvu-players-section-title {
-            margin: 0 0 var(--tmu-space-sm);
-            font-size: var(--tmu-font-md);
-            font-weight: 800;
-            color: var(--tmu-text-strong);
+            margin: var(--tmu-space-md) 0 var(--tmu-space-sm);
+            font-size: var(--tmu-font-sm);
+            font-weight: 700;
+            color: var(--tmu-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        .tmvu-players-table .tmvu-players-name a {
-            color: var(--tmu-text-strong);
+        .tmvu-players-name {
+            display: flex;
+            align-items: center;
+            gap: var(--tmu-space-xs);
+        }
+        .tmvu-players-name a {
+            color: var(--tmu-text-inverse);    
+        }
+        .tmvu-players-flag { display: inline-block; vertical-align: middle; flex-shrink: 0; }
+            color: var(--tmu-text-inverse);
             text-decoration: none;
             font-weight: 700;
         }
-        .tmvu-players-table .tmvu-players-name a:hover {
+        .tmvu-players-name a:hover {
             color: var(--tmu-accent);
             text-decoration: none;
         }
-        .tmvu-players-table .tmvu-players-pos {
+        .tmvu-players-pos {
             color: var(--tmu-text-muted);
             font-weight: 700;
             white-space: nowrap;
         }
-        .tmvu-players-table .tmvu-players-r5 {
+        .tmvu-players-r5 {
             color: var(--tmu-text-strong);
             font-weight: 700;
         }
-        .tmvu-players-table .tmvu-players-r5-stack {
+        .tmvu-players-r5-stack {
             display: inline-flex;
             flex-direction: column;
             align-items: flex-end;
             gap: 2px;
         }
-        .tmvu-players-table .tmvu-players-r5.is-pending {
+        .tmvu-players-r5.is-pending {
             color: var(--tmu-text-faint);
         }
-        .tmvu-players-table .tmvu-players-delta {
+        .tmvu-players-delta {
+            font-size: 10px;
             font-weight: 700;
+            line-height: 1;
         }
-        .tmvu-players-table .tmvu-players-delta.pos {
+        .tmvu-players-delta.pos {
             color: var(--tmu-success);
         }
-        .tmvu-players-table .tmvu-players-delta.neg {
+        .tmvu-players-delta.neg {
             color: var(--tmu-danger);
+        }
+        .tmvu-players-delta.zero {
+            color: var(--tmu-text-faint);
         }
         .tmvu-players-skill-cell {
             display: inline-flex;
@@ -99,7 +130,7 @@ export const injectPlayersPageStyles = () => {
             gap: 1px;
             min-width: 44px;
             width: calc(100% - 4px);
-            margin: 0 2px;
+            margin: 0 1px;
             padding: 2px;
             border-radius: var(--tmu-space-xs);
             font-weight: 700;
@@ -117,16 +148,16 @@ export const injectPlayersPageStyles = () => {
         .tmvu-players-skill-arrow.up { color: var(--tmu-success-strong); }
         .tmvu-players-skill-arrow.down { color: var(--tmu-danger); }
         .tmvu-players-skill-cell.gain-decimal {
-            background: color-mix(in srgb, var(--tmu-success) 8%, transparent);
+            background: color-mix(in srgb, var(--tmu-success) 15%, transparent);
         }
         .tmvu-players-skill-cell.gain-integer {
-            background: color-mix(in srgb, var(--tmu-success) 40%, transparent);
+            background: color-mix(in srgb, var(--tmu-success) 50%, transparent);
         }
         .tmvu-players-skill-cell.loss-decimal {
-            background: color-mix(in srgb, var(--tmu-danger) 8%, transparent);
+            background: color-mix(in srgb, var(--tmu-danger) 22%, transparent);
         }
         .tmvu-players-skill-cell.loss-integer {
-            background: color-mix(in srgb, var(--tmu-danger) 30%, transparent);
+            background: color-mix(in srgb, var(--tmu-danger) 38%, transparent);
         }
         .tmvu-players-skill-cell.max {
             color: var(--tmu-metal-gold);
@@ -151,6 +182,10 @@ export const injectPlayersPageStyles = () => {
         .tmvu-players-empty {
             padding: var(--tmu-space-md) 0;
             color: var(--tmu-text-muted);
+        }
+        body.tmvu-shell-active .tmvu-players-page.tmvu-main {
+            width: min(1400px, calc(100% - 24px)) !important;
+            max-width: 1400px !important;
         }
         .tmvu-players-source-frame {
             width: 0;

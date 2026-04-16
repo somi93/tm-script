@@ -369,6 +369,12 @@ export function injectTacticsStyles() {
             text-overflow: ellipsis;
             max-width: 100%;
         }
+        .tmtc-player-flag {
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 4px;
+            flex-shrink: 0;
+        }
         .tmtc-bench-empty {
             font-size: var(--tmu-font-xs);
             color: var(--tmu-text-disabled);
@@ -681,6 +687,54 @@ export function injectTacticsStyles() {
             border: none;
             border-top: 1px solid var(--tmu-border-soft-alpha);
             margin: 0;
+        }
+        .tmtc-saved-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 6px;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+        .tmtc-saved-empty {
+            font-size: var(--tmu-font-xs);
+            color: var(--tmu-text-faint);
+            text-align: center;
+            padding: 6px 0;
+        }
+        .tmtc-saved-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            padding: 4px 6px;
+            border-radius: var(--tmu-space-xs);
+            background: var(--tmu-surface-card);
+            border: 1px solid var(--tmu-border-soft-alpha);
+        }
+        .tmtc-saved-info {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            flex: 1;
+            overflow: hidden;
+        }
+        .tmtc-saved-name {
+            font-size: var(--tmu-font-sm);
+            font-weight: 700;
+            color: var(--tmu-text-strong);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .tmtc-saved-meta {
+            font-size: var(--tmu-font-2xs);
+            color: var(--tmu-text-faint);
+        }
+        .tmtc-saved-actions {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
         }
     `;
     document.head.appendChild(s);

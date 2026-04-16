@@ -4,7 +4,7 @@ import { injectTacticsStyles } from '../components/tactics/tm-tactics-styles.js'
 import { mountTacticsLineup } from '../components/tactics/tm-tactics-lineup.js';
 import { mountTacticsPanel } from '../components/tactics/tm-tactics-panel.js';
 import { mountTacticsOrders } from '../components/tactics/tm-tactics-orders.js';
-import { TmTacticsService } from '../services/tactics.js';
+import { TmTacticsModel } from '../models/tactics.js';
 
 'use strict';
 
@@ -36,25 +36,6 @@ function captureNativeSettings() {
         style:     getVal('attacking_select'),
         focus:     getVal('focus_side_select'),
     };
-}
-
-function replaceSyncedPlayer(data, syncedPlayer) {
-    const syncedId = String(syncedPlayer?.id || syncedPlayer?.player_id || '').trim();
-    if (!syncedId) return false;
-
-    let changed = false;
-    if (data.players_by_id?.[syncedId]) {
-        data.players_by_id[syncedId] = syncedPlayer;
-        changed = true;
-    }
-
-    for (const [key, player] of Object.entries(data.players || {})) {
-        if (String(player?.player_id || player?.id || '') !== syncedId) continue;
-        data.players[key] = syncedPlayer;
-        changed = true;
-    }
-
-    return changed;
 }
 
 // ── Main init ────────────────────────────────────────────────────────────────
@@ -101,7 +82,7 @@ export async function initTacticsPage(main) {
 
     let rawData;
     try {
-        rawData = await TmTacticsService.fetchTactics(reserves, national, miniGameId, { clubId });
+        rawData = await TmTacticsModel.fetchTactics(reserves, national, miniGameId, { clubId });
     } catch (err) {
         host.innerHTML = TmUI.error(err?.message || 'Failed to load tactics data.');
         return;

@@ -8,6 +8,8 @@ import { fetchRawPlayers } from '../models/club_new.js';
 import { runSyncPipeline } from '../workflows/player-history/sync-pipeline.js';
 import { TmProgress } from '../components/shared/tm-progress.js';
 import { injectPlayersPageStyles } from './players-styles.js';
+import { TmSquadTable } from '../components/squad/tm-squad-table.js';
+import { CountryFlag } from '../components/shared/country-flag.js';
 
 const parseSquadPageSkillChanges = (doc = document) => {
     const result = new Map();
@@ -117,16 +119,14 @@ const skillCellHtml = (player, index) => {
                 : wc === 'part_down' ? ' loss-decimal'
                     : '';
     const cls = `${value >= 20 ? ' max' : value >= 19 ? ' elite' : ''}${bgCls}`;
-    const label = value >= 20 ? '★' : value >= 19 ? `☆.${value.toFixed(2).split('.')[1]}` : value.toFixed(2);
+    const label = value >= 20 ? '★' : value >= 19 ? `★.${value.toFixed(2).split('.')[1]}` : value.toFixed(2);
     const title = value >= 19 ? String(value) : '';
     const deltaText = change?.delta ? `${change.delta > 0 ? '+' : ''}${change.delta.toFixed(2)}` : '';
     const deltaHtml = deltaText && deltaText !== '+0.00' && deltaText !== '-0.00' && deltaText !== '0.00'
         ? `<span class="tmvu-players-skill-delta ${change.delta > 0 ? 'pos' : 'neg'}">${deltaText}</span>`
         : '';
-    const arrowHtml = wc === 'one_up' ? '<span class="tmvu-players-skill-arrow up">▲</span>'
-        : wc === 'one_down' ? '<span class="tmvu-players-skill-arrow down">▼</span>'
-            : '';
-    return `<span class="tmvu-players-skill-cell${cls}"${title ? ` title="${title}"` : ''}>${arrowHtml}<span class="tmvu-players-skill-main">${label}</span>${deltaHtml}</span>`;
+    const arrowHtml = '';
+    return `<span class="tmvu-players-skill-cell${cls}"${title ? ` title="${title}"` : ''}><span class="tmvu-players-skill-main">${label}</span>${deltaHtml}</span>`;
 };
 
 const createSquadModel = (key, label, defaultVisible) => ({
@@ -158,11 +158,6 @@ export function initPlayersPage(main) {
     const shell = document.createElement('div');
     shell.id = 'tmvu-players-shell';
     shell.className = 'tmvu-players-shell tmu-panel-page';
-
-    const head = document.createElement('div');
-    head.className = 'tmvu-players-head';
-    head.innerHTML = '<div class="tmvu-players-title">Players</div>';
-    shell.appendChild(head);
 
     const controlsHost = document.createElement('div');
     const sectionsHost = document.createElement('div');
@@ -214,14 +209,22 @@ export function initPlayersPage(main) {
     const buildTableHeaders = (isGK) => {
         const skillLabels = isGK ? SKILL_NAMES_GK_SHORT : SKILL_LABELS_OUT;
         const baseHeaders = [
-            { key: 'no', label: '#', align: 'c', width: '42px', defaultSortDir: 1 },
+            {
+                key: 'no', label: '#', align: 'c', width: '42px', defaultSortDir: 1,
+                sort: (a, b) => (Number(a.number ?? a.no) || 0) - (Number(b.number ?? b.no) || 0),
+                render: (_, item) => {
+                    const num = item.number ?? item.no ?? '';
+                    const reserves = item.b ? 1 : 0;
+                    return `<span class="tmvu-players-no" onclick="pop_player_number(${item.id},${Number(num)||0},&quot;${escapeHtml(item.name)}&quot;,${reserves})" title="Change number">${escapeHtml(String(num || ''))}</span>`;
+                },
+            },
             {
                 key: 'name',
                 label: 'Player',
                 width: '220px',
                 defaultSortDir: 1,
                 sort: (a, b) => String(a.name || '').localeCompare(String(b.name || '')),
-                render: (_, item) => `<div class="tmvu-players-name"><a href="/players/${escapeHtml(item.id)}/">${escapeHtml(item.name)}</a></div>`
+                render: (_, item) => `<div class="tmvu-players-name">${CountryFlag.render(item.country, 'tmvu-players-flag')}<a href="/players/${escapeHtml(item.id)}/">${escapeHtml(item.name)}</a></div>`
             },
             {
                 key: 'ageMonths',
@@ -266,8 +269,8 @@ export function initPlayersPage(main) {
                     const value = Number(item.ti);
                     if (!Number.isFinite(value)) return '<span class="tmvu-players-r5 is-pending">...</span>';
                     const delta = Number(item.TI_change);
-                    const deltaHtml = Number.isFinite(delta) && delta !== 0
-                        ? `<span class="tmvu-players-delta ${delta > 0 ? 'pos' : 'neg'}">${escapeHtml(formatTiDelta(delta))}</span>`
+                    const deltaHtml = item.TI_change !== null && Number.isFinite(delta)
+                        ? `<span class="tmvu-players-delta ${delta > 0 ? 'pos' : delta < 0 ? 'neg' : 'zero'}">${escapeHtml(formatTiDelta(delta))}</span>`
                         : '';
                     return `<span class="tmvu-players-r5-stack"><span class="tmvu-players-r5">${escapeHtml(String(value))}</span>${deltaHtml}</span>`;
                 }
@@ -361,20 +364,17 @@ export function initPlayersPage(main) {
         const mainSquad = state.squads.main;
 
         if (!showMain && !showReserves) {
-            const body = createSectionHost('No Squad Selected');
-            body.innerHTML = '<div class="tmvu-players-empty">No squad is selected.</div>';
+            sectionsHost.innerHTML = '<div class="tmvu-players-empty">No squad is selected.</div>';
             return;
         }
 
         if (mainSquad.loading && !mainSquad.players.length) {
-            const body = createSectionHost('Players');
-            body.innerHTML = `<div class="tmvu-players-empty">${escapeHtml(mainSquad.syncMessage || 'Loading players...')}</div>`;
+            sectionsHost.innerHTML = `<div class="tmvu-players-empty">${escapeHtml(mainSquad.syncMessage || 'Loading...')}</div>`;
             return;
         }
 
         if (mainSquad.loadError && !mainSquad.players.length) {
-            const body = createSectionHost('Players');
-            body.innerHTML = `<div class="tmvu-players-empty">${escapeHtml(mainSquad.loadError)}</div>`;
+            sectionsHost.innerHTML = `<div class="tmvu-players-empty">${escapeHtml(mainSquad.loadError)}</div>`;
             return;
         }
 
@@ -383,30 +383,46 @@ export function initPlayersPage(main) {
             return showMain;
         });
 
-        const sections = [
-            { title: 'Outfield', isGK: false, players: visiblePlayers.filter((player) => !player.isGK) },
-            { title: 'Goalkeepers', isGK: true, players: visiblePlayers.filter((player) => player.isGK) },
-        ].filter((section) => section.players.length);
-
-        if (!sections.length) {
-            const body = createSectionHost('Players');
-            body.innerHTML = '<div class="tmvu-players-empty">No players available.</div>';
+        if (!visiblePlayers.length) {
+            sectionsHost.innerHTML = '<div class="tmvu-players-empty">No players available.</div>';
             return;
         }
 
-        sections.forEach((section) => {
-            const body = createSectionHost(section.title);
-            const table = TmTable.table({
-                headers: buildTableHeaders(section.isGK),
-                items: section.players,
-                density: 'tight',
-                cls: 'tmvu-players-table',
-                sortKey: 'no',
-                sortDir: 1,
-                emptyText: 'No players found.',
-            });
-            body.appendChild(table);
-        });
+        const isGK = p => !!p.isGK;
+
+        const renderTeamPanel = (players, teamLabel) => {
+            if (!players.length) return;
+            const panel = document.createElement('div');
+            panel.className = 'tmu-flat-panel tmvu-players-team-panel';
+
+            const panelHead = document.createElement('div');
+            panelHead.className = 'tmu-card-head';
+            panelHead.innerHTML = `<span class="tmvu-players-team-title">${escapeHtml(teamLabel)} <span class="tmvu-players-team-count">${players.length}</span></span>`;
+            panel.appendChild(panelHead);
+
+            const body = document.createElement('div');
+            body.className = 'tmvu-players-panel-body';
+            panel.appendChild(body);
+
+            const outfield = players.filter(p => !isGK(p));
+            const gks = players.filter(p => isGK(p));
+
+            if (outfield.length) {
+                body.appendChild(TmTable.table({ headers: buildTableHeaders(false), items: outfield, sortKey: 'no', sortDir: 1 }));
+            }
+            if (gks.length) {
+                const gkLbl = document.createElement('div');
+                gkLbl.className = 'tmvu-players-section-title';
+                gkLbl.textContent = `Goalkeepers (${gks.length})`;
+                body.appendChild(gkLbl);
+                body.appendChild(TmTable.table({ headers: buildTableHeaders(true), items: gks, sortKey: 'no', sortDir: 1 }));
+            }
+
+            sectionsHost.appendChild(panel);
+        };
+
+        if (showMain) renderTeamPanel(visiblePlayers.filter(p => !p.b), 'A Team');
+        if (showReserves) renderTeamPanel(visiblePlayers.filter(p => p.b), 'B Team');
     };
 
     const render = () => {
@@ -414,7 +430,7 @@ export function initPlayersPage(main) {
         renderSections();
     };
 
-    const waitForSkillChanges = (doc, timeout = 5000) => new Promise((resolve) => {
+    const waitForSkillChanges = (doc, timeout = 2000) => new Promise((resolve) => {
         const getRowCount = () => doc.querySelectorAll('[player_link]').length;
         const finish = (map) => { console.log('[WC:0 waitForSkillChanges] resolved, map.size:', map.size); resolve(map); };
         let lastCount = -1;
@@ -443,7 +459,7 @@ export function initPlayersPage(main) {
                 lastCount = count;
                 stableFor = 0;
             }
-        }, 200);
+        }, 10);
     });
 
     const loadMainSquad = async () => {
@@ -480,11 +496,12 @@ export function initPlayersPage(main) {
         console.groupEnd();
 
         // Steps 3-11: sync pipeline
-        const syncBar = TmProgress.progressBar({ title: '⚡ Syncing players' });
+        let syncBar = null;
         const allPlayersWithData = await runSyncPipeline(allPlayers, (done, total) => {
+            if (!syncBar) syncBar = TmProgress.progressBar({ title: '⚡ Syncing players' });
             syncBar.update(done, total, `Syncing ${done}/${total}`);
         });
-        syncBar.done();
+        if (syncBar) syncBar.done();
 
         squad.players = decoratePlayers(allPlayersWithData);
         squad.rawPlayers = allPlayersWithData;

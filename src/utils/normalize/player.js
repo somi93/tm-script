@@ -59,6 +59,53 @@ export const normalizeTooltipPlayer = (playerData) => {
     return player;
 };
 
+const _parseTacticsBan = (status, banned) => {
+    if (!banned && !status) return '0';
+    const s = String(status || '');
+    if (s.includes('yellow_card')) return 'g';
+    if (s.includes('red_card')) {
+        const m = s.match(/^(\d+)/);
+        return `r${m ? parseInt(m[1]) : 1}`;
+    }
+    // banned is truthy but status is unknown/empty — treat as 1-match red
+    return banned ? 'r1' : '0';
+};
+
+export const normalizeTacticsPlayer = (p) => {
+    const player = Player.create();
+    player.id = Number(p.player_id);
+    player.player_id = player.id;
+    player.club_id = Number(p.club_id);
+    player.club.id = String(p.club_id);
+    player.club.name = p.club_name || '';
+    player.age = Number(p.age);
+    player.month = Number(p.months);
+    player.ageMonths = player.age * 12 + player.month;
+    player.ageMonthsString = `${player.age}.${player.month}`;
+    player.lastname = p.lastname;
+    player.name = p.name;
+    player.firstname = p.name.split(' ').filter(n => n !== p.lastname).join(' ');
+    player.country = p.country;
+    player.routine = Number(p.routine) || 0;
+    player.wage = TmUtils.parseNum(p.wage, null);
+    player.asi = TmUtils.parseNum(p.skill_index, null);
+    player.no = p.no;
+    player.retire = p.isretirering;
+    player.ban = _parseTacticsBan(p.status, p.banned);
+    player.injury = p.injury;
+    player.isGK = p.fp === 'GK';
+    player.rec_sort = p.rec_sort;
+    player.faceUrl = TmUtils.extractFaceUrl(p.appearance, null);
+    TmUtils.applyTooltipSkills(player, p.skills);
+    TmUtils.applyPlayerPositions(player, p.favposition);
+    player.skills = TmLib.calcSkillDecimalsSimple(player);
+    applyPlayerPositionRatings(player);
+    player.allPositionRatings = player.positions;
+    player.ti = TmLib.calculateTIPerSession(player);
+    player.isOwnPlayer = TmUtils.getOwnClubIds().includes(String(player.club_id));
+    return player;
+};
+
 export const normalizeSquadPlayer = (postPlayer) => {
     const player = Player.create();
     player.id = Number(postPlayer.player_id || postPlayer.id);

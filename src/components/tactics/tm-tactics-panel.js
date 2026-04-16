@@ -1,4 +1,6 @@
 ﻿import { TmButton } from '../shared/tm-button.js';
+import { TmAlert } from '../shared/tm-alert.js';
+import { TmModal } from '../shared/tm-modal.js';
 import { TmConst } from '../../lib/tm-constants.js';
 import { mountTacticsSettings } from './tm-tactics-settings.js';
 
@@ -67,14 +69,46 @@ const FORMATION_PRESETS = {
 };
 const FORMATION_NAMES = Object.keys(FORMATION_PRESETS);
 
-// pickBest11: receives Set<posKey> → returns { posKey: pid } for the optimal assignment
-function pickBest11(activeKeys, players_by_id) {
+// Players serving a red card ban or carrying an injury are excluded from automated picks.
+const isUnavailable = (p) =>
+    (p?.ban && String(p.ban).startsWith('r')) ||
+    (p?.injury && p.injury !== '0' && Number(p.injury) !== 0);
+
+// Foreign player rule: max 5 foreigners may play on the field.
+const clubCountry = String(window.SESSION?.country || '').trim().toLowerCase();
+const isForeigner = (p) => !!clubCountry && String(p?.country || '').trim().toLowerCase() !== clubCountry;
+
+// pickBest11: receives Set<posKey> → returns { posKey: pid } for the optimal assignment.
+// maxForeigners caps how many foreign-country players can appear in the result (default 5).
+function pickBest11(activeKeys, players_by_id, maxForeigners = 5) {
     const activeSlots = [...activeKeys]
         .map(pk => ({ posKey: pk, posId: TmConst.POSITION_MAP[pk]?.id }))
         .filter(s => s.posId != null);
-    const players = Object.values(players_by_id).filter(p => p?.player_id && p.allPositionRatings?.length);
+    let players = Object.values(players_by_id).filter(p => p?.player_id && p.allPositionRatings?.length && !isUnavailable(p));
     const n = activeSlots.length;
     if (!players.length || !n) return {};
+
+    // Enforce foreign player limit: from all eligible foreigners keep only the top
+    // maxForeigners ranked by their best R5 across the active slots.
+    if (clubCountry && Number.isFinite(maxForeigners)) {
+        const locals = players.filter(p => !isForeigner(p));
+        const foreigners = players.filter(p => isForeigner(p));
+        if (foreigners.length > maxForeigners) {
+            const posIds = activeSlots.map(s => s.posId);
+            const ranked = foreigners
+                .map(p => ({
+                    p,
+                    best: Math.max(0, ...posIds.map(posId => {
+                        const r = p.allPositionRatings.find(rt => rt.id === posId);
+                        return r ? (parseFloat(r.r5) || 0) : 0;
+                    }))
+                }))
+                .sort((a, b) => b.best - a.best)
+                .slice(0, maxForeigners)
+                .map(({ p }) => p);
+            players = [...locals, ...ranked];
+        }
+    }
 
     // profit[i][j] = player i R5 at slot j's posId (0 = no rating)
     const profit = players.map(p =>
@@ -158,8 +192,12 @@ function findBestR5Formation(players_by_id, gkPid) {
     // Exclude GK from the candidate pool
     const outfieldById = {};
     for (const [id, p] of Object.entries(players_by_id)) {
-        if (String(p?.player_id) !== String(gkPid)) outfieldById[id] = p;
+        if (String(p?.player_id) !== String(gkPid) && !isUnavailable(p)) outfieldById[id] = p;
     }
+
+    // If the GK is a foreigner, the outfield can only have (5 - 1) = 4 foreigners.
+    const gkPlayer = gkPid ? (players_by_id[String(gkPid)] || null) : null;
+    const outfieldMaxForeigners = clubCountry ? (isForeigner(gkPlayer) ? 4 : 5) : Infinity;
 
     let bestR5 = -Infinity;
     let bestAssignment = null;
@@ -172,7 +210,7 @@ function findBestR5Formation(players_by_id, gkPid) {
                 if (counts[i] > 0) for (const pk of (OUTFIELD_ZONE_DEFS[i].keys[counts[i]] || [])) activeKeys.add(pk);
             }
             if (activeKeys.size !== 10) return;
-            const assignment = pickBest11(activeKeys, outfieldById);
+            const assignment = pickBest11(activeKeys, outfieldById, outfieldMaxForeigners);
             if (Object.keys(assignment).length < 10) return;
             const r5 = computeAssignmentR5(assignment, outfieldById);
             if (r5 > bestR5) { bestR5 = r5; bestAssignment = assignment; }
@@ -223,13 +261,18 @@ export function mountTacticsPanel(container, data, initialSettings, opts, lineup
                 // Match by favposition so we don't need tooltip data to be present.
                 const usedPids = new Set(Object.values(newFBP).map(String));
 
+                // Count foreigners already in the starting 11
+                let foreignersUsed = clubCountry
+                    ? Object.values(newFBP).filter(pid => pid && isForeigner(players_by_id[String(pid)])).length
+                    : 0;
+
                 const DEF_POS = new Set(['dl', 'dcl', 'dc', 'dcr', 'dr']);
                 const MID_POS = new Set(['dmc', 'dmcl', 'dmcr', 'mc', 'mcl', 'mcr', 'omc', 'omcl', 'omcr']);
                 const WING_POS = new Set(['dml', 'dmr', 'ml', 'mr', 'oml', 'omr']);
                 const FWD_POS = new Set(['fc', 'fcl', 'fcr']);
 
                 const avail = Object.values(players_by_id)
-                    .filter(p => p?.player_id && !usedPids.has(String(p.player_id)))
+                    .filter(p => p?.player_id && !usedPids.has(String(p.player_id)) && !isUnavailable(p))
                     .map(p => {
                         const r5 = p.allPositionRatings?.length
                             ? Math.max(0, ...p.allPositionRatings.map(r => parseFloat(r.r5) || 0))
@@ -237,7 +280,7 @@ export function mountTacticsPanel(container, data, initialSettings, opts, lineup
                         const favPositions = new Set(
                             String(p.favposition || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean)
                         );
-                        return { pid: p.player_id, favPositions, ratings: p.allPositionRatings || [], r5 };
+                        return { pid: p.player_id, player: p, favPositions, ratings: p.allPositionRatings || [], r5 };
                     })
                     .sort((a, b) => b.r5 - a.r5);
 
@@ -247,6 +290,7 @@ export function mountTacticsPanel(container, data, initialSettings, opts, lineup
                     );
                     const hit = avail.find(a => {
                         if (usedPids.has(String(a.pid))) return false;
+                        if (clubCountry && isForeigner(a.player) && foreignersUsed >= 5) return false;
                         if (a.ratings.length) {
                             return a.ratings.some(r => posIds.has(r.id) && (parseFloat(r.r5) || 0) > 0);
                         }
@@ -255,6 +299,7 @@ export function mountTacticsPanel(container, data, initialSettings, opts, lineup
                     });
                     if (!hit) return null;
                     usedPids.add(String(hit.pid));
+                    if (clubCountry && isForeigner(hit.player)) foreignersUsed++;
                     return hit.pid;
                 };
 
@@ -286,13 +331,18 @@ export function mountTacticsPanel(container, data, initialSettings, opts, lineup
                 if (gkPid) newFBP['gk'] = gkPid;
                 const usedPids = new Set(Object.values(newFBP).map(String));
 
+                // Count foreigners already in the starting 11
+                let foreignersUsed = clubCountry
+                    ? Object.values(newFBP).filter(pid => pid && isForeigner(players_by_id[String(pid)])).length
+                    : 0;
+
                 const DEF_POS  = new Set(['dl', 'dcl', 'dc', 'dcr', 'dr']);
                 const MID_POS  = new Set(['dmc', 'dmcl', 'dmcr', 'mc', 'mcl', 'mcr', 'omc', 'omcl', 'omcr']);
                 const WING_POS = new Set(['dml', 'dmr', 'ml', 'mr', 'oml', 'omr']);
                 const FWD_POS  = new Set(['fc', 'fcl', 'fcr']);
 
                 const avail = Object.values(players_by_id)
-                    .filter(p => p?.player_id && !usedPids.has(String(p.player_id)))
+                    .filter(p => p?.player_id && !usedPids.has(String(p.player_id)) && !isUnavailable(p))
                     .map(p => {
                         const r5 = p.allPositionRatings?.length
                             ? Math.max(0, ...p.allPositionRatings.map(r => parseFloat(r.r5) || 0))
@@ -300,7 +350,7 @@ export function mountTacticsPanel(container, data, initialSettings, opts, lineup
                         const favPositions = new Set(
                             String(p.favposition || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean)
                         );
-                        return { pid: p.player_id, favPositions, ratings: p.allPositionRatings || [], r5 };
+                        return { pid: p.player_id, player: p, favPositions, ratings: p.allPositionRatings || [], r5 };
                     })
                     .sort((a, b) => b.r5 - a.r5);
 
@@ -310,11 +360,13 @@ export function mountTacticsPanel(container, data, initialSettings, opts, lineup
                     );
                     const hit = avail.find(a => {
                         if (usedPids.has(String(a.pid))) return false;
+                        if (clubCountry && isForeigner(a.player) && foreignersUsed >= 5) return false;
                         if (a.ratings.length) return a.ratings.some(r => posIds.has(r.id) && (parseFloat(r.r5) || 0) > 0);
                         return [...a.favPositions].some(fp => posSet.has(fp));
                     });
                     if (!hit) return null;
                     usedPids.add(String(hit.pid));
+                    if (clubCountry && isForeigner(hit.player)) foreignersUsed++;
                     return hit.pid;
                 };
 
@@ -330,6 +382,121 @@ export function mountTacticsPanel(container, data, initialSettings, opts, lineup
         },
     });
     container.appendChild(bestFmBtn);
+
+    // ── Save / Load lineup ──────────────────────────────────────────────
+    const _lsKey = `tmtc:v2:${opts.reserves || 0}:${String(window.SESSION?.main_id || '')}`;
+    const _fmZones = [...TmConst.FIELD_ZONES].reverse().filter(z => z.key !== 'gk');
+    const _getFormationStr = (activeKeys) =>
+        _fmZones.map(z => z.cols.filter(pk => pk && activeKeys.has(pk)).length)
+                .filter(n => n > 0).join('-') || '?';
+
+    const _loadList = () => {
+        try { return JSON.parse(localStorage.getItem(_lsKey) || '[]'); } catch { return []; }
+    };
+    const _saveList = (list) => localStorage.setItem(_lsKey, JSON.stringify(list));
+
+    const hrSave = document.createElement('hr');
+    hrSave.className = 'tmtc-panel-sep';
+    container.appendChild(hrSave);
+
+    const savedListEl = document.createElement('div');
+    savedListEl.className = 'tmtc-saved-list';
+    container.appendChild(savedListEl);
+
+    const _renderList = () => {
+        savedListEl.innerHTML = '';
+        const list = _loadList();
+        if (!list.length) {
+            const empty = document.createElement('div');
+            empty.className = 'tmtc-saved-empty';
+            empty.textContent = 'No saved lineups';
+            savedListEl.appendChild(empty);
+            return;
+        }
+        for (const entry of list) {
+            const row = document.createElement('div');
+            row.className = 'tmtc-saved-row';
+
+            const info = document.createElement('div');
+            info.className = 'tmtc-saved-info';
+            const name = document.createElement('span');
+            name.className = 'tmtc-saved-name';
+            name.textContent = entry.name;
+            const meta = document.createElement('span');
+            meta.className = 'tmtc-saved-meta';
+            meta.textContent = `${entry.date}  ·  ${entry.formation || '?'}`;
+            info.appendChild(name);
+            info.appendChild(meta);
+
+            const actions = document.createElement('div');
+            actions.className = 'tmtc-saved-actions';
+
+            const loadBtn = TmButton.button({
+                label: 'Load',
+                color: 'primary',
+                size: 'xs',
+                onClick: async () => {
+                    loadBtn.disabled = true;
+                    try { await applyAssignment(entry.assignment); }
+                    catch { TmAlert.show({ message: 'Load failed', tone: 'error' }); }
+                    loadBtn.disabled = false;
+                },
+            });
+
+            const delBtn = TmButton.button({
+                label: '×',
+                color: 'danger',
+                size: 'xs',
+                onClick: async () => {
+                    const confirmed = await TmModal.modal({
+                        title: 'Delete lineup',
+                        message: `Delete "${entry.name}"?`,
+                        buttons: [
+                            { label: 'Delete', style: 'danger', value: 'ok' },
+                            { label: 'Cancel', style: 'secondary', value: 'cancel' },
+                        ],
+                    });
+                    if (confirmed !== 'ok') return;
+                    _saveList(_loadList().filter(e => e.id !== entry.id));
+                    _renderList();
+                },
+            });
+
+            actions.appendChild(loadBtn);
+            actions.appendChild(delBtn);
+            row.appendChild(info);
+            row.appendChild(actions);
+            savedListEl.appendChild(row);
+        }
+    };
+    _renderList();
+
+    const saveLineupBtn = TmButton.button({
+        label: 'Save Lineup',
+        color: 'secondary',
+        size: 'sm',
+        block: true,
+        onClick: async () => {
+            const name = await TmModal.prompt({
+                title: 'Save lineup',
+                placeholder: 'e.g. Home 4-4-2',
+                defaultValue: '',
+            });
+            if (!name) return;
+            const activeKeys = getActiveKeys();
+            const formation = _getFormationStr(activeKeys);
+            const date = new Date().toISOString().slice(0, 10);
+            const entry = { id: Date.now(), name, date, formation, assignment: getAssignment() };
+            try {
+                const list = _loadList();
+                list.unshift(entry);
+                _saveList(list);
+                _renderList();
+                TmAlert.show({ message: 'Lineup saved', tone: 'success' });
+            } catch { TmAlert.show({ message: 'Save failed', tone: 'error' }); }
+        },
+    });
+    container.appendChild(saveLineupBtn);
 
     // Separator
     const hr = document.createElement('hr');
