@@ -1,6 +1,7 @@
 import { Player } from '../../lib/player.js';
 import { TmLib } from '../../lib/tm-lib.js';
 import { TmUtils } from '../../lib/tm-utils.js';
+import { TmConst } from '../../lib/tm-constants.js';
 import { normalizeClubFromTooltip } from './club.js';
 
 export const applyPlayerPositionRatings = (player) => {
@@ -251,4 +252,107 @@ export const normalizePlayerTraining = (data) => {
     });
     return { custom: customTraining, standard: null };
 
+};
+
+// Short transfer-API key → SKILL_DEFS long key
+const _TRANSFER_SHORT_TO_SKILL_KEY = {
+    str: 'strength', sta: 'stamina', pac: 'pace',
+    mar: 'marking', tac: 'tackling', wor: 'workrate',
+    pos: 'positioning', pas: 'passing', cro: 'crossing',
+    tec: 'technique', hea: 'heading', fin: 'finishing',
+    lon: 'longshots', set: 'set_pieces',
+    han: 'handling', one: 'oneonones', ref: 'reflexes',
+    ari: 'arialability', jum: 'jumping', com: 'communication',
+    kic: 'kicking', thr: 'throwing',
+};
+
+const _fmtTransferTime = (sec) => {
+    const s = Math.max(0, sec);
+    const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60);
+    if (d > 0) return `${d}d ${h}h`;
+    if (h > 0) return `${h}h ${m}m`;
+    return `${m}m ${s % 60}s`;
+};
+
+/**
+ * Normalise a raw transfer-list player object into a standard Player model.
+ * Transfer-specific fields (timeleft, bid, next_bid, is_pro, bump, shortlisted,
+ * transfer_txt) are attached directly to the player for downstream use.
+ */
+export const normalizeTransferPlayer = (raw) => {
+    const player = Player.create();
+
+    const age = parseFloat(raw.age) || 0;
+    const years = Math.floor(age);
+    const months = Math.round((age - years) * 100);
+
+    player.id = Number(raw.id);
+    player.club_id = Number(raw.club_id);
+    player.club.id = String(raw.club_id);
+    player.club.name = raw.club_name || '';
+    player.name = raw.name || raw.name_js || '';
+    player.country = raw.nat || raw.country || null;
+    player.age = years;
+    player.month = months;
+    player.ageMonths = years * 12 + months;
+    player.ageMonthsString = `${years}.${months}`;
+    player.asi = raw.asi || null;
+    player.routine = raw.routine ?? null;
+
+    const fp = Array.isArray(raw.fp)
+        ? raw.fp.map(s => String(s).trim().toLowerCase()).filter(Boolean)
+        : String(raw.fp || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+    player.isGK = fp[0] === 'gk';
+
+    // Map transfer API short keys → standard long-key Player model skill format
+    const rawSkillMap = new Map(
+        Object.entries(_TRANSFER_SHORT_TO_SKILL_KEY)
+            .filter(([short]) => raw[short] != null && Number(raw[short]) > 0)
+            .map(([short, longKey]) => [longKey, Number(raw[short])])
+    );
+    player.skills = player.skills
+        .map(skill => ({ ...skill, value: rawSkillMap.get(skill.key) ?? null }))
+        .filter(skill => skill.value != null);
+
+    TmUtils.applyPlayerPositions(player, fp.join(','));
+    applyPlayerPositionRatings(player);
+    player.isOwnPlayer = TmUtils.getOwnClubIds().includes(String(player.club_id));
+
+    // Compute R5 range estimate inline (routine 0 → max), no tooltip needed
+    player.r5 = null;
+    player.r5Lo = null;
+    player.r5Hi = null;
+    if (player.asi && player.skills.length) {
+        const preferredPositions = player.positions.filter(p => p.preferred).map(p => p.key);
+        if (preferredPositions.length) {
+            const routineMax = Math.max(0, TmConst.ROUTINE_SCALE * ((player.age || 20) - TmConst.ROUTINE_AGE_MIN));
+            const skillOrder = player.isGK ? TmConst.SKILL_KEYS_GK_WEIGHT : TmConst.SKILL_KEYS_OUT;
+            const longKeyMap = new Map(player.skills.map(s => [s.key, Math.floor(Number(s.value) || 0)]));
+            const skillArr = skillOrder.map(short => longKeyMap.get(_TRANSFER_SHORT_TO_SKILL_KEY[short]) ?? 0);
+            if (skillArr.some(v => v > 0)) {
+                for (const pos of preferredPositions) {
+                    const pi = TmLib.getPositionIndex(pos);
+                    const lo = TmLib.calcR5(pi, skillArr, player.asi, 0);
+                    const hi = TmLib.calcR5(pi, skillArr, player.asi, routineMax);
+                    if (player.r5Lo === null || lo > player.r5Lo) player.r5Lo = lo;
+                    if (player.r5Hi === null || hi > player.r5Hi) player.r5Hi = hi;
+                }
+            }
+        }
+    }
+
+    player.tooltipFetched = false;
+
+    // Transfer-specific fields
+    player.timeleft = Math.max(0, raw.time || 0);
+    player.timeleft_string = player.timeleft > 0 ? _fmtTransferTime(player.timeleft) : '';
+    player.bid = TmUtils.parseNum(raw.bid, 0);
+    player.curbid = player.bid ? TmUtils.fmtCoins(player.bid) : '';
+    player.next_bid = raw.next_bid || null;
+    player.is_pro = !!raw.pro;
+    player.bump = !!raw.bump;
+    player.shortlisted = raw.shortlisted ?? null;
+    player.note = raw.txt || '';
+
+    return player;
 };

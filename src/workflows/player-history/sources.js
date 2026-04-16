@@ -69,7 +69,6 @@ const buildRecordSkeleton = (player, monthKeys, graphData, DBPlayer) => {
         const dbRecord = DBPlayer?.records?.[key];
 
         let skills = null;
-
         if (isCurrentMonth) {
             skills = Array.isArray(player.skills)
                 ? player.skills.map(s => Math.floor(skillValue(s) || 0))
@@ -83,10 +82,10 @@ const buildRecordSkeleton = (player, monthKeys, graphData, DBPlayer) => {
                 skills = fromGraph;
             }
         }
-
         if (skills === null && dbRecord?.skills) {
             skills = dbRecord.skills.map(s => Math.floor(skillValue(s) || 0));
         }
+
 
         const weeklyChanges = isCurrentMonth
             ? (player.weeklyChanges || null)
@@ -95,10 +94,8 @@ const buildRecordSkeleton = (player, monthKeys, graphData, DBPlayer) => {
         const routine = isCurrentMonth
             ? (dbRecord?.routine ?? player.routine ?? null)
             : (dbRecord?.routine ?? null);
-
         records[key] = { TI: null, ASI: null, skills, weeklyChanges, routine };
     }
-
     return records;
 };
 

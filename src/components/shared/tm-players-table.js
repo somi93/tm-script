@@ -64,7 +64,7 @@ export function buildPlayerHeaders(opts = {}) {
     const cols = [
         posBarCol(),
         {
-            key: 'name', label: 'Player',
+            key: 'name', label: 'Player', width: '140px',
             sort: (a, b) => String(a.name).localeCompare(String(b.name)),
             render: (_, p) => {
                 const country = (p.country || p.countryCode || '').toLowerCase();
@@ -75,7 +75,7 @@ export function buildPlayerHeaders(opts = {}) {
             },
         },
         {
-            key: 'pos', label: 'Pos', align: 'c',
+            key: 'pos', label: 'Pos', align: 'c', width: '56px',
             sort: (a, b) => {
                 const pa = a.positions.filter(p => p.preferred);
                 const pb = b.positions.filter(p => p.preferred);
@@ -88,7 +88,7 @@ export function buildPlayerHeaders(opts = {}) {
             },
         },
         {
-            key: 'age', label: 'Age', align: 'r',
+            key: 'age', label: 'Age', align: 'r', width: '48px',
             sort: (a, b) => {
                 return a.ageMonths - b.ageMonths;
             },
@@ -101,7 +101,7 @@ export function buildPlayerHeaders(opts = {}) {
     ];
 
     if (showAsi) cols.push({
-        key: 'asi', label: 'ASI', align: 'r',
+        key: 'asi', label: 'ASI', align: 'r', width: '60px',
         render: (_, p) => p.asi != null
             ? `<span class="tmu-tabular" style="color:var(--tmu-text-strong)">${(p.asi || 0).toLocaleString()}</span>`
             : '<span style="color:var(--tmu-text-dim)">—</span>',
@@ -109,19 +109,19 @@ export function buildPlayerHeaders(opts = {}) {
 
     cols.push(
         {
-            key: 'r5', label: 'R5', align: 'r',
+            key: 'r5', label: 'R5', align: 'r', width: '56px',
             render: (_, p) => p.r5 != null
                 ? `<span class="tmu-tabular" style="color:${gc(p.r5, R5_THRESHOLDS)};font-weight:700">${p.r5}</span>`
                 : '<span style="color:var(--tmu-text-dim)">—</span>',
         },
         {
-            key: 'rec', label: 'REC', align: 'r',
+            key: 'rec', label: 'REC', align: 'r', width: '52px',
             render: (_, p) => p.rec != null
                 ? `<span class="tmu-tabular" style="color:${gc(p.rec, REC_THRESHOLDS)};font-weight:700">${p.rec}</span>`
                 : '<span style="color:var(--tmu-text-dim)">—</span>',
         },
         {
-            key: 'ti', label: tiLabel, align: 'r',
+            key: 'ti', label: tiLabel, align: 'r', width: '52px',
             sort: (a, b) => (a.ti ?? -Infinity) - (b.ti ?? -Infinity),
             render: (_, p) => p.ti != null
                 ? `<span class="tmu-tabular" style="color:${gc(p.ti, TI_THRESHOLDS)}">${(p.ti || 0).toFixed(1)}</span>`
@@ -130,22 +130,22 @@ export function buildPlayerHeaders(opts = {}) {
     );
 
     if (showRtn) cols.push({
-        key: 'routine', label: 'RTN', align: 'r',
+        key: 'routine', label: 'RTN', align: 'r', width: '48px',
         render: (_, p) => p.routine != null
             ? `<span class="tmu-tabular" style="color:${gc(p.routine, RTN_THRESHOLDS)}">${(p.routine || 0).toFixed(1)}</span>`
             : '<span style="color:var(--tmu-text-dim)">—</span>',
     });
 
     if (showTimeleft) cols.push({
-        key: 'timeleft', label: 'Time', align: 'r',
+        key: 'timeleft', label: 'Time', align: 'r', width: '72px',
         sort: (a, b) => (Number(a.timeleft) > 0 ? Number(a.timeleft) : 999999999) - (Number(b.timeleft) > 0 ? Number(b.timeleft) : 999999999),
         render: (_, p) => Number(p.timeleft) > 0
-            ? `<span class="tmu-tabular${Number(p.timeleft) < 3600 ? ' tmpt-time-exp' : ''}">${p.timeleft_string || ''}</span>`
+            ? `<span class="tmu-tabular${Number(p.timeleft) < 3600 ? ' tmpt-time-exp' : ''}" data-time-pid="${p.id}">${p.timeleft_string || ''}</span>`
             : '<span style="color:var(--tmu-text-dim)">—</span>',
     });
 
     if (showCurbid) cols.push({
-        key: 'curbid', label: 'Cur Bid', align: 'r',
+        key: 'curbid', label: 'Cur Bid', align: 'r', width: '80px',
         render: (_, p) => (p.curbid || p.bid)
             ? `<span class="tmu-tabular" style="color:var(--tmu-text-strong)">${p.curbid || p.bid}</span>`
             : '<span style="color:var(--tmu-text-dim)">—</span>',

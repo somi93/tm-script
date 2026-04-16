@@ -1,4 +1,5 @@
 import { TmLib } from '../../lib/tm-lib.js';
+import { TmConst } from '../../lib/tm-constants.js';
 import { buildWeightedIntegerSeries } from './shared.js';
 
 const keyToAbs = (key) => {
@@ -83,13 +84,12 @@ const fillForeignPlayerTIandASI = (player) => {
         });
         if (!gapKeys.length) continue;
 
-        // Forward project from startA to endA to get correct total TI
-        const totalTI = Math.round(
-            TmLib.calcASIProjection({ player: { asi: startA.asi, isGK: player.isGK }, trainings: gapKeys.length, avgTI: liveTI }).newASI
-                === endA.asi
-                ? liveTI * gapKeys.length
-                : (endA.asi - startA.asi) * 10
-        );
+        // Exact inverse of calcASIProjection: totalTI = (endBase − startBase) * scale * 10
+        // where base = (asi * K)^(1/7), and GK skill sum is scaled by 11/14
+        const K = TmConst.ASI_WEIGHT_OUTFIELD;
+        const startBase = Math.pow(startA.asi * K, 1 / 7);
+        const endBase = Math.pow(endA.asi * K, 1 / 7);
+        const totalTI = Math.round((endBase - startBase) * (player.isGK ? 11 / 14 : 1) * 10);
         const series = buildWeightedIntegerSeries(totalTI, gapKeys.length, liveTI);
         gapKeys.forEach((key, i) => { records[key].TI = series[i]; });
     }
@@ -103,6 +103,9 @@ const fillForeignPlayerTIandASI = (player) => {
         if (nextASI == null || nextTI == null) continue;
         records[key].ASI = asiOneMonthBack(nextASI, nextTI, player.isGK);
     }
+
+    // First month's TI is unknowable — use 0 rather than null
+    if (monthKeys.length > 0) records[monthKeys[0]].TI ??= 0;
 };
 
 /**

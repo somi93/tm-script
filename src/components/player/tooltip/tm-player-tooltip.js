@@ -2,6 +2,7 @@ import { TmConst } from '../../../lib/tm-constants.js';
 import { TmUtils } from '../../../lib/tm-utils.js';
 import { TmUI } from '../../shared/tm-ui.js';
 import { TmPosition } from '../../../lib/tm-position.js';
+import { TmPlayerAge } from '../../../lib/tm-player-age.js';
 
 const CSS = `
 .tmpt-tip {
@@ -68,21 +69,18 @@ const renderHTML = player => {
     const { R5_THRESHOLDS, REC_THRESHOLDS, TI_THRESHOLDS } = TmConst;
 
     // ── Header ────────────────────────────────────────────────────
-    const { AGE_THRESHOLDS } = TmConst;
     const badge = (label, val, color) => TmUI.badge({ label, value: val, size: 'sm', shape: 'rounded', weight: 'bold' }, 'muted')
         .replace('tmu-badge-tone-muted"', `tmu-badge-tone-muted" style="color:${color}"`);
 
     const prefPositions = (player.positions || []).filter(p => p.preferred);
     const posChip = TmPosition.chip(prefPositions);
-    const ageColor = getColor(player.age + player.month / 12, AGE_THRESHOLDS);
     const r5Val = player.r5 != null ? TmUtils.formatR5(player.r5)
-        : player.r5Range ? (() => {
-            const { lo, hi } = player.r5Range;
-            const loStr = TmUtils.formatR5(lo, ''); const hiStr = TmUtils.formatR5(hi, '');
-            return lo != null && loStr !== hiStr ? `${loStr}–${hiStr}` : hiStr;
+        : (player.r5Lo != null || player.r5Hi != null) ? (() => {
+            const loStr = TmUtils.formatR5(player.r5Lo, ''); const hiStr = TmUtils.formatR5(player.r5Hi, '');
+            return player.r5Lo != null && loStr !== hiStr ? `${loStr}–${hiStr}` : hiStr;
         })() : null;
     const r5Color = player.r5 != null ? getColor(player.r5, R5_THRESHOLDS)
-        : player.r5Range ? getColor(player.r5Range.hi ?? 0, R5_THRESHOLDS) : 'var(--tmu-text-dim)';
+        : player.r5Hi != null ? getColor(player.r5Hi, R5_THRESHOLDS) : 'var(--tmu-text-dim)';
 
     let h = '<div class="tmpt-header">';
 
@@ -90,7 +88,7 @@ const renderHTML = player => {
     h += `<div class="tmpt-header-left">`;
     h += `<div class="tmpt-name">${player.name}</div>`;
     h += `<div class="tmpt-no-row">`;
-    h += badge('Age', player.ageMonthsString, ageColor);
+    h += TmPlayerAge.chip(player);
     h += posChip;
     h += `</div></div>`;
 

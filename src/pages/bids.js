@@ -4,7 +4,7 @@ import { TmBidsDialog } from '../components/bids/tm-bids-dialog.js';
 import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmShortlistService } from '../services/shortlist.js';
-// import { enrichPlayers, toPageRecord } from '../services/players-enrich.js';
+import { TmPlayerModel } from '../models/player.js';
 
 'use strict';
 
@@ -97,74 +97,78 @@ export async function initBidsPage(mountedMain) {
     ]);
 
     const sections = [
-        shortlistSections[0] || { title: 'Shortlist', rows: [], emptyText: 'No active shortlist bids found.' },
-        myPlayerSections[0] || { title: 'My Players', rows: [], emptyText: 'No active bids on your listed players.' },
+        { title: 'Shortlist', emptyText: 'No active shortlist bids found.', rows: shortlistSections[0]?.rows || [] },
+        { title: 'My Players', emptyText: 'No active bids on your listed players.', rows: myPlayerSections[0]?.rows || [] },
     ];
 
-    // Build page record map for enrich
-    const pageRecords = {};
+    const bidFieldsById = new Map();
     for (const section of sections) {
-        for (const p of section.rows) pageRecords[String(p.id)] = toPageRecord(p);
+        for (const row of section.rows) {
+            bidFieldsById.set(row.id, {
+                timeleft: row.timeleft,
+                timeleft_string: row.timeleft_string,
+                bid: row.curbid || row.bid || '',
+                href: row.href,
+            });
+        }
     }
 
-    // Collect all IDs across sections (active bids only)
-    const allIds = sections.flatMap(s => s.rows.map(p => String(p.id)));
+    const allIds = sections.flatMap(s => s.rows.map(row => row.id));
 
-    const content = document.createElement('div');
     const removedIds = new Set();
-    // enrichedBySection[i] = latest enriched rows for section i
-    const enrichedBySection = sections.map(s => s.rows.slice());
 
-    function rerenderSectionBody(idx) {
-        const { section, body } = sectionEls[idx];
-        const rows = enrichedBySection[idx].filter(p => !removedIds.has(String(p.id)));
-        body.innerHTML = '';
-        if (rows.length) {
-            TmPlayersTable.mount(body, rows, {
+    // Each section owns its rendered players and its DOM body
+    const shortlist = { ...sections[0], players: [], body: null };
+    const myPlayers = { ...sections[1], players: [], body: null };
+
+    function rerenderSection(section) {
+        const visible = section.players.filter(player => !removedIds.has(player.id));
+        section.body.innerHTML = '';
+        if (visible.length) {
+            TmPlayersTable.mount(section.body, visible, {
                 columns: { asi: false, rtn: false },
                 sectionTitle: section.title,
                 sortKey: 'timeleft',
                 sortDir: 1,
-                onRowClick: makeRowClick(idx),
+                onRowClick: makeRowClick(section),
             });
         } else {
-            body.innerHTML = TmUI.empty(section.emptyText || 'No rows found.', true);
+            section.body.innerHTML = TmUI.empty(section.emptyText, true);
         }
     }
 
-    function makeRowClick(idx) {
-        const title = sections[idx].title;
-        return (p) => {
-            if (p.timeleft <= 0) return;
-            TmBidsDialog.open({ ...p, sectionTitle: title }, {
-                onRemoved: (pid) => {
-                    removedIds.add(String(pid));
-                    rerenderSectionBody(idx);
+    function makeRowClick(section) {
+        return (player) => {
+            if (player.timeleft <= 0) return;
+            TmBidsDialog.open({ ...player, sectionTitle: section.title }, {
+                onRemoved: (removedPlayer) => {
+                    removedIds.add(removedPlayer.id);
+                    rerenderSection(section);
                 },
             });
         };
     }
 
-    // Initial render with stub data (timeleft + curbid visible immediately)
-    const sectionEls = sections.map((section, idx) => {
-        const card = createSectionCard(section, section.rows, makeRowClick(idx));
+    const content = document.createElement('div');
+
+    for (const section of [shortlist, myPlayers]) {
+        const card = createSectionCard(section, [], makeRowClick(section));
         content.appendChild(card);
-        return { section, card, body: card.querySelector('.tmu-card-body') || card };
-    });
+        section.body = card.querySelector('.tmu-card-body') || card;
+    }
+
     renderPage(mountedMain, menuItems, content);
 
     if (!allIds.length) return;
 
-    // Enrich with full stats — re-render each section as data arrives
-    await enrichPlayers(allIds, pageRecords, {
-        onUpdate: (enriched) => {
-            for (let idx = 0; idx < sectionEls.length; idx++) {
-                const { section } = sectionEls[idx];
-                const sectionRows = enriched.filter(p => section.rows.some(r => String(r.id) === p.id));
-                if (!sectionRows.length) continue;
-                enrichedBySection[idx] = sectionRows;
-                rerenderSectionBody(idx);
-            }
-        },
-    });
+    for (const id of allIds) {
+        TmPlayerModel.fetchPlayerTooltip(id).then(player => {
+            if (!player) return;
+            const bidFields = bidFieldsById.get(id);
+            if (!bidFields) return;
+            const section = player.isOwnPlayer ? myPlayers : shortlist;
+            section.players.push({ ...player, ...bidFields });
+            rerenderSection(section);
+        });
+    }
 }

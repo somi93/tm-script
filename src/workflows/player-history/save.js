@@ -38,6 +38,6 @@ export const saveHistoryRecords = async (players, { writeFullySynced = true } = 
                 records: merged,
             });
         });
-
+    console.log(`Saving ${tasks.length} players to DB...`);
     await Promise.all(tasks);
 };

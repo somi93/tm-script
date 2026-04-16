@@ -7,7 +7,9 @@ import { TmPlayerModel } from '../models/player.js';
 import { TmPlayerTooltip } from '../components/player/tooltip/tm-player-tooltip.js';
 
 export function initForumPage(main) {
+    console.log('Initializing forum page');
     if (!main || !main.isConnected) return;
+    console.log('Initializing forum page 2');
 
     const clean = (v) => String(v || '').replace(/\s+/g, ' ').trim();
     const esc = (v) => String(v || '')
@@ -27,7 +29,7 @@ export function initForumPage(main) {
 
         // Derive current scope from URL: /forum/{country_code}/{section}/
         const urlMatch = window.location.pathname.match(/^\/forum\/([^/]+)\//i);
-        const urlCode  = urlMatch ? urlMatch[1].toLowerCase() : '';
+        const urlCode = urlMatch ? urlMatch[1].toLowerCase() : '';
 
         // Find option whose value matches the URL code; 'int' ? value may be 'int' or '0' or similar
         let activeOption = countryOptions.find(o => o.val.toLowerCase() === urlCode);
@@ -133,7 +135,7 @@ export function initForumPage(main) {
             '.tmvu-forum-page{--tmu-page-sidebar-width:240px}',
             '.tmvu-forum-sidebar .tmvu-side-menu{flex:1 1 auto;width:100%;position:static}',
             '.tmvu-forum-thread-hero-actions{display:flex;gap:var(--tmu-space-sm);flex-wrap:wrap}',
-            '.tmvu-forum-thread-hero-actions .tmu-btn{flex-shrink:0}',  
+            '.tmvu-forum-thread-hero-actions .tmu-btn{flex-shrink:0}',
             // country selector
             '.tmvu-forum-country-wrap{display:flex;flex-direction:column;gap:var(--tmu-space-sm)}',
             '.tmvu-forum-country-select{width:100%;padding:var(--tmu-space-sm) var(--tmu-space-md);border-radius:var(--tmu-space-sm);border:1px solid var(--tmu-border-soft-alpha-strong);background:var(--tmu-surface-input-dark);color:var(--tmu-text-strong);font:inherit;font-size:var(--tmu-font-sm)}',
@@ -286,12 +288,12 @@ export function initForumPage(main) {
                 ta.selectionStart = ta.selectionEnd = s + text.length;
                 ta.focus();
             },
-            bold:   function () { this._wrap('[b]', '[/b]'); },
+            bold: function () { this._wrap('[b]', '[/b]'); },
             italic: function () { this._wrap('[i]', '[/i]'); },
-            code:   function () { this._wrap('[pre]', '[/pre]'); },
-            color:  function (c) { this._wrap('[color=' + c + ']', '[/color]'); this._close(); },
+            code: function () { this._wrap('[pre]', '[/pre]'); },
+            color: function (c) { this._wrap('[color=' + c + ']', '[/color]'); this._close(); },
             smiley: function (n) { this._ins('[smiley=' + n + ']'); this._close(); },
-            link:   function (url) {
+            link: function (url) {
                 url = (url || '').trim(); if (!url) return;
                 var ta = this._ta(); if (!ta) return;
                 var sel = ta.value.substring(ta.selectionStart, ta.selectionEnd);
@@ -299,7 +301,7 @@ export function initForumPage(main) {
                 else this._ins('[url=' + url + ']' + url + '[/url]');
                 this._close();
             },
-            image:  function (url) {
+            image: function (url) {
                 url = (url || '').trim(); if (!url) return;
                 this._ins('[img=' + url + ']');
                 this._close();
@@ -314,14 +316,14 @@ export function initForumPage(main) {
                 var p = this._panel();
                 if (p) { p.style.display = 'none'; p.innerHTML = ''; }
             },
-            _open:  function (html) {
+            _open: function (html) {
                 var p = this._panel(); if (!p) return;
                 p.innerHTML = html;
                 p.style.display = 'block';
             },
             showColors: function () {
                 this._open('<div class="tmvu-fpanel-colors">'
-                    + ['yellow','orange','red','purple','blue','pink','black'].map(function (c) {
+                    + ['yellow', 'orange', 'red', 'purple', 'blue', 'pink', 'black'].map(function (c) {
                         return buttonHtml({ cls: 'tmvu-fcolor tmvu-fcolor--' + c, title: c, size: 'xs', color: 'secondary', attrs: { onclick: '_tmvuF.color(\'' + c + '\')' } });
                     }).join('')
                     + buttonHtml({ slot: '&times;', cls: 'tmvu-ftool tmvu-ftool--sm', size: 'xs', color: 'secondary', attrs: { onclick: '_tmvuF._close()' } })
@@ -329,7 +331,7 @@ export function initForumPage(main) {
             },
             showSmileys: function () {
                 this._open('<div class="tmvu-fpanel-smileys">'
-                    + [1,2,3,4,5,6,7].map(function (n) {
+                    + [1, 2, 3, 4, 5, 6, 7].map(function (n) {
                         return buttonHtml({ slot: '<span class="smiley smiley' + n + '"></span>', cls: 'tmvu-fsmiley', size: 'xs', color: 'secondary', attrs: { onclick: '_tmvuF.smiley(' + n + ')' } });
                     }).join('')
                     + buttonHtml({ slot: '&times;', cls: 'tmvu-ftool tmvu-ftool--sm', size: 'xs', color: 'secondary', attrs: { onclick: '_tmvuF._close()' } })
@@ -363,26 +365,26 @@ export function initForumPage(main) {
         }
 
         // SVG icons
-        var svgB     = '<svg viewBox="0 0 16 16" fill="none" stroke="none" xmlns="http://www.w3.org/2000/svg"><text x="2" y="13" font-size="13" font-weight="900" font-family="serif" fill="currentColor">B</text></svg>';
-        var svgI     = '<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><text x="5" y="13" font-size="13" font-style="italic" font-weight="700" font-family="serif" fill="currentColor">I</text></svg>';
-        var svgCode  = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><polyline points="5,4 1,8 5,12"/><polyline points="11,4 15,8 11,12"/></svg>';
+        var svgB = '<svg viewBox="0 0 16 16" fill="none" stroke="none" xmlns="http://www.w3.org/2000/svg"><text x="2" y="13" font-size="13" font-weight="900" font-family="serif" fill="currentColor">B</text></svg>';
+        var svgI = '<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><text x="5" y="13" font-size="13" font-style="italic" font-weight="700" font-family="serif" fill="currentColor">I</text></svg>';
+        var svgCode = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><polyline points="5,4 1,8 5,12"/><polyline points="11,4 15,8 11,12"/></svg>';
         var svgColor = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" xmlns="http://www.w3.org/2000/svg"><path d="M8 2 L14 13 H2 Z" stroke-linejoin="round"/><line x1="4.5" y1="9.5" x2="11.5" y2="9.5"/></svg>';
-        var svgLink  = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M6.5 9.5a3.5 3.5 0 0 0 5 0l2-2a3.5 3.5 0 0 0-5-5L7 4"/><path d="M9.5 6.5a3.5 3.5 0 0 0-5 0l-2 2a3.5 3.5 0 0 0 5 5L9 12"/></svg>';
-        var svgImg   = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><rect x="1.5" y="3" width="13" height="10" rx="1.5"/><circle cx="5.5" cy="6.5" r="1"/><path d="M1.5 11 L5 7.5 L8 10.5 L10.5 8 L14.5 13"/></svg>';
-        var svgUser  = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="5.5" r="2.5"/><path d="M2.5 14c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/></svg>';
-        var svgSmiley= '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="6"/><circle cx="5.5" cy="7" r=".7" fill="currentColor" stroke="none"/><circle cx="10.5" cy="7" r=".7" fill="currentColor" stroke="none"/><path d="M5.5 10.5 Q8 12.5 10.5 10.5" stroke-linejoin="round"/></svg>';
+        var svgLink = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M6.5 9.5a3.5 3.5 0 0 0 5 0l2-2a3.5 3.5 0 0 0-5-5L7 4"/><path d="M9.5 6.5a3.5 3.5 0 0 0-5 0l-2 2a3.5 3.5 0 0 0 5 5L9 12"/></svg>';
+        var svgImg = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><rect x="1.5" y="3" width="13" height="10" rx="1.5"/><circle cx="5.5" cy="6.5" r="1"/><path d="M1.5 11 L5 7.5 L8 10.5 L10.5 8 L14.5 13"/></svg>';
+        var svgUser = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="5.5" r="2.5"/><path d="M2.5 14c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/></svg>';
+        var svgSmiley = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="6"/><circle cx="5.5" cy="7" r=".7" fill="currentColor" stroke="none"/><circle cx="10.5" cy="7" r=".7" fill="currentColor" stroke="none"/><path d="M5.5 10.5 Q8 12.5 10.5 10.5" stroke-linejoin="round"/></svg>';
 
         var tb = document.createElement('div');
         tb.className = 'tmvu-forum-form-toolbar';
         tb.innerHTML =
-                        buttonHtml({ slot: svgB, cls: 'tmvu-ftool', title: 'Bold', size: 'xs', color: 'secondary', attrs: { onclick: '_tmvuF.bold()' } })
-                    + buttonHtml({ slot: svgI, cls: 'tmvu-ftool', title: 'Italic', size: 'xs', color: 'secondary', attrs: { onclick: '_tmvuF.italic()' } })
-                    + buttonHtml({ slot: svgCode, cls: 'tmvu-ftool', title: 'Code', size: 'xs', color: 'secondary', attrs: { onclick: '_tmvuF.code()' } })
-                    + buttonHtml({ slot: svgColor, cls: 'tmvu-ftool', title: 'Color', size: 'xs', color: 'secondary', attrs: { onclick: '_tmvuF.showColors()' } })
-                    + buttonHtml({ slot: svgLink, cls: 'tmvu-ftool', title: 'Link', size: 'xs', color: 'secondary', attrs: { onclick: '_tmvuF.showPrompt(\'link\')' } })
-                    + buttonHtml({ slot: svgImg, cls: 'tmvu-ftool', title: 'Image', size: 'xs', color: 'secondary', attrs: { onclick: '_tmvuF.showPrompt(\'image\')' } })
-                    + buttonHtml({ slot: svgUser, cls: 'tmvu-ftool', title: 'Player', size: 'xs', color: 'secondary', attrs: { onclick: '_tmvuF.showPrompt(\'player\')' } })
-                    + buttonHtml({ slot: svgSmiley, cls: 'tmvu-ftool', title: 'Smileys', size: 'xs', color: 'secondary', attrs: { onclick: '_tmvuF.showSmileys()' } });
+            buttonHtml({ slot: svgB, cls: 'tmvu-ftool', title: 'Bold', size: 'xs', color: 'secondary', attrs: { onclick: '_tmvuF.bold()' } })
+            + buttonHtml({ slot: svgI, cls: 'tmvu-ftool', title: 'Italic', size: 'xs', color: 'secondary', attrs: { onclick: '_tmvuF.italic()' } })
+            + buttonHtml({ slot: svgCode, cls: 'tmvu-ftool', title: 'Code', size: 'xs', color: 'secondary', attrs: { onclick: '_tmvuF.code()' } })
+            + buttonHtml({ slot: svgColor, cls: 'tmvu-ftool', title: 'Color', size: 'xs', color: 'secondary', attrs: { onclick: '_tmvuF.showColors()' } })
+            + buttonHtml({ slot: svgLink, cls: 'tmvu-ftool', title: 'Link', size: 'xs', color: 'secondary', attrs: { onclick: '_tmvuF.showPrompt(\'link\')' } })
+            + buttonHtml({ slot: svgImg, cls: 'tmvu-ftool', title: 'Image', size: 'xs', color: 'secondary', attrs: { onclick: '_tmvuF.showPrompt(\'image\')' } })
+            + buttonHtml({ slot: svgUser, cls: 'tmvu-ftool', title: 'Player', size: 'xs', color: 'secondary', attrs: { onclick: '_tmvuF.showPrompt(\'player\')' } })
+            + buttonHtml({ slot: svgSmiley, cls: 'tmvu-ftool', title: 'Smileys', size: 'xs', color: 'secondary', attrs: { onclick: '_tmvuF.showSmileys()' } });
 
         var panel = document.createElement('div');
         panel.id = 'tmvu-forum-panel';
@@ -401,8 +403,8 @@ export function initForumPage(main) {
 
         var acts = document.createElement('div');
         acts.innerHTML =
-                        buttonHtml({ label: 'Submit', cls: 'tmvu-post-btn tmvu-post-btn--primary', color: 'primary', size: 'xs', attrs: { onclick: 'document.getElementById(\'forum_post_form\').submit()' } })
-                    + buttonHtml({ label: 'Preview', cls: 'tmvu-post-btn', color: 'secondary', size: 'xs', attrs: { onclick: 'pop_preview2()' } });
+            buttonHtml({ label: 'Submit', cls: 'tmvu-post-btn tmvu-post-btn--primary', color: 'primary', size: 'xs', attrs: { onclick: 'document.getElementById(\'forum_post_form\').submit()' } })
+            + buttonHtml({ label: 'Preview', cls: 'tmvu-post-btn', color: 'secondary', size: 'xs', attrs: { onclick: 'pop_preview2()' } });
         wrap.appendChild(acts);
         return card;
     }
@@ -410,24 +412,24 @@ export function initForumPage(main) {
     function topicHtml(t) {
         const badges = [
             t.pinned ? TmUI.badge({ label: 'Pinned', size: 'xs', shape: 'full', uppercase: true }, 'highlight') : '',
-            t.isNew  ? TmUI.badge({ label: 'New',    size: 'xs', shape: 'full', uppercase: true }, 'success')   : '',
-            t.locked ? TmUI.badge({ label: 'Locked', size: 'xs', shape: 'full', uppercase: true }, 'muted')     : '',
+            t.isNew ? TmUI.badge({ label: 'New', size: 'xs', shape: 'full', uppercase: true }, 'success') : '',
+            t.locked ? TmUI.badge({ label: 'Locked', size: 'xs', shape: 'full', uppercase: true }, 'muted') : '',
         ].filter(Boolean).join('');
         const likeTone = t.likesNeg ? 'danger' : t.likes > 0 ? 'success' : 'muted';
         return '<article class="tmvu-forum-topic' + (t.subtle ? ' is-subtle' : '') + '">'
             + '<div class="tmvu-forum-topic-main">'
-            +   '<a class="tmvu-forum-topic-title" href="' + esc(t.href) + '">' + esc(t.title) + '</a>'
-            +   (badges ? '<div class="tmvu-forum-topic-badges">' + badges + '</div>' : '')
-            +   (t.poster || t.date
-                    ? '<div class="tmvu-forum-topic-meta">'
-                      + (t.poster ? '<span>' + esc(t.poster) + '</span>' : '')
-                      + (t.date   ? '<span>' + esc(t.date)   + '</span>' : '')
-                      + '</div>'
-                    : '')
+            + '<a class="tmvu-forum-topic-title" href="' + esc(t.href) + '">' + esc(t.title) + '</a>'
+            + (badges ? '<div class="tmvu-forum-topic-badges">' + badges + '</div>' : '')
+            + (t.poster || t.date
+                ? '<div class="tmvu-forum-topic-meta">'
+                + (t.poster ? '<span>' + esc(t.poster) + '</span>' : '')
+                + (t.date ? '<span>' + esc(t.date) + '</span>' : '')
+                + '</div>'
+                : '')
             + '</div>'
             + '<div class="tmvu-forum-topic-side">'
-            +   TmUI.badge({ label: '&#9829;', value: String(t.likes), size: 'sm', shape: 'full' }, likeTone)
-            +   (t.lastPageHref ? '<a class="tmvu-forum-topic-jump" href="' + esc(t.lastPageHref) + '">' + esc(t.lastPage || 'last') + ' &rarr;</a>' : '')
+            + TmUI.badge({ label: '&#9829;', value: String(t.likes), size: 'sm', shape: 'full' }, likeTone)
+            + (t.lastPageHref ? '<a class="tmvu-forum-topic-jump" href="' + esc(t.lastPageHref) + '">' + esc(t.lastPage || 'last') + ' &rarr;</a>' : '')
             + '</div>'
             + '</article>';
     }
@@ -438,11 +440,11 @@ export function initForumPage(main) {
         const sidebarData = parseSidebar(src);
         const forumEl = src.querySelector('#forum') || src;
 
-        const firstPager   = forumEl.querySelector('.forum_pages');
+        const firstPager = forumEl.querySelector('.forum_pages');
         const pagerSummary = clean(firstPager?.querySelector('.subtle')?.textContent || '');
-        const pagerLinks   = parsePager(forumEl, '.forum_pages');
+        const pagerLinks = parsePager(forumEl, '.forum_pages');
 
-        const titleNode  = forumEl.querySelector('.topic_header');
+        const titleNode = forumEl.querySelector('.topic_header');
         const forumTitle = clean(titleNode?.childNodes?.[0]?.textContent || titleNode?.textContent || 'Forum');
 
         const topics = Array.from(forumEl.querySelectorAll('.forum_topics')).map(row => {
@@ -482,10 +484,10 @@ export function initForumPage(main) {
         const heroHost = document.createElement('div');
         TmPageHero.mount(heroHost, {
             slots: {
-                kicker:   'Forum',
-                title:    forumTitle,
+                kicker: 'Forum',
+                title: forumTitle,
                 subtitle: sidebarData.currentCountry,
-                footer:   pagerHtml(pagerLinks),
+                footer: pagerHtml(pagerLinks),
             },
         });
         col.appendChild(heroHost.firstElementChild || heroHost);
@@ -497,7 +499,7 @@ export function initForumPage(main) {
             subtitle: pagerSummary,
             bodyHtml: topics.length
                 ? '<div class="tmvu-forum-topic-list">' + topics.map(topicHtml).join('') + '</div>'
-                  + '<div class="tmvu-forum-pager-footer">' + pagerHtml(pagerLinks) + '</div>'
+                + '<div class="tmvu-forum-pager-footer">' + pagerHtml(pagerLinks) + '</div>'
                 : TmUI.empty('No topics found.'),
         });
         col.appendChild(topicsHost.firstElementChild || topicsHost);
@@ -511,32 +513,32 @@ export function initForumPage(main) {
     // ── render thread ─────────────────────────────────────────────────────────
 
     function renderThread(main, src) {
-        const sidebarData  = parseSidebar(src);
-        const forumEl      = src.querySelector('#forum') || src;
+        const sidebarData = parseSidebar(src);
+        const forumEl = src.querySelector('#forum') || src;
         const topicPagesEl = forumEl.querySelector('.topic_pages');
-        const backHref     = topicPagesEl?.querySelector('.arrow_left')?.getAttribute('href') || '';
+        const backHref = topicPagesEl?.querySelector('.arrow_left')?.getAttribute('href') || '';
         const pagerSummary = clean(topicPagesEl?.querySelector('.subtle')?.textContent || '');
-        const pagerLinks   = parsePager(forumEl, '.topic_pages');
-        const topicTitle   = clean(forumEl.querySelector('h1.mega_headline')?.textContent || 'Thread');
+        const pagerLinks = parsePager(forumEl, '.topic_pages');
+        const topicTitle = clean(forumEl.querySelector('h1.mega_headline')?.textContent || 'Thread');
         const liveFormT = main.querySelector('#forum_post_form');
         if (liveFormT) liveFormT.remove();
 
         const posts = Array.from(forumEl.querySelectorAll('.topic_post')).map(postEl => {
-            const userEl   = postEl.querySelector('.user');
-            const clubA    = userEl?.querySelector('a[club_link]');
+            const userEl = postEl.querySelector('.user');
+            const clubA = userEl?.querySelector('a[club_link]');
             const logoLink = userEl?.querySelector('a[no_logo]') || userEl?.querySelector('a.logo_large') || userEl?.querySelector('a.logo_normal') || userEl?.querySelector('a:has(.club_logo)');
             const logoClubId = logoLink?.getAttribute('no_logo') || '';
-            const logoImgEl  = logoLink?.querySelector('.club_logo') || userEl?.querySelector('.club_logo');
+            const logoImgEl = logoLink?.querySelector('.club_logo') || userEl?.querySelector('.club_logo');
             // Prefer the already-rendered src; fall back to constructing from no_logo id
             const logoSrc = (logoImgEl?.getAttribute('src') || '') || (logoClubId ? '/pics/club_logos/' + logoClubId + '.png' : '');
-            const valign   = userEl?.querySelector('.valign_all');
-            const flagA    = valign?.querySelector('a[href*="/national-teams/"]');
-            const flagImg  = flagA?.querySelector('img');
+            const valign = userEl?.querySelector('.valign_all');
+            const flagA = valign?.querySelector('a[href*="/national-teams/"]');
+            const flagImg = flagA?.querySelector('img');
             const veteranImg = valign?.querySelector('img[src*="veteran_rank"]');
-            const isPro    = !!valign?.querySelector('.pro_icon');
+            const isPro = !!valign?.querySelector('.pro_icon');
             const forumRankImgs = Array.from(userEl?.querySelectorAll('.forum_rank') || []).map(img => img.getAttribute('src') || '');
             const actionsEl = postEl.querySelector('.actions');
-            const postNumA  = actionsEl?.querySelector('.post_number a');
+            const postNumA = actionsEl?.querySelector('.post_number a');
 
             // Strip signatures and decorative overlays from content
             const textEl = postEl.querySelector('.content .text');
@@ -549,29 +551,29 @@ export function initForumPage(main) {
             const likesNeg = parseInt(likesDiv?.querySelector('.negative')?.getAttribute('current_value') || '0', 10);
 
             // Keep TM hook elements in hidden div so like/quote JS still works
-            const likesDivHtml  = likesDiv?.outerHTML || '';
+            const likesDivHtml = likesDiv?.outerHTML || '';
             const quoteSpanHtml = actionsEl?.querySelector('[id^="quote_post"]')?.outerHTML || '';
 
             // Sequential number for quote(N)
-            const iAttr  = postEl.getAttribute('i');
+            const iAttr = postEl.getAttribute('i');
             const seqNum = iAttr != null ? String(parseInt(iAttr, 10) + 1) : '';
 
             return {
-                postDbId:      postEl.getAttribute('id')?.replace('post', '') || '',
-                postNum:       clean(postNumA?.textContent || ''),
-                postAnchorId:  postNumA?.getAttribute('id') || '',
-                postDate:      clean(actionsEl?.querySelector('.post_time')?.textContent || ''),
-                clubHref:      clubA?.getAttribute('href') || (logoClubId ? '/club/' + logoClubId + '/' : ''),
-                clubName:      clean(clubA?.textContent || ''),
+                postDbId: postEl.getAttribute('id')?.replace('post', '') || '',
+                postNum: clean(postNumA?.textContent || ''),
+                postAnchorId: postNumA?.getAttribute('id') || '',
+                postDate: clean(actionsEl?.querySelector('.post_time')?.textContent || ''),
+                clubHref: clubA?.getAttribute('href') || (logoClubId ? '/club/' + logoClubId + '/' : ''),
+                clubName: clean(clubA?.textContent || ''),
                 logoSrc,
-                flagSrc:       flagImg?.getAttribute('src') || '',
-                flagHref:      flagA?.getAttribute('href') || '',
-                veteranSrc:    veteranImg?.getAttribute('src') || '',
-                veteranTip:    veteranImg?.getAttribute('tooltip') || '',
+                flagSrc: flagImg?.getAttribute('src') || '',
+                flagHref: flagA?.getAttribute('href') || '',
+                veteranSrc: veteranImg?.getAttribute('src') || '',
+                veteranTip: veteranImg?.getAttribute('tooltip') || '',
                 isPro,
                 forumRankImgs,
-                rank:          clean(postEl.querySelector('.user_rank')?.textContent || ''),
-                contentHtml:   (textEl?.querySelector('span') || textEl)?.innerHTML || '',
+                rank: clean(postEl.querySelector('.user_rank')?.textContent || ''),
+                contentHtml: (textEl?.querySelector('span') || textEl)?.innerHTML || '',
                 likesDivHtml,
                 quoteSpanHtml,
                 likesPos,
@@ -593,22 +595,22 @@ export function initForumPage(main) {
         const heroHost = document.createElement('div');
         TmPageHero.mount(heroHost, {
             slots: {
-                kicker:   'Thread',
-                title:    topicTitle,
+                kicker: 'Thread',
+                title: topicTitle,
                 subtitle: sidebarData.currentCountry,
-                side:     '<div class="tmvu-forum-thread-hero-actions">'
-                          + (backHref ? buttonHtml({ label: '? Back', href: esc(backHref), color: 'secondary', size: 'sm' }) : '')
-                          + buttonHtml({ label: '? Reply', color: 'primary', size: 'sm', attrs: { onclick: 'reply()' } })
-                          + '</div>',
-                footer:   pagerHtml(pagerLinks),
+                side: '<div class="tmvu-forum-thread-hero-actions">'
+                    + (backHref ? buttonHtml({ label: '? Back', href: esc(backHref), color: 'secondary', size: 'sm' }) : '')
+                    + buttonHtml({ label: '? Reply', color: 'primary', size: 'sm', attrs: { onclick: 'reply()' } })
+                    + '</div>',
+                footer: pagerHtml(pagerLinks),
             },
         });
         col.appendChild(heroHost.firstElementChild || heroHost);
 
         const postsHtml = posts.map(p => {
-            const posNum   = p.postNum.replace('#', '');
+            const posNum = p.postNum.replace('#', '');
             const likesHtml = (p.likesPos > 0 ? '<span class="tmvu-forum-post-like-pos">+' + p.likesPos + '</span>' : '')
-                            + (p.likesNeg > 0 ? ' <span class="tmvu-forum-post-like-neg">-' + p.likesNeg + '</span>' : '');
+                + (p.likesNeg > 0 ? ' <span class="tmvu-forum-post-like-neg">-' + p.likesNeg + '</span>' : '');
             const flagEl = p.flagSrc ? '<div class="tmvu-forum-post-flag">' + (p.flagHref ? '<a href="' + esc(p.flagHref) + '">' : '') + '<img src="' + esc(p.flagSrc) + '" alt="">' + (p.flagHref ? '</a>' : '') + '</div>' : '';
             const veteranEl = p.veteranSrc ? '<img class="tmvu-forum-post-veteran" src="' + esc(p.veteranSrc) + '" title="' + esc(p.veteranTip) + '" alt="' + esc(p.veteranTip) + '">' : '';
             const proEl = p.isPro ? '<img class="tmvu-forum-post-pro" src="/pics/pro_icon.png" title="TM Pro" alt="Pro">' : '';
@@ -616,33 +618,33 @@ export function initForumPage(main) {
             return '<div class="tmvu-forum-post">'
                 // user card
                 + '<div class="tmvu-forum-post-user">'
-                +   '<div class="tmvu-forum-post-logo">'
-                +     (p.clubHref ? '<a href="' + esc(p.clubHref) + '">' : '')
-                +     (p.logoSrc ? '<img src="' + esc(p.logoSrc) + '" alt="">' : '<span style="font-size:var(--tmu-font-xl);opacity:.35">\u26BD</span>')
-                +     (p.clubHref ? '</a>' : '')
-                +   '</div>'
-                +   (p.clubHref
+                + '<div class="tmvu-forum-post-logo">'
+                + (p.clubHref ? '<a href="' + esc(p.clubHref) + '">' : '')
+                + (p.logoSrc ? '<img src="' + esc(p.logoSrc) + '" alt="">' : '<span style="font-size:var(--tmu-font-xl);opacity:.35">\u26BD</span>')
+                + (p.clubHref ? '</a>' : '')
+                + '</div>'
+                + (p.clubHref
                     ? '<a class="tmvu-forum-post-club" href="' + esc(p.clubHref) + '">' + esc(p.clubName) + '</a>'
                     : (p.clubName ? '<span class="tmvu-forum-post-club">' + esc(p.clubName) + '</span>' : ''))
-                +   flagEl
-                +   '<div class="tmvu-forum-post-badges">' + proEl + veteranEl + forumRanksEl + '</div>'
-                +   (p.rank ? '<div class="tmvu-forum-post-rank">' + esc(p.rank) + '</div>' : '')
+                + flagEl
+                + '<div class="tmvu-forum-post-badges">' + proEl + veteranEl + forumRanksEl + '</div>'
+                + (p.rank ? '<div class="tmvu-forum-post-rank">' + esc(p.rank) + '</div>' : '')
                 + '</div>'
                 // post body
                 + '<div class="tmvu-forum-post-body">'
-                +   '<div class="tmvu-forum-post-meta">'
-                +     (p.postAnchorId ? '<a class="tmvu-forum-post-num" id="' + esc(p.postAnchorId) + '" href="#' + esc(posNum) + '">' + esc(p.postNum) + '</a>' : '')
-                +     (likesHtml && p.postDbId ? '<span class="tmvu-forum-post-likes" onclick="pop_likes(' + p.postDbId + ')" title="See who liked this">' + likesHtml + '</span>' : likesHtml ? '<span class="tmvu-forum-post-likes">' + likesHtml + '</span>' : '')
-                +     (p.postDate ? '<span class="tmvu-forum-post-date">' + esc(p.postDate) + '</span>' : '')
-                +   '</div>'
-                +   '<div class="tmvu-forum-post-content">' + p.contentHtml + '</div>'
-                +   '<div class="tmvu-forum-post-actions">'
-                +     (p.postDbId ? buttonHtml({ label: '\u2665 ' + (p.likesPos || 0), cls: 'tmvu-post-btn', color: 'secondary', size: 'xs', attrs: { onclick: 'pop_likes(' + p.postDbId + ')' } }) : '')
-                +     (p.seqNum ? buttonHtml({ label: 'Quote', cls: 'tmvu-post-btn', color: 'secondary', size: 'xs', attrs: { onclick: 'quote(' + p.seqNum + ')' } }) : '')
-                +     buttonHtml({ label: 'Reply', cls: 'tmvu-post-btn', color: 'secondary', size: 'xs', attrs: { onclick: 'reply()' } })
-                +   '</div>'
+                + '<div class="tmvu-forum-post-meta">'
+                + (p.postAnchorId ? '<a class="tmvu-forum-post-num" id="' + esc(p.postAnchorId) + '" href="#' + esc(posNum) + '">' + esc(p.postNum) + '</a>' : '')
+                + (likesHtml && p.postDbId ? '<span class="tmvu-forum-post-likes" onclick="pop_likes(' + p.postDbId + ')" title="See who liked this">' + likesHtml + '</span>' : likesHtml ? '<span class="tmvu-forum-post-likes">' + likesHtml + '</span>' : '')
+                + (p.postDate ? '<span class="tmvu-forum-post-date">' + esc(p.postDate) + '</span>' : '')
+                + '</div>'
+                + '<div class="tmvu-forum-post-content">' + p.contentHtml + '</div>'
+                + '<div class="tmvu-forum-post-actions">'
+                + (p.postDbId ? buttonHtml({ label: '\u2665 ' + (p.likesPos || 0), cls: 'tmvu-post-btn', color: 'secondary', size: 'xs', attrs: { onclick: 'pop_likes(' + p.postDbId + ')' } }) : '')
+                + (p.seqNum ? buttonHtml({ label: 'Quote', cls: 'tmvu-post-btn', color: 'secondary', size: 'xs', attrs: { onclick: 'quote(' + p.seqNum + ')' } }) : '')
+                + buttonHtml({ label: 'Reply', cls: 'tmvu-post-btn', color: 'secondary', size: 'xs', attrs: { onclick: 'reply()' } })
+                + '</div>'
                 // hidden TM hooks: likes div (keeps ID for JS updates) + quote span
-                +   '<div class="tmvu-post-hidden">' + p.likesDivHtml + p.quoteSpanHtml + '</div>'
+                + '<div class="tmvu-post-hidden">' + p.likesDivHtml + p.quoteSpanHtml + '</div>'
                 + '</div>'
                 + '</div>';
         }).join('');
@@ -654,7 +656,7 @@ export function initForumPage(main) {
             subtitle: pagerSummary,
             bodyHtml: posts.length
                 ? '<div class="tmvu-forum-posts tmu-stack tmu-stack-density-tight">' + postsHtml + '</div>'
-                  + '<div class="tmvu-forum-pager-footer">' + pagerHtml(pagerLinks) + '</div>'
+                + '<div class="tmvu-forum-pager-footer">' + pagerHtml(pagerLinks) + '</div>'
                 : TmUI.empty('No posts found.'),
         });
         col.appendChild(postsHost.firstElementChild || postsHost);
@@ -701,7 +703,7 @@ export function initForumPage(main) {
                         const r5Html = !retired && Number.isFinite(r5Value) ? ` <span class="tmvu-pinfo">${r5Value.toFixed(2)}</span>` : '';
                         anchor.innerHTML = starsHtml + ageHtml + esc(name) + r5Html;
                     })
-                    .catch(() => {});
+                    .catch(() => { });
             };
 
             col.querySelectorAll('.tmvu-forum-post-content').forEach(content => {
@@ -756,7 +758,7 @@ export function initForumPage(main) {
             _playerTipTimer = setTimeout(() => {
                 TmPlayerModel.fetchPlayerTooltip(pid).then(data => {
                     if (data?.player) TmPlayerTooltip.show(anchor, data.player);
-                }).catch(() => {});
+                }).catch(() => { });
             }, 200);
         });
         col.addEventListener('mouseout', (e) => {
@@ -794,7 +796,7 @@ export function initForumPage(main) {
         TmPageHero.mount(heroHost, {
             slots: {
                 kicker: 'Forum',
-                title:  'New Topic',
+                title: 'New Topic',
                 subtitle: sidebarData.currentCountry,
                 side: buttonHtml({ label: '\u2190 Back', href: esc(backHref), color: 'secondary', size: 'sm' }),
             },
@@ -817,7 +819,7 @@ export function initForumPage(main) {
     }
 
     waitForContent(function () {
-        const src = document.querySelector('.main_center') || main;
+        const src = document.querySelector('.main_center:not(.top_user_info)') || main;
         if (src.querySelector('.forum_topics')) {
             renderListing(main, src);
         } else if (src.querySelector('.topic_post')) {

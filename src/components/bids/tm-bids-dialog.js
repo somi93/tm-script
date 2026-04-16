@@ -1,6 +1,7 @@
 import { TmUI } from '../shared/tm-ui.js';
 import { TmButton } from '../shared/tm-button.js';
 import { TmPosition } from '../../lib/tm-position.js';
+import { TmPlayerAge } from '../../lib/tm-player-age.js';
 import { TmTransferService } from '../../services/transfer.js';
 import { TmPlayerPhoto } from '../player/card/tm-player-photo.js';
 import { TmShortlistService } from '../../services/shortlist.js';
@@ -91,47 +92,32 @@ function renderBidHistory(history = []) {
     });
     if (!real.length) return '<p class="tmu-note" style="margin:0;">No bids placed yet.</p>';
     return `<ul class="tmvu-bids-dialog-history" id="tlpop_history">
-        ${real.map(e => `<li><tm-stat data-label="${escapeHtml(cleanText(e.club_name))}" data-value="${escapeHtml(formatBidValue(e.bid))}"></tm-stat></li>`).join('')}
+        ${real.map(e => `<li><tm-stat data-label="${escapeHtml(cleanText(e.club_name))}" data-value="${e.bid}"></tm-stat></li>`).join('')}
     </ul>`;
 }
 
-function createBidDialogMarkup(detail, row) {
-    const player = detail?.p || {};
-    const transfer = detail?.transfer || {};
-    const status = detail?.current_status || {};
-    const playerId = cleanText(player.player_id || player.id || row.id);
-    const playerName = cleanText(transfer.player_name || row.name);
-    const countryCode = cleanText(player.player_country || player.nationalitet || row.countryCode).toLowerCase();
-    const timeLeft = Number.isFinite(Number(detail?.deadline)) ? formatCountdown(Number(detail.deadline)) : cleanText(row.timeLeft);
-    const minimumBid = formatBidValue(transfer.next_bid || row.bid);
-    const currentBid = formatBidValue(row.bid);
-    const age = cleanText(player.ageMonthsString || player.age || row.age);
-    // TM bids API sends short-form fp like "M", "F", "DM" — expand to POSITION_MAP keys
-    const FP_EXPAND = { d: 'dc', dm: 'dmc', m: 'mc', om: 'omc', f: 'fc' };
-    const normFp = (raw) => (raw || '').split(',')
-        .map(p => { const k = p.trim().replace(/\s+/g, '').toLowerCase(); return FP_EXPAND[k] || k; })
-        .filter(Boolean);
-    // Only use player.positions if it contains rich objects (with color/id from playerdb)
-    const hasRichPositions = Array.isArray(player.positions) && player.positions.length && typeof player.positions[0] === 'object';
-    const rawPositions = hasRichPositions ? player.positions : (player.fp ? normFp(player.fp) : null);
-    const posChips = rawPositions ? TmPosition.chip(rawPositions) : '';
-    const showBidForm = row.sectionTitle !== 'My Players';
-    const shortlistAction = detail?.shortlist?.id ? 'unshortlist' : 'shortlist';
-    const shortlistLabel = detail?.shortlist?.id ? 'Remove From Shortlist' : 'Add To Shortlist';
-    const photoHtml = TmPlayerPhoto.html({ imageHtml: detail?.player_image, alt: playerName, size: 88 });
+function createBidDialogMarkup({ deadline, shortlist, bid_history, transfer }, player) {
+    const minimumBid = formatBidValue(transfer?.next_bid || player.bid);
+    const currentBid = formatBidValue(player.bid);
+    const timeLeft = Number.isFinite(Number(deadline)) ? formatCountdown(Number(deadline)) : cleanText(player.timeleft_string);
+    const preferredPositions = (player.positions || []).filter(p => p.preferred);
+    const posChips = preferredPositions.length ? TmPosition.chip(preferredPositions) : '';
+    const showBidForm = !player.isOwnPlayer;
+    const shortlistAction = shortlist?.id ? 'unshortlist' : 'shortlist';
+    const shortlistLabel = shortlist?.id ? 'Remove From Shortlist' : 'Add To Shortlist';
 
     return `
         <div class="tmvu-bids-dialog-top">
             <div class="tmvu-bids-dialog-player-body">
-                ${photoHtml}
+                ${TmPlayerPhoto.html({ src: player.faceUrl || '', alt: player.name, size: 88 })}
                 <div class="tmvu-bids-dialog-player-main">
                     <div class="tmvu-bids-dialog-name-row">
-                        <a href="${escapeHtml(row.href)}" target="_blank" rel="noopener noreferrer" class="tmu-text-strong" style="font-size:var(--tmu-font-lg);font-weight:800;color:inherit;text-decoration:none;">${escapeHtml(playerName)}</a>
-                        ${renderFlag(countryCode)}
+                        <a href="${escapeHtml(player.href)}" target="_blank" rel="noopener noreferrer" class="tmu-text-strong" style="font-size:var(--tmu-font-lg);font-weight:800;color:inherit;text-decoration:none;">${escapeHtml(player.name)}</a>
+                        ${renderFlag(player.country)}
                     </div>
-                    <div style="display:flex;align-items:baseline;gap:var(--tmu-space-sm);flex-wrap:wrap;">
+                    <div style="display:flex;align-items:center;gap:var(--tmu-space-sm);flex-wrap:wrap;">
                         ${posChips}
-                        ${age ? `<span class="tmu-note" style="margin:0;">${escapeHtml(age)} years</span>` : ''}
+                        ${TmPlayerAge.chip(player)}
                     </div>
                     <div>
                         <tm-button data-action="${shortlistAction}" data-variant="secondary" data-size="sm">${escapeHtml(shortlistLabel)}</tm-button>
@@ -148,12 +134,12 @@ function createBidDialogMarkup(detail, row) {
         <tm-divider></tm-divider>
 
         <div>
-            <p class="tmu-kicker" style="margin:0 0 var(--tmu-space-md);">${showBidForm ? 'Place Bid' : 'Listing Snapshot'}</p>
+            <p class="tmu-kicker" style="margin:0 0 0;">${showBidForm ? 'Place Bid' : 'Listing Snapshot'}</p>
             <div id="tlpop_form">
                 ${showBidForm ? `
                     <form id="transfer_bid_form" class="tmvu-bids-dialog-form" onsubmit="return false;">
                         <input type="hidden" value="${escapeHtml(minimumBid)}" name="min_bid" id="min_bid">
-                        <input type="hidden" value="${escapeHtml(playerName)}" id="bid_player_name">
+                        <input type="hidden" value="${escapeHtml(player.name)}" id="bid_player_name">
                         <div data-ref="bidInputMount"></div>
                         <p id="min_bid_text" class="tmu-note" style="margin:var(--tmu-space-xs) 0 0;">Minimum bid is <strong id="minbid">${escapeHtml(minimumBid)}</strong></p>
                         <div data-ref="agentMount"></div>
@@ -165,7 +151,7 @@ function createBidDialogMarkup(detail, row) {
                 ` : `
                     <tm-stat data-label="Current Bid" data-value="${escapeHtml(currentBid)}"></tm-stat>
                     <tm-stat data-label="Next Bid" data-value="${escapeHtml(minimumBid)}"></tm-stat>
-                    <tm-stat data-label="Expires" data-value="${escapeHtml(cleanText(row.timeLeft))}"></tm-stat>
+                    <tm-stat data-label="Expires" data-value="${escapeHtml(cleanText(player.timeleft_string))}"></tm-stat>
                 `}
             </div>
         </div>
@@ -175,18 +161,16 @@ function createBidDialogMarkup(detail, row) {
 
         <div>
             <p class="tmu-kicker" style="margin:0 0 var(--tmu-space-sm);">Bid History</p>
-            <div id="tlpop_hischat">${renderBidHistory(detail?.bid_history || [])}</div>
+            <div id="tlpop_hischat">${renderBidHistory(bid_history || [])}</div>
         </div>
 
-        <div id="transfer_channel" style="display:none;">transfer_player_${escapeHtml(playerId)}</div>
-        <div id="this_player_id" style="display:none;">${escapeHtml(playerId)}</div>
+        <div id="transfer_channel" style="display:none;">transfer_player_${escapeHtml(player.id)}</div>
+        <div id="this_player_id" style="display:none;">${escapeHtml(player.id)}</div>
     `;
 }
 
-function mountFormControls(dialogBody, detail, row, playerId) {
-    const transfer = detail?.transfer || {};
-    const minimumBid = formatBidValue(transfer.next_bid || row.bid);
-    const playerName = cleanText(transfer.player_name || row.name);
+function mountFormControls(dialogBody, { is_pro, transfer }, player) {
+    const minimumBid = formatBidValue(transfer?.next_bid || player.bid);
 
     const bidInputMount = dialogBody.querySelector('[data-ref="bidInputMount"]');
     if (bidInputMount) {
@@ -216,10 +200,10 @@ function mountFormControls(dialogBody, detail, row, playerId) {
             id: 'transfer_agent',
             value: 1,
             checked: false,
-            disabled: !detail?.is_pro,
-            label: `Put transfer agent on ${playerName}`,
+            disabled: !is_pro,
+            label: `Put transfer agent on ${player.name}`,
         }));
-        if (!detail?.is_pro) {
+        if (!is_pro) {
             const note = document.createElement('p');
             note.className = 'tmu-note';
             note.style.margin = 'var(--tmu-space-xs) 0 0';
@@ -238,10 +222,10 @@ function mountFormControls(dialogBody, detail, row, playerId) {
             block: true,
             onClick: () => {
                 if (typeof window.tlpop_post_transfer_bid === 'function') {
-                    window.tlpop_post_transfer_bid(playerId);
+                    window.tlpop_post_transfer_bid(player.id);
                     return;
                 }
-                if (typeof window.post_transfer_bid === 'function') window.post_transfer_bid(playerId);
+                if (typeof window.post_transfer_bid === 'function') window.post_transfer_bid(player.id);
             },
         }));
     }
@@ -254,7 +238,7 @@ function mountFormControls(dialogBody, detail, row, playerId) {
             color: 'secondary',
             size: 'md',
             block: true,
-            onClick: () => window.post_transfer_bid?.(playerId),
+            onClick: () => window.post_transfer_bid?.(player.id),
         });
         proButton.style.display = 'none';
         proActionMount.appendChild(proButton);
@@ -267,9 +251,9 @@ function closeBidDialog() {
     activeBidDialog = null;
 }
 
-function openBidDialog(row, opts = {}) {
+function openBidDialog(player, opts = {}) {
     const sessionId = getOwnClubId();
-    if (!row?.id || !sessionId) return;
+    if (!player?.id || !sessionId) return;
 
     injectStyles();
     closeBidDialog();
@@ -284,12 +268,12 @@ function openBidDialog(row, opts = {}) {
     card.className = 'tmu-card tmvu-bids-card';
     card.setAttribute('role', 'dialog');
     card.setAttribute('aria-modal', 'true');
-    card.setAttribute('aria-label', `Transfer bid — ${cleanText(row.name)}`);
+    card.setAttribute('aria-label', `Transfer bid — ${cleanText(player.name)}`);
 
     const head = document.createElement('div');
     head.className = 'tmu-card-head';
     const titleEl = document.createElement('span');
-    titleEl.textContent = cleanText(row.name);
+    titleEl.textContent = cleanText(player.name);
     head.appendChild(titleEl);
     const closeBtn = TmButton.button({
         variant: 'icon', icon: CLOSE_ICON, color: 'secondary', size: 'sm', shape: 'full',
@@ -299,7 +283,7 @@ function openBidDialog(row, opts = {}) {
 
     const body = document.createElement('div');
     body.className = 'tmu-card-body';
-    body.innerHTML = TmUI.loading(`Loading ${escapeHtml(row.name)}...`, true);
+    body.innerHTML = TmUI.loading(`Loading ${escapeHtml(player.name)}...`, true);
 
     card.appendChild(head);
     card.appendChild(body);
@@ -323,28 +307,28 @@ function openBidDialog(row, opts = {}) {
         },
     };
 
-    TmTransferService.fetchTransferBidDialog(row.id, sessionId).then(detail => {
+    TmTransferService.fetchTransferBidDialog(player.id, sessionId).then(bidData => {
         if (activeBidDialog?.overlay !== overlay) return;
 
-        if (!detail?.p) {
+        if (!bidData) {
             body.innerHTML = '<p class="tmvu-bids-dialog-error">Failed to load transfer bid details.</p>';
             return;
         }
 
-        const playerId = cleanText(detail?.p?.player_id || detail?.p?.id || row.id);
+        const { deadline, shortlist, is_pro, bid_history, transfer } = bidData;
 
         async function handleShortlistToggle(btn, removing) {
             const savedHtml = btn.innerHTML;
             btn.disabled = true;
             btn.innerHTML = '<span class="tmu-spinner tmu-spinner-sm"></span>';
             const result = removing
-                ? await TmShortlistService.removeFromShortlist(playerId)
-                : await TmShortlistService.addToShortlist(playerId);
+                ? await TmShortlistService.removeFromShortlist(player.id)
+                : await TmShortlistService.addToShortlist(player.id);
             btn.disabled = false;
             if (result !== null) {
                 if (removing) {
                     TmAlert.show({ message: 'Player removed from shortlist', tone: 'success' });
-                    opts.onRemoved?.(playerId);
+                    opts.onRemoved?.(player.id);
                     close();
                     return;
                 } else {
@@ -358,17 +342,17 @@ function openBidDialog(row, opts = {}) {
             }
         }
 
-        TmUI.render(body, createBidDialogMarkup(detail, row), {
-            shortlist: function() { handleShortlistToggle(this, false); },
-            unshortlist: function() { handleShortlistToggle(this, true); },
+        TmUI.render(body, createBidDialogMarkup({ deadline, shortlist, bid_history, transfer }, player), {
+            shortlist: function () { handleShortlistToggle(this, false); },
+            unshortlist: function () { handleShortlistToggle(this, true); },
         });
 
-        if (row.sectionTitle !== 'My Players') {
-            mountFormControls(body, detail, row, playerId);
+        if (!player.isOwnPlayer) {
+            mountFormControls(body, { is_pro, transfer }, player);
         }
 
         const countdownEl = body.querySelector('#tl_pop_countdown');
-        let remaining = Number(detail?.deadline) || 0;
+        let remaining = Number(deadline) || 0;
         let countdownTimer = null;
 
         if (countdownEl && remaining > 0) {

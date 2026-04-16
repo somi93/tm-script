@@ -10,21 +10,12 @@ const SKILL_META = SKILL_DEFS_OUT.map(s => ({ key: s.key, label: s.name, color: 
 const SKILL_META_GK = SKILL_DEFS_GK.map(s => ({ key: s.key2 || s.key, label: s.name, color: s.color }));
 
 export const buildSkillsChart = async (el, player) => {
-    // Check via live endpoint if skills graph is enabled for this player
-    const graphData = await TmPlayerService.fetchPlayerGraphs(player);
-    const hasSkillsGraph = graphData?.graphs?.strength != null;
-
-    if (!hasSkillsGraph) {
-        if (player.isOwnPlayer) {
+    if (player.isOwnPlayer) {
+        const graphData = await TmPlayerService.fetchPlayerGraphs(player);
+        if (graphData?.graphs?.strength == null) {
             buildEnableCard(el, 'skills', player.id);
-        } else {
-            const msg = document.createElement('div');
-            msg.className = 'rounded-md text-sm';
-            msg.style.cssText = 'background:var(--tmu-surface-overlay-soft);border:1px solid var(--tmu-border-soft-alpha);padding:var(--tmu-space-md) var(--tmu-space-md);margin:var(--tmu-space-xs) 0 var(--tmu-space-sm);color:var(--tmu-text-dim);';
-            msg.textContent = 'Skills: No data available (graph not enabled)';
-            el.appendChild(msg);
+            return;
         }
-        return;
     }
 
     const records = player.records || {};

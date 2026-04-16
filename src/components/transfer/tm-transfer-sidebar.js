@@ -3,24 +3,24 @@ import { TmUI } from '../shared/tm-ui.js';
 import { TmPosition } from '../../lib/tm-position.js';
 
 const posChip = (fp) =>
-    TmPosition.chip([fp], 'tm-pos-chip tms-pos-chip', { attrs: { 'data-fp': fp } });
+  TmPosition.chip([fp], 'tm-pos-chip tms-pos-chip', { attrs: { 'data-fp': fp } });
 
 export const TmTransferSidebar = {
-        build() {
-            const { SKILL_KEYS_OUT, SKILL_KEYS_GK, SKILL_LABELS } = TmConst;
-  const buttonHtml = (opts) => TmUI.button(opts).outerHTML;
-  const checkboxFieldHtml = (opts) => TmUI.checkboxField(opts).outerHTML;
+  build() {
+    const { SKILL_KEYS_OUT, SKILL_KEYS_GK, SKILL_LABELS } = TmConst;
+    const buttonHtml = (opts) => TmUI.button(opts).outerHTML;
+    const checkboxFieldHtml = (opts) => TmUI.checkboxField(opts).outerHTML;
     const inputHtml = (opts) => TmUI.input({ type: 'number', size: 'full', density: 'regular', grow: true, ...opts }).outerHTML;
-            const skillSelectOpts = (withNone = true) => {
-                const combined = [...SKILL_KEYS_OUT, ...SKILL_KEYS_GK.filter(s => !SKILL_KEYS_OUT.includes(s))];
-                let s = withNone ? '<option value="0">—</option>' : '';
-                for (const sk of combined) s += `<option value="${sk}">${SKILL_LABELS[sk]}</option>`;
-                return s;
-            };
+    const skillSelectOpts = (withNone = true) => {
+      const combined = [...SKILL_KEYS_OUT, ...SKILL_KEYS_GK.filter(s => !SKILL_KEYS_OUT.includes(s))];
+      let s = withNone ? '<option value="0">—</option>' : '';
+      for (const sk of combined) s += `<option value="${sk}">${SKILL_LABELS[sk]}</option>`;
+      return s;
+    };
 
-            const valOpts = `<option value="0">≥</option>${[...Array(20)].map((_,i)=>`<option value="${i+1}">${i+1}</option>`).join('')}`;
+    const valOpts = `<option value="0">≥</option>${[...Array(20)].map((_, i) => `<option value="${i + 1}">${i + 1}</option>`).join('')}`;
 
-            return `
+    return `
     <div id="tms-sidebar" class="tmvu-transfer-sidebar">
       <div id="tms-filter-box" class="tmu-card">
       <div class="tms-sb-section">
@@ -107,13 +107,13 @@ export const TmTransferSidebar = {
         </div>
       </div>
       <div class="tms-more-toggle-wrap">${buttonHtml({
-                id: 'tms-more-toggle',
-                color: 'secondary',
-                size: 'xs',
-                block: true,
-                cls: 'tms-more-toggle',
-                slot: '<span class="tms-more-toggle-content"><span>More Filters</span><span class="tms-more-arrow">▼</span></span>',
-            })}</div>
+      id: 'tms-more-toggle',
+      color: 'secondary',
+      size: 'xs',
+      block: true,
+      cls: 'tms-more-toggle',
+      slot: '<span class="tms-more-toggle-content"><span>More Filters</span><span class="tms-more-arrow">▼</span></span>',
+    })}</div>
       <div class="tms-more-body" id="tms-more-body">
         <div class="tms-sb-section">
           <div class="tms-sb-head">Max Price</div>
@@ -171,6 +171,6 @@ export const TmTransferSidebar = {
       </div>
 
     </div>`;
-        },
-    };
+  },
+};
 

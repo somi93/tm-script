@@ -24,10 +24,14 @@ const absToKey = (abs) => `${Math.floor(abs / 12)}.${abs % 12}`;
  * @param {object|null} DBPlayer - indexed DB entry with .records
  * @returns {boolean}
  */
-const hasNullTiAsi = (DBPlayer) => {
+const hasBrokenRecords = (DBPlayer) => {
     const records = DBPlayer?.records;
     if (!records) return false;
-    return Object.values(records).some(r => r.TI == null && r.ASI == null);
+    return Object.values(records).some(r => {
+        if (r.TI == null && r.ASI == null) return true;
+        if (Array.isArray(r.skills) && r.skills.some(v => typeof v === 'number' && isNaN(v))) return true;
+        return false;
+    });
 };
 
 const hasMissingMonths = (player, DBPlayer) => {
@@ -57,16 +61,17 @@ const hasMissingMonths = (player, DBPlayer) => {
 export const attachSyncStatus = async (players, { mode = 'full' } = {}) => {
     return Promise.all(
         players.map(async (player) => {
-            const DBPlayer = await TmPlayerDB.get(player.id);
+            let DBPlayer = await TmPlayerDB.get(player.id);
+
             const currentRecord = DBPlayer?.records?.[player.ageMonthsString];
             const synced = currentRecord?.fullySynced === true;
             const missing = hasMissingMonths(player, DBPlayer);
-            const nullTiAsi = hasNullTiAsi(DBPlayer);
-            const needSync = mode === 'missing-only'
+            const broken = hasBrokenRecords(DBPlayer);
+            const needSync = broken || (mode === 'missing-only'
                 ? missing
                 : mode === 'force-resync'
                     ? true
-                    : !(synced && !missing) || nullTiAsi;
+                    : !(synced && !missing));
             return { ...player, needSync, DBPlayer, records: DBPlayer?.records || {} };
         })
     );

@@ -18,7 +18,7 @@ import { saveHistoryRecords } from './save.js';
 export const runSyncPipeline = async (players, onProgress, { mode = 'full' } = {}) => {
     // Step 3: Attach needSync + DBPlayer
     const withSync = await attachSyncStatus(players, { mode });
-
+    if (!withSync.filter(p => p.needSync).length) return withSync;
     // Step 4: Fetch graphs + training for needSync players
     const withData = await buildHistorySkeletons(withSync, onProgress);
 
