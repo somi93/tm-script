@@ -93,7 +93,7 @@ export const showPlayerDialog = (player, liveState) => {
 
     const mData = liveState?.mData;
     const matchFuture = mData ? TmMatchUtils.isMatchFuture(mData) : false;
-    const matchEnded = !matchFuture && (liveState?.ended || !!player.rating);
+    const matchEnded = !matchFuture && liveState?.ended === true;
 
     const pid = String(player.player_id || player.id);
     const playerUrl = `https://trophymanager.com/players/${pid}/#/page/history/`;

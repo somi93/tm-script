@@ -33,6 +33,7 @@ export function initMatchPage(main) {
     // ─── Match dialog ────────────────────────────────────────────────────
     // ── Live replay state (shared across tabs) ──
     let liveState = null;
+    let currentMData = null;
     let prematchTimer = null;
     // liveState = { min, sec, curEvtIdx, curLineIdx, playing, timer, mData, speed:1000,
     //               maxMin, ended, schedule, eventMinList, eventMinIdx }
@@ -533,6 +534,7 @@ export function initMatchPage(main) {
         const cached = roundMatchCache.get(String(matchId));
         // If not cached yet, fetch on-demand
         const show = (mData) => {
+            currentMData = mData;
             // Determine if this match is in the future
             const matchIsFuture = TmMatchUtils.isMatchFuture(mData);
 
@@ -602,6 +604,7 @@ export function initMatchPage(main) {
                 if (liveState && liveState.timer) clearTimeout(liveState.timer);
                 stopLiveClockTicker();
                 liveState = null;
+                currentMData = null;
                 if (prematchTimer) { clearTimeout(prematchTimer); prematchTimer = null; }
                 overlay.remove();
                 $('body').css('overflow', '');
@@ -685,29 +688,43 @@ export function initMatchPage(main) {
         // When all tooltip profiles are ready, refresh analysis tab if active
         window.addEventListener('tm:match-profiles-ready', (e) => {
             console.log('[RND] Match profiles ready', e);
-            if (!liveState?.baseMData) return;
+            const baseMData = liveState?.baseMData ?? currentMData;
+            if (!baseMData) return;
             const players = e.detail.players;
             ['home', 'away'].forEach(side => {
-                const rawLineup = Object.values(liveState.baseMData.lineup?.[side] || {});
+                const rawLineup = Object.values(baseMData.lineup?.[side] || {});
                 const enrichedLineup = rawLineup.map(p => {
                     const player = players.find(pl => Number(pl.id) === Number(p.id || p.player_id));
                     return {
                         ...p,
+                        name: player?.name ?? p.name,
+                        lastname: player?.lastname ?? p.nameLast ?? p.lastname,
+                        r5: player?.r5 ?? p.r5,
                         skills: player?.skills ?? p.skills,
                         asi: player?.asi ?? p.asi,
                         routine: player?.routine ?? p.routine,
                         positions: player?.positions ?? p.positions,
                     };
                 });
-                liveState.baseMData.lineup[side] = enrichedLineup.reduce((acc, player) => {
+                baseMData.lineup[side] = enrichedLineup.reduce((acc, player) => {
                     acc[String(player.id || player.player_id)] = player;
                     return acc;
                 }, {});
-                liveState.baseMData.teams[side].lineup = enrichedLineup;
+                baseMData.teams[side].lineup = enrichedLineup;
+                // Compute avgR5 from starters (for future matches where generateTeamData never runs)
+                const starters = enrichedLineup.filter(p => !/^sub/.test(p.position || ''));
+                const r5s = starters.map(p => Number(p.r5)).filter(Number.isFinite);
+                if (r5s.length) baseMData.teams[side].avgR5 = r5s.reduce((a, b) => a + b, 0) / r5s.length;
             });
-            liveState.baseMData.profilesReady = true;
-            liveState.derivedKey = null;
-            syncLiveDerivedTeams();
+            baseMData.profilesReady = true;
+            if (liveState) {
+                liveState.derivedKey = null;
+                syncLiveDerivedTeams();
+            } else if (currentMData) {
+                // Future match: re-render current tab with enriched data
+                const activeTab = getActiveOverlayTab() || 'lineups';
+                renderDialogTab(activeTab, currentMData);
+            }
         });
     };
 
@@ -736,13 +753,13 @@ export function initMatchPage(main) {
             liveState: activeState
         };
         switch (tab) {
-            case 'details': TmMatchDetails.render(body, liveState); break;
-            case 'statistics': TmMatchStatistics.render(body, liveState); break;
-            case 'report': TmMatchReport.render(body, liveState); break;
-            case 'lineups': TmMatchLineups.render(body, liveState, sharedOpts); break;
+            case 'details': TmMatchDetails.render(body, activeState); break;
+            case 'statistics': TmMatchStatistics.render(body, activeState); break;
+            case 'report': TmMatchReport.render(body, activeState); break;
+            case 'lineups': TmMatchLineups.render(body, activeState, sharedOpts); break;
             case 'venue': TmMatchVenue.render(body, activeMatchData); break;
             case 'h2h': TmMatchH2H.render(body, activeMatchData); break;
-            case 'league': TmMatchLeague.render(body, liveState); break;
+            case 'league': TmMatchLeague.render(body, activeState); break;
             case 'analysis': TmMatchAnalysis.render(body, activeMatchData, activeMatchData.teams); break;
         }
     };

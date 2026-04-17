@@ -31044,7 +31044,7 @@ order:initial
     $(".rnd-plr-overlay").remove();
     const mData = liveState == null ? void 0 : liveState.mData;
     const matchFuture = mData ? TmMatchUtils.isMatchFuture(mData) : false;
-    const matchEnded = !matchFuture && ((liveState == null ? void 0 : liveState.ended) || !!player2.rating);
+    const matchEnded = !matchFuture && (liveState == null ? void 0 : liveState.ended) === true;
     const pid = String(player2.player_id || player2.id);
     const playerUrl = `https://trophymanager.com/players/${pid}/#/page/history/`;
     const isSub = /^sub\d+$/.test(player2.position);
@@ -31229,7 +31229,7 @@ order:initial
           h += `<div class="rnd-lu-player rnd-lu-clickable" data-pid="${pid}">`;
           h += `<span class="rnd-lu-pos">${TmPosition.chip([origPos(p)])}</span>`;
           h += `<span class="rnd-lu-name ml-3">${p.name}`;
-          if (!!p.captain) h += ` <span class="rnd-lu-captain" title="Captain">\uFFFD</span>`;
+          if (!!p.captain) h += ` <span class="rnd-lu-captain" title="Captain">C</span>`;
           if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">?</span>`;
           h += `</span>`;
           if (evts) h += `<span class="rnd-lu-events">${evts}</span>`;
@@ -31237,7 +31237,7 @@ order:initial
             const rFmt = p.rating ? Number(p.rating).toFixed(2) : "-";
             h += `<span class="rnd-lu-rating" style="color:${ratingColor2(p.rating)}">${rFmt}</span>`;
           }
-          const r5Badge = p.r5 !== null && p.r5 !== void 0 ? p.r5 : "\uFFFD\uFFFD\uFFFD";
+          const r5Badge = p.r5 !== null && p.r5 !== void 0 ? TmUtils.formatR5(p.r5) : "\u2014";
           const r5Style = p.r5 !== null && p.r5 !== void 0 ? ` style="background:${r5Color3(p.r5)}"` : "";
           h += `<span class="rnd-lu-r5" data-pid="${p.id}"${r5Style}>${r5Badge}</span>`;
           h += `</div>`;
@@ -31259,7 +31259,7 @@ order:initial
             const rFmtS = p.rating ? Number(p.rating).toFixed(2) : "-";
             h += `<span class="rnd-lu-rating" style="color:${ratingColor2(p.rating)}">${rFmtS}</span>`;
           }
-          const r5Badge = p.r5 !== null && p.r5 !== void 0 ? p.r5 : "\uFFFD\uFFFD\uFFFD";
+          const r5Badge = p.r5 !== null && p.r5 !== void 0 ? TmUtils.formatR5(p.r5) : "\u2014";
           const r5Style = p.r5 !== null && p.r5 !== void 0 ? ` style="background:${r5Color3(p.r5)}"` : "";
           h += `<span class="rnd-lu-r5" data-pid="${p.id}"${r5Style}>${r5Badge}</span>`;
           h += `</div>`;
@@ -31398,7 +31398,7 @@ order:initial
         body.on("click", ".rnd-lu-clickable", function() {
           const clickedPid = $(this).data("pid");
           if (!clickedPid) return;
-          const players = [...liveState.mData.teams.home.lineup, ...liveState.mData.teams.away.lineup];
+          const players = [...mData.teams.home.lineup, ...mData.teams.away.lineup];
           const player2 = players.find((p) => p.id === Number(clickedPid));
           if (!player2) return;
           showPlayerDialog(player2, liveState);
@@ -33804,6 +33804,7 @@ order:initial
     const POST_DELAY = 3;
     const roundMatchCache2 = /* @__PURE__ */ new Map();
     let liveState = null;
+    let currentMData = null;
     let prematchTimer = null;
     const unity = TmMatchUnityPlayer.create({
       getLiveState: () => liveState,
@@ -34232,6 +34233,7 @@ order:initial
       const cached = roundMatchCache2.get(String(matchId));
       const show3 = (mData) => {
         var _a2;
+        currentMData = mData;
         const matchIsFuture = TmMatchUtils.isMatchFuture(mData);
         const matchIsLive = !matchIsFuture && isMatchCurrentlyLive(mData);
         if (!matchIsFuture) {
@@ -34312,6 +34314,7 @@ order:initial
           if (liveState && liveState.timer) clearTimeout(liveState.timer);
           stopLiveClockTicker();
           liveState = null;
+          currentMData = null;
           if (prematchTimer) {
             clearTimeout(prematchTimer);
             prematchTimer = null;
@@ -34385,32 +34388,45 @@ order:initial
         });
       }
       window.addEventListener("tm:match-profiles-ready", (e) => {
+        var _a2;
         console.log("[RND] Match profiles ready", e);
-        if (!(liveState == null ? void 0 : liveState.baseMData)) return;
+        const baseMData = (_a2 = liveState == null ? void 0 : liveState.baseMData) != null ? _a2 : currentMData;
+        if (!baseMData) return;
         const players = e.detail.players;
         ["home", "away"].forEach((side) => {
-          var _a2;
-          const rawLineup = Object.values(((_a2 = liveState.baseMData.lineup) == null ? void 0 : _a2[side]) || {});
+          var _a3;
+          const rawLineup = Object.values(((_a3 = baseMData.lineup) == null ? void 0 : _a3[side]) || {});
           const enrichedLineup = rawLineup.map((p) => {
-            var _a3, _b, _c, _d;
+            var _a4, _b, _c, _d, _e, _f, _g, _h;
             const player2 = players.find((pl) => Number(pl.id) === Number(p.id || p.player_id));
             return {
               ...p,
-              skills: (_a3 = player2 == null ? void 0 : player2.skills) != null ? _a3 : p.skills,
-              asi: (_b = player2 == null ? void 0 : player2.asi) != null ? _b : p.asi,
-              routine: (_c = player2 == null ? void 0 : player2.routine) != null ? _c : p.routine,
-              positions: (_d = player2 == null ? void 0 : player2.positions) != null ? _d : p.positions
+              name: (_a4 = player2 == null ? void 0 : player2.name) != null ? _a4 : p.name,
+              lastname: (_c = (_b = player2 == null ? void 0 : player2.lastname) != null ? _b : p.nameLast) != null ? _c : p.lastname,
+              r5: (_d = player2 == null ? void 0 : player2.r5) != null ? _d : p.r5,
+              skills: (_e = player2 == null ? void 0 : player2.skills) != null ? _e : p.skills,
+              asi: (_f = player2 == null ? void 0 : player2.asi) != null ? _f : p.asi,
+              routine: (_g = player2 == null ? void 0 : player2.routine) != null ? _g : p.routine,
+              positions: (_h = player2 == null ? void 0 : player2.positions) != null ? _h : p.positions
             };
           });
-          liveState.baseMData.lineup[side] = enrichedLineup.reduce((acc, player2) => {
+          baseMData.lineup[side] = enrichedLineup.reduce((acc, player2) => {
             acc[String(player2.id || player2.player_id)] = player2;
             return acc;
           }, {});
-          liveState.baseMData.teams[side].lineup = enrichedLineup;
+          baseMData.teams[side].lineup = enrichedLineup;
+          const starters = enrichedLineup.filter((p) => !/^sub/.test(p.position || ""));
+          const r5s = starters.map((p) => Number(p.r5)).filter(Number.isFinite);
+          if (r5s.length) baseMData.teams[side].avgR5 = r5s.reduce((a, b) => a + b, 0) / r5s.length;
         });
-        liveState.baseMData.profilesReady = true;
-        liveState.derivedKey = null;
-        syncLiveDerivedTeams();
+        baseMData.profilesReady = true;
+        if (liveState) {
+          liveState.derivedKey = null;
+          syncLiveDerivedTeams();
+        } else if (currentMData) {
+          const activeTab3 = getActiveOverlayTab() || "lineups";
+          renderDialogTab(activeTab3, currentMData);
+        }
       });
     };
     const renderDialogTab = (tab, mData) => {
@@ -34438,16 +34454,16 @@ order:initial
       };
       switch (tab) {
         case "details":
-          TmMatchDetails.render(body, liveState);
+          TmMatchDetails.render(body, activeState);
           break;
         case "statistics":
-          TmMatchStatistics.render(body, liveState);
+          TmMatchStatistics.render(body, activeState);
           break;
         case "report":
-          TmMatchReport.render(body, liveState);
+          TmMatchReport.render(body, activeState);
           break;
         case "lineups":
-          TmMatchLineups.render(body, liveState, sharedOpts);
+          TmMatchLineups.render(body, activeState, sharedOpts);
           break;
         case "venue":
           TmMatchVenue.render(body, activeMatchData);
@@ -34456,7 +34472,7 @@ order:initial
           TmMatchH2H.render(body, activeMatchData);
           break;
         case "league":
-          TmMatchLeague.render(body, liveState);
+          TmMatchLeague.render(body, activeState);
           break;
         case "analysis":
           TmMatchAnalysis.render(body, activeMatchData, activeMatchData.teams);
