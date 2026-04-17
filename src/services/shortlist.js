@@ -1,5 +1,6 @@
 import { _dedup, _getHtml, _post } from './engine.js';
 import { TmClubService } from './club.js';
+import { normalizeTransferPlayer, normalizeSquadPlayer } from '../utils/normalize/player.js';
 
 function cleanText(value) {
     return String(value || '').replace(/\s+/g, ' ').trim();
@@ -72,10 +73,11 @@ function isActiveBid(player) {
     return Boolean(player && (player.timeleft_string || player.curbid));
 }
 
-function buildBidSections(players) {
-    const activePlayers = Array.isArray(players) ? players.filter(isActiveBid) : [];
-    const outfield = activePlayers.filter(player => cleanText(player.fp).toUpperCase() !== 'GK');
-    const goalkeepers = activePlayers.filter(player => cleanText(player.fp).toUpperCase() === 'GK');
+function buildBidSections(rawPlayers) {
+    const players = Array.isArray(rawPlayers) ? rawPlayers.map(normalizeTransferPlayer) : [];
+    const activePlayers = players.filter(isActiveBid);
+    const outfield = activePlayers.filter(p => !p.isGK);
+    const goalkeepers = activePlayers.filter(p => p.isGK);
     const rows = [...outfield, ...goalkeepers].map(p => ({ ...p, href: buildPlayerHref(p) }));
     return rows.length ? [{ title: 'Shortlist', rows }] : [];
 }
@@ -93,13 +95,9 @@ function isActiveOwnSale(player) {
 }
 
 function toOwnSaleRow(player) {
-    const playerId = cleanText(player.player_id || player.id);
     return {
         ...player,
-        id: playerId,
-        name: cleanText(player.player_name_long || player.player_name || player.name),
-        href: playerId ? `/players/${playerId}/` : '#',
-        country: normalizeCountryCode(player.player_country || player.country),
+        href: `/players/${player.id}/`,
         timeleft: 1,
         timeleft_string: cleanText(player.expiry) || '',
         curbid: normalizeBidValue(player.transfer_bid) || normalizeBidValue(player.next_bid) || '',
@@ -134,7 +132,12 @@ export const TmShortlistService = {
             if (!clubId) return [];
 
             const squadPost = await TmClubService.fetchSquadPost(clubId);
-            const players = Object.values(squadPost || {});
+            const players = Object.values(squadPost || {}).map(raw => ({
+                ...normalizeSquadPlayer(raw),
+                expiry: raw.expiry,
+                transfer_bid: raw.transfer_bid,
+                next_bid: raw.next_bid,
+            }));
             if (!players.length) return [];
 
             const saleRows = players

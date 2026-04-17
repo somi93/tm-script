@@ -20,15 +20,14 @@ const TRAINING_SKILL_NAMES = {
 
 export const TmTrainingService = {
     adaptSquadTraining(player) {
-        const isGK = String(player?.favposition || '').split(',')[0].trim().toLowerCase() === 'gk';
-        if (isGK) return { custom: { gk: true } };
+        if (player?.isGK) return { custom: { gk: true } };
 
-        const customStr = String(player?.training_custom || '');
-        const isCustom = customStr.length === 6;
+        const customArr = Array.isArray(player?.training?.custom) ? player.training.custom : [];
+        const isCustom = customArr.length === 6 && customArr.some(v => v > 0);
         const custom = {};
         for (let index = 0; index < 6; index++) {
             custom[`team${index + 1}`] = {
-                points: isCustom ? (parseInt(customStr[index], 10) || 0) : 0,
+                points: isCustom ? (customArr[index] || 0) : 0,
                 skills: [],
                 label: TmConst.TRAINING_LABELS[index] || `Team ${index + 1}`,
             };
@@ -38,7 +37,7 @@ export const TmTrainingService = {
             custom: {
                 gk: false,
                 custom_on: isCustom ? 1 : 0,
-                team: String(player?.training || '3'),
+                team: String(player?.training?.standard || '3'),
                 custom,
             },
         };

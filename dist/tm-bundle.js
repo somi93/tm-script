@@ -6202,9 +6202,6 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     var _a2, _b, _c;
     return cleanText(((_a2 = window.SESSION) == null ? void 0 : _a2.main_id) || ((_b = window.SESSION) == null ? void 0 : _b.club_id) || ((_c = window.SESSION) == null ? void 0 : _c.id));
   }
-  function normalizeCountryCode(value) {
-    return cleanText(value).replace(/[\[\]]/g, "").toLowerCase();
-  }
   function extractArrayLiteral(html2, varName) {
     const marker = `var ${varName}`;
     const startIndex = html2.indexOf(marker);
@@ -6253,10 +6250,11 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   function isActiveBid(player2) {
     return Boolean(player2 && (player2.timeleft_string || player2.curbid));
   }
-  function buildBidSections(players) {
-    const activePlayers = Array.isArray(players) ? players.filter(isActiveBid) : [];
-    const outfield = activePlayers.filter((player2) => cleanText(player2.fp).toUpperCase() !== "GK");
-    const goalkeepers = activePlayers.filter((player2) => cleanText(player2.fp).toUpperCase() === "GK");
+  function buildBidSections(rawPlayers) {
+    const players = Array.isArray(rawPlayers) ? rawPlayers.map(normalizeTransferPlayer) : [];
+    const activePlayers = players.filter(isActiveBid);
+    const outfield = activePlayers.filter((p) => !p.isGK);
+    const goalkeepers = activePlayers.filter((p) => p.isGK);
     const rows = [...outfield, ...goalkeepers].map((p) => ({ ...p, href: buildPlayerHref(p) }));
     return rows.length ? [{ title: "Shortlist", rows }] : [];
   }
@@ -6270,13 +6268,9 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     );
   }
   function toOwnSaleRow(player2) {
-    const playerId = cleanText(player2.player_id || player2.id);
     return {
       ...player2,
-      id: playerId,
-      name: cleanText(player2.player_name_long || player2.player_name || player2.name),
-      href: playerId ? `/players/${playerId}/` : "#",
-      country: normalizeCountryCode(player2.player_country || player2.country),
+      href: `/players/${player2.id}/`,
       timeleft: 1,
       timeleft_string: cleanText(player2.expiry) || "",
       curbid: normalizeBidValue(player2.transfer_bid) || normalizeBidValue(player2.next_bid) || ""
@@ -6311,7 +6305,12 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         const clubId2 = getOwnClubId();
         if (!clubId2) return [];
         const squadPost = await TmClubService.fetchSquadPost(clubId2);
-        const players = Object.values(squadPost || {});
+        const players = Object.values(squadPost || {}).map((raw) => ({
+          ...normalizeSquadPlayer(raw),
+          expiry: raw.expiry,
+          transfer_bid: raw.transfer_bid,
+          next_bid: raw.next_bid
+        }));
         if (!players.length) return [];
         const saleRows = players.filter(isActiveOwnSale).map(toOwnSaleRow);
         if (!saleRows.length) return [];
@@ -6367,14 +6366,14 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   };
   var TmTrainingService = {
     adaptSquadTraining(player2) {
-      const isGK = String((player2 == null ? void 0 : player2.favposition) || "").split(",")[0].trim().toLowerCase() === "gk";
-      if (isGK) return { custom: { gk: true } };
-      const customStr = String((player2 == null ? void 0 : player2.training_custom) || "");
-      const isCustom = customStr.length === 6;
+      var _a2, _b;
+      if (player2 == null ? void 0 : player2.isGK) return { custom: { gk: true } };
+      const customArr = Array.isArray((_a2 = player2 == null ? void 0 : player2.training) == null ? void 0 : _a2.custom) ? player2.training.custom : [];
+      const isCustom = customArr.length === 6 && customArr.some((v) => v > 0);
       const custom = {};
       for (let index = 0; index < 6; index++) {
         custom[`team${index + 1}`] = {
-          points: isCustom ? parseInt(customStr[index], 10) || 0 : 0,
+          points: isCustom ? customArr[index] || 0 : 0,
           skills: [],
           label: TmConst.TRAINING_LABELS[index] || `Team ${index + 1}`
         };
@@ -6384,7 +6383,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         custom: {
           gk: false,
           custom_on: isCustom ? 1 : 0,
-          team: String((player2 == null ? void 0 : player2.training) || "3"),
+          team: String(((_b = player2 == null ? void 0 : player2.training) == null ? void 0 : _b.standard) || "3"),
           custom
         }
       };
@@ -33429,6 +33428,365 @@ order:initial
     }
   };
 
+  // src/components/match/tm-match-unity-player.js
+  var DEFAULT_STATE = () => ({
+    available: false,
+    ready: false,
+    playing: false,
+    pendingMinute: null,
+    loadedMinutes: [],
+    playedMinutes: [],
+    canvasParent: null,
+    tmPaused: false,
+    clipTextQueue: [],
+    clipTextCursor: 0,
+    clipTextGroups: [],
+    clipGroupCursor: 0,
+    clipPostQueue: [],
+    activeMinute: null,
+    clipFirstShown: false,
+    clipSkippedFirst: false
+  });
+  var TmMatchUnityPlayer = {
+    create(callbacks) {
+      let state5 = DEFAULT_STATE();
+      const getUW = () => typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
+      const countPlayLines = (play) => {
+        if (!play) return 1;
+        return Math.max(1, play.segments.reduce((s6, seg) => s6 + seg.text.filter((l) => l.trim()).length, 0));
+      };
+      const findPlay = (mData, min, reportEvtIdx) => {
+        var _a2;
+        const plays = ((_a2 = mData.plays) == null ? void 0 : _a2[String(min)]) || [];
+        return plays.find((p) => p.reportEvtIdx === reportEvtIdx) || null;
+      };
+      const buildClipTextQueue = (mData, minute) => {
+        var _a2;
+        callbacks.syncLiveDerivedTeams();
+        const plays = ((_a2 = mData.plays) == null ? void 0 : _a2[String(minute)]) || [];
+        const queue = [];
+        const groups = [];
+        const postQueue = [];
+        plays.forEach((play, playIdx) => {
+          let flatIdx = 0;
+          if (playIdx === 0) {
+            play.segments.forEach((seg) => {
+              const groupStart = queue.length;
+              let groupCount = 0;
+              seg.text.forEach((line) => {
+                if (!line || !line.trim()) return;
+                queue.push({ reportEvtIdx: play.reportEvtIdx, flatLineIdx: flatIdx });
+                flatIdx++;
+                groupCount++;
+              });
+              if (groupCount > 0) groups.push({ start: groupStart, count: groupCount });
+            });
+          } else {
+            play.segments.forEach((seg) => {
+              seg.text.forEach((line) => {
+                if (!line || !line.trim()) return;
+                postQueue.push({ reportEvtIdx: play.reportEvtIdx, flatLineIdx: flatIdx });
+                flatIdx++;
+              });
+            });
+          }
+        });
+        return { queue, groups, postQueue };
+      };
+      const advanceClipTextOneLine = () => {
+        const liveState = callbacks.getLiveState();
+        if (!liveState || !state5.clipTextQueue.length) return;
+        const idx = state5.clipTextCursor;
+        if (idx >= state5.clipTextQueue.length) return;
+        const entry = state5.clipTextQueue[idx];
+        state5.clipTextCursor = idx + 1;
+        const play = findPlay(liveState.mData, liveState.min, entry.reportEvtIdx);
+        const total = play ? countPlayLines(play) : 1;
+        const isComplete = entry.flatLineIdx >= total - 1;
+        callbacks.onTextAdvanced(entry.reportEvtIdx, entry.flatLineIdx, isComplete);
+        updateMatchFeed();
+        if (isComplete) updateMatchStats();
+      };
+      const flushClipText = () => {
+        const remaining = state5.clipTextQueue.length - state5.clipTextCursor;
+        const postLen = state5.clipPostQueue ? state5.clipPostQueue.length : 0;
+        console.log("[RND] flushClipText remaining=" + remaining + " postQueue=" + postLen);
+        while (state5.clipTextCursor < state5.clipTextQueue.length) {
+          advanceClipTextOneLine();
+        }
+        if (state5.clipPostQueue && state5.clipPostQueue.length > 0) {
+          state5.clipPostQueue.forEach((entry) => {
+            state5.clipTextQueue.push(entry);
+          });
+          state5.clipPostQueue = [];
+          while (state5.clipTextCursor < state5.clipTextQueue.length) {
+            advanceClipTextOneLine();
+          }
+        }
+      };
+      const advanceClipTextGroup = () => {
+        const groups = state5.clipTextGroups || [];
+        const gi = state5.clipGroupCursor || 0;
+        if (gi >= groups.length) return;
+        const group = groups[gi];
+        for (let j = 0; j < group.count; j++) {
+          if (state5.clipTextCursor < state5.clipTextQueue.length) {
+            advanceClipTextOneLine();
+          }
+        }
+        state5.clipGroupCursor = gi + 1;
+        callbacks.syncLiveDerivedTeams();
+        console.log("[RND] Advanced text group " + gi + " (" + group.count + " lines)");
+      };
+      const updateMatchFeed = () => {
+        const liveState = callbacks.getLiveState();
+        const container = $("#rnd-unity-feed");
+        if (!container.length || !liveState) return;
+        const mData = liveState.mData;
+        const curMin = liveState.min;
+        const curEvtIdx = liveState.curEvtIdx;
+        const curLineIdx = liveState.curLineIdx;
+        const allLines = [];
+        const minPlays = (mData.plays || {})[String(curMin)] || [];
+        for (const play of minPlays) {
+          if (play.reportEvtIdx > curEvtIdx) break;
+          let flatIdx = 0;
+          for (const seg of play.segments) {
+            for (const line of seg.text) {
+              if (!line.trim()) {
+                flatIdx++;
+                continue;
+              }
+              if (play.reportEvtIdx === curEvtIdx && flatIdx > curLineIdx) break;
+              allLines.push({ min: curMin, text: line });
+              flatIdx++;
+            }
+          }
+        }
+        let html2 = "";
+        allLines.forEach((item) => {
+          const text = item.text.replace(/\[(goal|yellow|red|sub|assist)\]/g, "");
+          html2 += `<div class="rnd-unity-feed-line"><span class="rnd-unity-feed-min">${item.min}'</span><span class="rnd-unity-feed-text">${text}</span></div>`;
+        });
+        container.html(html2);
+        container.scrollTop(container[0].scrollHeight);
+      };
+      const updateMatchStats = () => {
+        const liveState = callbacks.getLiveState();
+        const container = $("#rnd-unity-stats");
+        if (!container.length || !liveState) return;
+        const homeStats = liveState.mData.teams.home.stats || {};
+        const awayStats = liveState.mData.teams.away.stats || {};
+        const statRows = [
+          ["Shots", homeStats.shots, awayStats.shots],
+          ["On Target", homeStats.shotsOnTarget, awayStats.shotsOnTarget],
+          ["Goals", homeStats.goals, awayStats.goals],
+          ["Yellow", homeStats.yellowCards, awayStats.yellowCards],
+          ["Red", homeStats.redCards, awayStats.redCards]
+        ];
+        container.html(statRows.map(([label, leftValue, rightValue]) => TmMatchComparisonRow.stacked({
+          label,
+          leftValue,
+          rightValue,
+          rowClass: "rnd-unity-stat-row",
+          headerClass: "rnd-unity-stat-hdr",
+          leftValueClass: "val home",
+          rightValueClass: "val away",
+          labelClass: "rnd-unity-stat-label",
+          barClass: "rnd-unity-stat-bar",
+          leftSegmentClass: "seg home",
+          rightSegmentClass: "seg away",
+          leftLeadClass: "lead",
+          rightLeadClass: "lead"
+        })).join(""));
+      };
+      const saveUnityCanvas = () => {
+        if (!state5.available) return;
+        const webglContent = document.querySelector(".webgl-content");
+        if (!webglContent) return;
+        if (webglContent.parentElement && webglContent.parentElement.id === "rnd-unity-safe") return;
+        let safe = document.getElementById("rnd-unity-safe");
+        if (!safe) {
+          safe = document.createElement("div");
+          safe.id = "rnd-unity-safe";
+          safe.style.cssText = "position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;overflow:hidden;pointer-events:none;";
+          document.body.appendChild(safe);
+        }
+        safe.appendChild(webglContent);
+        console.log("[RND] Canvas saved to safe container");
+      };
+      const syncUnityPanelHeights = () => {
+        const vp = document.getElementById("rnd-unity-viewport");
+        if (!vp) return;
+        requestAnimationFrame(() => {
+          const h = vp.offsetHeight;
+          if (!h) return;
+          const feed = document.getElementById("rnd-unity-feed");
+          const stats = document.getElementById("rnd-unity-stats");
+          if (feed) feed.style.maxHeight = h + "px";
+          if (stats) stats.style.maxHeight = h + "px";
+        });
+      };
+      const moveUnityCanvas = () => {
+        if (!state5.available) return;
+        const webglContent = document.querySelector(".webgl-content");
+        if (!webglContent) return;
+        const target = document.getElementById("rnd-unity-viewport");
+        if (!target) return;
+        if (!state5.canvasParent) state5.canvasParent = webglContent.parentElement;
+        target.innerHTML = "";
+        target.appendChild(webglContent);
+        webglContent.style.display = "block";
+        const gc2 = document.getElementById("gameContainer");
+        if (gc2) {
+          gc2.style.width = "100%";
+          gc2.style.height = "100%";
+          gc2.style.margin = "0";
+        }
+        target.style.display = "block";
+        const row = document.querySelector(".rnd-unity-row");
+        if (row) row.classList.remove("rnd-no-unity");
+        console.log("[RND] Canvas moved into viewport");
+        syncUnityPanelHeights();
+      };
+      const playUnityClips = (minute) => {
+        const uw = getUW();
+        if (!state5.available || !uw.gameInstance) return;
+        state5.playing = true;
+        uw.gameInstance.SendMessage("ClipsViewerScript", "PlayMinute", JSON.stringify({ id: minute }));
+      };
+      const loadUnityClips = (minute, mData) => {
+        const uw = getUW();
+        if (!state5.available || !uw.gameInstance) return false;
+        const rawEvts = (mData.report || {})[String(minute)] || [];
+        const videoList = [];
+        rawEvts.forEach((evt) => {
+          var _a2;
+          const v = (_a2 = evt.chance) == null ? void 0 : _a2.video;
+          if (!v) return;
+          if (Array.isArray(v)) videoList.push(...v);
+          else videoList.push(v);
+        });
+        if (videoList.length === 0) return false;
+        console.log("[RND] Loading clips for minute", minute, videoList.length, "clips:", videoList);
+        const { queue, groups, postQueue } = buildClipTextQueue(mData, minute);
+        state5.clipTextQueue = queue;
+        state5.clipTextGroups = groups;
+        state5.clipPostQueue = postQueue;
+        state5.clipTextCursor = 0;
+        state5.clipGroupCursor = 0;
+        state5.activeMinute = minute;
+        state5.clipFirstShown = false;
+        state5.clipSkippedFirst = false;
+        state5.pendingMinute = minute;
+        const prepareMsg = JSON.stringify({ queue: videoList, id: minute });
+        console.log("[RND] SendMessage PrepareMinute", prepareMsg);
+        uw.gameInstance.SendMessage("ClipsViewerScript", "PrepareMinute", prepareMsg);
+        return true;
+      };
+      const stopTMReplay = () => {
+        const uw = getUW();
+        if (state5.tmPaused) return;
+        state5.tmPaused = true;
+        if (uw.flash_status) {
+          uw.flash_status.playback_mode = "pause";
+          uw.flash_status.enabled = false;
+        }
+        uw._orig_run_match = uw.run_match;
+        uw.run_match = function() {
+        };
+        if (uw.show_next_action_text_entry) {
+          uw._orig_show_next_action_text_entry = uw.show_next_action_text_entry;
+          uw.show_next_action_text_entry = function() {
+          };
+        }
+        if (uw.prepare_next_minute) {
+          uw._orig_prepare_next_minute = uw.prepare_next_minute;
+          uw.prepare_next_minute = function() {
+          };
+        }
+        const lastId = setTimeout(() => {
+        }, 0);
+        for (let i = lastId - 20; i <= lastId; i++) clearTimeout(i);
+        console.log("[RND] TM replay stopped completely");
+      };
+      const setupStargateOverride = () => {
+        const uw = getUW();
+        uw._orig_stargate = uw.stargate;
+        uw.stargate = function(vars) {
+          if (vars.flash_ready) {
+            state5.ready = true;
+          }
+          if (vars.finished_loading) {
+            const min = vars.finished_loading.id;
+            state5.loadedMinutes.push(min);
+            if (state5.pendingMinute === min) {
+              state5.pendingMinute = null;
+              playUnityClips(min);
+            }
+          }
+          if (vars.finished_clip) {
+            console.log("[RND] finished_clip:", JSON.stringify(vars.finished_clip));
+            if (state5.clipFirstShown && !state5.clipSkippedFirst) {
+              state5.clipSkippedFirst = true;
+              console.log("[RND] Skipping finished_clip for group 0 (already shown on start)");
+            } else {
+              advanceClipTextGroup();
+            }
+          }
+          if (vars.starting_clip) {
+            console.log("[RND] starting_clip:", JSON.stringify(vars.starting_clip));
+            state5.playing = true;
+            if (!state5.clipFirstShown) {
+              state5.clipFirstShown = true;
+              advanceClipTextGroup();
+            }
+          }
+          if (vars.finished_playing) {
+            const min = vars.finished_playing.id;
+            state5.playedMinutes.push(min);
+            state5.playing = false;
+            console.log("[RND] All clips finished for minute", min);
+            flushClipText();
+            state5.activeMinute = null;
+            callbacks.onAllClipsFinished(min);
+          }
+        };
+      };
+      const init2 = () => {
+        const uw = getUW();
+        const poll = setInterval(() => {
+          if (uw.gameInstance || uw.gameInstanceLoaded) {
+            clearInterval(poll);
+            state5.available = true;
+            state5.ready = true;
+            stopTMReplay();
+            setupStargateOverride();
+            const vp = document.getElementById("rnd-unity-viewport");
+            if (vp) {
+              moveUnityCanvas();
+              vp.style.display = "block";
+            }
+            callbacks.onUnityReady();
+          }
+        }, 500);
+        setTimeout(() => clearInterval(poll), 3e4);
+      };
+      return {
+        init: init2,
+        getState: () => state5,
+        resetState: () => {
+          state5 = DEFAULT_STATE();
+        },
+        saveUnityCanvas,
+        moveUnityCanvas,
+        loadUnityClips,
+        updateMatchFeed,
+        updateMatchStats
+      };
+    }
+  };
+
   // src/pages/match.js
   function initMatchPage(main2) {
     if (!main2 || !main2.isConnected) return;
@@ -33442,9 +33800,33 @@ order:initial
       const wrap = getOverlayTabsWrap();
       if (wrap) TmTabs.setActive(wrap, tabKey);
     };
+    const LINE_INTERVAL = 3;
+    const POST_DELAY = 3;
     const roundMatchCache2 = /* @__PURE__ */ new Map();
     let liveState = null;
     let prematchTimer = null;
+    const unity = TmMatchUnityPlayer.create({
+      getLiveState: () => liveState,
+      onTextAdvanced: (evtIdx, lineIdx, isComplete) => {
+        liveState.curEvtIdx = evtIdx;
+        liveState.curLineIdx = lineIdx;
+        liveState.curEvtComplete = isComplete;
+        liveState.justCompleted = isComplete;
+      },
+      onAllClipsFinished: (min) => {
+        if (liveState) {
+          liveState.sec = 59;
+          if (liveState.pendingFilterSwitch) {
+            applyFilterSwitch(liveState.pendingFilterSwitch);
+          }
+        }
+      },
+      onUnityReady: () => {
+        if (liveState && !liveState.playing && !liveState.ended) livePlay();
+      },
+      syncLiveDerivedTeams: () => syncLiveDerivedTeams(),
+      applyFilterSwitch: (mode) => applyFilterSwitch(mode)
+    });
     const stopLiveClockTicker = () => {
       if (!(liveState == null ? void 0 : liveState.clockTimer)) return;
       clearTimeout(liveState.clockTimer);
@@ -33480,7 +33862,7 @@ order:initial
         liveState.liveIsHT = info.isHT;
         if (liveState.min !== prevMin) {
           liveState.justCompleted = true;
-          if (!liveState.liveIsHT && unityState.activeMinute !== liveState.min) {
+          if (!liveState.liveIsHT && unity.getState().activeMinute !== liveState.min) {
             syncLiveDerivedTeams();
           } else {
             updateLiveHeader();
@@ -33512,380 +33894,6 @@ order:initial
       liveState.derivedKey = derivedKey;
       return liveState.mData;
     };
-    let unityState = {
-      available: false,
-      // gameInstance exists on page
-      ready: false,
-      // lineup loaded, ready to play clips
-      playing: false,
-      // currently playing a clip sequence
-      pendingMinute: null,
-      // minute waiting for finished_loading
-      loadedMinutes: [],
-      // minutes that finished loading
-      playedMinutes: [],
-      // minutes that finished playing
-      canvasParent: null,
-      // original parent of the Unity canvas
-      tmPaused: false,
-      // whether we've paused TM's replay
-      clipTextQueue: [],
-      // flat list of {evtIdx, lineIdx} for current minute (first event only)
-      clipTextCursor: 0,
-      // how many text lines we've shown
-      clipTextGroups: [],
-      // group boundaries [{start, count}]
-      clipGroupCursor: 0,
-      // how many groups we've shown
-      clipPostQueue: [],
-      // remaining events' text, shown after animation
-      activeMinute: null,
-      // the minute currently being clip-played
-      clipFirstShown: false,
-      // whether first text group was shown on starting_clip
-      clipSkippedFirst: false
-      // whether we skipped the first finished_clip
-    };
-    const getUW = () => {
-      return typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
-    };
-    const initUnity = () => {
-      const uw = getUW();
-      const poll = setInterval(() => {
-        if (uw.gameInstance || uw.gameInstanceLoaded) {
-          clearInterval(poll);
-          unityState.available = true;
-          unityState.ready = true;
-          stopTMReplay();
-          setupStargateOverride();
-          const vp = document.getElementById("rnd-unity-viewport");
-          if (vp) {
-            moveUnityCanvas();
-            vp.style.display = "block";
-          }
-          if (liveState && !liveState.playing && !liveState.ended) {
-            livePlay();
-          }
-        }
-      }, 500);
-      setTimeout(() => clearInterval(poll), 3e4);
-    };
-    const stopTMReplay = () => {
-      const uw = getUW();
-      if (unityState.tmPaused) return;
-      unityState.tmPaused = true;
-      if (uw.flash_status) {
-        uw.flash_status.playback_mode = "pause";
-        uw.flash_status.enabled = false;
-      }
-      uw._orig_run_match = uw.run_match;
-      uw.run_match = function() {
-      };
-      if (uw.show_next_action_text_entry) {
-        uw._orig_show_next_action_text_entry = uw.show_next_action_text_entry;
-        uw.show_next_action_text_entry = function() {
-        };
-      }
-      if (uw.prepare_next_minute) {
-        uw._orig_prepare_next_minute = uw.prepare_next_minute;
-        uw.prepare_next_minute = function() {
-        };
-      }
-      const lastId = setTimeout(() => {
-      }, 0);
-      for (let i = lastId - 20; i <= lastId; i++) {
-        clearTimeout(i);
-      }
-      console.log("[RND] TM replay stopped completely");
-    };
-    const buildClipTextQueue = (mData, minute) => {
-      var _a2;
-      syncLiveDerivedTeams();
-      const plays = ((_a2 = mData.plays) == null ? void 0 : _a2[String(minute)]) || [];
-      const queue = [];
-      const groups = [];
-      const postQueue = [];
-      plays.forEach((play, playIdx) => {
-        let flatIdx = 0;
-        if (playIdx === 0) {
-          play.segments.forEach((seg) => {
-            const groupStart = queue.length;
-            let groupCount = 0;
-            seg.text.forEach((line) => {
-              if (!line || !line.trim()) return;
-              queue.push({ reportEvtIdx: play.reportEvtIdx, flatLineIdx: flatIdx });
-              flatIdx++;
-              groupCount++;
-            });
-            if (groupCount > 0) groups.push({ start: groupStart, count: groupCount });
-          });
-        } else {
-          play.segments.forEach((seg) => {
-            seg.text.forEach((line) => {
-              if (!line || !line.trim()) return;
-              postQueue.push({ reportEvtIdx: play.reportEvtIdx, flatLineIdx: flatIdx });
-              flatIdx++;
-            });
-          });
-        }
-      });
-      return { queue, groups, postQueue };
-    };
-    const advanceClipTextOneLine = () => {
-      if (!liveState || !unityState.clipTextQueue.length) return;
-      const idx = unityState.clipTextCursor;
-      if (idx >= unityState.clipTextQueue.length) return;
-      const entry = unityState.clipTextQueue[idx];
-      unityState.clipTextCursor = idx + 1;
-      liveState.curEvtIdx = entry.reportEvtIdx;
-      liveState.curLineIdx = entry.flatLineIdx;
-      const play = findPlay(liveState.mData, liveState.min, entry.reportEvtIdx);
-      const total = play ? countPlayLines(play) : 1;
-      const isComplete = entry.flatLineIdx >= total - 1;
-      liveState.curEvtComplete = isComplete;
-      liveState.justCompleted = isComplete;
-      updateMatchFeed();
-      if (isComplete) {
-        updateMatchStats();
-      }
-      ;
-    };
-    const updateMatchFeed = () => {
-      const container = $("#rnd-unity-feed");
-      if (!container.length || !liveState) return;
-      const mData = liveState.mData;
-      const curMin = liveState.min;
-      const curEvtIdx = liveState.curEvtIdx;
-      const curLineIdx = liveState.curLineIdx;
-      const allLines = [];
-      const minPlays = (mData.plays || {})[String(curMin)] || [];
-      for (const play of minPlays) {
-        if (play.reportEvtIdx > curEvtIdx) break;
-        let flatIdx = 0;
-        for (const seg of play.segments) {
-          for (const line of seg.text) {
-            if (!line.trim()) {
-              flatIdx++;
-              continue;
-            }
-            if (play.reportEvtIdx === curEvtIdx && flatIdx > curLineIdx) break;
-            allLines.push({ min: curMin, text: line });
-            flatIdx++;
-          }
-        }
-      }
-      let html2 = "";
-      allLines.forEach((item) => {
-        const text = item.text.replace(/\[(goal|yellow|red|sub|assist)\]/g, "");
-        html2 += `<div class="rnd-unity-feed-line"><span class="rnd-unity-feed-min">${item.min}'</span><span class="rnd-unity-feed-text">${text}</span></div>`;
-      });
-      container.html(html2);
-      container.scrollTop(container[0].scrollHeight);
-    };
-    const updateMatchStats = () => {
-      const container = $("#rnd-unity-stats");
-      if (!container.length || !liveState) return;
-      const homeStats = liveState.mData.teams.home.stats || {};
-      const awayStats = liveState.mData.teams.away.stats || {};
-      const statRows = [
-        ["Shots", homeStats.shots, awayStats.shots],
-        ["On Target", homeStats.shotsOnTarget, awayStats.shotsOnTarget],
-        ["Goals", homeStats.goals, awayStats.goals],
-        ["Yellow", homeStats.yellowCards, awayStats.yellowCards],
-        ["Red", homeStats.redCards, awayStats.redCards]
-      ];
-      container.html(statRows.map(([label, leftValue, rightValue]) => TmMatchComparisonRow.stacked({
-        label,
-        leftValue,
-        rightValue,
-        rowClass: "rnd-unity-stat-row",
-        headerClass: "rnd-unity-stat-hdr",
-        leftValueClass: "val home",
-        rightValueClass: "val away",
-        labelClass: "rnd-unity-stat-label",
-        barClass: "rnd-unity-stat-bar",
-        leftSegmentClass: "seg home",
-        rightSegmentClass: "seg away",
-        leftLeadClass: "lead",
-        rightLeadClass: "lead"
-      })).join(""));
-    };
-    const flushClipText = () => {
-      if (!liveState) return;
-      const remaining = unityState.clipTextQueue.length - unityState.clipTextCursor;
-      const postLen = unityState.clipPostQueue ? unityState.clipPostQueue.length : 0;
-      console.log("[RND] flushClipText remaining=" + remaining + " postQueue=" + postLen);
-      while (unityState.clipTextCursor < unityState.clipTextQueue.length) {
-        advanceClipTextOneLine();
-      }
-      if (unityState.clipPostQueue && unityState.clipPostQueue.length > 0) {
-        unityState.clipPostQueue.forEach((entry) => {
-          unityState.clipTextQueue.push(entry);
-        });
-        unityState.clipPostQueue = [];
-        while (unityState.clipTextCursor < unityState.clipTextQueue.length) {
-          advanceClipTextOneLine();
-        }
-      }
-    };
-    const advanceClipTextGroup = () => {
-      const groups = unityState.clipTextGroups || [];
-      const gi = unityState.clipGroupCursor || 0;
-      if (gi >= groups.length) return;
-      const group = groups[gi];
-      for (let j = 0; j < group.count; j++) {
-        if (unityState.clipTextCursor < unityState.clipTextQueue.length) {
-          advanceClipTextOneLine();
-        }
-      }
-      unityState.clipGroupCursor = gi + 1;
-      syncLiveDerivedTeams();
-      console.log("[RND] Advanced text group " + gi + " (" + group.count + " lines)");
-    };
-    const setupStargateOverride = () => {
-      const uw = getUW();
-      uw._orig_stargate = uw.stargate;
-      uw.stargate = function(vars) {
-        if (vars.flash_ready) {
-          unityState.ready = true;
-        }
-        if (vars.finished_loading) {
-          const min = vars.finished_loading.id;
-          unityState.loadedMinutes.push(min);
-          if (unityState.pendingMinute === min) {
-            unityState.pendingMinute = null;
-            playUnityClips(min);
-          }
-        }
-        if (vars.finished_clip) {
-          console.log("[RND] finished_clip:", JSON.stringify(vars.finished_clip));
-          if (unityState.clipFirstShown && !unityState.clipSkippedFirst) {
-            unityState.clipSkippedFirst = true;
-            console.log("[RND] Skipping finished_clip for group 0 (already shown on start)");
-          } else {
-            advanceClipTextGroup();
-          }
-        }
-        if (vars.starting_clip) {
-          console.log("[RND] starting_clip:", JSON.stringify(vars.starting_clip));
-          unityState.playing = true;
-          if (!unityState.clipFirstShown) {
-            unityState.clipFirstShown = true;
-            advanceClipTextGroup();
-          }
-        }
-        if (vars.finished_playing) {
-          const min = vars.finished_playing.id;
-          unityState.playedMinutes.push(min);
-          unityState.playing = false;
-          console.log("[RND] All clips finished for minute", min);
-          flushClipText();
-          unityState.activeMinute = null;
-          if (liveState) {
-            liveState.sec = 59;
-            if (liveState.pendingFilterSwitch) {
-              applyFilterSwitch(liveState.pendingFilterSwitch);
-            }
-          }
-        }
-      };
-    };
-    const saveUnityCanvas = () => {
-      if (!unityState.available) return;
-      const webglContent = document.querySelector(".webgl-content");
-      if (!webglContent) return;
-      if (webglContent.parentElement && webglContent.parentElement.id === "rnd-unity-safe") return;
-      let safe = document.getElementById("rnd-unity-safe");
-      if (!safe) {
-        safe = document.createElement("div");
-        safe.id = "rnd-unity-safe";
-        safe.style.cssText = "position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;overflow:hidden;pointer-events:none;";
-        document.body.appendChild(safe);
-      }
-      safe.appendChild(webglContent);
-      console.log("[RND] Canvas saved to safe container");
-    };
-    const moveUnityCanvas = () => {
-      if (!unityState.available) return;
-      const webglContent = document.querySelector(".webgl-content");
-      if (!webglContent) return;
-      const target = document.getElementById("rnd-unity-viewport");
-      if (!target) return;
-      if (!unityState.canvasParent) unityState.canvasParent = webglContent.parentElement;
-      target.innerHTML = "";
-      target.appendChild(webglContent);
-      webglContent.style.display = "block";
-      const gc2 = document.getElementById("gameContainer");
-      if (gc2) {
-        gc2.style.width = "100%";
-        gc2.style.height = "100%";
-        gc2.style.margin = "0";
-      }
-      target.style.display = "block";
-      const row = document.querySelector(".rnd-unity-row");
-      if (row) row.classList.remove("rnd-no-unity");
-      console.log("[RND] Canvas moved into viewport");
-      syncUnityPanelHeights();
-    };
-    const syncUnityPanelHeights = () => {
-      const vp = document.getElementById("rnd-unity-viewport");
-      if (!vp) return;
-      requestAnimationFrame(() => {
-        const h = vp.offsetHeight;
-        if (!h) return;
-        const feed = document.getElementById("rnd-unity-feed");
-        const stats = document.getElementById("rnd-unity-stats");
-        if (feed) feed.style.maxHeight = h + "px";
-        if (stats) stats.style.maxHeight = h + "px";
-      });
-    };
-    const loadUnityClips = (minute, mData) => {
-      const uw = getUW();
-      if (!unityState.available || !uw.gameInstance) return false;
-      const rawEvts = (mData.report || {})[String(minute)] || [];
-      const videoList = [];
-      rawEvts.forEach((evt) => {
-        var _a2;
-        const v = (_a2 = evt.chance) == null ? void 0 : _a2.video;
-        if (!v) return;
-        if (Array.isArray(v)) videoList.push(...v);
-        else videoList.push(v);
-      });
-      if (videoList.length === 0) return false;
-      console.log("[RND] Loading clips for minute", minute, videoList.length, "clips:", videoList);
-      const { queue, groups, postQueue } = buildClipTextQueue(mData, minute);
-      unityState.clipTextQueue = queue;
-      unityState.clipTextGroups = groups;
-      unityState.clipPostQueue = postQueue;
-      unityState.clipTextCursor = 0;
-      unityState.clipGroupCursor = 0;
-      unityState.activeMinute = minute;
-      unityState.clipFirstShown = false;
-      unityState.clipSkippedFirst = false;
-      unityState.pendingMinute = minute;
-      const prepareMsg = JSON.stringify({ queue: videoList, id: minute });
-      console.log("[RND] SendMessage PrepareMinute", prepareMsg);
-      uw.gameInstance.SendMessage("ClipsViewerScript", "PrepareMinute", prepareMsg);
-      return true;
-    };
-    const playUnityClips = (minute) => {
-      const uw = getUW();
-      if (!unityState.available || !uw.gameInstance) return;
-      unityState.playing = true;
-      const playMsg = JSON.stringify({ id: minute });
-      uw.gameInstance.SendMessage("ClipsViewerScript", "PlayMinute", playMsg);
-    };
-    const LINE_INTERVAL = 3;
-    const POST_DELAY = 3;
-    const countPlayLines = (play) => {
-      if (!play) return 1;
-      return Math.max(1, play.segments.reduce((s6, seg) => s6 + seg.text.filter((l) => l.trim()).length, 0));
-    };
-    const findPlay = (mData, min, reportEvtIdx) => {
-      var _a2;
-      const plays = ((_a2 = mData.plays) == null ? void 0 : _a2[String(min)]) || [];
-      return plays.find((p) => p.reportEvtIdx === reportEvtIdx) || null;
-    };
     const calculateLiveMinute = (kickoff) => {
       const now = Math.floor(Date.now() / 1e3);
       const elapsed = now - kickoff;
@@ -33910,6 +33918,15 @@ order:initial
       const lm = mData.match_data.live_min;
       const now = Math.floor(Date.now() / 1e3);
       return now - Math.round(lm * 60);
+    };
+    const countPlayLines = (play) => {
+      if (!play) return 1;
+      return Math.max(1, play.segments.reduce((s6, seg) => s6 + seg.text.filter((l) => l.trim()).length, 0));
+    };
+    const findPlay = (mData, min, reportEvtIdx) => {
+      var _a2;
+      const plays = ((_a2 = mData.plays) == null ? void 0 : _a2[String(min)]) || [];
+      return plays.find((p) => p.reportEvtIdx === reportEvtIdx) || null;
     };
     const buildSchedule = (plays, keyOnly = false) => {
       const schedule = {};
@@ -33937,7 +33954,7 @@ order:initial
     const syncLiveDerivedTeams = () => {
       if (!(liveState == null ? void 0 : liveState.baseMData)) return;
       deriveLiveMatchData();
-      updateMatchStats();
+      unity.updateMatchStats();
       updateLiveHeader();
       refreshActiveTab();
       console.log("[RND] Live derived data synced", liveState);
@@ -34025,7 +34042,7 @@ order:initial
           liveState.timer = setTimeout(liveStep, liveState.speed);
           return;
         }
-        if (unityState.activeMinute === liveState.min) {
+        if (unity.getState().activeMinute === liveState.min) {
           updateLiveHeader();
           liveState.timer = setTimeout(liveStep, liveState.speed);
           return;
@@ -34036,8 +34053,8 @@ order:initial
         const minuteChanged = liveState.min !== prevMin;
         liveState.justCompleted = minuteChanged;
         if (minuteChanged) refreshLeagueTabIfActive(true);
-        if (minuteChanged && unityState.available && unityState.ready) {
-          const hasClips = loadUnityClips(liveState.min, liveState.mData);
+        if (minuteChanged && unity.getState().available && unity.getState().ready) {
+          const hasClips = unity.loadUnityClips(liveState.min, liveState.mData);
           if (hasClips) {
             updateLiveHeader();
             liveState.timer = setTimeout(liveStep, liveState.speed);
@@ -34053,7 +34070,7 @@ order:initial
         return;
       }
       liveState.sec++;
-      if (unityState.activeMinute === liveState.min) {
+      if (unity.getState().activeMinute === liveState.min) {
         updateLiveHeader();
         liveState.timer = setTimeout(liveStep, liveState.speed);
         return;
@@ -34081,8 +34098,8 @@ order:initial
         liveState.curEvtIdx = -1;
         liveState.curEvtComplete = false;
         refreshLeagueTabIfActive(true);
-        if (unityState.available && unityState.ready) {
-          const hasClips = loadUnityClips(liveState.min, liveState.mData);
+        if (unity.getState().available && unity.getState().ready) {
+          const hasClips = unity.loadUnityClips(liveState.min, liveState.mData);
           if (hasClips) {
             updateLiveHeader();
             liveState.timer = setTimeout(liveStep, liveState.speed);
@@ -34109,11 +34126,9 @@ order:initial
       if (!liveState || liveState.ended || liveState.playing) return;
       liveState.playing = true;
       $("#rnd-live-play-head").html("\u23F8");
-      if (unityState.activeMinute !== null) {
-        const uw = getUW();
-        if (uw.gameInstance) {
-          uw.gameInstance.SendMessage("ClipsViewerScript", "OnPauseGame");
-        }
+      if (unity.getState().activeMinute !== null) {
+        const uw = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
+        if (uw.gameInstance) uw.gameInstance.SendMessage("ClipsViewerScript", "OnPauseGame");
       }
       scheduleLiveClockTicker();
       liveStep();
@@ -34124,11 +34139,9 @@ order:initial
       clearTimeout(liveState.timer);
       stopLiveClockTicker();
       $("#rnd-live-play-head").html("\u25B6");
-      if (unityState.playing && unityState.activeMinute !== null) {
-        const uw = getUW();
-        if (uw.gameInstance) {
-          uw.gameInstance.SendMessage("ClipsViewerScript", "OnPauseGame");
-        }
+      if (unity.getState().playing && unity.getState().activeMinute !== null) {
+        const uw = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
+        if (uw.gameInstance) uw.gameInstance.SendMessage("ClipsViewerScript", "OnPauseGame");
       }
     };
     const liveToggle = () => {
@@ -34199,8 +34212,8 @@ order:initial
       liveState.justCompleted = false;
       liveState.pendingFilterSwitch = null;
       console.log("[RND] Filter switch applied: " + mode);
-      if (unityState.available && unityState.ready) {
-        loadUnityClips(liveState.min, liveState.mData);
+      if (unity.getState().available && unity.getState().ready) {
+        unity.loadUnityClips(liveState.min, liveState.mData);
       }
       syncLiveDerivedTeams();
     };
@@ -34325,7 +34338,7 @@ order:initial
             liveState.filterMode = mode;
             overlay.find(".rnd-live-filter-btn").removeClass("active");
             $(this).addClass("active");
-            if (unityState.activeMinute !== null || unityState.playing) {
+            if (unity.getState().activeMinute !== null || unity.getState().playing) {
               liveState.pendingFilterSwitch = mode;
               console.log("[RND] Filter switch deferred until animation finishes");
               return;
@@ -34374,30 +34387,23 @@ order:initial
       window.addEventListener("tm:match-profiles-ready", (e) => {
         console.log("[RND] Match profiles ready", e);
         if (!(liveState == null ? void 0 : liveState.baseMData)) return;
-        const players = e.detail.players.map((player2) => {
-          return {
-            id: player2.player.id,
-            skills: player2.player.skills,
-            asi: player2.player.asi,
-            routine: player2.player.routine,
-            positions: player2.player.positions
-          };
-        });
+        const players = e.detail.players;
         ["home", "away"].forEach((side) => {
           var _a2;
           const rawLineup = Object.values(((_a2 = liveState.baseMData.lineup) == null ? void 0 : _a2[side]) || {});
           const enrichedLineup = rawLineup.map((p) => {
+            var _a3, _b, _c, _d;
             const player2 = players.find((pl) => Number(pl.id) === Number(p.id || p.player_id));
             return {
               ...p,
-              skills: player2 == null ? void 0 : player2.skills,
-              asi: player2 == null ? void 0 : player2.asi,
-              routine: player2 == null ? void 0 : player2.routine,
-              positions: player2 == null ? void 0 : player2.positions
+              skills: (_a3 = player2 == null ? void 0 : player2.skills) != null ? _a3 : p.skills,
+              asi: (_b = player2 == null ? void 0 : player2.asi) != null ? _b : p.asi,
+              routine: (_c = player2 == null ? void 0 : player2.routine) != null ? _c : p.routine,
+              positions: (_d = player2 == null ? void 0 : player2.positions) != null ? _d : p.positions
             };
           });
           liveState.baseMData.lineup[side] = enrichedLineup.reduce((acc, player2) => {
-            acc[player2.player_id] = player2;
+            acc[String(player2.id || player2.player_id)] = player2;
             return acc;
           }, {});
           liveState.baseMData.teams[side].lineup = enrichedLineup;
@@ -34420,14 +34426,14 @@ order:initial
         curLineIdx,
         ended: true
       };
-      if (tab !== "lineups") saveUnityCanvas();
+      if (tab !== "lineups") unity.saveUnityCanvas();
       const body = $("#rnd-dlg-body");
       const sharedOpts = {
-        getUnityState: () => unityState,
-        moveUnityCanvas,
-        saveUnityCanvas,
-        updateMatchStats,
-        updateMatchFeed,
+        getUnityState: () => unity.getState(),
+        moveUnityCanvas: unity.moveUnityCanvas,
+        saveUnityCanvas: unity.saveUnityCanvas,
+        updateMatchStats: unity.updateMatchStats,
+        updateMatchFeed: unity.updateMatchFeed,
         liveState: activeState
       };
       switch (tab) {
@@ -34463,30 +34469,13 @@ order:initial
       liveState = null;
       $("#rnd-overlay").remove();
       $("body").css("overflow", "");
-      unityState = {
-        available: false,
-        ready: false,
-        playing: false,
-        pendingMinute: null,
-        loadedMinutes: [],
-        playedMinutes: [],
-        canvasParent: null,
-        tmPaused: false,
-        clipTextQueue: [],
-        clipTextCursor: 0,
-        clipTextGroups: [],
-        clipGroupCursor: 0,
-        clipPostQueue: [],
-        activeMinute: null,
-        clipFirstShown: false,
-        clipSkippedFirst: false
-      };
+      unity.resetState();
     };
     const initForCurrentPage = () => {
       var _a2;
       cleanupPage();
       injectStyles39();
-      initUnity();
+      unity.init();
       const matchId = (_a2 = window.location.pathname.match(/\/matches\/(\d+)/)) == null ? void 0 : _a2[1];
       if (!matchId) return;
       try {
@@ -39706,7 +39695,7 @@ order:initial
   var cleanText20 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var lowerText = (value) => cleanText20(value).toLowerCase();
   var escapeHtml27 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  function normalizeCountryCode2(value) {
+  function normalizeCountryCode(value) {
     const raw = cleanText20(value);
     if (!raw) return "";
     const bracketMatch = raw.match(/^\[([a-z]{2,3})\]$/i);
@@ -39718,12 +39707,12 @@ order:initial
     return lowerText(raw);
   }
   function resolvePlayerCountryCode(player2 = {}) {
-    return normalizeCountryCode2(
+    return normalizeCountryCode(
       (player2 == null ? void 0 : player2.country) || (player2 == null ? void 0 : player2.player_country) || (player2 == null ? void 0 : player2.nationality) || (player2 == null ? void 0 : player2.country_link) || (player2 == null ? void 0 : player2.country_html) || (player2 == null ? void 0 : player2.flag) || ""
     );
   }
   function matchesTargetCountry(player2, targetCountryCode) {
-    return resolvePlayerCountryCode(player2) === normalizeCountryCode2(targetCountryCode);
+    return resolvePlayerCountryCode(player2) === normalizeCountryCode(targetCountryCode);
   }
   var buttonHtml13 = (opts) => TmUI.button(opts).outerHTML;
   function injectStyles32() {
@@ -40166,12 +40155,12 @@ order:initial
     const anchor = ((_a2 = node.matches) == null ? void 0 : _a2.call(node, 'a.country_link[href*="/national-teams/"], a[href*="/national-teams/"]')) ? node : (_b = node.querySelector) == null ? void 0 : _b.call(node, 'a.country_link[href*="/national-teams/"], a[href*="/national-teams/"]');
     if (anchor) {
       const href = cleanText20(anchor.getAttribute("href"));
-      const hrefCode = normalizeCountryCode2(href);
+      const hrefCode = normalizeCountryCode(href);
       if (hrefCode) return hrefCode;
-      const classCode = normalizeCountryCode2(anchor.innerHTML);
+      const classCode = normalizeCountryCode(anchor.innerHTML);
       if (classCode) return classCode;
     }
-    const htmlCode = normalizeCountryCode2(node.innerHTML || "");
+    const htmlCode = normalizeCountryCode(node.innerHTML || "");
     if (htmlCode) return htmlCode;
     return "";
   }
@@ -40351,7 +40340,7 @@ order:initial
         const clubAnchor = row.querySelector('a[club_link], a[href*="/club/"]');
         if (!playerAnchor || !clubAnchor) return;
         const playerCountryCode = extractTransferPlayerCountryCode(row, playerAnchor);
-        if (!playerCountryCode || playerCountryCode !== normalizeCountryCode2(targetCountryCode)) return;
+        if (!playerCountryCode || playerCountryCode !== normalizeCountryCode(targetCountryCode)) return;
         const playerId = extractPlayerId2(playerAnchor);
         const clubId2 = extractClubId3(clubAnchor);
         if (!playerId) return;
@@ -40435,7 +40424,7 @@ order:initial
       const resolvedSkills = TmApi._resolveSkills(calcPlayer, defs, null);
       const numericSkills = TmApi._toNumericSkills(resolvedSkills);
       if (!numericSkills.length || !Number.isFinite(calcPlayer.asi)) return null;
-      const positionKeys = String(calcPlayer.favposition || calcPlayer.fp || (calcPlayer.isGK ? "gk" : "")).split(",").map((value) => value.trim().toLowerCase()).filter(Boolean);
+      const positionKeys = Array.isArray(calcPlayer.positions) && calcPlayer.positions.some((p) => p.preferred) ? calcPlayer.positions.filter((p) => p.preferred).map((p) => p.key) : String(calcPlayer.favposition || calcPlayer.fp || (calcPlayer.isGK ? "gk" : "")).split(",").map((value) => value.trim().toLowerCase()).filter(Boolean);
       const ratings = positionKeys.map((positionKey) => TmConst.POSITION_MAP[positionKey]).filter(Boolean).map((positionData) => Number(TmLib.calculatePlayerR5(positionData, {
         ...calcPlayer,
         skills: numericSkills,
@@ -40449,16 +40438,16 @@ order:initial
     }
   }
   function buildCandidateRecord(player2, club, clubId2 = "", clubName2 = "") {
-    var _a2;
+    var _a2, _b;
     return {
-      playerId: cleanText20((player2 == null ? void 0 : player2.player_id) || (player2 == null ? void 0 : player2.id)),
+      playerId: cleanText20((player2 == null ? void 0 : player2.id) || (player2 == null ? void 0 : player2.player_id)),
       name: cleanText20((player2 == null ? void 0 : player2.name) || (player2 == null ? void 0 : player2.player_name)) || "Unknown player",
       country: resolvePlayerCountryCode(player2),
       age: Number(player2 == null ? void 0 : player2.age) || 0,
       months: Number((_a2 = player2 == null ? void 0 : player2.months) != null ? _a2 : player2 == null ? void 0 : player2.month) || 0,
-      asi: TmUtils.parseNum((player2 == null ? void 0 : player2.skill_index) || (player2 == null ? void 0 : player2.asi)),
+      asi: TmUtils.parseNum((_b = player2 == null ? void 0 : player2.asi) != null ? _b : player2 == null ? void 0 : player2.skill_index),
       r5: computeCandidateR5(player2),
-      position: cleanText20((player2 == null ? void 0 : player2.favposition) || (player2 == null ? void 0 : player2.fp)),
+      position: Array.isArray(player2 == null ? void 0 : player2.positions) && player2.positions.some((p) => p.preferred) ? player2.positions.filter((p) => p.preferred).map((p) => p.key).join(",") : cleanText20((player2 == null ? void 0 : player2.favposition) || (player2 == null ? void 0 : player2.fp)),
       clubId: cleanText20(clubId2 || (player2 == null ? void 0 : player2.club_id) || (club == null ? void 0 : club.id)),
       clubName: cleanText20(clubName2 || (player2 == null ? void 0 : player2.club_name) || (club == null ? void 0 : club.club_name)) || "Unknown club",
       clubCreated: lowerText(club == null ? void 0 : club.created),
@@ -41002,7 +40991,7 @@ order:initial
     return [...seenPlayers.values()];
   }
   async function processTransferCandidates(state5, transferCandidates) {
-    const targetCountryCode = normalizeCountryCode2(state5.countryCode);
+    const targetCountryCode = normalizeCountryCode(state5.countryCode);
     const totalTooltipBatches = Math.ceil(transferCandidates.length / 10);
     let completedTooltipBatches = 0;
     for (let batchStart = 0; batchStart < transferCandidates.length; batchStart += 10) {
@@ -41137,7 +41126,7 @@ order:initial
           tooltipData = squadTooltipMap.get(cleanText20(squadPlayer.id || squadPlayer.player_id)) || null;
           countryCode = resolvePlayerCountryCode(tooltipData == null ? void 0 : tooltipData.player);
         }
-        if (countryCode !== normalizeCountryCode2(state5.countryCode)) continue;
+        if (countryCode !== normalizeCountryCode(state5.countryCode)) continue;
         const player2 = (tooltipData == null ? void 0 : tooltipData.player) || squadPlayer;
         const club = (tooltipData == null ? void 0 : tooltipData.club) || {
           id: flaggedClub.clubId,
@@ -48522,18 +48511,17 @@ order:initial
       if (!player2) return null;
       return {
         ...player2,
-        name: player2.name || player2.lastname || String(player2.player_id || ""),
+        name: player2.name || player2.lastname || String(player2.id || ""),
         rec: player2._fmRec != null ? player2._fmRec : player2.rec,
         r5: player2._fmR5 != null ? player2._fmR5 : player2.r5,
         routine: Number.isFinite(parseFloat(player2.routine)) ? parseFloat(player2.routine) : null
       };
     };
-    const parseFavPositions = (player2) => String((player2 == null ? void 0 : player2.favposition) || (player2 == null ? void 0 : player2.fp) || "").split(",").map((pos) => pos.trim().toLowerCase()).filter(Boolean);
     const getPositionRating = (player2, posKey2) => {
       var _a3, _b;
       const positionId = (_a3 = TmConst.POSITION_MAP[String(posKey2 || "").toLowerCase()]) == null ? void 0 : _a3.id;
-      if (positionId == null || !((_b = player2 == null ? void 0 : player2.allPositionRatings) == null ? void 0 : _b.length)) return null;
-      return player2.allPositionRatings.find((rating) => rating.id === positionId) || null;
+      if (positionId == null || !((_b = player2 == null ? void 0 : player2.positions) == null ? void 0 : _b.length)) return null;
+      return player2.positions.find((rating) => rating.id === positionId) || null;
     };
     const getSlotRecommendation = (player2, posKey2) => {
       const rating = getPositionRating(player2, posKey2);
@@ -48560,7 +48548,7 @@ order:initial
       var _a3, _b;
       const placed = TmConst.POSITION_MAP[String(posKey2 || "").toLowerCase()];
       if (!placed) return 0;
-      const favEntries = parseFavPositions(player2).map((favKey) => TmConst.POSITION_MAP[favKey] || null).filter(Boolean);
+      const favEntries = Array.isArray(player2 == null ? void 0 : player2.positions) ? player2.positions.filter((pos) => pos.preferred) : [];
       if (!favEntries.length) return 0;
       if (placed.row === 0) return favEntries.some((entry) => entry.row === 0) ? 0 : 4;
       if (favEntries.some((entry) => entry.row === 0)) return 4;
@@ -48580,8 +48568,8 @@ order:initial
     const sortedPlayers = () => {
       var _a3, _b, _c, _d;
       const rows = Object.values(data.players || {}).map((p) => {
-        const fmPosKey = getFieldPosKey(p.player_id);
-        const benchRole = !fmPosKey ? getBenchRole(p.player_id) : null;
+        const fmPosKey = getFieldPosKey(String(p.id));
+        const benchRole = !fmPosKey ? getBenchRole(String(p.id)) : null;
         let _fmR5, _fmRec;
         if (fmPosKey) {
           const rating = getPositionRating(p, fmPosKey);
@@ -48603,14 +48591,14 @@ order:initial
         }
         return {
           ...p,
-          _fmOrder: getSortKey(p.player_id),
+          _fmOrder: getSortKey(String(p.id)),
           _fmPosKey: fmPosKey,
           _benchRole: benchRole,
           _fmR5,
           _fmRec
         };
       }).filter((p) => !p._benchRole).sort((a, b) => a._fmOrder - b._fmOrder);
-      _firstOutPid = (_b = (_a3 = rows.find((p) => getFieldPosKey(p.player_id) === null)) == null ? void 0 : _a3.player_id) != null ? _b : null;
+      _firstOutPid = (_b = (_a3 = rows.find((p) => getFieldPosKey(String(p.id)) === null)) == null ? void 0 : _a3.id) != null ? _b : null;
       BENCH_SLOTS2.forEach((role, idx) => {
         const pid = assignment[role];
         const player2 = pid ? players_by_id[String(pid)] || null : null;
@@ -48633,7 +48621,7 @@ order:initial
             _benchSlotFilled: false,
             _benchRole: role,
             _fmOrder: 100 + idx,
-            player_id: `_bench_${role}`,
+            id: `_bench_${role}`,
             no: "",
             name: "",
             lastname: "",
@@ -48644,7 +48632,7 @@ order:initial
           });
         }
       });
-      _firstSubPid = (_d = (_c = rows.find((p) => p._isBenchPlaceholder && p._benchSlotFilled)) == null ? void 0 : _c.player_id) != null ? _d : null;
+      _firstSubPid = (_d = (_c = rows.find((p) => p._isBenchPlaceholder && p._benchSlotFilled)) == null ? void 0 : _c.id) != null ? _d : null;
       rows.sort((a, b) => a._fmOrder - b._fmOrder);
       let _ms = false, _mo = false;
       for (const r of rows) {
@@ -48819,7 +48807,7 @@ order:initial
       slotEl.classList.toggle("tmtc-slot-empty", !player2);
       if (player2) {
         slotEl.setAttribute("draggable", "true");
-        slotEl.dataset.playerId = player2.player_id;
+        slotEl.dataset.playerId = String(player2.id);
         slotEl.removeEventListener("dragstart", onFieldDragStart);
         slotEl.addEventListener("dragstart", onFieldDragStart);
         const slotRec = getSlotRecommendation(player2, posKey2);
@@ -48862,7 +48850,7 @@ order:initial
       if (player2) {
         const inner = document.createElement("div");
         inner.setAttribute("draggable", "true");
-        inner.dataset.playerId = player2.player_id;
+        inner.dataset.playerId = String(player2.id);
         inner.className = "tmtc-bench-inner";
         inner.innerHTML = `<span class="tmtc-bench-name">${escHtml(player2.lastname || player2.name || "")}${playerStatusIconsHtml(player2)}</span>`;
         inner.addEventListener("dragstart", onBenchDragStart);
@@ -48882,16 +48870,16 @@ order:initial
         density: "tight",
         rowAttrs: (p) => {
           if (p._isBenchPlaceholder && p._benchSlotFilled)
-            return { draggable: "true", "data-player-id": p.player_id, "data-bench-role": p._benchRole };
+            return { draggable: "true", "data-player-id": p.id, "data-bench-role": p._benchRole };
           if (p._isBenchPlaceholder)
             return { "data-bench-role": p._benchRole };
-          return { draggable: "true", "data-player-id": p.player_id };
+          return { draggable: "true", "data-player-id": p.id };
         },
         rowCls: (p) => {
           const sep = p._needsSep ? " tmtc-row-sep" : "";
           if (p._isBenchPlaceholder && p._benchSlotFilled) return "tmtc-row-on-bench" + sep;
           if (p._isBenchPlaceholder) return "tmtc-row-bench-placeholder" + sep;
-          if (getFieldPosKey(p.player_id)) return "tmtc-row-on-field" + sep;
+          if (getFieldPosKey(String(p.id))) return "tmtc-row-on-field" + sep;
           return "tmtc-row-out" + sep;
         },
         headers: [
@@ -48902,11 +48890,11 @@ order:initial
             cls: "tmtc-pb-cell",
             thCls: "tmtc-pb-cell",
             render: (_, p) => {
-              var _a3, _b;
+              var _a3, _b, _c;
               if (p._isBenchPlaceholder && !p._benchSlotFilled)
                 return '<span class="tmtc-pb-inner" style="background:var(--tmu-border-soft-alpha)"></span>';
-              const posStr = (p._fmPosKey || ((_a3 = String(p.favposition || "").split(",")[0]) == null ? void 0 : _a3.trim()) || "").toLowerCase();
-              const color = ((_b = TmConst.POSITION_MAP[posStr]) == null ? void 0 : _b.color) || "var(--tmu-text-dim)";
+              const posStr = (p._fmPosKey || ((_b = (_a3 = p.positions) == null ? void 0 : _a3.find((pos) => pos.preferred)) == null ? void 0 : _b.key) || "").toLowerCase();
+              const color = ((_c = TmConst.POSITION_MAP[posStr]) == null ? void 0 : _c.color) || "var(--tmu-text-dim)";
               return `<span class="tmtc-pb-inner" style="background:${color}"></span>`;
             }
           },
@@ -48925,12 +48913,13 @@ order:initial
             width: "68px",
             sortable: false,
             render: (v, p) => {
+              var _a3;
               if (p._isBenchPlaceholder)
                 return `<span class="tmtc-sub-badge"${!p._benchSlotFilled ? ' style="opacity:.55"' : ""}>${escHtml(BENCH_LABELS2[p._benchRole] || p._benchRole)}</span>`;
               if (p._benchRole)
                 return `<span class="tmtc-sub-badge">${escHtml(BENCH_LABELS2[p._benchRole] || p._benchRole)}</span>`;
               if (!v) {
-                const positions = String((p == null ? void 0 : p.favposition) || "").split(",").map((s6) => s6.trim()).filter(Boolean);
+                const positions = ((_a3 = p == null ? void 0 : p.positions) == null ? void 0 : _a3.filter((pos) => pos.preferred).map((pos) => pos.key)) || [];
                 if (!positions.length) return "";
                 return `<span style="opacity:0.45;filter:grayscale(1)">${TmPosition.chip(positions)}</span>`;
               }
@@ -48943,7 +48932,7 @@ order:initial
             render: (_, p) => {
               if (p._isBenchPlaceholder && !p._benchSlotFilled)
                 return '<span style="color:var(--tmu-text-disabled);font-style:italic">drop player here</span>';
-              return `${CountryFlag.render(p.country, "tmtc-player-flag")}<a href="/players/${p.player_id}/" style="color:var(--tmu-text-inverse);text-decoration:none;font-weight:600" onclick="event.stopPropagation()">${escHtml(p.lastname || p.name || "")}</a>${playerStatusIconsHtml(p)}`;
+              return `${CountryFlag.render(p.country, "tmtc-player-flag")}<a href="/players/${p.id}/" style="color:var(--tmu-text-inverse);text-decoration:none;font-weight:600" onclick="event.stopPropagation()">${escHtml(p.lastname || p.name || "")}</a>${playerStatusIconsHtml(p)}`;
             }
           },
           {
@@ -49364,12 +49353,12 @@ order:initial
             const chip = document.createElement("span");
             chip.className = "tmtc-role-chip";
             chip.setAttribute("draggable", "true");
-            chip.dataset.playerId = p.player_id;
+            chip.dataset.playerId = String(p.id);
             chip.textContent = p.lastname || p.name || "";
             chip.addEventListener("dragstart", (e) => {
-              dragState = { pid: String(p.player_id), fromType: "bench", fromRoleKey: role };
+              dragState = { pid: String(p.id), fromType: "bench", fromRoleKey: role };
               e.dataTransfer.effectAllowed = "move";
-              e.dataTransfer.setData("text/plain", String(p.player_id));
+              e.dataTransfer.setData("text/plain", String(p.id));
               chip.classList.add("tmtc-drag-source");
             });
             slot.appendChild(chip);
@@ -49586,7 +49575,7 @@ order:initial
     }).filter((s6) => s6.posId != null);
     let players = Object.values(players_by_id).filter((p2) => {
       var _a2;
-      return (p2 == null ? void 0 : p2.player_id) && ((_a2 = p2.allPositionRatings) == null ? void 0 : _a2.length) && !isUnavailable(p2);
+      return (p2 == null ? void 0 : p2.id) && ((_a2 = p2.positions) == null ? void 0 : _a2.length) && !isUnavailable(p2);
     });
     const n = activeSlots.length;
     if (!players.length || !n) return {};
@@ -49598,7 +49587,7 @@ order:initial
         const ranked = foreigners.map((p2) => ({
           p: p2,
           best: Math.max(0, ...posIds.map((posId) => {
-            const r = p2.allPositionRatings.find((rt) => rt.id === posId);
+            const r = p2.positions.find((rt) => rt.id === posId);
             return r ? parseFloat(r.r5) || 0 : 0;
           }))
         })).sort((a, b) => b.best - a.best).slice(0, maxForeigners).map(({ p: p2 }) => p2);
@@ -49607,7 +49596,7 @@ order:initial
     }
     const profit = players.map(
       (p2) => activeSlots.map(({ posId }) => {
-        const r = p2.allPositionRatings.find((rt) => rt.id === posId);
+        const r = p2.positions.find((rt) => rt.id === posId);
         return r ? parseFloat(r.r5) || 0 : 0;
       })
     );
@@ -49657,7 +49646,7 @@ order:initial
     }
     const result = {};
     for (let j = 1; j <= n; j++) {
-      result[activeSlots[j - 1].posKey] = players[p[j] - 1].player_id;
+      result[activeSlots[j - 1].posKey] = players[p[j] - 1].id;
     }
     return result;
   }
@@ -49675,8 +49664,8 @@ order:initial
       if (!pid) continue;
       const p = players_by_id[String(pid)];
       const posId = (_a2 = TmConst.POSITION_MAP[posKey2]) == null ? void 0 : _a2.id;
-      if (!(p == null ? void 0 : p.allPositionRatings) || posId == null) continue;
-      const r = p.allPositionRatings.find((rt) => rt.id === posId);
+      if (!(p == null ? void 0 : p.positions) || posId == null) continue;
+      const r = p.positions.find((rt) => rt.id === posId);
       if (r) total += parseFloat(r.r5) || 0;
     }
     return total;
@@ -49684,7 +49673,7 @@ order:initial
   function findBestR5Formation(players_by_id, gkPid) {
     const outfieldById = {};
     for (const [id, p] of Object.entries(players_by_id)) {
-      if (String(p == null ? void 0 : p.player_id) !== String(gkPid) && !isUnavailable(p)) outfieldById[id] = p;
+      if (String(p == null ? void 0 : p.id) !== String(gkPid) && !isUnavailable(p)) outfieldById[id] = p;
     }
     const gkPlayer = gkPid ? players_by_id[String(gkPid)] || null : null;
     const outfieldMaxForeigners = clubCountry ? isForeigner(gkPlayer) ? 4 : 5 : Infinity;
@@ -49747,13 +49736,13 @@ order:initial
           const MID_POS = /* @__PURE__ */ new Set(["dmc", "dmcl", "dmcr", "mc", "mcl", "mcr", "omc", "omcl", "omcr"]);
           const WING_POS = /* @__PURE__ */ new Set(["dml", "dmr", "ml", "mr", "oml", "omr"]);
           const FWD_POS = /* @__PURE__ */ new Set(["fc", "fcl", "fcr"]);
-          const avail = Object.values(players_by_id).filter((p) => (p == null ? void 0 : p.player_id) && !usedPids.has(String(p.player_id)) && !isUnavailable(p)).map((p) => {
+          const avail = Object.values(players_by_id).filter((p) => (p == null ? void 0 : p.id) && !usedPids.has(String(p.id)) && !isUnavailable(p)).map((p) => {
             var _a3;
-            const r5 = ((_a3 = p.allPositionRatings) == null ? void 0 : _a3.length) ? Math.max(0, ...p.allPositionRatings.map((r) => parseFloat(r.r5) || 0)) : parseFloat(p.rec_sort) || 0;
+            const r5 = ((_a3 = p.positions) == null ? void 0 : _a3.length) ? Math.max(0, ...p.positions.map((r) => parseFloat(r.r5) || 0)) : parseFloat(p.rec_sort) || 0;
             const favPositions = new Set(
-              String(p.favposition || "").split(",").map((s6) => s6.trim().toLowerCase()).filter(Boolean)
+              p.positions ? p.positions.filter((pos) => pos.preferred).map((pos) => pos.key) : []
             );
-            return { pid: p.player_id, player: p, favPositions, ratings: p.allPositionRatings || [], r5 };
+            return { pid: p.id, player: p, favPositions, ratings: p.positions || [], r5 };
           }).sort((a, b) => b.r5 - a.r5);
           const pickBestSub = (posSet) => {
             const posIds = new Set(
@@ -49806,13 +49795,13 @@ order:initial
           const MID_POS = /* @__PURE__ */ new Set(["dmc", "dmcl", "dmcr", "mc", "mcl", "mcr", "omc", "omcl", "omcr"]);
           const WING_POS = /* @__PURE__ */ new Set(["dml", "dmr", "ml", "mr", "oml", "omr"]);
           const FWD_POS = /* @__PURE__ */ new Set(["fc", "fcl", "fcr"]);
-          const avail = Object.values(players_by_id).filter((p) => (p == null ? void 0 : p.player_id) && !usedPids.has(String(p.player_id)) && !isUnavailable(p)).map((p) => {
+          const avail = Object.values(players_by_id).filter((p) => (p == null ? void 0 : p.id) && !usedPids.has(String(p.id)) && !isUnavailable(p)).map((p) => {
             var _a3;
-            const r5 = ((_a3 = p.allPositionRatings) == null ? void 0 : _a3.length) ? Math.max(0, ...p.allPositionRatings.map((r) => parseFloat(r.r5) || 0)) : parseFloat(p.rec_sort) || 0;
+            const r5 = ((_a3 = p.positions) == null ? void 0 : _a3.length) ? Math.max(0, ...p.positions.map((r) => parseFloat(r.r5) || 0)) : parseFloat(p.rec_sort) || 0;
             const favPositions = new Set(
-              String(p.favposition || "").split(",").map((s6) => s6.trim().toLowerCase()).filter(Boolean)
+              p.positions ? p.positions.filter((pos) => pos.preferred).map((pos) => pos.key) : []
             );
-            return { pid: p.player_id, player: p, favPositions, ratings: p.allPositionRatings || [], r5 };
+            return { pid: p.id, player: p, favPositions, ratings: p.positions || [], r5 };
           }).sort((a, b) => b.r5 - a.r5);
           const pickBestSub = (posSet) => {
             const posIds = new Set(

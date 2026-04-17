@@ -84,7 +84,7 @@ function pickBest11(activeKeys, players_by_id, maxForeigners = 5) {
     const activeSlots = [...activeKeys]
         .map(pk => ({ posKey: pk, posId: TmConst.POSITION_MAP[pk]?.id }))
         .filter(s => s.posId != null);
-    let players = Object.values(players_by_id).filter(p => p?.player_id && p.allPositionRatings?.length && !isUnavailable(p));
+    let players = Object.values(players_by_id).filter(p => p?.id && p.positions?.length && !isUnavailable(p));
     const n = activeSlots.length;
     if (!players.length || !n) return {};
 
@@ -99,7 +99,7 @@ function pickBest11(activeKeys, players_by_id, maxForeigners = 5) {
                 .map(p => ({
                     p,
                     best: Math.max(0, ...posIds.map(posId => {
-                        const r = p.allPositionRatings.find(rt => rt.id === posId);
+                        const r = p.positions.find(rt => rt.id === posId);
                         return r ? (parseFloat(r.r5) || 0) : 0;
                     }))
                 }))
@@ -113,7 +113,7 @@ function pickBest11(activeKeys, players_by_id, maxForeigners = 5) {
     // profit[i][j] = player i R5 at slot j's posId (0 = no rating)
     const profit = players.map(p =>
         activeSlots.map(({ posId }) => {
-            const r = p.allPositionRatings.find(rt => rt.id === posId);
+            const r = p.positions.find(rt => rt.id === posId);
             return r ? (parseFloat(r.r5) || 0) : 0;
         })
     );
@@ -158,7 +158,7 @@ function pickBest11(activeKeys, players_by_id, maxForeigners = 5) {
 
     const result = {};
     for (let j = 1; j <= n; j++) {
-        result[activeSlots[j - 1].posKey] = players[p[j] - 1].player_id;
+        result[activeSlots[j - 1].posKey] = players[p[j] - 1].id;
     }
     return result;
 }
@@ -179,8 +179,8 @@ function computeAssignmentR5(assignment, players_by_id) {
         if (!pid) continue;
         const p = players_by_id[String(pid)];
         const posId = TmConst.POSITION_MAP[posKey]?.id;
-        if (!p?.allPositionRatings || posId == null) continue;
-        const r = p.allPositionRatings.find(rt => rt.id === posId);
+        if (!p?.positions || posId == null) continue;
+        const r = p.positions.find(rt => rt.id === posId);
         if (r) total += parseFloat(r.r5) || 0;
     }
     return total;
@@ -192,7 +192,7 @@ function findBestR5Formation(players_by_id, gkPid) {
     // Exclude GK from the candidate pool
     const outfieldById = {};
     for (const [id, p] of Object.entries(players_by_id)) {
-        if (String(p?.player_id) !== String(gkPid) && !isUnavailable(p)) outfieldById[id] = p;
+        if (String(p?.id) !== String(gkPid) && !isUnavailable(p)) outfieldById[id] = p;
     }
 
     // If the GK is a foreigner, the outfield can only have (5 - 1) = 4 foreigners.
@@ -272,15 +272,15 @@ export function mountTacticsPanel(container, data, initialSettings, opts, lineup
                 const FWD_POS = new Set(['fc', 'fcl', 'fcr']);
 
                 const avail = Object.values(players_by_id)
-                    .filter(p => p?.player_id && !usedPids.has(String(p.player_id)) && !isUnavailable(p))
+                    .filter(p => p?.id && !usedPids.has(String(p.id)) && !isUnavailable(p))
                     .map(p => {
-                        const r5 = p.allPositionRatings?.length
-                            ? Math.max(0, ...p.allPositionRatings.map(r => parseFloat(r.r5) || 0))
+                        const r5 = p.positions?.length
+                            ? Math.max(0, ...p.positions.map(r => parseFloat(r.r5) || 0))
                             : (parseFloat(p.rec_sort) || 0);
                         const favPositions = new Set(
-                            String(p.favposition || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean)
+                            p.positions ? p.positions.filter(pos => pos.preferred).map(pos => pos.key) : []
                         );
-                        return { pid: p.player_id, player: p, favPositions, ratings: p.allPositionRatings || [], r5 };
+                        return { pid: p.id, player: p, favPositions, ratings: p.positions || [], r5 };
                     })
                     .sort((a, b) => b.r5 - a.r5);
 
@@ -342,15 +342,15 @@ export function mountTacticsPanel(container, data, initialSettings, opts, lineup
                 const FWD_POS  = new Set(['fc', 'fcl', 'fcr']);
 
                 const avail = Object.values(players_by_id)
-                    .filter(p => p?.player_id && !usedPids.has(String(p.player_id)) && !isUnavailable(p))
+                    .filter(p => p?.id && !usedPids.has(String(p.id)) && !isUnavailable(p))
                     .map(p => {
-                        const r5 = p.allPositionRatings?.length
-                            ? Math.max(0, ...p.allPositionRatings.map(r => parseFloat(r.r5) || 0))
+                        const r5 = p.positions?.length
+                            ? Math.max(0, ...p.positions.map(r => parseFloat(r.r5) || 0))
                             : (parseFloat(p.rec_sort) || 0);
                         const favPositions = new Set(
-                            String(p.favposition || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean)
+                            p.positions ? p.positions.filter(pos => pos.preferred).map(pos => pos.key) : []
                         );
-                        return { pid: p.player_id, player: p, favPositions, ratings: p.allPositionRatings || [], r5 };
+                        return { pid: p.id, player: p, favPositions, ratings: p.positions || [], r5 };
                     })
                     .sort((a, b) => b.r5 - a.r5);
 

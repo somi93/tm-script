@@ -6,12 +6,13 @@ import { TmMatchUtils } from '../utils/match.js';
 import { TmMatchH2H } from '../components/match/tm-match-h2h.js';
 import { TmMatchLeague } from '../components/match/tm-match-league.js';
 import { TmMatchLineups } from '../components/match/tm-match-lineups.js';
-import { TmMatchComparisonRow } from '../components/match/tm-match-comparison-row.js';
+
 import { TmMatchStatistics } from '../components/match/tm-match-statistics.js';
 import { TmMatchStyles } from '../components/match/tm-match-styles.js';
 import { TmMatchVenue } from '../components/match/tm-match-venue.js';
 import { TmTabs } from '../components/shared/tm-tabs.js';
 import { TmMatchService } from '../services/match.js';
+import { TmMatchUnityPlayer } from '../components/match/tm-match-unity-player.js';
 
 export function initMatchPage(main) {
     if (!main || !main.isConnected) return;
@@ -25,6 +26,8 @@ export function initMatchPage(main) {
     };
 
     // ─── Match cache & rating cells ─────────────────────────────────────
+    const LINE_INTERVAL = 3;  // seconds between lines within a minute
+    const POST_DELAY = 3;     // seconds after last line before advancing to next minute
     const roundMatchCache = new Map(); // matchId -> {homeR5, awayR5, data}
 
     // ─── Match dialog ────────────────────────────────────────────────────
@@ -33,6 +36,30 @@ export function initMatchPage(main) {
     let prematchTimer = null;
     // liveState = { min, sec, curEvtIdx, curLineIdx, playing, timer, mData, speed:1000,
     //               maxMin, ended, schedule, eventMinList, eventMinIdx }
+
+    // ── Unity 3D player ──
+    const unity = TmMatchUnityPlayer.create({
+        getLiveState: () => liveState,
+        onTextAdvanced: (evtIdx, lineIdx, isComplete) => {
+            liveState.curEvtIdx = evtIdx;
+            liveState.curLineIdx = lineIdx;
+            liveState.curEvtComplete = isComplete;
+            liveState.justCompleted = isComplete;
+        },
+        onAllClipsFinished: (min) => {
+            if (liveState) {
+                liveState.sec = 59;
+                if (liveState.pendingFilterSwitch) {
+                    applyFilterSwitch(liveState.pendingFilterSwitch);
+                }
+            }
+        },
+        onUnityReady: () => {
+            if (liveState && !liveState.playing && !liveState.ended) livePlay();
+        },
+        syncLiveDerivedTeams: () => syncLiveDerivedTeams(),
+        applyFilterSwitch: (mode) => applyFilterSwitch(mode),
+    });
 
     const stopLiveClockTicker = () => {
         if (!liveState?.clockTimer) return;
@@ -75,7 +102,7 @@ export function initMatchPage(main) {
 
             if (liveState.min !== prevMin) {
                 liveState.justCompleted = true;
-                if (!liveState.liveIsHT && unityState.activeMinute !== liveState.min) {
+                if (!liveState.liveIsHT && unity.getState().activeMinute !== liveState.min) {
                     syncLiveDerivedTeams();
                 } else {
                     updateLiveHeader();
@@ -111,431 +138,6 @@ export function initMatchPage(main) {
         return liveState.mData;
     };
 
-    // ── Unity 3D integration state ──
-    let unityState = {
-        available: false,       // gameInstance exists on page
-        ready: false,           // lineup loaded, ready to play clips
-        playing: false,         // currently playing a clip sequence
-        pendingMinute: null,    // minute waiting for finished_loading
-        loadedMinutes: [],      // minutes that finished loading
-        playedMinutes: [],      // minutes that finished playing
-        canvasParent: null,     // original parent of the Unity canvas
-        tmPaused: false,        // whether we've paused TM's replay
-        clipTextQueue: [],      // flat list of {evtIdx, lineIdx} for current minute (first event only)
-        clipTextCursor: 0,      // how many text lines we've shown
-        clipTextGroups: [],     // group boundaries [{start, count}]
-        clipGroupCursor: 0,     // how many groups we've shown
-        clipPostQueue: [],      // remaining events' text, shown after animation
-        activeMinute: null,     // the minute currently being clip-played
-        clipFirstShown: false,  // whether first text group was shown on starting_clip
-        clipSkippedFirst: false, // whether we skipped the first finished_clip
-    };
-
-    // ── Unity integration helpers ──
-    const getUW = () => {
-        return typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
-    };
-
-    const initUnity = () => {
-        const uw = getUW();
-        const poll = setInterval(() => {
-            if (uw.gameInstance || uw.gameInstanceLoaded) {
-                clearInterval(poll);
-                unityState.available = true;
-                unityState.ready = true;  // flash_ready already fired before our override
-                stopTMReplay();
-                setupStargateOverride();
-                // If Lineups tab already rendered, move canvas immediately
-                const vp = document.getElementById('rnd-unity-viewport');
-                if (vp) {
-                    moveUnityCanvas();
-                    vp.style.display = 'block';
-                }
-                // Auto-play live match if paused (e.g. page refresh)
-                if (liveState && !liveState.playing && !liveState.ended) {
-                    livePlay();
-                }
-            }
-        }, 500);
-        setTimeout(() => clearInterval(poll), 30000);
-    };
-
-    const stopTMReplay = () => {
-        const uw = getUW();
-        if (unityState.tmPaused) return;
-        unityState.tmPaused = true;
-        // Pause TM's replay system completely
-        if (uw.flash_status) {
-            uw.flash_status.playback_mode = 'pause';
-            uw.flash_status.enabled = false;  // prevent TM from sending clips
-        }
-        // Kill TM's run_match loop
-        uw._orig_run_match = uw.run_match;
-        uw.run_match = function () { /* noop */ };
-        // Also kill TM's text display functions so they don't interfere
-        if (uw.show_next_action_text_entry) {
-            uw._orig_show_next_action_text_entry = uw.show_next_action_text_entry;
-            uw.show_next_action_text_entry = function () { /* noop */ };
-        }
-        if (uw.prepare_next_minute) {
-            uw._orig_prepare_next_minute = uw.prepare_next_minute;
-            uw.prepare_next_minute = function () { /* noop */ };
-        }
-        // Clear any pending setTimeout from TM's run_match chain
-        // (clear a range of recent timer IDs to catch the pending one)
-        const lastId = setTimeout(() => { }, 0);
-        for (let i = lastId - 20; i <= lastId; i++) {
-            clearTimeout(i);
-        }
-        console.log('[RND] TM replay stopped completely');
-    };
-
-    // Build flat text-line queue for a minute
-    // Only the FIRST play is synced to the animation (distributed by segments over clip duration)
-    // Remaining plays are queued as postQueue, shown after animation finishes
-    const buildClipTextQueue = (mData, minute) => {
-        syncLiveDerivedTeams();
-        const plays = mData.plays?.[String(minute)] || [];
-        const queue = [];
-        const groups = []; // each entry = { start, count } into queue
-        const postQueue = []; // remaining plays' text lines
-        plays.forEach((play, playIdx) => {
-            let flatIdx = 0;
-            if (playIdx === 0) {
-                // First play: animation-synced text — one group per segment
-                play.segments.forEach(seg => {
-                    const groupStart = queue.length;
-                    let groupCount = 0;
-                    seg.text.forEach(line => {
-                        if (!line || !line.trim()) return;
-                        queue.push({ reportEvtIdx: play.reportEvtIdx, flatLineIdx: flatIdx });
-                        flatIdx++;
-                        groupCount++;
-                    });
-                    if (groupCount > 0) groups.push({ start: groupStart, count: groupCount });
-                });
-            } else {
-                // Remaining plays: post-animation text
-                play.segments.forEach(seg => {
-                    seg.text.forEach(line => {
-                        if (!line || !line.trim()) return;
-                        postQueue.push({ reportEvtIdx: play.reportEvtIdx, flatLineIdx: flatIdx });
-                        flatIdx++;
-                    });
-                });
-            }
-        });
-        return { queue, groups, postQueue };
-    };
-
-    // Show ONE text line from the clip queue
-    const advanceClipTextOneLine = () => {
-        if (!liveState || !unityState.clipTextQueue.length) return;
-        const idx = unityState.clipTextCursor;
-        if (idx >= unityState.clipTextQueue.length) return;
-        const entry = unityState.clipTextQueue[idx];
-        unityState.clipTextCursor = idx + 1;
-
-        liveState.curEvtIdx = entry.reportEvtIdx;
-        liveState.curLineIdx = entry.flatLineIdx;
-
-        // Check if this event is complete
-        const play = findPlay(liveState.mData, liveState.min, entry.reportEvtIdx);
-        const total = play ? countPlayLines(play) : 1;
-        const isComplete = entry.flatLineIdx >= total - 1;
-        liveState.curEvtComplete = isComplete;
-        liveState.justCompleted = isComplete;
-
-        // Also update the unity side panels
-        updateMatchFeed();
-        // Only update stats when event is fully complete
-        if (isComplete) {
-            updateMatchStats();
-        };
-    };
-
-    // ── Update the left-side feed panel next to viewport (current minute only) ──
-    const updateMatchFeed = () => {
-        const container = $('#rnd-unity-feed');
-        if (!container.length || !liveState) return;
-        const mData = liveState.mData;
-        const curMin = liveState.min;
-        const curEvtIdx = liveState.curEvtIdx;
-        const curLineIdx = liveState.curLineIdx;
-        const allLines = [];
-        const minPlays = (mData.plays || {})[String(curMin)] || [];
-        for (const play of minPlays) {
-            if (play.reportEvtIdx > curEvtIdx) break;
-            let flatIdx = 0;
-            for (const seg of play.segments) {
-                for (const line of seg.text) {
-                    if (!line.trim()) { flatIdx++; continue; }
-                    if (play.reportEvtIdx === curEvtIdx && flatIdx > curLineIdx) break;
-                    allLines.push({ min: curMin, text: line });
-                    flatIdx++;
-                }
-            }
-        }
-        let html = '';
-        allLines.forEach(item => {
-            // [player=xxx] tags are already resolved in plays; strip event-marker tags
-            const text = item.text.replace(/\[(goal|yellow|red|sub|assist)\]/g, '');
-            html += `<div class="rnd-unity-feed-line"><span class="rnd-unity-feed-min">${item.min}'</span><span class="rnd-unity-feed-text">${text}</span></div>`;
-        });
-        container.html(html);
-        // Auto-scroll to bottom
-        container.scrollTop(container[0].scrollHeight);
-    };
-
-    // ── Update the right-side mini stats panel next to viewport ──
-    const updateMatchStats = () => {
-        const container = $('#rnd-unity-stats');
-        if (!container.length || !liveState) return;
-        const homeStats = liveState.mData.teams.home.stats || {};
-        const awayStats = liveState.mData.teams.away.stats || {};
-        const statRows = [
-            ['Shots', homeStats.shots, awayStats.shots],
-            ['On Target', homeStats.shotsOnTarget, awayStats.shotsOnTarget],
-            ['Goals', homeStats.goals, awayStats.goals],
-            ['Yellow', homeStats.yellowCards, awayStats.yellowCards],
-            ['Red', homeStats.redCards, awayStats.redCards],
-        ];
-        container.html(statRows.map(([label, leftValue, rightValue]) => TmMatchComparisonRow.stacked({
-            label,
-            leftValue,
-            rightValue,
-            rowClass: 'rnd-unity-stat-row',
-            headerClass: 'rnd-unity-stat-hdr',
-            leftValueClass: 'val home',
-            rightValueClass: 'val away',
-            labelClass: 'rnd-unity-stat-label',
-            barClass: 'rnd-unity-stat-bar',
-            leftSegmentClass: 'seg home',
-            rightSegmentClass: 'seg away',
-            leftLeadClass: 'lead',
-            rightLeadClass: 'lead',
-        })).join(''));
-    };
-
-    // Flush all remaining text lines at once (for finished_playing)
-    const flushClipText = () => {
-        if (!liveState) return;
-        const remaining = unityState.clipTextQueue.length - unityState.clipTextCursor;
-        const postLen = unityState.clipPostQueue ? unityState.clipPostQueue.length : 0;
-        console.log('[RND] flushClipText remaining=' + remaining + ' postQueue=' + postLen);
-        // Flush remaining animation text (first event)
-        while (unityState.clipTextCursor < unityState.clipTextQueue.length) {
-            advanceClipTextOneLine();
-        }
-        // Append and flush post-animation text (remaining events)
-        if (unityState.clipPostQueue && unityState.clipPostQueue.length > 0) {
-            unityState.clipPostQueue.forEach(entry => {
-                unityState.clipTextQueue.push(entry);
-            });
-            unityState.clipPostQueue = [];
-            while (unityState.clipTextCursor < unityState.clipTextQueue.length) {
-                advanceClipTextOneLine();
-            }
-        }
-    };
-
-    // Advance the next text group (called on each finished_clip from Unity)
-    const advanceClipTextGroup = () => {
-        const groups = unityState.clipTextGroups || [];
-        const gi = unityState.clipGroupCursor || 0;
-        if (gi >= groups.length) return;
-        const group = groups[gi];
-        // Show all lines in this group at once
-        for (let j = 0; j < group.count; j++) {
-            if (unityState.clipTextCursor < unityState.clipTextQueue.length) {
-                advanceClipTextOneLine();
-            }
-        }
-        unityState.clipGroupCursor = gi + 1;
-        syncLiveDerivedTeams();
-        console.log('[RND] Advanced text group ' + gi + ' (' + group.count + ' lines)');
-    };
-
-    const setupStargateOverride = () => {
-        const uw = getUW();
-        uw._orig_stargate = uw.stargate;
-        uw.stargate = function (vars) {
-            if (vars.flash_ready) {
-                unityState.ready = true;
-            }
-
-            if (vars.finished_loading) {
-                const min = vars.finished_loading.id;
-                unityState.loadedMinutes.push(min);
-
-                if (unityState.pendingMinute === min) {
-                    unityState.pendingMinute = null;
-                    playUnityClips(min);
-                }
-            }
-
-            // A single clip finished → show the next text group
-            // Skip the first finished_clip because its text was already shown on starting_clip
-            if (vars.finished_clip) {
-                console.log('[RND] finished_clip:', JSON.stringify(vars.finished_clip));
-                if (unityState.clipFirstShown && !unityState.clipSkippedFirst) {
-                    // First clip just finished; text was already shown via starting_clip
-                    unityState.clipSkippedFirst = true;
-                    console.log('[RND] Skipping finished_clip for group 0 (already shown on start)');
-                } else {
-                    advanceClipTextGroup();
-                }
-            }
-
-            // A clip is starting
-            if (vars.starting_clip) {
-                console.log('[RND] starting_clip:', JSON.stringify(vars.starting_clip));
-                unityState.playing = true;
-                // Show first text group immediately when the first clip starts
-                if (!unityState.clipFirstShown) {
-                    unityState.clipFirstShown = true;
-                    advanceClipTextGroup();
-                }
-            }
-
-            // All clips for a minute finished → let timer advance to next minute
-            if (vars.finished_playing) {
-                const min = vars.finished_playing.id;
-                unityState.playedMinutes.push(min);
-                unityState.playing = false;
-                console.log('[RND] All clips finished for minute', min);
-                // Show any remaining lines
-                flushClipText();
-                // Clear activeMinute so liveStep resumes normal schedule-based flow
-                unityState.activeMinute = null;
-                // Force sec to 59 so liveStep advances to next minute on next tick
-                if (liveState) {
-                    liveState.sec = 59;
-                    // Apply deferred filter switch if pending
-                    if (liveState.pendingFilterSwitch) {
-                        applyFilterSwitch(liveState.pendingFilterSwitch);
-                    }
-                }
-            }
-        };
-    };
-
-    // Save canvas to a hidden container so it survives tab switches
-    const saveUnityCanvas = () => {
-        if (!unityState.available) return;
-        const webglContent = document.querySelector('.webgl-content');
-        if (!webglContent) return;
-        // Don't save if already in safe container
-        if (webglContent.parentElement && webglContent.parentElement.id === 'rnd-unity-safe') return;
-        let safe = document.getElementById('rnd-unity-safe');
-        if (!safe) {
-            safe = document.createElement('div');
-            safe.id = 'rnd-unity-safe';
-            safe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;overflow:hidden;pointer-events:none;';
-            document.body.appendChild(safe);
-        }
-        safe.appendChild(webglContent);
-        console.log('[RND] Canvas saved to safe container');
-    };
-
-    const moveUnityCanvas = () => {
-        if (!unityState.available) return;
-        const webglContent = document.querySelector('.webgl-content');
-        if (!webglContent) return;
-        const target = document.getElementById('rnd-unity-viewport');
-        if (!target) return;
-        // Remember original parent so we could restore if needed
-        if (!unityState.canvasParent) unityState.canvasParent = webglContent.parentElement;
-        // Move the .webgl-content into our viewport
-        target.innerHTML = '';
-        target.appendChild(webglContent);
-        // Make .webgl-content visible (TM hides it initially)
-        webglContent.style.display = 'block';
-        // Clear inline dimensions on #gameContainer (it has width:300px;height:200px)
-        const gc = document.getElementById('gameContainer');
-        if (gc) {
-            gc.style.width = '100%';
-            gc.style.height = '100%';
-            gc.style.margin = '0';
-        }
-        // Show viewport
-        target.style.display = 'block';
-        // Remove no-unity layout class now that canvas is present
-        const row = document.querySelector('.rnd-unity-row');
-        if (row) row.classList.remove('rnd-no-unity');
-        console.log('[RND] Canvas moved into viewport');
-        // Sync feed & stats height to viewport height
-        syncUnityPanelHeights();
-    };
-
-    // Keep feed and stats panels the same height as the viewport
-    const syncUnityPanelHeights = () => {
-        const vp = document.getElementById('rnd-unity-viewport');
-        if (!vp) return;
-        requestAnimationFrame(() => {
-            const h = vp.offsetHeight;
-            if (!h) return;
-            const feed = document.getElementById('rnd-unity-feed');
-            const stats = document.getElementById('rnd-unity-stats');
-            if (feed) feed.style.maxHeight = h + 'px';
-            if (stats) stats.style.maxHeight = h + 'px';
-        });
-    };
-
-    const loadUnityClips = (minute, mData) => {
-        const uw = getUW();
-        if (!unityState.available || !uw.gameInstance) return false;
-        // Use raw report objects so Unity receives full {video, att1, def1, ...} entries
-        const rawEvts = (mData.report || {})[String(minute)] || [];
-        const videoList = [];
-        rawEvts.forEach(evt => {
-            const v = evt.chance?.video;
-            if (!v) return;
-            if (Array.isArray(v)) videoList.push(...v);
-            else videoList.push(v);
-        });
-        if (videoList.length === 0) return false;
-        console.log('[RND] Loading clips for minute', minute, videoList.length, 'clips:', videoList);
-        // Prepare the text queue for this minute
-        const { queue, groups, postQueue } = buildClipTextQueue(mData, minute);
-        unityState.clipTextQueue = queue;
-        unityState.clipTextGroups = groups;
-        unityState.clipPostQueue = postQueue;
-        unityState.clipTextCursor = 0;
-        unityState.clipGroupCursor = 0;
-        unityState.activeMinute = minute;
-        unityState.clipFirstShown = false;
-        unityState.clipSkippedFirst = false;
-        unityState.pendingMinute = minute;
-        const prepareMsg = JSON.stringify({ queue: videoList, id: minute });
-        console.log('[RND] SendMessage PrepareMinute', prepareMsg);
-        uw.gameInstance.SendMessage('ClipsViewerScript', 'PrepareMinute', prepareMsg);
-        return true;
-    };
-
-    const playUnityClips = (minute) => {
-        const uw = getUW();
-        if (!unityState.available || !uw.gameInstance) return;
-        unityState.playing = true;
-        const playMsg = JSON.stringify({ id: minute });
-        uw.gameInstance.SendMessage('ClipsViewerScript', 'PlayMinute', playMsg);
-    };
-
-    const LINE_INTERVAL = 3;  // seconds between lines within a minute
-    const POST_DELAY = 3;     // seconds after last line before advancing to next minute
-
-    // ── Count total non-empty lines in a play (from plays structure) ──
-    const countPlayLines = (play) => {
-        if (!play) return 1;
-        return Math.max(1, play.segments.reduce((s, seg) => s + seg.text.filter(l => l.trim()).length, 0));
-    };
-
-    // ── Find the play for a given reportEvtIdx in a minute ──
-    const findPlay = (mData, min, reportEvtIdx) => {
-        const plays = mData.plays?.[String(min)] || [];
-        return plays.find(p => p.reportEvtIdx === reportEvtIdx) || null;
-    };
-
     // ── Calculate current match minute from kickoff timestamp ──
     const calculateLiveMinute = (kickoff) => {
         const now = Math.floor(Date.now() / 1000);
@@ -568,6 +170,17 @@ export function initMatchPage(main) {
         return now - Math.round(lm * 60);
     };
 
+    // ── Play line helpers ─────────────────────────────────────────────
+    const countPlayLines = (play) => {
+        if (!play) return 1;
+        return Math.max(1, play.segments.reduce((s, seg) => s + seg.text.filter(l => l.trim()).length, 0));
+    };
+
+    const findPlay = (mData, min, reportEvtIdx) => {
+        const plays = mData.plays?.[String(min)] || [];
+        return plays.find(p => p.reportEvtIdx === reportEvtIdx) || null;
+    };
+
     // ── Build per-minute schedule: which lines appear at which second ──
     const buildSchedule = (plays, keyOnly = false) => {
         const schedule = {};     // min → [{evtIdx, lineIdx, sec}]
@@ -596,7 +209,7 @@ export function initMatchPage(main) {
     const syncLiveDerivedTeams = () => {
         if (!liveState?.baseMData) return;
         deriveLiveMatchData();
-        updateMatchStats();
+        unity.updateMatchStats();
         updateLiveHeader();
         refreshActiveTab();
         console.log('[RND] Live derived data synced', liveState);
@@ -702,7 +315,7 @@ export function initMatchPage(main) {
                 return;
             }
             // If Unity clips are playing for this minute, just tick the clock
-            if (unityState.activeMinute === liveState.min) {
+            if (unity.getState().activeMinute === liveState.min) {
                 updateLiveHeader();
                 liveState.timer = setTimeout(liveStep, liveState.speed);
                 return;
@@ -714,8 +327,8 @@ export function initMatchPage(main) {
             liveState.justCompleted = minuteChanged;
             if (minuteChanged) refreshLeagueTabIfActive(true);
             // Load Unity clips when entering a new event minute
-            if (minuteChanged && unityState.available && unityState.ready) {
-                const hasClips = loadUnityClips(liveState.min, liveState.mData);
+            if (minuteChanged && unity.getState().available && unity.getState().ready) {
+                const hasClips = unity.loadUnityClips(liveState.min, liveState.mData);
                 if (hasClips) {
                     updateLiveHeader();
                     liveState.timer = setTimeout(liveStep, liveState.speed);
@@ -736,7 +349,7 @@ export function initMatchPage(main) {
         liveState.sec++;
 
         // ── If Unity clips are active for this minute, just tick the clock ──
-        if (unityState.activeMinute === liveState.min) {
+        if (unity.getState().activeMinute === liveState.min) {
             // Clock advances, but text is driven by stargate callbacks (advanceClipText)
             // Don't process schedule, don't advance minute — wait for finished_playing
             updateLiveHeader();
@@ -774,8 +387,8 @@ export function initMatchPage(main) {
             refreshLeagueTabIfActive(true);
 
             // ── Unity 3D: trigger clip loading when entering a new minute with videos ──
-            if (unityState.available && unityState.ready) {
-                const hasClips = loadUnityClips(liveState.min, liveState.mData);
+            if (unity.getState().available && unity.getState().ready) {
+                const hasClips = unity.loadUnityClips(liveState.min, liveState.mData);
                 if (hasClips) {
                     // Timer keeps running — clock ticks, text driven by clip callbacks
                     updateLiveHeader();
@@ -808,11 +421,9 @@ export function initMatchPage(main) {
         liveState.playing = true;
         $('#rnd-live-play-head').html('⏸');
         // If Unity was paused mid-animation, unpause it
-        if (unityState.activeMinute !== null) {
-            const uw = getUW();
-            if (uw.gameInstance) {
-                uw.gameInstance.SendMessage('ClipsViewerScript', 'OnPauseGame');
-            }
+        if (unity.getState().activeMinute !== null) {
+            const uw = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
+            if (uw.gameInstance) uw.gameInstance.SendMessage('ClipsViewerScript', 'OnPauseGame');
         }
         scheduleLiveClockTicker();
         liveStep();
@@ -825,11 +436,9 @@ export function initMatchPage(main) {
         stopLiveClockTicker();
         $('#rnd-live-play-head').html('▶');
         // Immediately pause Unity animation if playing
-        if (unityState.playing && unityState.activeMinute !== null) {
-            const uw = getUW();
-            if (uw.gameInstance) {
-                uw.gameInstance.SendMessage('ClipsViewerScript', 'OnPauseGame');
-            }
+        if (unity.getState().playing && unity.getState().activeMinute !== null) {
+            const uw = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
+            if (uw.gameInstance) uw.gameInstance.SendMessage('ClipsViewerScript', 'OnPauseGame');
         }
     };
 
@@ -902,8 +511,8 @@ export function initMatchPage(main) {
         liveState.pendingFilterSwitch = null;
         console.log('[RND] Filter switch applied: ' + mode);
         // Load Unity clips for the new minute (so animation + clip-driven text work)
-        if (unityState.available && unityState.ready) {
-            loadUnityClips(liveState.min, liveState.mData);
+        if (unity.getState().available && unity.getState().ready) {
+            unity.loadUnityClips(liveState.min, liveState.mData);
         }
         syncLiveDerivedTeams();
     };
@@ -1015,7 +624,7 @@ export function initMatchPage(main) {
                     liveState.filterMode = mode;
                     overlay.find('.rnd-live-filter-btn').removeClass('active');
                     $(this).addClass('active');
-                    if (unityState.activeMinute !== null || unityState.playing) {
+                    if (unity.getState().activeMinute !== null || unity.getState().playing) {
                         liveState.pendingFilterSwitch = mode;
                         console.log('[RND] Filter switch deferred until animation finishes');
                         return;
@@ -1077,29 +686,21 @@ export function initMatchPage(main) {
         window.addEventListener('tm:match-profiles-ready', (e) => {
             console.log('[RND] Match profiles ready', e);
             if (!liveState?.baseMData) return;
-            const players = e.detail.players.map(player => {
-                return {
-                    id: player.player.id,
-                    skills: player.player.skills,
-                    asi: player.player.asi,
-                    routine: player.player.routine,
-                    positions: player.player.positions
-                }
-            });
+            const players = e.detail.players;
             ['home', 'away'].forEach(side => {
                 const rawLineup = Object.values(liveState.baseMData.lineup?.[side] || {});
                 const enrichedLineup = rawLineup.map(p => {
                     const player = players.find(pl => Number(pl.id) === Number(p.id || p.player_id));
                     return {
                         ...p,
-                        skills: player?.skills,
-                        asi: player?.asi,
-                        routine: player?.routine,
-                        positions: player?.positions
-                    }
+                        skills: player?.skills ?? p.skills,
+                        asi: player?.asi ?? p.asi,
+                        routine: player?.routine ?? p.routine,
+                        positions: player?.positions ?? p.positions,
+                    };
                 });
                 liveState.baseMData.lineup[side] = enrichedLineup.reduce((acc, player) => {
-                    acc[player.player_id] = player;
+                    acc[String(player.id || player.player_id)] = player;
                     return acc;
                 }, {});
                 liveState.baseMData.teams[side].lineup = enrichedLineup;
@@ -1124,14 +725,14 @@ export function initMatchPage(main) {
         };
         // Save Unity canvas before destroying lineups tab DOM
         // Skip for lineups — it handles in-place updates without destroying viewport
-        if (tab !== 'lineups') saveUnityCanvas();
+        if (tab !== 'lineups') unity.saveUnityCanvas();
         const body = $('#rnd-dlg-body');
         const sharedOpts = {
-            getUnityState: () => unityState,
-            moveUnityCanvas,
-            saveUnityCanvas,
-            updateMatchStats,
-            updateMatchFeed,
+            getUnityState: () => unity.getState(),
+            moveUnityCanvas: unity.moveUnityCanvas,
+            saveUnityCanvas: unity.saveUnityCanvas,
+            updateMatchStats: unity.updateMatchStats,
+            updateMatchFeed: unity.updateMatchFeed,
             liveState: activeState
         };
         switch (tab) {
@@ -1153,21 +754,13 @@ export function initMatchPage(main) {
         liveState = null;
         $('#rnd-overlay').remove();
         $('body').css('overflow', '');
-        unityState = {
-            available: false, ready: false, playing: false,
-            pendingMinute: null, loadedMinutes: [], playedMinutes: [],
-            canvasParent: null, tmPaused: false,
-            clipTextQueue: [], clipTextCursor: 0,
-            clipTextGroups: [], clipGroupCursor: 0,
-            clipPostQueue: [], activeMinute: null,
-            clipFirstShown: false, clipSkippedFirst: false
-        };
+        unity.resetState();
     };
 
     const initForCurrentPage = () => {
         cleanupPage();
         injectStyles();
-        initUnity();
+        unity.init();
         const matchId = window.location.pathname.match(/\/matches\/(\d+)/)?.[1];
         if (!matchId) return;
         // Remove TM's default Rounds widget and ad placeholder

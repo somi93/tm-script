@@ -828,10 +828,12 @@ function computeCandidateR5(player = {}) {
         const numericSkills = TmApi._toNumericSkills(resolvedSkills);
         if (!numericSkills.length || !Number.isFinite(calcPlayer.asi)) return null;
 
-        const positionKeys = String(calcPlayer.favposition || calcPlayer.fp || (calcPlayer.isGK ? 'gk' : ''))
-            .split(',')
-            .map(value => value.trim().toLowerCase())
-            .filter(Boolean);
+        const positionKeys = Array.isArray(calcPlayer.positions) && calcPlayer.positions.some(p => p.preferred)
+            ? calcPlayer.positions.filter(p => p.preferred).map(p => p.key)
+            : String(calcPlayer.favposition || calcPlayer.fp || (calcPlayer.isGK ? 'gk' : ''))
+                .split(',')
+                .map(value => value.trim().toLowerCase())
+                .filter(Boolean);
 
         const ratings = positionKeys
             .map(positionKey => TmConst.POSITION_MAP[positionKey])
@@ -852,14 +854,16 @@ function computeCandidateR5(player = {}) {
 
 function buildCandidateRecord(player, club, clubId = '', clubName = '') {
     return {
-        playerId: cleanText(player?.player_id || player?.id),
+        playerId: cleanText(player?.id || player?.player_id),
         name: cleanText(player?.name || player?.player_name) || 'Unknown player',
         country: resolvePlayerCountryCode(player),
         age: Number(player?.age) || 0,
         months: Number(player?.months ?? player?.month) || 0,
-        asi: TmUtils.parseNum(player?.skill_index || player?.asi),
+        asi: TmUtils.parseNum(player?.asi ?? player?.skill_index),
         r5: computeCandidateR5(player),
-        position: cleanText(player?.favposition || player?.fp),
+        position: Array.isArray(player?.positions) && player.positions.some(p => p.preferred)
+            ? player.positions.filter(p => p.preferred).map(p => p.key).join(',')
+            : cleanText(player?.favposition || player?.fp),
         clubId: cleanText(clubId || player?.club_id || club?.id),
         clubName: cleanText(clubName || player?.club_name || club?.club_name) || 'Unknown club',
         clubCreated: lowerText(club?.created),

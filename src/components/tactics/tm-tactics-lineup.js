@@ -185,22 +185,17 @@ export function mountTacticsLineup(container, data, opts = {}) {
         if (!player) return null;
         return {
             ...player,
-            name: player.name || player.lastname || String(player.player_id || ''),
+            name: player.name || player.lastname || String(player.id || ''),
             rec: player._fmRec != null ? player._fmRec : player.rec,
             r5: player._fmR5 != null ? player._fmR5 : player.r5,
             routine: Number.isFinite(parseFloat(player.routine)) ? parseFloat(player.routine) : null,
         };
     };
 
-    const parseFavPositions = player => String(player?.favposition || player?.fp || '')
-        .split(',')
-        .map(pos => pos.trim().toLowerCase())
-        .filter(Boolean);
-
     const getPositionRating = (player, posKey) => {
         const positionId = TmConst.POSITION_MAP[String(posKey || '').toLowerCase()]?.id;
-        if (positionId == null || !player?.allPositionRatings?.length) return null;
-        return player.allPositionRatings.find(rating => rating.id === positionId) || null;
+        if (positionId == null || !player?.positions?.length) return null;
+        return player.positions.find(rating => rating.id === positionId) || null;
     };
 
     const getSlotRecommendation = (player, posKey) => {
@@ -231,9 +226,9 @@ export function mountTacticsLineup(container, data, opts = {}) {
         const placed = TmConst.POSITION_MAP[String(posKey || '').toLowerCase()];
         if (!placed) return 0;
 
-        const favEntries = parseFavPositions(player)
-            .map(favKey => TmConst.POSITION_MAP[favKey] || null)
-            .filter(Boolean);
+        const favEntries = Array.isArray(player?.positions)
+            ? player.positions.filter(pos => pos.preferred)
+            : [];
         if (!favEntries.length) return 0;
 
         if (placed.row === 0) return favEntries.some(entry => entry.row === 0) ? 0 : 4;
@@ -264,8 +259,8 @@ export function mountTacticsLineup(container, data, opts = {}) {
         // Bench players are represented entirely by their dedicated slot rows below —
         // exclude them from the main player list to avoid duplication.
         const rows = Object.values(data.players || {}).map(p => {
-            const fmPosKey = getFieldPosKey(p.player_id);
-            const benchRole = !fmPosKey ? getBenchRole(p.player_id) : null;
+            const fmPosKey = getFieldPosKey(String(p.id));
+            const benchRole = !fmPosKey ? getBenchRole(String(p.id)) : null;
 
             let _fmR5, _fmRec;
             if (fmPosKey) {
@@ -280,7 +275,7 @@ export function mountTacticsLineup(container, data, opts = {}) {
             }
             return {
                 ...p,
-                _fmOrder: getSortKey(p.player_id),
+                _fmOrder: getSortKey(String(p.id)),
                 _fmPosKey: fmPosKey,
                 _benchRole: benchRole,
                 _fmR5,
@@ -289,7 +284,7 @@ export function mountTacticsLineup(container, data, opts = {}) {
         }).filter(p => !p._benchRole)   // bench players rendered via slot rows below
           .sort((a, b) => a._fmOrder - b._fmOrder);
 
-        _firstOutPid = rows.find(p => getFieldPosKey(p.player_id) === null)?.player_id ?? null;
+        _firstOutPid = rows.find(p => getFieldPosKey(String(p.id)) === null)?.id ?? null;
 
         // Always render all 5 sub slot rows. Occupied slots show the player; empty slots
         // show a ghost drop-target. This gives a permanently visible bench section.
@@ -314,13 +309,13 @@ export function mountTacticsLineup(container, data, opts = {}) {
                     _benchSlotFilled: false,
                     _benchRole: role,
                     _fmOrder: 100 + idx,
-                    player_id: `_bench_${role}`, no: '', name: '', lastname: '',
+                    id: `_bench_${role}`, no: '', name: '', lastname: '',
                     rec_sort: null, _fmR5: null, _fmRec: null, routine: null,
                 });
             }
         });
 
-        _firstSubPid = rows.find(p => p._isBenchPlaceholder && p._benchSlotFilled)?.player_id ?? null;
+        _firstSubPid = rows.find(p => p._isBenchPlaceholder && p._benchSlotFilled)?.id ?? null;
 
         rows.sort((a, b) => a._fmOrder - b._fmOrder);
 
@@ -543,7 +538,7 @@ export function mountTacticsLineup(container, data, opts = {}) {
 
         if (player) {
             slotEl.setAttribute('draggable', 'true');
-            slotEl.dataset.playerId = player.player_id;
+            slotEl.dataset.playerId = String(player.id);
             slotEl.removeEventListener('dragstart', onFieldDragStart);
             slotEl.addEventListener('dragstart', onFieldDragStart);
             const slotRec = getSlotRecommendation(player, posKey);
@@ -589,7 +584,7 @@ export function mountTacticsLineup(container, data, opts = {}) {
         if (player) {
             const inner = document.createElement('div');
             inner.setAttribute('draggable', 'true');
-            inner.dataset.playerId = player.player_id;
+            inner.dataset.playerId = String(player.id);
             inner.className = 'tmtc-bench-inner';
             inner.innerHTML = `<span class="tmtc-bench-name">${escHtml(player.lastname || player.name || '')}${playerStatusIconsHtml(player)}</span>`;
             inner.addEventListener('dragstart', onBenchDragStart);
@@ -610,16 +605,16 @@ export function mountTacticsLineup(container, data, opts = {}) {
             density: 'tight',
             rowAttrs: p => {
                 if (p._isBenchPlaceholder && p._benchSlotFilled)
-                    return { draggable: 'true', 'data-player-id': p.player_id, 'data-bench-role': p._benchRole };
+                    return { draggable: 'true', 'data-player-id': p.id, 'data-bench-role': p._benchRole };
                 if (p._isBenchPlaceholder)
                     return { 'data-bench-role': p._benchRole };
-                return { draggable: 'true', 'data-player-id': p.player_id };
+                return { draggable: 'true', 'data-player-id': p.id };
             },
             rowCls: p => {
                 const sep = p._needsSep ? ' tmtc-row-sep' : '';
                 if (p._isBenchPlaceholder && p._benchSlotFilled) return 'tmtc-row-on-bench' + sep;
                 if (p._isBenchPlaceholder) return 'tmtc-row-bench-placeholder' + sep;
-                if (getFieldPosKey(p.player_id)) return 'tmtc-row-on-field' + sep;
+                if (getFieldPosKey(String(p.id))) return 'tmtc-row-on-field' + sep;
                 return 'tmtc-row-out' + sep;
             },
             headers: [
@@ -628,7 +623,7 @@ export function mountTacticsLineup(container, data, opts = {}) {
                     render: (_, p) => {
                         if (p._isBenchPlaceholder && !p._benchSlotFilled)
                             return '<span class="tmtc-pb-inner" style="background:var(--tmu-border-soft-alpha)"></span>';
-                        const posStr = (p._fmPosKey || String(p.favposition || '').split(',')[0]?.trim() || '').toLowerCase();
+                        const posStr = (p._fmPosKey || p.positions?.find(pos => pos.preferred)?.key || '').toLowerCase();
                         const color = TmConst.POSITION_MAP[posStr]?.color || 'var(--tmu-text-dim)';
                         return `<span class="tmtc-pb-inner" style="background:${color}"></span>`;
                     },
@@ -645,7 +640,7 @@ export function mountTacticsLineup(container, data, opts = {}) {
                         if (p._benchRole)
                             return `<span class="tmtc-sub-badge">${escHtml(BENCH_LABELS[p._benchRole] || p._benchRole)}</span>`;
                         if (!v) {
-                            const positions = String(p?.favposition || '').split(',').map(s => s.trim()).filter(Boolean);
+                            const positions = p?.positions?.filter(pos => pos.preferred).map(pos => pos.key) || [];
                             if (!positions.length) return '';
                             return `<span style="opacity:0.45;filter:grayscale(1)">${TmPosition.chip(positions)}</span>`;
                         }
@@ -657,7 +652,7 @@ export function mountTacticsLineup(container, data, opts = {}) {
                     render: (_, p) => {
                         if (p._isBenchPlaceholder && !p._benchSlotFilled)
                             return '<span style="color:var(--tmu-text-disabled);font-style:italic">drop player here</span>';
-                        return `${CountryFlag.render(p.country, 'tmtc-player-flag')}<a href="/players/${p.player_id}/" style="color:var(--tmu-text-inverse);text-decoration:none;font-weight:600" onclick="event.stopPropagation()">${escHtml(p.lastname || p.name || '')}</a>${playerStatusIconsHtml(p)}`;
+                        return `${CountryFlag.render(p.country, 'tmtc-player-flag')}<a href="/players/${p.id}/" style="color:var(--tmu-text-inverse);text-decoration:none;font-weight:600" onclick="event.stopPropagation()">${escHtml(p.lastname || p.name || '')}</a>${playerStatusIconsHtml(p)}`;
                     },
                 },
                 {
@@ -1127,12 +1122,12 @@ export function mountTacticsLineup(container, data, opts = {}) {
                     const chip = document.createElement('span');
                     chip.className = 'tmtc-role-chip';
                     chip.setAttribute('draggable', 'true');
-                    chip.dataset.playerId = p.player_id;
+                    chip.dataset.playerId = String(p.id);
                     chip.textContent = p.lastname || p.name || '';
                     chip.addEventListener('dragstart', e => {
-                        dragState = { pid: String(p.player_id), fromType: 'bench', fromRoleKey: role };
+                        dragState = { pid: String(p.id), fromType: 'bench', fromRoleKey: role };
                         e.dataTransfer.effectAllowed = 'move';
-                        e.dataTransfer.setData('text/plain', String(p.player_id));
+                        e.dataTransfer.setData('text/plain', String(p.id));
                         chip.classList.add('tmtc-drag-source');
                     });
                     slot.appendChild(chip);
