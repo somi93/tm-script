@@ -5,6 +5,7 @@ import { attachSkillsAnchor } from './skills.js';
 import { attachRoutine } from './routine.js';
 import { attachR5Rec } from './r5rec.js';
 import { saveHistoryRecords } from './save.js';
+import { archivePlayerRecord } from '../../lib/tm-playerdb.js';
 
 /**
  * Run the full sync pipeline on an array of players.
@@ -16,8 +17,17 @@ import { saveHistoryRecords } from './save.js';
  * @returns {Promise<object[]>}
  */
 export const runSyncPipeline = async (players, onProgress, { mode = 'full' } = {}) => {
+    // Pre-step: archive players with no club (club_id === 0 or null)
+    const toArchive = players.filter(p => !p.club_id);
+    const active = players.filter(p => !!p.club_id);
+    const archived = await Promise.all(toArchive.map(async p => {
+        await archivePlayerRecord(p.id);
+        return { ...p, archived: true, needSync: false };
+    }));
+    if (!active.length) return [...archived];
+
     // Step 3: Attach needSync + DBPlayer
-    const withSync = await attachSyncStatus(players, { mode });
+    const withSync = await attachSyncStatus(active, { mode });
     if (!withSync.filter(p => p.needSync).length) return withSync;
     // Step 4: Fetch graphs + training for needSync players
     const withData = await buildHistorySkeletons(withSync, onProgress);
@@ -44,5 +54,5 @@ export const runSyncPipeline = async (players, onProgress, { mode = 'full' } = {
     // Save to DB
     await saveHistoryRecords(withData, { writeFullySynced: mode === 'full' });
 
-    return withData;
+    return [...withData, ...archived];
 };

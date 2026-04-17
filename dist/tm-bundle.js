@@ -2561,7 +2561,7 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
   injectTmTableCss();
   var _tblCounter = 0;
   var TmTable = {
-    table({ headers = [], items = [], groupHeaders = [], footer = [], sortDefs = {}, sortKey = null, sortDir: sortDir2 = -1, density = "cozy", cls = "", emptyText = "", emptyHtml = "", prependIndex = false, rowCls = null, rowAttrs = null, onRowClick = null, renderRowsHtml = null, afterRender = null } = {}) {
+    table({ headers = [], items = [], groupHeaders = [], footer = [], sortDefs = {}, sortKey = null, sortDir = -1, density = "cozy", cls = "", emptyText = "", emptyHtml = "", prependIndex = false, rowCls = null, rowAttrs = null, onRowClick = null, renderRowsHtml = null, afterRender = null } = {}) {
       const wrap = document.createElement("div");
       const id = "tmu-tbl-" + ++_tblCounter;
       const tableDensityClass = density === "tight" ? "tmu-tbl-density-tight" : density === "cozy" ? "tmu-tbl-density-cozy" : "tmu-tbl-density-compact";
@@ -2581,7 +2581,7 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
       let _items = items;
       let _footer = footer;
       let _sk = sortKey != null ? sortKey : (headers.find((h) => h.sortable !== false) || {}).key || null;
-      let _sd = sortDir2;
+      let _sd = sortDir;
       let _sortedItems = [];
       const attrText2 = (attrs = {}) => Object.entries(attrs).filter(([, value]) => value !== void 0 && value !== null && value !== false).map(([key, value]) => value === true ? ` ${key}` : ` ${key}="${String(value).replace(/&/g, "&amp;").replace(/"/g, "&quot;")}"`).join("");
       const isActionCol = (hdr) => {
@@ -4626,6 +4626,80 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     return { get, set };
   })();
   var TmPlayerDB = PlayerCacheDB;
+  var ArchivedPlayerDB = /* @__PURE__ */ (() => {
+    const DB_NAME = "TMArchivedPlayers";
+    const STORE_NAME = "players";
+    const DB_VERSION = 1;
+    let db = null;
+    let openPromise = null;
+    const open = () => new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onupgradeneeded = (e) => {
+        const d = e.target.result;
+        if (!d.objectStoreNames.contains(STORE_NAME))
+          d.createObjectStore(STORE_NAME);
+      };
+      req.onsuccess = (e) => {
+        db = e.target.result;
+        resolve(db);
+      };
+      req.onerror = (e) => reject(e.target.error);
+    });
+    const ensureOpen = () => {
+      if (db) return Promise.resolve(db);
+      if (!openPromise) openPromise = open().catch((e) => {
+        openPromise = null;
+        console.warn("[ArchivedPlayerDB] open failed:", e);
+        return null;
+      });
+      return openPromise;
+    };
+    const get = (playerId) => ensureOpen().then((d) => {
+      if (!d) return null;
+      return new Promise((resolve) => {
+        const req = d.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).get(parseInt(playerId));
+        req.onsuccess = () => {
+          var _a2;
+          return resolve((_a2 = req.result) != null ? _a2 : null);
+        };
+        req.onerror = () => resolve(null);
+      });
+    });
+    const set = (playerId, data) => ensureOpen().then((d) => {
+      if (!d) return;
+      return new Promise((resolve) => {
+        const tx = d.transaction(STORE_NAME, "readwrite");
+        tx.objectStore(STORE_NAME).put(data, parseInt(playerId));
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => resolve();
+      });
+    });
+    return { get, set };
+  })();
+  var TmPlayerArchiveDB = ArchivedPlayerDB;
+  var archivePlayerRecord = async (playerId) => {
+    const record = await TmPlayerDB.get(playerId);
+    if (!record) return false;
+    await TmPlayerArchiveDB.set(playerId, { ...record, _archivedAt: Date.now() });
+    await new Promise((resolve) => {
+      const req = indexedDB.open("TMPlayerData", 1);
+      req.onsuccess = (e) => {
+        const d = e.target.result;
+        const tx = d.transaction("players", "readwrite");
+        tx.objectStore("players").delete(parseInt(playerId));
+        tx.oncomplete = () => {
+          d.close();
+          resolve();
+        };
+        tx.onerror = () => {
+          d.close();
+          resolve();
+        };
+      };
+      req.onerror = () => resolve();
+    });
+    return true;
+  };
   var MatchCacheDB = /* @__PURE__ */ (() => {
     const DB_NAME = "TMMatchCache";
     const STORE_NAME = "matches";
@@ -8570,7 +8644,6 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       {
         key: "name",
         label: "Player",
-        width: "140px",
         sort: (a, b) => String(a.name).localeCompare(String(b.name)),
         render: (_, p) => {
           const country = (p.country || p.countryCode || "").toLowerCase();
@@ -8584,7 +8657,6 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         key: "pos",
         label: "Pos",
         align: "c",
-        width: "56px",
         sort: (a, b) => {
           var _a2, _b, _c, _d;
           const pa = a.positions.filter((p) => p.preferred);
@@ -8601,7 +8673,6 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         key: "age",
         label: "Age",
         align: "r",
-        width: "48px",
         sort: (a, b) => {
           return a.ageMonths - b.ageMonths;
         },
@@ -8616,7 +8687,6 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       key: "asi",
       label: "ASI",
       align: "r",
-      width: "60px",
       render: (_, p) => p.asi != null ? `<span class="tmu-tabular" style="color:var(--tmu-text-strong)">${(p.asi || 0).toLocaleString()}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
     });
     cols.push(
@@ -8624,21 +8694,18 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         key: "r5",
         label: "R5",
         align: "r",
-        width: "56px",
         render: (_, p) => p.r5 != null ? `<span class="tmu-tabular" style="color:${gc2(p.r5, R5_THRESHOLDS5)};font-weight:700">${p.r5}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
       },
       {
         key: "rec",
         label: "REC",
         align: "r",
-        width: "52px",
         render: (_, p) => p.rec != null ? `<span class="tmu-tabular" style="color:${gc2(p.rec, REC_THRESHOLDS2)};font-weight:700">${p.rec}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
       },
       {
         key: "ti",
         label: tiLabel,
         align: "r",
-        width: "52px",
         sort: (a, b) => {
           var _a2, _b;
           return ((_a2 = a.ti) != null ? _a2 : -Infinity) - ((_b = b.ti) != null ? _b : -Infinity);
@@ -8650,14 +8717,12 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       key: "routine",
       label: "RTN",
       align: "r",
-      width: "48px",
       render: (_, p) => p.routine != null ? `<span class="tmu-tabular" style="color:${gc2(p.routine, RTN_THRESHOLDS2)}">${(p.routine || 0).toFixed(1)}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
     });
     if (showTimeleft) cols.push({
       key: "timeleft",
       label: "Time",
       align: "r",
-      width: "72px",
       sort: (a, b) => (Number(a.timeleft) > 0 ? Number(a.timeleft) : 999999999) - (Number(b.timeleft) > 0 ? Number(b.timeleft) : 999999999),
       render: (_, p) => Number(p.timeleft) > 0 ? `<span class="tmu-tabular${Number(p.timeleft) < 3600 ? " tmpt-time-exp" : ""}" data-time-pid="${p.id}">${p.timeleft_string || ""}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
     });
@@ -8665,7 +8730,6 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       key: "curbid",
       label: "Cur Bid",
       align: "r",
-      width: "80px",
       render: (_, p) => p.curbid || p.bid ? `<span class="tmu-tabular" style="color:var(--tmu-text-strong)">${p.curbid || p.bid}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
     });
     if (showLastSeen) cols.push({
@@ -8875,10 +8939,10 @@ order:initial
     }
     return card;
   }
-  function renderPage(mountedMain6, menuItems, bodyNode) {
-    mountedMain6.classList.add("tmvu-bids-page", "tmu-page-layout-2col", "tmu-page-density-regular");
-    mountedMain6.innerHTML = "";
-    TmBidsSideMenu.mount(mountedMain6, {
+  function renderPage(mountedMain5, menuItems, bodyNode) {
+    mountedMain5.classList.add("tmvu-bids-page", "tmu-page-layout-2col", "tmu-page-density-regular");
+    mountedMain5.innerHTML = "";
+    TmBidsSideMenu.mount(mountedMain5, {
       className: "tmu-page-sidebar-stack",
       items: menuItems,
       currentHref: "/bids/"
@@ -8886,16 +8950,16 @@ order:initial
     const content = document.createElement("section");
     content.className = "tmvu-bids-main tmu-page-section-stack";
     content.appendChild(bodyNode);
-    mountedMain6.appendChild(content);
+    mountedMain5.appendChild(content);
   }
-  async function initBidsPage(mountedMain6) {
+  async function initBidsPage(mountedMain5) {
     var _a2, _b;
-    if (!mountedMain6) return;
+    if (!mountedMain5) return;
     injectStyles5();
     const menuItems = parseMenuItems();
     const loading = document.createElement("section");
     loading.innerHTML = TmUI.loading("Loading bids...", true);
-    renderPage(mountedMain6, menuItems, loading);
+    renderPage(mountedMain5, menuItems, loading);
     const [shortlistSections, myPlayerSections] = await Promise.all([
       TmShortlistService.fetchShortlistBidSections(),
       TmShortlistService.fetchOwnSaleBidSections()
@@ -8951,7 +9015,7 @@ order:initial
       content.appendChild(card);
       section.body = card.querySelector(".tmu-card-body") || card;
     }
-    renderPage(mountedMain6, menuItems, content);
+    renderPage(mountedMain5, menuItems, content);
     if (!allIds.length) return;
     for (const id of allIds) {
       TmPlayerModel.fetchPlayerTooltip(id).then((player2) => {
@@ -10427,8 +10491,8 @@ order:initial
       if (possession || stats.home_shots || stats.away_shots || stats.home_on_target || stats.away_on_target) {
         html2 += TmUI.matchTooltipStats({ possession, statistics: stats, cls: "rnd-h2h-tooltip-stats" });
       }
-      const allPlayers3 = [...Object.values(((_i = matchData.lineup) == null ? void 0 : _i.home) || {}), ...Object.values(((_j = matchData.lineup) == null ? void 0 : _j.away) || {})];
-      const mom = allPlayers3.find((player2) => player2.mom === 1 || player2.mom === "1");
+      const allPlayers2 = [...Object.values(((_i = matchData.lineup) == null ? void 0 : _i.home) || {}), ...Object.values(((_j = matchData.lineup) == null ? void 0 : _j.away) || {})];
+      const mom = allPlayers2.find((player2) => player2.mom === 1 || player2.mom === "1");
       html2 += buildMom("Man of the Match", (mom == null ? void 0 : mom.nameLast) || (mom == null ? void 0 : mom.name) || "", mom ? parseFloat(mom.rating).toFixed(1) : null);
       return html2;
     }
@@ -11906,7 +11970,7 @@ order:initial
         tooltip.style.left = ev.clientX + 14 + "px";
         tooltip.style.top = ev.clientY - 10 + "px";
       };
-      const render17 = () => {
+      const render16 = () => {
         const { rows, liveZoneMap, formMap, playedCountMap, venue, formN, formOffset, historyBanner, canOlder, canNewer } = state5;
         const hasForm = formMap != null;
         const isHistory = !!historyBanner;
@@ -11953,7 +12017,7 @@ order:initial
           if (state5.onVenueChange) state5.onVenueChange(v);
           else {
             state5.venue = v;
-            render17();
+            render16();
           }
           return;
         }
@@ -11963,7 +12027,7 @@ order:initial
           if (state5.onFormNChange) state5.onFormNChange(n);
           else {
             state5.formN = n;
-            render17();
+            render16();
           }
           return;
         }
@@ -12000,16 +12064,16 @@ order:initial
           tooltip.style.display = "none";
         });
       }
-      render17();
+      render16();
       return {
         update(partial) {
           Object.assign(state5, partial);
-          render17();
+          render16();
         },
         setFormData(newFormMap, newPlayedCountMap) {
           state5.formMap = newFormMap;
           state5.playedCountMap = newPlayedCountMap;
-          render17();
+          render16();
         }
       };
     },
@@ -12658,7 +12722,7 @@ order:initial
     const controlsHost = historyCard.querySelector('[data-ref="controls"]');
     const contentHost = historyCard.querySelector('[data-ref="content"]');
     const myClubId = ((_a2 = overview.standingsRows.find((row) => row.isMe)) == null ? void 0 : _a2.clubId) || String(((_b = window.SESSION) == null ? void 0 : _b.main_id) || "");
-    const init3 = async () => {
+    const init2 = async () => {
       var _a3, _b2;
       const initialHtml = await getFriendlyLeagueHistoryHtml(INITIAL_HISTORY_TYPE, INITIAL_HISTORY_SEASON);
       FRIENDLY_HISTORY_META = parseFriendlyLeagueHistoryMeta(initialHtml || currentRouteRoot);
@@ -12717,7 +12781,7 @@ order:initial
       });
       renderHistory();
     };
-    init3().catch(() => {
+    init2().catch(() => {
       contentHost.innerHTML = TmUI.error("Failed to load history.");
     });
     return card;
@@ -12750,7 +12814,7 @@ order:initial
       TmFixturesList.bindHover(panelHost, { season: CURRENT_SEASON });
       TmFixturesList.bindRowNav(panelHost);
     };
-    const init3 = async () => {
+    const init2 = async () => {
       var _a3, _b2;
       const data = await getFriendlyLeagueFixtures();
       const months = parseFriendlyLeagueFixtures(data);
@@ -12768,7 +12832,7 @@ order:initial
       }));
       renderMonth(months, activeMonthKey);
     };
-    init3();
+    init2();
     return card;
   };
   var renderStatisticsCard = (menuItems, activeHref) => {
@@ -12786,7 +12850,7 @@ order:initial
     card.appendChild(statsCard);
     const browserHost = statsCard.querySelector('[data-ref="stats-browser"]');
     if (!browserHost) return card;
-    const init3 = async () => {
+    const init2 = async () => {
       const initialHtml = await getFriendlyLeagueStatisticsHtml(INITIAL_STATS_STAT);
       FRIENDLY_STATS_META = parseFriendlyLeagueStatisticsMeta(initialHtml || currentRouteRoot);
       const titleEl = statsCard.querySelector(".tmvu-fl-panel-title");
@@ -12803,7 +12867,7 @@ order:initial
         colLabel: PLAYER_COL_LABELS
       });
     };
-    init3().catch(() => {
+    init2().catch(() => {
       browserHost.innerHTML = TmUI.error("Failed to load statistics.");
     });
     return card;
@@ -12893,15 +12957,15 @@ order:initial
     main.append(mainColumn5, sideColumn);
     hydrateRoundCards(sideColumn, overview);
   };
-  async function initFriendlyLeaguePage(mountedMain6) {
+  async function initFriendlyLeaguePage(mountedMain5) {
     var _a2, _b, _c, _d, _e, _f;
     const currentPath = window.location.pathname;
     const routeMatch = currentPath.match(/^\/friendly-league(?:\/(\d+))?\/?$/i) || currentPath.match(/^\/fixtures\/friendly-league\/(\d+)\/?$/i) || currentPath.match(/^\/statistics\/friendly-league\/(\d+)(?:\/([^/]+))?\/?$/i);
     const historyMatch = currentPath.match(/^\/history\/friendly-league\/(standings|matches)(?:\/(.+))?\/?$/i);
     const nativeMain = document.querySelector(".main_center");
-    if (!mountedMain6 || !nativeMain || !routeMatch && !historyMatch) return;
+    if (!mountedMain5 || !nativeMain || !routeMatch && !historyMatch) return;
     if (!nativeMain.querySelector(".column1 .content_menu, .column2_a > .box")) return;
-    main = mountedMain6;
+    main = mountedMain5;
     sourceRoot = nativeMain;
     currentRouteRoot = nativeMain;
     LEAGUE_ID = (routeMatch == null ? void 0 : routeMatch[1]) || extractFriendlyLeagueId(nativeMain) || ((_c = (_b = (_a2 = nativeMain.querySelector("#new_message_button")) == null ? void 0 : _a2.getAttribute("onclick")) == null ? void 0 : _b.match(/pop_create_chat\((\d+),/)) == null ? void 0 : _c[1]) || "";
@@ -16883,7 +16947,7 @@ order:initial
       });
       return node ? node.outerHTML : "";
     };
-    const render17 = (container, { player: playerArg, readOnly: readOnlyArg = false, onStateChange: onStateChangeArg = null } = {}) => {
+    const render16 = (container, { player: playerArg, readOnly: readOnlyArg = false, onStateChange: onStateChangeArg = null } = {}) => {
       player2 = playerArg;
       readOnly = readOnlyArg;
       onStateChange = onStateChangeArg;
@@ -16932,10 +16996,10 @@ order:initial
           }
           console.log("Fetched training data:", training);
           player3.training = training;
-          render17(container, { player: player3 });
+          render16(container, { player: player3 });
         });
       } else if (player3.training != null) {
-        render17(container, { player: player3, readOnly: true });
+        render16(container, { player: player3, readOnly: true });
       } else {
         container.innerHTML = TmUI.loading();
         TmClubModel2.fetchSquadRaw(player3.club_id).then((squad) => {
@@ -16945,11 +17009,11 @@ order:initial
             return;
           }
           player3.training = found.training;
-          render17(container, { player: player3, readOnly: true });
+          render16(container, { player: player3, readOnly: true });
         });
       }
     };
-    return { render: render17, load: load2 };
+    return { render: render16, load: load2 };
   })();
 
   // src/components/shared/tm-training-dots.js
@@ -17455,8 +17519,8 @@ order:initial
     const youthData = bTeamClubId ? await TmClubService.fetchSquadPost(bTeamClubId) : null;
     const squadPlayers = Object.values(squadData || {}).map((player2) => decoratePlayer(player2, ownClubId));
     const youthPlayers = Object.values(youthData || {}).map((player2) => decoratePlayer(player2, bTeamClubId));
-    const allPlayers3 = [...squadPlayers, ...youthPlayers];
-    state3.players = allPlayers3;
+    const allPlayers2 = [...squadPlayers, ...youthPlayers];
+    state3.players = allPlayers2;
     if (state3.players.length) {
       state3.selectedPlayerId = String(state3.players[0].id);
     }
@@ -18440,131 +18504,640 @@ order:initial
   };
   var TmPlayerTooltip = { show: show2, hide, cancelHide };
 
-  // src/components/shortlist/tm-shortlist-filters.js
-  var inputHtml3 = (opts = {}) => TmUI.input({ type: "number", size: "sm", density: "regular", ...opts }).outerHTML;
-  var POSITION_FILTERS = [
-    { key: "gk", label: "GK", cls: "gk" },
-    { key: "de", label: "D", cls: "de" },
-    { key: "dm", label: "DM", cls: "dm" },
-    { key: "mf", label: "M", cls: "mf" },
-    { key: "om", label: "OM", cls: "om" },
-    { key: "fw", label: "F", cls: "fw" }
-  ];
-  var SIDE_FILTERS = [
-    { key: "l", label: "L" },
-    { key: "c", label: "C" },
-    { key: "r", label: "R" }
-  ];
-  var NUMERIC_FILTER_IDS = [
-    "tmsl-agemin",
-    "tmsl-agemax",
-    "tmsl-r5min",
-    "tmsl-r5max",
-    "tmsl-recmin",
-    "tmsl-recmax",
-    "tmsl-timin",
-    "tmsl-timax"
-  ];
-  function renderToggleGroup(items, opts) {
-    const baseCls = opts.baseCls;
-    const dataAttr = opts.dataAttr;
-    const isActive = opts.isActive;
-    let html2 = '<div class="tmsl-btngrp">';
-    items.forEach((item) => {
-      html2 += `<span class="${baseCls}${item.cls ? " " + item.cls : ""}${isActive(item.key) ? " active" : ""}" data-${dataAttr}="${item.key}">${item.label}</span>`;
+  // src/workflows/player-history/filter.js
+  var parseKey = (key) => {
+    const [age, month] = String(key).split(".").map(Number);
+    return age * 12 + month;
+  };
+  var absToKey = (abs) => `${Math.floor(abs / 12)}.${abs % 12}`;
+  var hasBrokenRecords = (DBPlayer) => {
+    const records = DBPlayer == null ? void 0 : DBPlayer.records;
+    if (!records) return false;
+    return Object.values(records).some((r) => {
+      if (r.TI == null && r.ASI == null) return true;
+      if (Array.isArray(r.skills) && r.skills.some((v) => typeof v === "number" && isNaN(v))) return true;
+      return false;
     });
-    html2 += "</div>";
-    return html2;
-  }
-  function buildFilters(state5, { loadHtml = "" } = {}) {
-    const { fPos: fPos2, fSide: fSide2, fAgeMin: fAgeMin2, fAgeMax: fAgeMax2, fR5Min: fR5Min2, fR5Max: fR5Max2, fRecMin: fRecMin2, fRecMax: fRecMax2, fTiMin: fTiMin2, fTiMax: fTiMax2 } = state5;
-    return `
-<div id="tmsl-filters">
-  ${renderToggleGroup(POSITION_FILTERS, { baseCls: "tmsl-pos-btn", dataAttr: "group", isActive: (key) => fPos2.has(key) })}
-  ${renderToggleGroup(SIDE_FILTERS, { baseCls: "tmsl-side-btn", dataAttr: "side", isActive: (key) => fSide2.has(key) })}
-  <div class="tmsl-fsep"></div>
-  <div class="tmsl-fgroup">
-    <span class="tmsl-flbl">Age:</span>
-    ${inputHtml3({ id: "tmsl-agemin", min: 0, max: 40, value: fAgeMin2 || "", placeholder: "Min" })}
-    <span style="color:var(--tmu-text-dim);font-size:var(--tmu-font-xs)">\u2013</span>
-    ${inputHtml3({ id: "tmsl-agemax", min: 0, max: 40, value: fAgeMax2 === 99 ? "" : fAgeMax2, placeholder: "Max" })}
-  </div>
-  <div class="tmsl-fsep"></div>
-  <div class="tmsl-fgroup">
-    <span class="tmsl-flbl">R5:</span>
-    ${inputHtml3({ id: "tmsl-r5min", min: 0, step: 0.1, value: fR5Min2, placeholder: "Min" })}
-    <span style="color:var(--tmu-text-dim);font-size:var(--tmu-font-xs)">\u2013</span>
-    ${inputHtml3({ id: "tmsl-r5max", min: 0, step: 0.1, value: fR5Max2, placeholder: "Max" })}
-  </div>
-  <div class="tmsl-fsep"></div>
-  <div class="tmsl-fgroup">
-    <span class="tmsl-flbl">REC:</span>
-    ${inputHtml3({ id: "tmsl-recmin", min: 0, step: 0.01, value: fRecMin2, placeholder: "Min" })}
-    <span class="tmsl-flbl">\u2013</span>
-    ${inputHtml3({ id: "tmsl-recmax", min: 0, step: 0.01, value: fRecMax2, placeholder: "Max" })}
-  </div>
-  <div class="tmsl-fsep"></div>
-  <div class="tmsl-fgroup">
-    <span class="tmsl-flbl">TI:</span>
-    ${inputHtml3({ id: "tmsl-timin", step: 0.1, value: fTiMin2, placeholder: "Min" })}
-    <span class="tmsl-flbl">\u2013</span>
-    ${inputHtml3({ id: "tmsl-timax", step: 0.1, value: fTiMax2, placeholder: "Max" })}
-  </div>
-  ${loadHtml ? `<div class="tmsl-load-slot">${loadHtml}</div>` : ""}
-</div>`;
-  }
-  function bindFilters(panel, handlers) {
-    panel._tmslFilterHandlers = handlers;
-    if (panel.dataset.tmslFiltersBound === "1") return;
-    panel.dataset.tmslFiltersBound = "1";
-    panel.addEventListener("click", (event) => {
-      const filterHandlers = panel._tmslFilterHandlers;
-      if (!filterHandlers) return;
-      const groupButton = event.target.closest(".tmsl-pos-btn[data-group]");
-      if (groupButton && panel.contains(groupButton)) {
-        filterHandlers.onGroupFilter(groupButton.dataset.group);
-        return;
+  };
+  var hasMissingMonths = (player2, DBPlayer) => {
+    const records = DBPlayer == null ? void 0 : DBPlayer.records;
+    if (!records) return false;
+    const keys = Object.keys(records);
+    if (!keys.length) return false;
+    const currentAbs = parseKey(player2.ageMonthsString);
+    const firstAbs = Math.min(...keys.map(parseKey));
+    for (let abs = firstAbs; abs <= currentAbs; abs++) {
+      if (!records[absToKey(abs)]) return true;
+    }
+    return false;
+  };
+  var attachSyncStatus = async (players, { mode = "full" } = {}) => {
+    return Promise.all(
+      players.map(async (player2) => {
+        var _a2;
+        let DBPlayer = await TmPlayerDB.get(player2.id);
+        const currentRecord = (_a2 = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _a2[player2.ageMonthsString];
+        const synced = (currentRecord == null ? void 0 : currentRecord.fullySynced) === true;
+        const missing = hasMissingMonths(player2, DBPlayer);
+        const broken = hasBrokenRecords(DBPlayer);
+        const needSync = broken || (mode === "missing-only" ? missing : mode === "force-resync" ? true : !(synced && !missing));
+        return { ...player2, needSync, DBPlayer, records: (DBPlayer == null ? void 0 : DBPlayer.records) || {} };
+      })
+    );
+  };
+
+  // src/workflows/player-history/sources.js
+  var { GRAPH_KEYS_OUT: GRAPH_KEYS_OUT3, GRAPH_KEYS_GK: GRAPH_KEYS_GK3 } = TmConst;
+  var { skillValue: skillValue3 } = TmUtils;
+  var keyToAbs = (key) => {
+    const [a, m] = String(key).split(".").map(Number);
+    return a * 12 + m;
+  };
+  var absToKey2 = (abs) => `${Math.floor(abs / 12)}.${abs % 12}`;
+  var buildMonthKeys = (player2, graphData, DBPlayer) => {
+    var _a2;
+    const currentAbs = keyToAbs(player2.ageMonthsString);
+    let firstAbs;
+    const graphMonths = ((_a2 = graphData == null ? void 0 : graphData.TI) == null ? void 0 : _a2.length) ? graphData.TI.length - 1 : 0;
+    if (player2.isOwnPlayer && graphMonths > 0) {
+      firstAbs = currentAbs - graphMonths + 1;
+    } else {
+      const dbKeys = Object.keys((DBPlayer == null ? void 0 : DBPlayer.records) || {});
+      firstAbs = dbKeys.length ? Math.min(...dbKeys.map(keyToAbs)) : currentAbs;
+    }
+    const keys = [];
+    for (let abs = firstAbs; abs <= currentAbs; abs++) {
+      keys.push(absToKey2(abs));
+    }
+    return keys;
+  };
+  var buildRecordSkeleton = (player2, monthKeys, graphData, DBPlayer) => {
+    var _a2, _b, _c, _d, _e;
+    const statKeys = player2.isGK ? GRAPH_KEYS_GK3 : GRAPH_KEYS_OUT3;
+    const skillCount = statKeys.length;
+    const currentAbs = keyToAbs(player2.ageMonthsString);
+    const graphMonths = ((_a2 = graphData == null ? void 0 : graphData.TI) == null ? void 0 : _a2.length) ? graphData.TI.length - 1 : 0;
+    const graphKeyMap = /* @__PURE__ */ new Map();
+    for (let i = 0; i < graphMonths; i++) {
+      const abs = currentAbs - graphMonths + 1 + i;
+      graphKeyMap.set(absToKey2(abs), i);
+    }
+    const records = {};
+    for (const key of monthKeys) {
+      const isCurrentMonth = key === player2.ageMonthsString;
+      const graphIndex = graphKeyMap.get(key);
+      const dbRecord = (_b = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _b[key];
+      let skills = null;
+      if (isCurrentMonth) {
+        skills = Array.isArray(player2.skills) ? player2.skills.map((s6) => Math.floor(skillValue3(s6) || 0)) : new Array(skillCount).fill(null);
+      } else if (graphIndex != null && graphData) {
+        const fromGraph = statKeys.map((sk) => {
+          var _a3;
+          const v = (_a3 = graphData[sk]) == null ? void 0 : _a3[graphIndex];
+          return v != null ? Number(v) : null;
+        });
+        if (fromGraph.some((v) => v != null)) {
+          skills = fromGraph;
+        }
       }
-      const sideButton = event.target.closest(".tmsl-side-btn[data-side]");
-      if (sideButton && panel.contains(sideButton)) {
-        filterHandlers.onSideFilter(sideButton.dataset.side);
+      if (skills === null && (dbRecord == null ? void 0 : dbRecord.skills)) {
+        skills = dbRecord.skills.map((s6) => Math.floor(skillValue3(s6) || 0));
       }
-    });
-    panel.addEventListener("change", (event) => {
+      const weeklyChanges = isCurrentMonth ? player2.weeklyChanges || null : (dbRecord == null ? void 0 : dbRecord.weeklyChanges) || null;
+      const routine = isCurrentMonth ? (_d = (_c = dbRecord == null ? void 0 : dbRecord.routine) != null ? _c : player2.routine) != null ? _d : null : (_e = dbRecord == null ? void 0 : dbRecord.routine) != null ? _e : null;
+      records[key] = { TI: null, ASI: null, skills, weeklyChanges, routine };
+    }
+    return records;
+  };
+  var buildHistorySkeletons = async (players, onProgress) => {
+    const total = players.filter((p) => p.needSync && p.isOwnPlayer).length;
+    let done = 0;
+    const fetches = await Promise.all(
+      players.map(async (player2) => {
+        if (!player2.needSync || !player2.isOwnPlayer) {
+          return { graphData: null, training: null };
+        }
+        const [graphData, training] = await Promise.all([
+          TmPlayerService.fetchPlayerGraphs(player2),
+          TmPlayerService.fetchPlayerTrainingForSync(player2)
+        ]);
+        done++;
+        onProgress == null ? void 0 : onProgress(done, total);
+        return { graphData, training };
+      })
+    );
+    return players.map((player2, i) => {
       var _a2;
-      const filterHandlers = panel._tmslFilterHandlers;
-      const filterId = (_a2 = event.target) == null ? void 0 : _a2.id;
-      if (!filterHandlers || !NUMERIC_FILTER_IDS.includes(filterId)) return;
-      filterHandlers.onNumFilter(filterId, event.target.value);
+      if (!player2.needSync) return player2;
+      const { graphData: rawGraphData, training } = fetches[i];
+      const graphData = (_a2 = rawGraphData == null ? void 0 : rawGraphData.graphs) != null ? _a2 : null;
+      const monthKeys = buildMonthKeys(player2, graphData, player2.DBPlayer);
+      const records = buildRecordSkeleton(player2, monthKeys, graphData, player2.DBPlayer);
+      return { ...player2, graphData, training, monthKeys, records };
     });
-  }
-  function playerMatchesFilters(p, state5) {
-    const { fPos: fPos2, fSide: fSide2, fAgeMin: fAgeMin2, fAgeMax: fAgeMax2, fR5Min: fR5Min2, fR5Max: fR5Max2, fRecMin: fRecMin2, fRecMax: fRecMax2, fTiMin: fTiMin2, fTiMax: fTiMax2 } = state5;
-    if (fPos2.size > 0) {
-      const groups = new Set((p.positions || []).map((pp) => TmPosition.filterGroup(pp.id)));
-      if (![...fPos2].some((g) => groups.has(g))) return false;
+  };
+
+  // src/workflows/player-history/shared.js
+  var {
+    TRAINING_GROUPS_OUT: TRAINING_GROUPS_OUT3,
+    TRAINING_GROUPS_GK: TRAINING_GROUPS_GK3,
+    STD_FOCUS: STD_FOCUS3,
+    SMOOTH_WEIGHT: SMOOTH_WEIGHT3
+  } = TmConst;
+  var normalizeTrainingWeights = (training, isGK) => {
+    const groups = isGK ? TRAINING_GROUPS_GK3 : TRAINING_GROUPS_OUT3;
+    const groupCount = groups.length;
+    const skillCount = isGK ? 11 : 14;
+    const equal = new Array(groupCount).fill(1 / groupCount);
+    if (isGK) return [1];
+    if (Array.isArray(training)) {
+      const dots = training.slice(0, groupCount).map((value) => Math.max(0, Number(value) || 0));
+      if (!dots.some(Boolean)) return equal;
+      const smoothed = dots.map((value) => value + SMOOTH_WEIGHT3);
+      const total2 = smoothed.reduce((sum, value) => sum + value, 0);
+      return total2 > 0 ? smoothed.map((value) => value / total2) : equal;
     }
-    if (fSide2.size > 0) {
-      const sides = new Set((p.positions || []).map((pp) => {
-        const n = (pp.position || "").toLowerCase();
-        if (n === "gk") return "c";
-        if (n.endsWith("l")) return "l";
-        if (n.endsWith("r")) return "r";
-        return "c";
-      }));
-      if (![...fSide2].some((s6) => sides.has(s6))) return false;
+    if (training && typeof training === "object") {
+      if (Array.isArray(training.custom)) return normalizeTrainingWeights(training.custom, isGK);
+      if (training.standard != null) return normalizeTrainingWeights(training.standard, isGK);
     }
-    const ageFloat = p.age + (p.months || 0) / 12;
-    if (ageFloat < fAgeMin2 || ageFloat > fAgeMax2) return false;
-    if (fR5Min2 !== "" && p.r5 < parseFloat(fR5Min2)) return false;
-    if (fR5Max2 !== "" && p.r5 > parseFloat(fR5Max2)) return false;
-    if (fRecMin2 !== "" && p.rec < parseFloat(fRecMin2)) return false;
-    if (fRecMax2 !== "" && p.rec > parseFloat(fRecMax2)) return false;
-    if (fTiMin2 !== "" && (p.ti === null || p.ti < parseFloat(fTiMin2))) return false;
-    if (fTiMax2 !== "" && (p.ti === null || p.ti > parseFloat(fTiMax2))) return false;
-    return true;
-  }
-  var TmShortlistFilters = { buildFilters, bindFilters, playerMatchesFilters };
+    const focusIdx = STD_FOCUS3 == null ? void 0 : STD_FOCUS3[String(training)];
+    if (focusIdx == null) return equal;
+    const weights = groups.map((group) => 0.75 * (group.length / skillCount));
+    weights[focusIdx] += 0.25;
+    const total = weights.reduce((sum, value) => sum + value, 0);
+    return total > 0 ? weights.map((value) => value / total) : equal;
+  };
+  var buildWeightedIntegerSeries = (total, count, liveTI = null) => {
+    const safeTotal = Math.round(Number(total) || 0);
+    if (count <= 0) return [];
+    if (count === 1) return [safeTotal];
+    const sign = safeTotal < 0 ? -1 : 1;
+    const magnitude = Math.abs(safeTotal);
+    const avg2 = magnitude / count;
+    const liveRaw = Number.isFinite(Number(liveTI)) ? Math.round(Number(liveTI)) : sign * avg2;
+    const live = Math.abs(liveRaw);
+    const slope = Math.min(0.75, Math.abs(live - avg2) / Math.max(1, avg2 || 1));
+    const rawWeights = Array.from({ length: count }, (_, index) => {
+      const progress = count === 1 ? 1 : index / (count - 1);
+      const directional = live >= avg2 ? progress : 1 - progress;
+      return 1 + directional * slope;
+    });
+    const rawTotal = rawWeights.reduce((sum, weight) => sum + weight, 0) || 1;
+    const quotas = rawWeights.map((weight) => magnitude * weight / rawTotal);
+    const series = quotas.map((value) => Math.floor(value));
+    let remainder = magnitude - series.reduce((sum, value) => sum + value, 0);
+    quotas.map((value, index) => ({ index, frac: value - Math.floor(value) })).sort((a, b) => b.frac - a.frac).forEach(({ index }) => {
+      if (remainder <= 0) return;
+      series[index] += 1;
+      remainder -= 1;
+    });
+    return series.map((value) => value * sign);
+  };
+
+  // src/workflows/player-history/ti_asi.js
+  var keyToAbs2 = (key) => {
+    const [a, m] = String(key).split(".").map(Number);
+    return a * 12 + m;
+  };
+  var absToKey3 = (abs) => `${Math.floor(abs / 12)}.${abs % 12}`;
+  var asiOneMonthBack = (asi, ti, isGK) => TmLib.calcASIProjection({ player: { asi, isGK }, trainings: 1, avgTI: -ti }).newASI;
+  var fillOwnPlayerTIandASI = (player2) => {
+    var _a2, _b, _c;
+    const { monthKeys, records, graphData } = player2;
+    const currentKey = player2.ageMonthsString;
+    const currentAbs = keyToAbs2(currentKey);
+    const graphMonths = ((_a2 = graphData == null ? void 0 : graphData.TI) == null ? void 0 : _a2.length) ? graphData.TI.length - 1 : 0;
+    for (let i = 0; i < graphMonths; i++) {
+      const abs = currentAbs - graphMonths + 1 + i;
+      const key = absToKey3(abs);
+      if (records[key]) {
+        const ti = graphData.TI[i + 1];
+        records[key].TI = ti != null ? Number(ti) : null;
+      }
+    }
+    records[currentKey].ASI = player2.asi;
+    for (let i = monthKeys.length - 2; i >= 0; i--) {
+      const key = monthKeys[i];
+      const nextKey = monthKeys[i + 1];
+      const nextASI = (_b = records[nextKey]) == null ? void 0 : _b.ASI;
+      const nextTI = (_c = records[nextKey]) == null ? void 0 : _c.TI;
+      if (nextASI == null || nextTI == null) continue;
+      records[key].ASI = asiOneMonthBack(nextASI, nextTI, player2.isGK);
+    }
+  };
+  var fillForeignPlayerTIandASI = (player2) => {
+    var _a2, _b, _c, _d, _e;
+    const { monthKeys, records, DBPlayer } = player2;
+    const currentKey = player2.ageMonthsString;
+    const liveTI = (_a2 = player2.ti) != null ? _a2 : null;
+    records[currentKey].ASI = player2.asi;
+    const anchors = monthKeys.map((key) => {
+      var _a3, _b2, _c2;
+      const asi = key === currentKey ? player2.asi : (_c2 = (_b2 = (_a3 = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _a3[key]) == null ? void 0 : _b2.SI) != null ? _c2 : null;
+      return asi != null && Number.isFinite(Number(asi)) ? { key, abs: keyToAbs2(key), asi: Number(asi) } : null;
+    }).filter(Boolean);
+    for (let ai = 0; ai < anchors.length - 1; ai++) {
+      const startA = anchors[ai];
+      const endA = anchors[ai + 1];
+      const gapKeys = monthKeys.filter((k) => {
+        const abs = keyToAbs2(k);
+        return abs > startA.abs && abs <= endA.abs;
+      });
+      if (!gapKeys.length) continue;
+      const K = TmConst.ASI_WEIGHT_OUTFIELD;
+      const startBase = Math.pow(startA.asi * K, 1 / 7);
+      const endBase = Math.pow(endA.asi * K, 1 / 7);
+      const totalTI = Math.round((endBase - startBase) * (player2.isGK ? 11 / 14 : 1) * 10);
+      const series = buildWeightedIntegerSeries(totalTI, gapKeys.length, liveTI);
+      gapKeys.forEach((key, i) => {
+        records[key].TI = series[i];
+      });
+    }
+    for (let i = monthKeys.length - 2; i >= 0; i--) {
+      const key = monthKeys[i];
+      const nextKey = monthKeys[i + 1];
+      const nextASI = (_b = records[nextKey]) == null ? void 0 : _b.ASI;
+      const nextTI = (_c = records[nextKey]) == null ? void 0 : _c.TI;
+      if (nextASI == null || nextTI == null) continue;
+      records[key].ASI = asiOneMonthBack(nextASI, nextTI, player2.isGK);
+    }
+    if (monthKeys.length > 0) (_e = (_d = records[monthKeys[0]]).TI) != null ? _e : _d.TI = 0;
+  };
+  var fillTIandASI = (players) => {
+    var _a2, _b;
+    for (const player2 of players) {
+      if (!player2.needSync) continue;
+      if (player2.isOwnPlayer && ((_b = (_a2 = player2.graphData) == null ? void 0 : _a2.TI) == null ? void 0 : _b.length)) {
+        fillOwnPlayerTIandASI(player2);
+      } else {
+        fillForeignPlayerTIandASI(player2);
+      }
+    }
+    return players;
+  };
+
+  // src/workflows/player-history/skills.js
+  var { TRAINING_GROUPS_OUT: TRAINING_GROUPS_OUT4, TRAINING_GROUPS_GK: TRAINING_GROUPS_GK4, GRAPH_KEYS_OUT: GRAPH_KEYS_OUT4, GRAPH_KEYS_GK: GRAPH_KEYS_GK4, ASI_WEIGHT_OUTFIELD: ASI_WEIGHT_OUTFIELD3 } = TmConst;
+  var findSkillsAnchor = (monthKeys, records) => {
+    var _a2;
+    for (const key of monthKeys) {
+      const skills = (_a2 = records[key]) == null ? void 0 : _a2.skills;
+      if (Array.isArray(skills) && skills.some((v) => v != null)) return key;
+    }
+    return null;
+  };
+  var applyDecimalsToAnchor = (player2) => {
+    const { skillsAnchorKey, records, isGK } = player2;
+    if (!skillsAnchorKey) return;
+    const record = records[skillsAnchorKey];
+    if (!record) return;
+    const intSkills = record.skills;
+    const anchorASI = record.ASI;
+    if (!Array.isArray(intSkills) || anchorASI == null) return;
+    const skillCount = isGK ? 11 : 14;
+    record.skills = TmLib.calcSkillDecimalsSimple({
+      asi: anchorASI,
+      isGK,
+      skills: intSkills.slice(0, skillCount).map((v) => ({ value: v != null ? v : 0 }))
+    }).map((s6) => s6.value);
+  };
+  var balanceSkillsToASI = (newSkills, caps, floors, asi, isGK) => {
+    if (asi == null) return;
+    const hardCap = 20;
+    const base = Math.pow(asi * ASI_WEIGHT_OUTFIELD3, 1 / 7);
+    const expectedSum = isGK ? base / 14 * 11 : base;
+    let delta = expectedSum - newSkills.reduce((s6, v) => s6 + v, 0);
+    let passes = 0;
+    while (Math.abs(delta) > 1e-4 && passes++ < 20) {
+      const eligible = newSkills.map((v, si) => (delta > 0 ? v < Math.min(caps[si], hardCap) : v > floors[si]) ? si : -1).filter((si) => si >= 0);
+      if (!eligible.length) break;
+      const share = delta / eligible.length;
+      let remaining = 0;
+      for (const si of eligible) {
+        const effectiveCap = Math.min(caps[si], hardCap);
+        const candidate = newSkills[si] + share;
+        if (delta > 0 && candidate > effectiveCap) {
+          remaining += candidate - effectiveCap;
+          newSkills[si] = effectiveCap;
+        } else if (delta < 0 && candidate < floors[si]) {
+          remaining += candidate - floors[si];
+          newSkills[si] = floors[si];
+        } else {
+          newSkills[si] = candidate;
+        }
+      }
+      delta = remaining;
+    }
+  };
+  var fillSkillsBackward = (player2) => {
+    var _a2, _b;
+    const { monthKeys, records, isGK, training, skillsAnchorKey } = player2;
+    if (!skillsAnchorKey) return;
+    const anchorIdx = monthKeys.indexOf(skillsAnchorKey);
+    if (anchorIdx <= 0) return;
+    const GRP = isGK ? TRAINING_GROUPS_GK4 : TRAINING_GROUPS_OUT4;
+    const N = isGK ? 11 : 14;
+    const gw = normalizeTrainingWeights(training != null ? training : null, isGK);
+    const skillShare = new Array(N).fill(0);
+    for (let gi = 0; gi < GRP.length; gi++) {
+      const perSkill = gw[gi] / GRP[gi].length;
+      for (const si of GRP[gi]) {
+        if (si < N) skillShare[si] = perSkill;
+      }
+    }
+    let curSkills = records[skillsAnchorKey].skills.map(Number);
+    for (let i = anchorIdx - 1; i >= 0; i--) {
+      const key = monthKeys[i];
+      const nextKey = monthKeys[i + 1];
+      const ti = (_b = (_a2 = records[nextKey]) == null ? void 0 : _a2.TI) != null ? _b : 0;
+      const totalGain = ti / 10;
+      const hasKnown = records[key].skills != null && records[key].skills.some((v) => v != null);
+      const knownInts = hasKnown ? records[key].skills.map((v) => v != null ? Math.floor(Number(v)) : null) : null;
+      const caps = new Array(N);
+      const floors = new Array(N);
+      for (let si = 0; si < N; si++) {
+        if ((knownInts == null ? void 0 : knownInts[si]) != null) {
+          caps[si] = Math.min(knownInts[si] + 0.99, 20);
+          floors[si] = knownInts[si];
+        } else {
+          caps[si] = Math.min(curSkills[si], 20);
+          floors[si] = 1;
+        }
+      }
+      const newSkills = curSkills.map(
+        (v, si) => Math.max(floors[si], Math.min(caps[si], v - skillShare[si] * totalGain))
+      );
+      balanceSkillsToASI(newSkills, caps, floors, records[key].ASI, isGK);
+      records[key].skills = newSkills;
+      curSkills = newSkills;
+    }
+    const tableKeys = monthKeys.slice(0, anchorIdx + 1);
+    console.groupCollapsed(`[Step 7b] \u2190 ${player2.name} (${tableKeys.length} months to anchor)`);
+    console.log(player2.records);
+    console.groupEnd();
+  };
+  var fillSkillsForward = (player2) => {
+    var _a2, _b, _c;
+    const { monthKeys, records, isGK, training, skillsAnchorKey } = player2;
+    if (!skillsAnchorKey) return;
+    const anchorIdx = monthKeys.indexOf(skillsAnchorKey);
+    if (anchorIdx < 0 || anchorIdx >= monthKeys.length - 1) return;
+    const GRP = isGK ? TRAINING_GROUPS_GK4 : TRAINING_GROUPS_OUT4;
+    const N = isGK ? 11 : 14;
+    const gw = normalizeTrainingWeights(training != null ? training : null, isGK);
+    const defaultShare = new Array(N).fill(0);
+    for (let gi = 0; gi < GRP.length; gi++) {
+      const perSkill = gw[gi] / GRP[gi].length;
+      for (const si of GRP[gi]) {
+        if (si < N) defaultShare[si] = perSkill;
+      }
+    }
+    let curSkills = records[skillsAnchorKey].skills.map(Number);
+    for (let i = anchorIdx + 1; i < monthKeys.length; i++) {
+      const key = monthKeys[i];
+      const record = records[key];
+      if (!record) continue;
+      const ti = (_a2 = record.TI) != null ? _a2 : 0;
+      const totalGain = ti / 10;
+      const wc = record.weeklyChanges;
+      let gain = defaultShare.map((w) => w * totalGain);
+      if ((_b = wc == null ? void 0 : wc.skillChanges) == null ? void 0 : _b.length) {
+        const upIdxs = wc.skillChanges.map((c, idx) => (c === "one_up" || c === "part_up") && idx < N ? idx : -1).filter((idx) => idx >= 0);
+        const downIdxs = wc.skillChanges.map((c, idx) => (c === "one_down" || c === "part_down") && idx < N ? idx : -1).filter((idx) => idx >= 0);
+        if (upIdxs.length > 0 || downIdxs.length > 0) {
+          gain = new Array(N).fill(0);
+          if (upIdxs.length > 0 && downIdxs.length > 0) {
+            const nominalTotal = (upIdxs.length - downIdxs.length) * 0.1;
+            const excess = totalGain - nominalTotal;
+            if (excess >= 0) {
+              const upGainPer = 0.1 + excess / upIdxs.length;
+              for (const si of upIdxs) gain[si] = upGainPer;
+              for (const si of downIdxs) gain[si] = -0.1;
+            } else {
+              const downGainPer = -0.1 + excess / downIdxs.length;
+              for (const si of upIdxs) gain[si] = 0.1;
+              for (const si of downIdxs) gain[si] = downGainPer;
+            }
+          } else if (upIdxs.length > 0) {
+            const upGainPer = totalGain / upIdxs.length;
+            for (const si of upIdxs) gain[si] = upGainPer;
+          } else {
+            const downGainPer = totalGain / downIdxs.length;
+            for (const si of downIdxs) gain[si] = downGainPer;
+          }
+        }
+      }
+      const hasKnown = record.skills != null && record.skills.some((v) => v != null);
+      const knownInts = hasKnown ? record.skills.map((v) => v != null ? Math.floor(Number(v)) : null) : null;
+      let futureInts = null;
+      if (!hasKnown) {
+        for (let j = i + 1; j < monthKeys.length; j++) {
+          const fSkills = (_c = records[monthKeys[j]]) == null ? void 0 : _c.skills;
+          if (fSkills && fSkills.some((v) => v != null)) {
+            futureInts = fSkills.map((v) => v != null ? Math.floor(Number(v)) : null);
+            break;
+          }
+        }
+      }
+      const caps = new Array(N);
+      const floors = new Array(N);
+      for (let si = 0; si < N; si++) {
+        const curInt = Math.floor(curSkills[si]);
+        if ((knownInts == null ? void 0 : knownInts[si]) != null) {
+          caps[si] = knownInts[si] + 0.99;
+          floors[si] = knownInts[si];
+        } else if ((futureInts == null ? void 0 : futureInts[si]) != null) {
+          const futInt = futureInts[si];
+          caps[si] = ti >= 0 && futInt === curInt ? curInt + 0.99 : ti < 0 ? curInt + 0.99 : Infinity;
+          floors[si] = ti < 0 ? futInt : curInt;
+        } else {
+          caps[si] = Infinity;
+          floors[si] = 1;
+        }
+        if (curInt >= 20) {
+          caps[si] = 20;
+          floors[si] = 20;
+        }
+        caps[si] = Math.min(caps[si], 20);
+      }
+      const newSkills = curSkills.map(
+        (v, si) => Math.max(floors[si], Math.min(caps[si], v + gain[si]))
+      );
+      balanceSkillsToASI(newSkills, caps, floors, record.ASI, isGK);
+      record.skills = newSkills;
+      curSkills = newSkills;
+    }
+    const tableKeys = monthKeys.slice(anchorIdx);
+    console.groupCollapsed(`[Step 7c] \u2192 ${player2.name} (${tableKeys.length} months from anchor)`);
+    console.log(player2.records);
+    console.groupEnd();
+  };
+  var attachSkillsAnchor = (players) => {
+    for (const player2 of players) {
+      if (!player2.needSync) continue;
+      player2.skillsAnchorKey = findSkillsAnchor(player2.monthKeys, player2.records);
+      applyDecimalsToAnchor(player2);
+      fillSkillsBackward(player2);
+      fillSkillsForward(player2);
+    }
+    return players;
+  };
+
+  // src/workflows/player-history/routine.js
+  var attachRoutine = (players) => {
+    var _a2, _b, _c, _d;
+    for (const player2 of players) {
+      if (!player2.needSync) continue;
+      const { monthKeys, records } = player2;
+      if (!(monthKeys == null ? void 0 : monthKeys.length)) continue;
+      const n = monthKeys.length;
+      const anchors = [{ idx: 0, value: 0 }];
+      for (let i = 1; i < n; i++) {
+        const rou = (_a2 = records[monthKeys[i]]) == null ? void 0 : _a2.routine;
+        if (rou != null && Number.isFinite(Number(rou))) {
+          anchors.push({ idx: i, value: Number(rou) });
+        }
+      }
+      const firstRecordRoutine = (_b = records[monthKeys[0]]) == null ? void 0 : _b.routine;
+      if (firstRecordRoutine != null && Number.isFinite(Number(firstRecordRoutine))) {
+        anchors[0].value = Number(firstRecordRoutine);
+      }
+      const lastIdx = n - 1;
+      const existingLast = anchors.findIndex((a) => a.idx === lastIdx);
+      const lastValue = Number((_d = (_c = records[monthKeys[lastIdx]]) == null ? void 0 : _c.routine) != null ? _d : 0);
+      if (existingLast >= 0) {
+        anchors[existingLast].value = lastValue;
+      } else {
+        anchors.push({ idx: lastIdx, value: lastValue });
+      }
+      for (let ai = 0; ai < anchors.length - 1; ai++) {
+        const { idx: i1, value: v1 } = anchors[ai];
+        const { idx: i2, value: v2 } = anchors[ai + 1];
+        for (let i = i1; i <= i2; i++) {
+          const t = i2 > i1 ? (i - i1) / (i2 - i1) : 1;
+          const interpolated = Math.round((v1 + (v2 - v1) * t) * 10) / 10;
+          if (records[monthKeys[i]]) {
+            records[monthKeys[i]].routine = interpolated;
+          }
+        }
+      }
+    }
+    return players;
+  };
+
+  // src/workflows/player-history/r5rec.js
+  var attachR5Rec = (players) => {
+    var _a2;
+    for (const player2 of players) {
+      if (!player2.needSync) continue;
+      if (!Array.isArray(player2.positions)) continue;
+      const preferredPositions = player2.positions.filter((p) => p.preferred);
+      const positionsForRatings = preferredPositions.length ? preferredPositions : player2.positions;
+      for (const key of player2.monthKeys) {
+        const record = player2.records[key];
+        if (!record || !Array.isArray(record.skills)) continue;
+        const snapshot = {
+          skills: record.skills,
+          asi: record.ASI,
+          routine: (_a2 = record.routine) != null ? _a2 : 0
+        };
+        let maxR5 = null;
+        let maxRec = null;
+        for (const position of positionsForRatings) {
+          const r5 = Number(TmLib.calculatePlayerR5(position, snapshot));
+          const rec = Number(TmLib.calculatePlayerREC(position, snapshot));
+          if (Number.isFinite(r5) && (maxR5 === null || r5 > maxR5)) maxR5 = r5;
+          if (Number.isFinite(rec) && (maxRec === null || rec > maxRec)) maxRec = rec;
+        }
+        record.r5 = maxR5;
+        record.rec = maxRec;
+      }
+    }
+    return players;
+  };
+
+  // src/workflows/player-history/save.js
+  var saveHistoryRecords = async (players, { writeFullySynced = true } = {}) => {
+    const tasks = players.filter((p) => p.needSync && p.records).map(async (player2) => {
+      var _a2, _b;
+      const { DBPlayer, records, ageMonthsString } = player2;
+      const merged = { ...(DBPlayer == null ? void 0 : DBPlayer.records) || {}, ...records };
+      if (ageMonthsString && merged[ageMonthsString]) {
+        if (writeFullySynced) {
+          merged[ageMonthsString] = { ...merged[ageMonthsString], fullySynced: true };
+        } else {
+          const cur = { ...merged[ageMonthsString] };
+          delete cur.fullySynced;
+          merged[ageMonthsString] = cur;
+        }
+      }
+      const preferredPositions = (player2.positions || []).filter((p) => p.preferred);
+      await TmPlayerDB.set(player2.id, {
+        ...DBPlayer || {},
+        _v: (DBPlayer == null ? void 0 : DBPlayer._v) || 1,
+        lastSeen: Date.now(),
+        meta: {
+          ...(DBPlayer == null ? void 0 : DBPlayer.meta) || {},
+          name: ((_a2 = DBPlayer == null ? void 0 : DBPlayer.meta) == null ? void 0 : _a2.name) || player2.name,
+          pos: ((_b = DBPlayer == null ? void 0 : DBPlayer.meta) == null ? void 0 : _b.pos) || (preferredPositions.length ? preferredPositions.map((p) => p.position).join(", ") : (player2.positions || []).map((p) => p.position).join(", "))
+        },
+        records: merged
+      });
+    });
+    console.log(`Saving ${tasks.length} players to DB...`);
+    await Promise.all(tasks);
+  };
+
+  // src/workflows/player-history/sync-pipeline.js
+  var runSyncPipeline = async (players, onProgress, { mode = "full" } = {}) => {
+    var _a2;
+    const toArchive = players.filter((p) => !p.club_id);
+    const active = players.filter((p) => !!p.club_id);
+    const archived = await Promise.all(toArchive.map(async (p) => {
+      await archivePlayerRecord(p.id);
+      return { ...p, archived: true, needSync: false };
+    }));
+    if (!active.length) return [...archived];
+    const withSync = await attachSyncStatus(active, { mode });
+    if (!withSync.filter((p) => p.needSync).length) return withSync;
+    const withData = await buildHistorySkeletons(withSync, onProgress);
+    fillTIandASI(withData);
+    attachSkillsAnchor(withData);
+    attachRoutine(withData);
+    const needSync = withData.filter((p) => p.needSync);
+    for (const player2 of needSync) {
+      attachR5Rec([player2]);
+      if (mode === "full") {
+        const currentRecord = (_a2 = player2.records) == null ? void 0 : _a2[player2.ageMonthsString];
+        if (currentRecord) currentRecord.fullySynced = true;
+      }
+    }
+    await saveHistoryRecords(withData, { writeFullySynced: mode === "full" });
+    return [...withData, ...archived];
+  };
+
+  // src/workflows/purge-retired.js
+  var purgeRetiredPlayers = async (pids, onProgress) => {
+    const archived = [], kept = [], failed = [];
+    const total = pids.length;
+    for (let i = 0; i < pids.length; i++) {
+      const pid = String(pids[i]);
+      try {
+        const player2 = await TmPlayerModel.fetchPlayerTooltip(pid);
+        if (!player2 || !player2.club_id) {
+          await archivePlayerRecord(pid);
+          archived.push(pid);
+        } else {
+          kept.push(pid);
+        }
+      } catch (e) {
+        failed.push(pid);
+      }
+      onProgress == null ? void 0 : onProgress({ done: i + 1, total, archived: archived.length, pid });
+    }
+    return { archived, kept, failed };
+  };
 
   // src/components/shortlist/tm-shortlist-table.js
   function injectCSS2() {
@@ -18651,13 +19224,13 @@ order:initial
         `;
     document.head.appendChild(s6);
   }
-  function createTableElement(players, sortCol2, sortDir2, onSort) {
+  function createTableElement(players, sortCol, sortDir, onSort) {
     const tmp = document.createElement("div");
     TmPlayersTable.mount(tmp, players, {
-      sortKey: sortCol2,
-      sortDir: sortDir2,
+      sortKey: sortCol,
+      sortDir,
       nameDecorator: (p) => {
-        const noteIcon = p.txt ? `<span class="tmsl-note-icon" data-note="${p.txt.replace(/"/g, "&quot;")}">\u{1F4CB}</span>` : "";
+        const noteIcon = p.note ? `<span class="tmsl-note-icon" data-note="${p.note.replace(/"/g, "&quot;")}">\u{1F4CB}</span>` : "";
         const pendingIcon = p.pending ? ' <span class="tmsl-pending-icon">\u23F3</span>' : "";
         return noteIcon + pendingIcon;
       },
@@ -18668,12 +19241,12 @@ order:initial
     });
     return tmp.firstChild;
   }
-  function createIndexedTableElement(players, sortCol2, sortDir2, onSort) {
+  function createIndexedTableElement(players, sortCol, sortDir, onSort) {
     const tmp = document.createElement("div");
     TmPlayersTable.mount(tmp, players, {
       columns: { timeleft: false, curbid: false, lastSeen: true, tiLabel: "Last TI" },
-      sortKey: sortCol2,
-      sortDir: sortDir2,
+      sortKey: sortCol,
+      sortDir,
       rowAttrs: (p) => ({ "data-ixpid": p.id }),
       onRowClick: null,
       onSort
@@ -18682,406 +19255,657 @@ order:initial
   }
   var TmShortlistTable = { injectCSS: injectCSS2, createTableElement, createIndexedTableElement };
 
-  // src/components/shortlist/tm-shortlist-panel.js
-  var htmlOf6 = (node) => node ? node.outerHTML : "";
-  var buttonHtml6 = (opts) => TmUI.button(opts).outerHTML;
-  function getSortVal(p, col) {
-    var _a2, _b, _c, _d;
-    if (col === "age") return p.age * 12 + (p.months || 0);
-    if (col === "pos") {
-      const ord0 = (_b = (_a2 = (p.positions || [])[0]) == null ? void 0 : _a2.ordering) != null ? _b : 9;
-      const ord1 = (p.positions || []).length > 1 ? (_d = (_c = p.positions[1]) == null ? void 0 : _c.ordering) != null ? _d : 9 : 0;
-      return ord0 * 100 + ((p.positions || []).length > 1 ? 50 + ord1 : 0);
-    }
-    if (col === "timeleft") return p.timeleft > 0 ? p.timeleft : 999999999;
-    if (col === "name") return p.name;
-    return p[col];
+  // src/components/shortlist/tm-shortlist-filters.js
+  var inputHtml3 = (opts = {}) => TmUI.input({ type: "number", size: "sm", density: "regular", ...opts }).outerHTML;
+  var POSITION_FILTERS = [
+    { key: "gk", label: "GK", cls: "gk" },
+    { key: "de", label: "D", cls: "de" },
+    { key: "dm", label: "DM", cls: "dm" },
+    { key: "mf", label: "M", cls: "mf" },
+    { key: "om", label: "OM", cls: "om" },
+    { key: "fw", label: "F", cls: "fw" }
+  ];
+  var SIDE_FILTERS = [
+    { key: "l", label: "L" },
+    { key: "c", label: "C" },
+    { key: "r", label: "R" }
+  ];
+  var NUMERIC_FILTER_IDS = [
+    "tmsl-agemin",
+    "tmsl-agemax",
+    "tmsl-r5min",
+    "tmsl-r5max",
+    "tmsl-recmin",
+    "tmsl-recmax",
+    "tmsl-timin",
+    "tmsl-timax"
+  ];
+  var TEXT_FILTER_IDS = ["tmsl-name"];
+  function renderToggleGroup(items, opts) {
+    const baseCls = opts.baseCls;
+    const dataAttr = opts.dataAttr;
+    const isActive = opts.isActive;
+    let html2 = '<div class="tmsl-btngrp">';
+    items.forEach((item) => {
+      html2 += `<span class="${baseCls}${item.cls ? " " + item.cls : ""}${isActive(item.key) ? " active" : ""}" data-${dataAttr}="${item.key}">${item.label}</span>`;
+    });
+    html2 += "</div>";
+    return html2;
   }
-  function sortPlayers(arr, col, dir) {
-    arr.sort((a, b) => {
-      const va = getSortVal(a, col);
-      const vb = getSortVal(b, col);
-      if (col === "name") return dir * String(va).localeCompare(String(vb));
-      return dir * ((va || 0) - (vb || 0));
+  function buildFilters(state5, { loadHtml = "" } = {}) {
+    const { fPos, fSide, fName, fAgeMin, fAgeMax, fR5Min, fR5Max, fRecMin, fRecMax, fTiMin, fTiMax } = state5;
+    return `
+<div id="tmsl-filters">
+  <div class="tmsl-fgroup" style="flex:0 0 auto">
+    ${TmUI.input({ id: "tmsl-name", type: "text", size: "sm", density: "regular", value: fName || "", placeholder: "Search name\u2026", attrs: { style: "width:130px" } }).outerHTML}
+  </div>
+  <div class="tmsl-fsep"></div>
+  ${renderToggleGroup(POSITION_FILTERS, { baseCls: "tmsl-pos-btn", dataAttr: "group", isActive: (key) => fPos.has(key) })}
+  ${renderToggleGroup(SIDE_FILTERS, { baseCls: "tmsl-side-btn", dataAttr: "side", isActive: (key) => fSide.has(key) })}
+  <div class="tmsl-fsep"></div>
+  <div class="tmsl-fgroup">
+    <span class="tmsl-flbl">Age:</span>
+    ${inputHtml3({ id: "tmsl-agemin", min: 0, max: 40, value: fAgeMin || "", placeholder: "Min" })}
+    <span style="color:var(--tmu-text-dim);font-size:var(--tmu-font-xs)">\u2013</span>
+    ${inputHtml3({ id: "tmsl-agemax", min: 0, max: 40, value: fAgeMax === 99 ? "" : fAgeMax, placeholder: "Max" })}
+  </div>
+  <div class="tmsl-fsep"></div>
+  <div class="tmsl-fgroup">
+    <span class="tmsl-flbl">R5:</span>
+    ${inputHtml3({ id: "tmsl-r5min", min: 0, step: 0.1, value: fR5Min, placeholder: "Min" })}
+    <span style="color:var(--tmu-text-dim);font-size:var(--tmu-font-xs)">\u2013</span>
+    ${inputHtml3({ id: "tmsl-r5max", min: 0, step: 0.1, value: fR5Max, placeholder: "Max" })}
+  </div>
+  <div class="tmsl-fsep"></div>
+  <div class="tmsl-fgroup">
+    <span class="tmsl-flbl">REC:</span>
+    ${inputHtml3({ id: "tmsl-recmin", min: 0, step: 0.01, value: fRecMin, placeholder: "Min" })}
+    <span class="tmsl-flbl">\u2013</span>
+    ${inputHtml3({ id: "tmsl-recmax", min: 0, step: 0.01, value: fRecMax, placeholder: "Max" })}
+  </div>
+  <div class="tmsl-fsep"></div>
+  <div class="tmsl-fgroup">
+    <span class="tmsl-flbl">TI:</span>
+    ${inputHtml3({ id: "tmsl-timin", step: 0.1, value: fTiMin, placeholder: "Min" })}
+    <span class="tmsl-flbl">\u2013</span>
+    ${inputHtml3({ id: "tmsl-timax", step: 0.1, value: fTiMax, placeholder: "Max" })}
+  </div>
+  ${loadHtml ? `<div class="tmsl-load-slot">${loadHtml}</div>` : ""}
+</div>`;
+  }
+  function bindFilters(panel, handlers) {
+    panel._tmslFilterHandlers = handlers;
+    if (panel.dataset.tmslFiltersBound === "1") return;
+    panel.dataset.tmslFiltersBound = "1";
+    panel.addEventListener("click", (event) => {
+      const filterHandlers = panel._tmslFilterHandlers;
+      if (!filterHandlers) return;
+      const groupButton = event.target.closest(".tmsl-pos-btn[data-group]");
+      if (groupButton && panel.contains(groupButton)) {
+        filterHandlers.onGroupFilter(groupButton.dataset.group);
+        return;
+      }
+      const sideButton = event.target.closest(".tmsl-side-btn[data-side]");
+      if (sideButton && panel.contains(sideButton)) {
+        filterHandlers.onSideFilter(sideButton.dataset.side);
+      }
+    });
+    panel.addEventListener("change", (event) => {
+      var _a2;
+      const filterHandlers = panel._tmslFilterHandlers;
+      const filterId = (_a2 = event.target) == null ? void 0 : _a2.id;
+      if (!filterHandlers) return;
+      if (NUMERIC_FILTER_IDS.includes(filterId)) {
+        filterHandlers.onNumFilter(filterId, event.target.value);
+      }
+    });
+    panel.addEventListener("input", (event) => {
+      var _a2;
+      const filterHandlers = panel._tmslFilterHandlers;
+      const filterId = (_a2 = event.target) == null ? void 0 : _a2.id;
+      if (!filterHandlers || !TEXT_FILTER_IDS.includes(filterId)) return;
+      filterHandlers.onTextFilter(filterId, event.target.value);
     });
   }
-  function adaptForTooltip(p) {
-    return {
-      ...p,
-      no: p.no || 0,
-      // skills: shortlist tab = rich objects; indexed tab = plain numbers
-      skills: (p.skills || []).map((s6, i) => {
-        var _a2;
-        return typeof s6 === "object" ? s6 : { value: s6, name: ((_a2 = p.labels) == null ? void 0 : _a2[i]) || "" };
-      })
-    };
+  function playerMatchesFilters(p, state5) {
+    const { fPos, fSide, fName, fAgeMin, fAgeMax, fR5Min, fR5Max, fRecMin, fRecMax, fTiMin, fTiMax } = state5;
+    if (fName && fName.trim()) {
+      if (!String(p.name || "").toLowerCase().includes(fName.trim().toLowerCase())) return false;
+    }
+    if (fPos.size > 0) {
+      const groups = new Set((p.positions || []).map((pp) => TmPosition.filterGroup(pp.id)));
+      if (![...fPos].some((g) => groups.has(g))) return false;
+    }
+    if (fSide.size > 0) {
+      const sides = new Set((p.positions || []).map((pp) => {
+        const n = (pp.position || "").toLowerCase();
+        if (n === "gk") return "c";
+        if (n.endsWith("l")) return "l";
+        if (n.endsWith("r")) return "r";
+        return "c";
+      }));
+      if (![...fSide].some((s6) => sides.has(s6))) return false;
+    }
+    const ageFloat = p.age + (p.month || 0) / 12;
+    if (ageFloat < fAgeMin || ageFloat > fAgeMax) return false;
+    if (fR5Min !== "" && p.r5 < parseFloat(fR5Min)) return false;
+    if (fR5Max !== "" && p.r5 > parseFloat(fR5Max)) return false;
+    if (fRecMin !== "" && p.rec < parseFloat(fRecMin)) return false;
+    if (fRecMax !== "" && p.rec > parseFloat(fRecMax)) return false;
+    if (fTiMin !== "" && (p.ti === null || p.ti < parseFloat(fTiMin))) return false;
+    if (fTiMax !== "" && (p.ti === null || p.ti > parseFloat(fTiMax))) return false;
+    return true;
   }
-  function render12(ctx) {
-    const {
-      allPlayers: allPlayers3,
-      indexedPlayers: indexedPlayers2,
-      activeTab: activeTab4,
-      sortCol: sortCol2,
-      sortDir: sortDir2,
-      ixSortCol: ixSortCol2,
-      ixSortDir: ixSortDir2,
-      ixPage: ixPage2,
-      IX_PAGE_SIZE: IX_PAGE_SIZE2,
-      slPage: slPage2,
-      SL_PAGE_SIZE: SL_PAGE_SIZE2,
-      loadMoreState: loadMoreState2,
-      loadProgress: loadProgress2,
-      shortlistLoading: shortlistLoading2,
-      filterState,
-      onTabChange,
-      onGroupFilter,
-      onSideFilter,
-      onNumFilter,
-      onSort,
-      onIxSort,
-      onIxPage,
-      onSlPage,
-      onLoadMore
-    } = ctx;
-    let panel = document.getElementById("tmsl-panel");
-    if (panel) panel.remove();
-    panel = document.createElement("div");
-    panel.id = "tmsl-panel";
-    panel.className = "tmu-panel-page";
-    const fs = filterState;
-    const filtered = allPlayers3.filter((p) => TmShortlistFilters.playerMatchesFilters(p, fs));
-    const slCountHtml = filtered.length < allPlayers3.length ? `<span class="tmsl-tab-count">(${filtered.length}/${allPlayers3.length})</span>` : `<span class="tmsl-tab-count">(${allPlayers3.length})</span>`;
-    const ixFiltered = indexedPlayers2 ? indexedPlayers2.filter((p) => TmShortlistFilters.playerMatchesFilters(p, fs)) : null;
-    const ixCountHtml = ixFiltered !== null ? ` ${ixFiltered.length < indexedPlayers2.length ? `<span class="tmsl-tab-count">(${ixFiltered.length}/${indexedPlayers2.length})</span>` : `<span class="tmsl-tab-count">(${indexedPlayers2.length})</span>`}` : "";
-    const isLoading = shortlistLoading2 || loadMoreState2 === "loading";
-    const tabs = TmUI.tabs({
-      items: [
-        { key: "shortlist", slot: `\u{1F4CB} Shortlist ${slCountHtml}` }
-      ],
-      active: activeTab4,
-      color: "primary"
-    });
-    let loadBtnHtml = "";
-    if (isLoading) {
-      const prog = loadProgress2 ? `${loadProgress2.done}/${loadProgress2.total}` : "\u2026";
-      loadBtnHtml = buttonHtml6({ label: `\u23F3 ${prog}`, color: "secondary", size: "xs", disabled: true });
-    } else if (loadMoreState2 === "done") {
-      loadBtnHtml = buttonHtml6({ label: "\u2713 All loaded", color: "secondary", size: "xs", disabled: true });
-    } else {
-      loadBtnHtml = buttonHtml6({ id: "tmsl-loadmore-btn", label: "\u2B07 Fetch More", color: "secondary", size: "xs" });
-    }
-    let h = `<div>${htmlOf6(tabs)}</div>`;
-    if (shortlistLoading2) {
-      const prog = loadProgress2 ? `${loadProgress2.done} / ${loadProgress2.total}` : "\u2026";
-      h += TmUI.loading(`Loading shortlist\u2026 (${prog})`);
-    } else if (activeTab4 === "shortlist") {
-      sortPlayers(filtered, sortCol2, sortDir2);
-      h += TmShortlistFilters.buildFilters(fs, { loadHtml: loadBtnHtml });
-      if (filtered.length) {
-        const pageSize = SL_PAGE_SIZE2 || 50;
-        const totalPages = Math.ceil(filtered.length / pageSize);
-        const page = Math.min(slPage2 || 0, totalPages - 1);
-        const pageSlice = filtered.slice(page * pageSize, (page + 1) * pageSize);
-        h += '<div id="tmsl-table-slot"></div>';
-        if (totalPages > 1) {
-          const from = page * pageSize + 1;
-          const to = Math.min((page + 1) * pageSize, filtered.length);
-          h += `<div class="tmsl-pagination">`;
-          h += buttonHtml6({ id: "tmsl-sl-prev", label: "\u2190 Prev", color: "secondary", size: "xs", disabled: page === 0 });
-          h += `<span style="font-size:var(--tmu-font-sm);color:var(--tmu-text-accent-soft)">${from}\u2013${to} of ${filtered.length}</span>`;
-          h += buttonHtml6({ id: "tmsl-sl-next", label: "Next \u2192", color: "secondary", size: "xs", disabled: page >= totalPages - 1 });
-          h += `</div>`;
-        }
-      } else {
-        h += TmUI.empty("No players match current filters");
-      }
-    } else {
-      h += TmUI.empty("Indexed tab is unavailable.");
-    }
-    panel.innerHTML = h;
-    const ref = ctx.main || TmUtils.getMainContainer();
-    if (ref) ref.appendChild(panel);
-    else document.body.appendChild(panel);
-    panel.onclick = (event) => {
-      const tabButton = event.target.closest(".tmu-tab[data-tab]");
-      if (tabButton && panel.contains(tabButton)) {
-        if (tabButton.disabled || shortlistLoading2) return;
-        onTabChange(tabButton.dataset.tab);
-        return;
-      }
-      const loadMoreButton = event.target.closest("#tmsl-loadmore-btn");
-      if (loadMoreButton && panel.contains(loadMoreButton)) {
-        onLoadMore();
-        return;
-      }
-      const shortlistPrevButton = event.target.closest("#tmsl-sl-prev");
-      if (shortlistPrevButton && panel.contains(shortlistPrevButton)) {
-        onSlPage(-1);
-        return;
-      }
-      const shortlistNextButton = event.target.closest("#tmsl-sl-next");
-      if (shortlistNextButton && panel.contains(shortlistNextButton)) {
-        onSlPage(1);
-        return;
-      }
-    };
-    panel.onmouseover = (event) => {
-      const link = event.target.closest(".tmsl-link");
-      if (!link || !panel.contains(link) || link.contains(event.relatedTarget)) return;
-      const shortlistRow = link.closest("tr[data-pid]");
-      if (shortlistRow) {
-        const player2 = allPlayers3.find((pl) => pl.id === shortlistRow.dataset.pid);
-        if (player2) TmPlayerTooltip.show(link, adaptForTooltip(player2));
-        return;
-      }
-    };
-    panel.onmouseout = (event) => {
-      const link = event.target.closest(".tmsl-link");
-      if (!link || !panel.contains(link) || link.contains(event.relatedTarget)) return;
-      TmPlayerTooltip.hide();
-    };
-    TmShortlistFilters.bindFilters(panel, { onGroupFilter, onSideFilter, onNumFilter });
-    if (!shortlistLoading2 && activeTab4 === "shortlist" && filtered.length) {
-      const pageSize = SL_PAGE_SIZE2 || 50;
-      const totalPages = Math.ceil(filtered.length / pageSize);
-      const page = Math.min(slPage2 || 0, totalPages - 1);
-      const pageSlice = filtered.slice(page * pageSize, (page + 1) * pageSize);
-      const slot = panel.querySelector("#tmsl-table-slot");
-      if (slot) {
-        slot.replaceWith(TmShortlistTable.createTableElement(pageSlice, sortCol2, sortDir2, onSort));
-      }
-    }
-  }
-  var TmShortlistPanel = { render: render12 };
+  var TmShortlistFilters = { buildFilters, bindFilters, playerMatchesFilters };
 
   // src/pages/shortlist.js
-  var mountedMain4 = null;
-  var PAGE_DATA = {};
-  var allPlayers = [];
-  var sortCol = "r5";
-  var sortDir = -1;
-  var fPos = /* @__PURE__ */ new Set();
-  var fSide = /* @__PURE__ */ new Set();
-  var fAgeMin = 0;
-  var fAgeMax = 99;
-  var fR5Min = "";
-  var fR5Max = "";
-  var fRecMin = "";
-  var fRecMax = "";
-  var fTiMin = "";
-  var fTiMax = "";
-  var shortlistLoading = true;
-  var loadProgress = null;
-  var loadMoreState = null;
-  var nextStart = 0;
-  var totalKnown = 0;
-  var activeTab = "shortlist";
-  var indexedPlayers = [];
-  var ixSortCol = "r5";
-  var ixSortDir = -1;
-  var ixPage = 0;
-  var slPage = 0;
-  var IX_PAGE_SIZE = 50;
-  var SL_PAGE_SIZE = 50;
-  async function fetchMore() {
-    if (loadMoreState === "loading" || loadMoreState === "done") return;
-    loadMoreState = "loading";
-    renderPanel();
-    try {
-      const pageData = await TmShortlistService.fetchShortlistPage(nextStart);
-      if (!pageData.length) {
-        loadMoreState = "done";
-        renderPanel();
-        return;
-      }
-      for (const p of pageData) {
-        const key = String(p.id);
-        if (!PAGE_DATA[key]) PAGE_DATA[key] = toPageRecord(p);
-      }
-      const existingIds = new Set(allPlayers.map((p) => String(p.id)));
-      const newIds = pageData.map((p) => String(p.id)).filter((id) => !existingIds.has(id));
-      if (!newIds.length) {
-        loadMoreState = "done";
-        renderPanel();
-        return;
-      }
-      nextStart += pageData.length;
-      totalKnown += newIds.length;
-      const enriched = await enrichPlayers(newIds, PAGE_DATA, {
-        onUpdate: (updated) => {
-          for (const p of updated) {
-            const idx = allPlayers.findIndex((pl) => pl.id === p.id);
-            if (idx !== -1) allPlayers[idx] = p;
-            else allPlayers.push(p);
-          }
-          loadProgress = { done: allPlayers.filter((pl) => !pl.pending).length, total: totalKnown };
-          renderPanel();
-        }
-      });
-      for (const p of enriched) {
-        const idx = allPlayers.findIndex((pl) => pl.id === p.id);
-        if (idx !== -1) allPlayers[idx] = p;
-        else allPlayers.push(p);
-      }
-      loadMoreState = pageData.length < 20 ? "done" : null;
-    } catch (e) {
-      console.warn("[TM Shortlist] fetchMore failed", e);
-      loadMoreState = null;
-    }
-    loadProgress = null;
-    renderPanel();
+  function fmtLastSeen(ts) {
+    if (!ts) return "\u2014";
+    const days = Math.floor((Date.now() - ts) / 864e5);
+    if (days === 0) return "today";
+    if (days === 1) return "yesterday";
+    if (days < 14) return `${days}d ago`;
+    if (days < 60) return `${Math.floor(days / 7)}w ago`;
+    return `${Math.floor(days / 30)}mo ago`;
   }
-  function injectCSS3() {
-    TmShortlistTable.injectCSS();
-  }
-  function buildCtx() {
+  function dbRecordToPlayer(pid, dbStore) {
+    var _a2;
+    if (!(dbStore == null ? void 0 : dbStore.records)) return null;
+    const keys = Object.keys(dbStore.records).sort((a, b) => {
+      const [ay, am] = a.split(".").map(Number);
+      const [by, bm] = b.split(".").map(Number);
+      return ay * 12 + am - (by * 12 + bm);
+    });
+    if (!keys.length) return null;
+    const lastKey = keys[keys.length - 1];
+    const [ky, km] = lastKey.split(".").map(Number);
+    const weeksSince = (Date.now() - (dbStore.lastSeen || 0)) / 6048e5;
+    const addMonths = Math.floor(weeksSince);
+    const totalM = km + addMonths;
+    const newYears = ky + Math.floor(totalM / 12);
+    const newMonth = totalM % 12;
+    const dbRec = dbStore.records[lastKey] || {};
+    const meta = dbStore.meta || {};
+    const isGK = !!meta.isGK;
+    const favPos = meta.pos || "mc";
+    const skillDefs = isGK ? SKILL_DEFS_GK : SKILL_DEFS_OUT;
+    const rawSkills = dbRec.skills || [];
+    const skills = skillDefs.map((def, i) => ({ ...def, value: Number(rawSkills[i]) || 0 }));
+    const asi = dbRec.ASI || dbRec.SI || 0;
+    const routine = dbRec.routine || 0;
+    const preferredKeys = new Set(
+      String(favPos).split(",").map((s6) => s6.trim().toLowerCase()).filter(Boolean)
+    );
+    const positions = Object.entries(POSITION_MAP).filter(([, p]) => p.main && (isGK ? p.position === "GK" : p.position !== "GK")).map(([key, p]) => ({ ...p, key, r5: null, rec: null, preferred: preferredKeys.has(key) }));
+    const player2 = { skills, asi, routine, isGK, positions };
+    applyPlayerPositionRatings(player2);
     return {
-      main: mountedMain4,
-      allPlayers,
-      indexedPlayers,
-      activeTab,
-      sortCol,
-      sortDir,
-      ixSortCol,
-      ixSortDir,
-      ixPage,
-      IX_PAGE_SIZE,
-      slPage,
-      SL_PAGE_SIZE,
-      shortlistLoading,
-      loadProgress,
-      loadMoreState,
-      filterState: { fPos, fSide, fAgeMin, fAgeMax, fR5Min, fR5Max, fRecMin, fRecMax, fTiMin, fTiMax },
-      onTabChange(t) {
-        if (activeTab === t || shortlistLoading) return;
-        activeTab = t;
-        renderPanel();
-      },
-      onGroupFilter(g) {
-        if (fPos.has(g)) fPos.delete(g);
-        else fPos.add(g);
-        ixPage = 0;
-        slPage = 0;
-        renderPanel();
-      },
-      onSideFilter(s6) {
-        if (fSide.has(s6)) fSide.delete(s6);
-        else fSide.add(s6);
-        ixPage = 0;
-        slPage = 0;
-        renderPanel();
-      },
-      onNumFilter(id, value) {
-        if (id === "tmsl-agemin") fAgeMin = parseInt(value) || 0;
-        else if (id === "tmsl-agemax") fAgeMax = parseInt(value) || 99;
-        else if (id === "tmsl-r5min") fR5Min = value;
-        else if (id === "tmsl-r5max") fR5Max = value;
-        else if (id === "tmsl-recmin") fRecMin = value;
-        else if (id === "tmsl-recmax") fRecMax = value;
-        else if (id === "tmsl-timin") fTiMin = value;
-        else if (id === "tmsl-timax") fTiMax = value;
-        ixPage = 0;
-        slPage = 0;
-        renderPanel();
-      },
-      onSort(col) {
-        const r = TmUtils.toggleSort(col, sortCol, sortDir, col === "name" || col === "pos" ? 1 : -1);
-        sortCol = r.key;
-        sortDir = r.dir;
-        slPage = 0;
-        renderPanel();
-      },
-      onIxSort(col) {
-        const r = TmUtils.toggleSort(col, ixSortCol, ixSortDir, col === "name" ? 1 : -1);
-        ixSortCol = r.key;
-        ixSortDir = r.dir;
-        ixPage = 0;
-        renderPanel();
-      },
-      onIxPage(dir) {
-        ixPage = Math.max(0, ixPage + dir);
-        renderPanel();
-      },
-      onSlPage(dir) {
-        slPage = Math.max(0, slPage + dir);
-        renderPanel();
-      },
-      onLoadMore: fetchMore
+      id: String(pid),
+      name: meta.name || "",
+      country: meta.country || "",
+      positions: player2.positions,
+      isGK,
+      age: newYears,
+      month: newMonth,
+      ageMonthsString: `${newYears}.${newMonth}`,
+      asi,
+      r5: player2.r5,
+      rec: player2.rec,
+      ti: (_a2 = dbRec.TI) != null ? _a2 : null,
+      routine,
+      wage: 0,
+      skills,
+      timeleft: 0,
+      timeleft_string: "",
+      curbid: "",
+      lastSeen: dbStore.lastSeen || 0,
+      stale: weeksSince >= 1
     };
   }
-  function renderPanel() {
-    TmShortlistPanel.render(buildCtx());
-  }
-  async function init2() {
-    if (Array.isArray(window.players_ar)) {
-      for (const p of window.players_ar) PAGE_DATA[String(p.id)] = toPageRecord(p);
-    }
-    if (!Array.isArray(window.players_ar) || !window.players_ar.length) return;
-    injectCSS3();
-    const firstIds = window.players_ar.map((p) => String(p.id));
-    shortlistLoading = true;
-    loadProgress = null;
-    allPlayers = [];
-    renderPanel();
-    const allIds = [...firstIds];
-    const seenIds = new Set(firstIds);
-    console.log(`[TM Shortlist] Discovery start: firstIds=${firstIds.length}`);
-    for (let i = 0; i < 5; i++) {
-      try {
-        console.log(`[TM Shortlist] Discovery round ${i + 1}/5`);
-        const pageData = await TmShortlistService.fetchShortlistPage();
-        if (!pageData.length) {
-          console.log(`[TM Shortlist] Discovery round ${i + 1}: empty, done`);
-          break;
-        }
-        const newBefore = allIds.length;
-        for (const p of pageData) {
-          const key = String(p.id);
-          if (!PAGE_DATA[key]) PAGE_DATA[key] = toPageRecord(p);
-          if (!seenIds.has(key)) {
-            seenIds.add(key);
-            allIds.push(key);
-          }
-        }
-        console.log(`[TM Shortlist] Discovery round ${i + 1}: got=${pageData.length}, new=${allIds.length - newBefore}, total=${allIds.length}`);
-      } catch (e) {
-        console.warn("[TM Shortlist] Discovery fetch failed", e);
-        break;
-      }
-    }
-    nextStart = 0;
-    totalKnown = allIds.length;
-    loadProgress = { done: 0, total: totalKnown };
-    loadMoreState = "done";
-    allPlayers = await enrichPlayers(allIds, PAGE_DATA, {
-      onUpdate: (updated) => {
-        allPlayers = updated;
-        loadProgress = { done: allPlayers.filter((pl) => !pl.pending).length, total: totalKnown };
-        renderPanel();
-      }
+  function loadAllFromDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open("TMPlayerData", 1);
+      req.onupgradeneeded = (e) => {
+        const d = e.target.result;
+        if (!d.objectStoreNames.contains("players")) d.createObjectStore("players");
+      };
+      req.onsuccess = (e) => {
+        const db = e.target.result;
+        const tx = db.transaction("players", "readonly");
+        const store = tx.objectStore("players");
+        const reqAll = store.getAll();
+        const reqKeys = store.getAllKeys();
+        tx.oncomplete = () => {
+          const result = {};
+          for (let i = 0; i < reqKeys.result.length; i++)
+            result[String(reqKeys.result[i])] = reqAll.result[i];
+          resolve(result);
+        };
+        tx.onerror = () => resolve({});
+      };
+      req.onerror = () => resolve({});
     });
-    shortlistLoading = false;
-    loadProgress = null;
-    renderPanel();
   }
   function initShortlistPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    if (!Array.isArray(window.players_ar) || !window.players_ar.length) return;
-    mountedMain4 = main2;
+    const initialEntries = window.players_ar;
+    if (!Array.isArray(initialEntries) || !initialEntries.length) return;
     main2.classList.add("tmvu-shortlist-page", "tmu-page-density-regular");
-    allPlayers = [];
-    indexedPlayers = null;
-    sortCol = "r5";
-    sortDir = -1;
-    activeTab = "shortlist";
-    shortlistLoading = true;
-    loadProgress = null;
-    loadMoreState = null;
-    nextStart = 0;
-    totalKnown = 0;
-    ixPage = 0;
-    slPage = 0;
-    init2();
+    TmShortlistTable.injectCSS();
+    const bidFieldsById = new Map(initialEntries.map((entry) => [String(entry.id), {
+      timeleft: Math.max(0, Number(entry.time) || 0),
+      timeleft_string: String(entry.timeleft_string || ""),
+      curbid: String(entry.curbid || ""),
+      note: entry.txt || entry.note || null
+    }]));
+    const DISCOVERY_ROUNDS = 5;
+    let allPlayers2 = [];
+    let done = 0;
+    let total = initialEntries.length;
+    let discovering = true;
+    let sortCol = "timeleft", sortDir = 1;
+    let page = 0;
+    const PAGE_SIZE = 50;
+    let indexedPlayers = null;
+    let indexedLoading = false;
+    const ixReloading = /* @__PURE__ */ new Set();
+    let ixPurging = false;
+    let ixPurgeProgress = null;
+    let ixSortCol = "r5", ixSortDir = -1;
+    let ixPage = 0;
+    const IX_PAGE_SIZE = 50;
+    let activeTab3 = "shortlist";
+    let filterState = {
+      fName: "",
+      fPos: /* @__PURE__ */ new Set(),
+      fSide: /* @__PURE__ */ new Set(),
+      fAgeMin: 0,
+      fAgeMax: 99,
+      fR5Min: "",
+      fR5Max: "",
+      fRecMin: "",
+      fRecMax: "",
+      fTiMin: "",
+      fTiMax: ""
+    };
+    let _renderPending = false;
+    const panel = document.createElement("div");
+    panel.id = "tmsl-panel";
+    panel.className = "tmu-panel-page";
+    main2.appendChild(panel);
+    function getSlFiltered() {
+      const f = allPlayers2.filter((p) => TmShortlistFilters.playerMatchesFilters(p, filterState));
+      f.sort((a, b) => {
+        var _a2, _b;
+        if (sortCol === "timeleft") {
+          const va = a.timeleft > 0 ? a.timeleft : 999999999;
+          const vb = b.timeleft > 0 ? b.timeleft : 999999999;
+          return sortDir * (va - vb);
+        }
+        if (sortCol === "name") return sortDir * String(a.name || "").localeCompare(String(b.name || ""));
+        return sortDir * (((_a2 = a[sortCol]) != null ? _a2 : -Infinity) - ((_b = b[sortCol]) != null ? _b : -Infinity));
+      });
+      return f;
+    }
+    function getIxFiltered() {
+      if (!indexedPlayers) return null;
+      const f = indexedPlayers.filter((p) => TmShortlistFilters.playerMatchesFilters(p, filterState));
+      f.sort((a, b) => {
+        var _a2, _b;
+        if (ixSortCol === "name") return ixSortDir * String(a.name || "").localeCompare(String(b.name || ""));
+        return ixSortDir * (((_a2 = a[ixSortCol]) != null ? _a2 : -Infinity) - ((_b = b[ixSortCol]) != null ? _b : -Infinity));
+      });
+      return f;
+    }
+    function scheduleRender() {
+      if (_renderPending) return;
+      _renderPending = true;
+      requestAnimationFrame(() => {
+        _renderPending = false;
+        render16();
+      });
+    }
+    async function loadIndexedTab() {
+      if (indexedLoading) return;
+      indexedLoading = true;
+      scheduleRender();
+      try {
+        const allStores = await loadAllFromDB();
+        indexedPlayers = Object.entries(allStores).map(([pid, store]) => dbRecordToPlayer(pid, store)).filter(Boolean);
+      } catch (e) {
+        indexedPlayers = [];
+      }
+      indexedLoading = false;
+      scheduleRender();
+    }
+    function setPanelHTML(h) {
+      const nameInput = panel.querySelector("#tmsl-name");
+      const nameFocused = nameInput && document.activeElement === nameInput;
+      const nameSelStart = nameFocused ? nameInput.selectionStart : null;
+      const nameSelEnd = nameFocused ? nameInput.selectionEnd : null;
+      panel.innerHTML = h;
+      if (nameFocused) {
+        const restored = panel.querySelector("#tmsl-name");
+        if (restored) {
+          restored.focus();
+          try {
+            restored.setSelectionRange(nameSelStart, nameSelEnd);
+          } catch (e) {
+          }
+        }
+      }
+    }
+    function mountTable(players, opts) {
+      const tmp = document.createElement("div");
+      TmPlayersTable.mount(tmp, players, opts);
+      const slot = panel.querySelector("#tmsl-table-slot");
+      if (slot && tmp.firstChild) slot.replaceWith(tmp.firstChild);
+    }
+    function renderPagination(currentPage, totalPages, count, idPrev, idNext) {
+      if (totalPages <= 1) return "";
+      const from = currentPage * PAGE_SIZE + 1;
+      const to = Math.min((currentPage + 1) * PAGE_SIZE, count);
+      return '<div class="tmsl-pagination">' + TmUI.button({ id: idPrev, label: "\u2190 Prev", color: "secondary", size: "xs", disabled: currentPage === 0 }).outerHTML + `<span style="font-size:var(--tmu-font-sm);color:var(--tmu-text-accent-soft)">${from}\u2013${to} of ${count}</span>` + TmUI.button({ id: idNext, label: "Next \u2192", color: "secondary", size: "xs", disabled: currentPage >= totalPages - 1 }).outerHTML + "</div>";
+    }
+    function render16() {
+      var _a2, _b, _c;
+      const isLoading = discovering || done < total;
+      let loadLabel;
+      if (discovering && done === 0) loadLabel = "\u23F3 Discovering\u2026";
+      else if (isLoading) loadLabel = `\u23F3 ${done}/${total}`;
+      else loadLabel = `\u2713 ${total} loaded`;
+      const loadBtnHtml = TmUI.button({ label: loadLabel, color: "secondary", size: "xs", disabled: true }).outerHTML;
+      const slFiltered = getSlFiltered();
+      const ixFiltered = getIxFiltered();
+      const slCount = slFiltered.length < allPlayers2.length ? `(${slFiltered.length}/${allPlayers2.length})` : `(${allPlayers2.length})`;
+      const ixCount = ixFiltered !== null ? ixFiltered.length < indexedPlayers.length ? `(${ixFiltered.length}/${indexedPlayers.length})` : `(${indexedPlayers.length})` : "";
+      const tabs = TmUI.tabs({
+        items: [
+          { key: "shortlist", slot: `\u{1F4CB} Shortlist <span class="tmsl-tab-count">${slCount}</span>` },
+          { key: "indexed", slot: `\u{1F5C4}\uFE0F Database${ixCount ? ` <span class="tmsl-tab-count">${ixCount}</span>` : ""}` }
+        ],
+        active: activeTab3,
+        color: "primary"
+      });
+      let h = tabs.outerHTML;
+      h += TmShortlistFilters.buildFilters(filterState, { loadHtml: loadBtnHtml });
+      if (activeTab3 === "shortlist") {
+        const totalPages = Math.max(1, Math.ceil(slFiltered.length / PAGE_SIZE));
+        page = Math.min(page, totalPages - 1);
+        const slice = slFiltered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+        h += '<div id="tmsl-table-slot">';
+        if (!slFiltered.length && !isLoading) h += TmUI.empty("No players match current filters");
+        else if (!slice.length && isLoading) h += TmUI.loading(`Loading\u2026 ${done}/${total}`);
+        h += "</div>";
+        h += renderPagination(page, totalPages, slFiltered.length, "tmsl-sl-prev", "tmsl-sl-next");
+        setPanelHTML(h);
+        if (slice.length) {
+          mountTable(slice, {
+            sortKey: sortCol,
+            sortDir,
+            nameDecorator: (p) => p.note ? `<span class="tmsl-note-icon" data-note="${String(p.note).replace(/"/g, "&quot;")}">\u{1F4CB}</span>` : "",
+            rowCls: null,
+            rowAttrs: (p) => ({ "data-pid": String(p.id) }),
+            onRowClick: (p) => {
+              if (Number(p.timeleft) > 0) TmBidsDialog.open(p);
+            },
+            onSort: (col) => {
+              const r = TmUtils.toggleSort(col, sortCol, sortDir, col === "name" || col === "pos" ? 1 : -1);
+              sortCol = r.key;
+              sortDir = r.dir;
+              page = 0;
+              render16();
+            }
+          });
+        }
+      } else {
+        const ixTotalPages = ixFiltered ? Math.max(1, Math.ceil(ixFiltered.length / IX_PAGE_SIZE)) : 1;
+        ixPage = ixFiltered ? Math.min(ixPage, ixTotalPages - 1) : 0;
+        const ixSlice = ixFiltered ? ixFiltered.slice(ixPage * IX_PAGE_SIZE, (ixPage + 1) * IX_PAGE_SIZE) : [];
+        h += '<div id="tmsl-table-slot">';
+        if (indexedLoading) h += TmUI.loading("Loading database\u2026");
+        else if (!ixFiltered) h += TmUI.empty("Database is empty");
+        else if (!ixFiltered.length) h += TmUI.empty("No players match current filters");
+        h += "</div>";
+        if (ixFiltered) h += renderPagination(ixPage, ixTotalPages, ixFiltered.length, "tmsl-ix-prev", "tmsl-ix-next");
+        const purgeLabel = ixPurging ? `Purging\u2026 ${(_a2 = ixPurgeProgress == null ? void 0 : ixPurgeProgress.done) != null ? _a2 : 0}/${(_b = ixPurgeProgress == null ? void 0 : ixPurgeProgress.total) != null ? _b : 0} (archived: ${(_c = ixPurgeProgress == null ? void 0 : ixPurgeProgress.archived) != null ? _c : 0})` : "Purge Retired";
+        const purgeBtn = TmUI.button({
+          id: "tmsl-ix-purge",
+          label: purgeLabel,
+          color: "danger",
+          size: "xs",
+          disabled: ixPurging || indexedLoading || !(indexedPlayers == null ? void 0 : indexedPlayers.length),
+          attrs: ixPurging ? {} : { "data-ix-purge": "1" }
+        }).outerHTML;
+        h += `<div style="display:flex;justify-content:flex-end;padding:4px 0">${purgeBtn}</div>`;
+        setPanelHTML(h);
+        if (ixSlice.length) {
+          mountTable(ixSlice, {
+            sortKey: ixSortCol,
+            sortDir: ixSortDir,
+            columns: { timeleft: false, curbid: false },
+            rowCls: null,
+            rowAttrs: (p) => ({ "data-pid": String(p.id) }),
+            onRowClick: null,
+            onSort: (col) => {
+              const r = TmUtils.toggleSort(col, ixSortCol, ixSortDir, col === "name" || col === "pos" ? 1 : -1);
+              ixSortCol = r.key;
+              ixSortDir = r.dir;
+              ixPage = 0;
+              render16();
+            },
+            extraColsAfter: [{
+              key: "lastSeen",
+              label: "Updated",
+              sortable: true,
+              align: "r",
+              width: "80px",
+              sort: (a, b) => (a.lastSeen || 0) - (b.lastSeen || 0),
+              render: (v, p) => {
+                const age = fmtLastSeen(p.lastSeen);
+                const color = p.stale ? "var(--tmu-text-warn)" : "var(--tmu-text-accent-soft)";
+                const reloading = ixReloading.has(String(p.id));
+                const btn = TmUI.button({
+                  slot: reloading ? "\u2026" : "&#x21BB;",
+                  variant: "icon",
+                  size: "xs",
+                  title: "Sync to DB",
+                  attrs: { "data-ix-reload": String(p.id) }
+                }).outerHTML;
+                return `<span style="display:inline-flex;gap:4px;align-items:center;color:${color}"><span style="font-size:var(--tmu-font-xs)">${age}</span>${btn}</span>`;
+              }
+            }]
+          });
+        }
+      }
+    }
+    TmShortlistFilters.bindFilters(panel, {
+      onGroupFilter: (g) => {
+        if (filterState.fPos.has(g)) filterState.fPos.delete(g);
+        else filterState.fPos.add(g);
+        page = 0;
+        ixPage = 0;
+        render16();
+      },
+      onSideFilter: (s6) => {
+        if (filterState.fSide.has(s6)) filterState.fSide.delete(s6);
+        else filterState.fSide.add(s6);
+        page = 0;
+        ixPage = 0;
+        render16();
+      },
+      onNumFilter: (id, value) => {
+        const map = {
+          "tmsl-agemin": ["fAgeMin", (v) => parseInt(v) || 0],
+          "tmsl-agemax": ["fAgeMax", (v) => parseInt(v) || 99],
+          "tmsl-r5min": ["fR5Min", (v) => v],
+          "tmsl-r5max": ["fR5Max", (v) => v],
+          "tmsl-recmin": ["fRecMin", (v) => v],
+          "tmsl-recmax": ["fRecMax", (v) => v],
+          "tmsl-timin": ["fTiMin", (v) => v],
+          "tmsl-timax": ["fTiMax", (v) => v]
+        };
+        const mapEntry = map[id];
+        if (mapEntry) filterState[mapEntry[0]] = mapEntry[1](value);
+        page = 0;
+        ixPage = 0;
+        render16();
+      },
+      onTextFilter: (id, value) => {
+        if (id === "tmsl-name") filterState.fName = value;
+        page = 0;
+        ixPage = 0;
+        render16();
+      }
+    });
+    panel.addEventListener("click", (e) => {
+      const tabBtn = e.target.closest(".tmu-tab[data-tab]");
+      if (tabBtn && panel.contains(tabBtn)) {
+        const key = tabBtn.dataset.tab;
+        if (key === activeTab3) return;
+        activeTab3 = key;
+        if (key === "indexed" && !indexedPlayers && !indexedLoading) loadIndexedTab();
+        else scheduleRender();
+        return;
+      }
+      if (e.target.closest("#tmsl-sl-prev")) {
+        page = Math.max(0, page - 1);
+        render16();
+        return;
+      }
+      if (e.target.closest("#tmsl-sl-next")) {
+        page++;
+        render16();
+        return;
+      }
+      if (e.target.closest("#tmsl-ix-prev")) {
+        ixPage = Math.max(0, ixPage - 1);
+        render16();
+        return;
+      }
+      if (e.target.closest("#tmsl-ix-next")) {
+        ixPage++;
+        render16();
+        return;
+      }
+      const purgeBtn = e.target.closest("[data-ix-purge]");
+      if (purgeBtn && panel.contains(purgeBtn) && !ixPurging && (indexedPlayers == null ? void 0 : indexedPlayers.length)) {
+        ixPurging = true;
+        ixPurgeProgress = { done: 0, total: indexedPlayers.length, archived: 0 };
+        scheduleRender();
+        const pids = indexedPlayers.map((p) => String(p.id));
+        let lastArchived = 0;
+        purgeRetiredPlayers(pids, (progress) => {
+          ixPurgeProgress = progress;
+          if (progress.archived > lastArchived) {
+            lastArchived = progress.archived;
+            indexedPlayers = indexedPlayers.filter((p) => String(p.id) !== progress.pid);
+          }
+          scheduleRender();
+        }).then(({ archived }) => {
+          const archivedSet = new Set(archived);
+          indexedPlayers = (indexedPlayers || []).filter((p) => !archivedSet.has(String(p.id)));
+        }).catch(() => {
+        }).finally(() => {
+          ixPurging = false;
+          ixPurgeProgress = null;
+          scheduleRender();
+        });
+        return;
+      }
+      const reloadBtn = e.target.closest("[data-ix-reload]");
+      if (reloadBtn && panel.contains(reloadBtn)) {
+        e.stopPropagation();
+        const pid = reloadBtn.dataset.ixReload;
+        if (ixReloading.has(pid)) return;
+        ixReloading.add(pid);
+        scheduleRender();
+        TmPlayerModel.fetchPlayerTooltip(pid).then(async (player2) => {
+          if (!player2) return;
+          const results = await runSyncPipeline([player2], void 0, { mode: "missing-only" });
+          const result = results[0];
+          if (result == null ? void 0 : result.archived) {
+            if (indexedPlayers) {
+              const idx = indexedPlayers.findIndex((p) => String(p.id) === String(pid));
+              if (idx !== -1) indexedPlayers.splice(idx, 1);
+            }
+            return;
+          }
+          if (result == null ? void 0 : result.needSync) refreshPlayerSkills(result);
+          const allStores = await loadAllFromDB();
+          const updatedStore = allStores[String(pid)];
+          if (updatedStore && indexedPlayers) {
+            const rebuilt = dbRecordToPlayer(pid, updatedStore);
+            if (rebuilt) {
+              const idx = indexedPlayers.findIndex((p) => String(p.id) === String(pid));
+              if (idx !== -1) indexedPlayers[idx] = rebuilt;
+              else indexedPlayers.push(rebuilt);
+            }
+          }
+        }).catch(() => {
+        }).finally(() => {
+          ixReloading.delete(pid);
+          scheduleRender();
+        });
+        return;
+      }
+    });
+    panel.addEventListener("mouseover", (e) => {
+      const row = e.target.closest("tr[data-pid]");
+      if (!row || !panel.contains(row)) return;
+      const searchList = activeTab3 === "shortlist" ? allPlayers2 : indexedPlayers || [];
+      const player2 = searchList.find((p) => String(p.id) === row.dataset.pid);
+      if (!player2) return;
+      const anchor = row.querySelector(".tmpt-link") || row;
+      TmPlayerTooltip.show(anchor, player2);
+    });
+    panel.addEventListener("mouseout", (e) => {
+      if (e.target.closest("tr[data-pid]")) TmPlayerTooltip.hide();
+    });
+    render16();
+    function queueTooltipFetch(id) {
+      TmPlayerModel.fetchTooltipCached(id).then((player2) => {
+        var _a2, _b, _c;
+        done++;
+        if (player2) {
+          const bf = bidFieldsById.get(String(id)) || {};
+          player2.timeleft = (_a2 = bf.timeleft) != null ? _a2 : 0;
+          player2.timeleft_string = (_b = bf.timeleft_string) != null ? _b : "";
+          player2.curbid = (_c = bf.curbid) != null ? _c : "";
+          if (bf.note) player2.note = bf.note;
+          allPlayers2.push(player2);
+        }
+        scheduleRender();
+      }).catch(() => {
+        done++;
+        scheduleRender();
+      });
+    }
+    for (const entry of initialEntries) queueTooltipFetch(entry.id);
+    (async () => {
+      const seen = new Set(initialEntries.map((e) => String(e.id)));
+      for (let i = 0; i < DISCOVERY_ROUNDS; i++) {
+        try {
+          const discoveredEntries = await TmShortlistService.fetchShortlistPage();
+          for (const entry of discoveredEntries) {
+            const id = String(entry.id);
+            if (seen.has(id)) continue;
+            seen.add(id);
+            total++;
+            bidFieldsById.set(id, {
+              timeleft: Math.max(0, Number(entry.time) || 0),
+              timeleft_string: String(entry.timeleft_string || ""),
+              curbid: String(entry.curbid || ""),
+              note: entry.txt || entry.note || null
+            });
+            queueTooltipFetch(id);
+          }
+        } catch (e) {
+        }
+      }
+      discovering = false;
+      scheduleRender();
+    })();
   }
 
   // src/components/shared/tm-summary-strip.js
@@ -19341,7 +20165,7 @@ order:initial
       _appendSection(body, `Youth \u226421 (${youth.length})`, youth, true);
     }
   };
-  var injectCSS4 = () => {
+  var injectCSS3 = () => {
     const style = document.createElement("style");
     style.id = "tmsq-table-styles";
     style.textContent = `
@@ -19374,9 +20198,9 @@ order:initial
     document.head.appendChild(style);
   };
   var cssInjected = false;
-  var render13 = (container, players, { onSaleIds: onSaleIds2 = /* @__PURE__ */ new Set(), titleHtml = "", showTraining = true, showSummary = true, splitBy = "age" } = {}) => {
+  var render12 = (container, players, { onSaleIds: onSaleIds2 = /* @__PURE__ */ new Set(), titleHtml = "", showTraining = true, showSummary = true, splitBy = "age" } = {}) => {
     if (!cssInjected) {
-      injectCSS4();
+      injectCSS3();
       cssInjected = true;
     }
     _container = container;
@@ -19405,7 +20229,7 @@ order:initial
     });
     _doRender();
   };
-  var TmSquadTable = { render: render13 };
+  var TmSquadTable = { render: render12 };
 
   // src/components/club/tm-club-side-menu.js
   var STYLE_ID38 = "tmvu-club-side-menu-style";
@@ -19560,7 +20384,7 @@ order:initial
   var CURRENT_PATH = "";
   var _main2 = null;
   var processed = false;
-  var allPlayers2 = [];
+  var allPlayers = [];
   var bTeamPlayers = [];
   var bTeamFetched = false;
   var onSaleIds = /* @__PURE__ */ new Set();
@@ -19600,13 +20424,13 @@ order:initial
         const players = Array.isArray(data) ? data : [];
         if (players.length) {
           bTeamPlayers = players.map((p) => ({ ...p, isBTeam: true }));
-          renderPanel2();
+          renderPanel();
         }
       });
     }).catch(() => {
     });
   };
-  var renderPanel2 = () => {
+  var renderPanel = () => {
     scanForSales();
     initClubLayout({ currentPath: CURRENT_PATH, singleColumn: true });
     let panel = document.getElementById("tmsq-panel");
@@ -19614,7 +20438,7 @@ order:initial
     panel = document.createElement("div");
     panel.id = "tmsq-panel";
     panel.className = "tmu-flat-panel";
-    TmSquadTable.render(panel, [...allPlayers2, ...bTeamPlayers], { onSaleIds });
+    TmSquadTable.render(panel, [...allPlayers, ...bTeamPlayers], { onSaleIds });
     const target = getSquadContainer();
     if (target) {
       target.innerHTML = "";
@@ -19629,9 +20453,9 @@ order:initial
     if (!clubId2) return;
     const data = await TmClubModel2.fetchSquadRaw(clubId2);
     if (data == null ? void 0 : data.length) {
-      allPlayers2 = data;
+      allPlayers = data;
       processed = true;
-      renderPanel2();
+      renderPanel();
       if (!bTeamFetched) {
         bTeamFetched = true;
         fetchBTeamInfo(clubId2);
@@ -19659,7 +20483,7 @@ order:initial
     _main2 = main2;
     CURRENT_PATH = normalizeClubHref(window.location.pathname);
     processed = false;
-    allPlayers2 = [];
+    allPlayers = [];
     bTeamPlayers = [];
     bTeamFetched = false;
     onSaleIds.clear();
@@ -21002,7 +21826,7 @@ order:initial
   var clubId = null;
   var seasons = [];
   var clubName = "Club";
-  var activeTab2 = "records";
+  var activeTab = "records";
   function buildUI() {
     const container = getHistoryContainer();
     if (!container) return;
@@ -21016,17 +21840,17 @@ order:initial
     const tabsHost = container.querySelector(".tmh-tabs");
     tabsHost == null ? void 0 : tabsHost.appendChild(TmUI.tabs({
       items: tabItems,
-      active: activeTab2,
+      active: activeTab,
       color: "primary",
       stretch: true,
       onChange: (key) => {
-        if (key === activeTab2) return;
-        activeTab2 = key;
-        render14();
+        if (key === activeTab) return;
+        activeTab = key;
+        render13();
       }
     }));
     setPendingVisibility2(false);
-    render14();
+    render13();
   }
   function initializeContext() {
     var _a2, _b;
@@ -21040,11 +21864,11 @@ order:initial
     clubName = ((_b = document.querySelector(".box_sub_header .large strong a")) == null ? void 0 : _b.textContent.trim()) || "Club";
     return true;
   }
-  function render14() {
+  function render13() {
     const el2 = document.getElementById("tmh-wrap");
     if (!el2) return;
     const ctx = { clubId, seasons, clubName };
-    switch (activeTab2) {
+    switch (activeTab) {
       case "records":
         TmHistoryRecords.render(el2, ctx);
         break;
@@ -21076,14 +21900,14 @@ order:initial
     clubId = null;
     seasons = [];
     clubName = "Club";
-    activeTab2 = "records";
+    activeTab = "records";
     TmHistoryStyles.inject();
     start2();
   }
 
   // src/components/shared/tm-native-feed.js
   var STYLE_ID39 = "tmvu-native-feed-style";
-  var buttonHtml7 = ({ cls = "", attrs = {}, shape = "full", size = "sm", color = "secondary", ...opts } = {}) => TmUI.button({
+  var buttonHtml6 = ({ cls = "", attrs = {}, shape = "full", size = "sm", color = "secondary", ...opts } = {}) => TmUI.button({
     cls,
     attrs,
     shape,
@@ -21598,12 +22422,12 @@ order:initial
         const actionBar = document.createElement("div");
         actionBar.className = "tmvu-feed-post-actions";
         actionBar.innerHTML = [
-          buttonHtml7({ label: "Like", cls: "tmvu-feed-post-action", attrs: { "data-action": "like" } }),
-          buttonHtml7({ label: "Comment", cls: "tmvu-feed-post-action", attrs: { "data-action": "comment" } }),
-          buttonHtml7({ label: "Reply", cls: "tmvu-feed-post-action", attrs: { "data-action": "reply" } }),
-          buttonHtml7({ label: "Link", cls: "tmvu-feed-post-action", attrs: { "data-action": "link" } }),
-          buttonHtml7({ label: "Mute", cls: "tmvu-feed-post-action", attrs: { "data-action": "mute" } }),
-          buttonHtml7({ label: "More", cls: "tmvu-feed-post-action", attrs: { "data-action": "more" } })
+          buttonHtml6({ label: "Like", cls: "tmvu-feed-post-action", attrs: { "data-action": "like" } }),
+          buttonHtml6({ label: "Comment", cls: "tmvu-feed-post-action", attrs: { "data-action": "comment" } }),
+          buttonHtml6({ label: "Reply", cls: "tmvu-feed-post-action", attrs: { "data-action": "reply" } }),
+          buttonHtml6({ label: "Link", cls: "tmvu-feed-post-action", attrs: { "data-action": "link" } }),
+          buttonHtml6({ label: "Mute", cls: "tmvu-feed-post-action", attrs: { "data-action": "mute" } }),
+          buttonHtml6({ label: "More", cls: "tmvu-feed-post-action", attrs: { "data-action": "more" } })
         ].join("");
         const anchor = postEl.querySelector(".feed_post_inner") || postEl.querySelector(".feed_post_content") || postEl;
         anchor.appendChild(actionBar);
@@ -22259,8 +23083,8 @@ order:initial
     const layout = initClubLayout({ main: main2, currentPath: normalizeClubHref(window.location.pathname) });
     if (!(layout == null ? void 0 : layout.mainColumn)) return;
     const container = layout.mainColumn;
-    const htmlOf8 = (node) => (node == null ? void 0 : node.outerHTML) || "";
-    const buttonHtml14 = (opts) => htmlOf8(TmUI.button(opts));
+    const htmlOf7 = (node) => (node == null ? void 0 : node.outerHTML) || "";
+    const buttonHtml13 = (opts) => htmlOf7(TmUI.button(opts));
     const MATCH_TYPE_KEYS = {
       "League": "league",
       "Friendly": "friendly",
@@ -22358,7 +23182,7 @@ order:initial
         ["cup", "Cup"],
         ["international_cup", "International Cup"]
       ];
-      return buttons.filter(([key]) => counts[key] > 0).map(([key, label]) => buttonHtml14({
+      return buttons.filter(([key]) => counts[key] > 0).map(([key, label]) => buttonHtml13({
         label: `${label} (${counts[key]})`,
         color: "primary",
         active: activeFilter === key,
@@ -22370,7 +23194,7 @@ order:initial
     function buildMonthContent(month) {
       return TmFixturesList.render(TmFixturesList.fromMatches(month.matches), { myClubId: CLUB_ID, linkUpcoming: true, showType: true });
     }
-    function render17() {
+    function render16() {
       if (!fixturesData) return;
       const filteredMonths = getFilteredMonths(fixturesData);
       const filteredMatches = filteredMonths.flatMap((month) => month.matches);
@@ -22403,7 +23227,7 @@ order:initial
         active: openMonthKey,
         onChange: (key) => {
           openMonthKey = key;
-          render17();
+          render16();
         }
       });
       monthsHost.appendChild(tabs);
@@ -22424,7 +23248,7 @@ order:initial
           const nextFilter = filterButton.getAttribute("data-filter") || "all";
           if (nextFilter === activeFilter) return;
           activeFilter = nextFilter;
-          render17();
+          render16();
           return;
         }
         const row = event.target.closest(".tmvu-fixture-row[data-mid]");
@@ -22433,19 +23257,19 @@ order:initial
         }
       });
     }
-    async function init3() {
+    async function init2() {
       TmClubFixturesStyles.inject();
       container.innerHTML = TmUI.loading("Loading club fixtures...");
       try {
         const data = await TmClubService.fetchClubFixtures(CLUB_ID);
         if (!data) throw new Error("Failed to fetch club fixtures");
         fixturesData = data;
-        render17();
+        render16();
       } catch (error) {
         container.innerHTML = TmUI.error(`Error loading club fixtures: ${error.message}`);
       }
     }
-    init3();
+    init2();
   }
 
   // src/components/stats/tm-stats-aggregator.js
@@ -23827,7 +24651,7 @@ order:initial
     let teamAggAgainst = {};
     let teamOverall = {};
     let lastFilteredMatches = [];
-    let activeTab4 = "player";
+    let activeTab3 = "player";
     let activeFilter = "total";
     let activeTeamFilter = "total";
     let activeMatchType = "all";
@@ -23991,7 +24815,7 @@ order:initial
       rerender: () => renderTeamTab()
     });
     const renderCurrentTab = () => {
-      if (activeTab4 === "player") renderPlayerTab();
+      if (activeTab3 === "player") renderPlayerTab();
       else renderTeamTab();
     };
     const buildUI2 = () => {
@@ -24022,11 +24846,11 @@ order:initial
           { key: "player", label: "Player" },
           { key: "team", label: "Team" }
         ],
-        active: activeTab4,
+        active: activeTab3,
         stretch: true,
         onChange: (key) => {
-          if (!loadingComplete || key === activeTab4) return;
-          activeTab4 = key;
+          if (!loadingComplete || key === activeTab3) return;
+          activeTab3 = key;
           renderCurrentTab();
         }
       });
@@ -24038,7 +24862,7 @@ order:initial
       const el2 = document.getElementById("tsa-progress");
       if (el2) el2.textContent = `${matchCount.loaded} / ${matchCount.total} matches`;
     };
-    const init3 = async () => {
+    const init2 = async () => {
       TmStatsStyles.inject();
       buildUI2();
       try {
@@ -24093,7 +24917,7 @@ order:initial
       TmStatsStyles.inject();
       setPendingVisibility3(true);
       await waitForStatsContainer();
-      init3();
+      init2();
     };
     start3().catch((err) => console.error("TM Season Analysis start error:", err));
   }
@@ -24103,7 +24927,7 @@ order:initial
   var TmTransferSidebar = {
     build() {
       const { SKILL_KEYS_OUT: SKILL_KEYS_OUT2, SKILL_KEYS_GK: SKILL_KEYS_GK2, SKILL_LABELS: SKILL_LABELS3 } = TmConst;
-      const buttonHtml14 = (opts) => TmUI.button(opts).outerHTML;
+      const buttonHtml13 = (opts) => TmUI.button(opts).outerHTML;
       const checkboxFieldHtml = (opts) => TmUI.checkboxField(opts).outerHTML;
       const inputHtml4 = (opts) => TmUI.input({ type: "number", size: "full", density: "regular", grow: true, ...opts }).outerHTML;
       const skillSelectOpts = (withNone = true) => {
@@ -24185,21 +25009,21 @@ order:initial
           </div>
       </div>
       <div class="tms-primary-actions">
-        ${buttonHtml14({ id: "tms-search-btn", label: "\u{1F50D} Search 100", color: "primary", block: true })}
-        ${buttonHtml14({ id: "tms-findall-btn", label: "\u2B07\uFE0F Find All", color: "secondary", size: "sm", block: true })}
+        ${buttonHtml13({ id: "tms-search-btn", label: "\u{1F50D} Search 100", color: "primary", block: true })}
+        ${buttonHtml13({ id: "tms-findall-btn", label: "\u2B07\uFE0F Find All", color: "secondary", size: "sm", block: true })}
       </div>
       <div class="tms-sb-section" style="margin-top:var(--tmu-space-sm)">
         <div class="tms-sb-head">Saved Filters</div>
         <div class="tms-sb-body">
           <select id="tms-saved-filters-sel" class="tms-sel" style="width:100%;margin-bottom:var(--tmu-space-sm)"><option value="">\u2014 no saved filters \u2014</option></select>
           <div class="tms-filter-actions">
-            <div class="tms-filter-action-cell">${buttonHtml14({ id: "tms-filter-load-btn", label: "\u{1F4C2} Load", color: "secondary", size: "xs", block: true })}</div>
-            <div class="tms-filter-action-cell tms-filter-action-cell-wide">${buttonHtml14({ id: "tms-filter-save-btn", label: "\u{1F4BE} Save Current", color: "secondary", size: "xs", block: true })}</div>
-            <div class="tms-filter-action-cell">${buttonHtml14({ id: "tms-filter-del-btn", icon: "\u{1F5D1}", color: "danger", size: "xs", block: true })}</div>
+            <div class="tms-filter-action-cell">${buttonHtml13({ id: "tms-filter-load-btn", label: "\u{1F4C2} Load", color: "secondary", size: "xs", block: true })}</div>
+            <div class="tms-filter-action-cell tms-filter-action-cell-wide">${buttonHtml13({ id: "tms-filter-save-btn", label: "\u{1F4BE} Save Current", color: "secondary", size: "xs", block: true })}</div>
+            <div class="tms-filter-action-cell">${buttonHtml13({ id: "tms-filter-del-btn", icon: "\u{1F5D1}", color: "danger", size: "xs", block: true })}</div>
           </div>
         </div>
       </div>
-      <div class="tms-more-toggle-wrap">${buttonHtml14({
+      <div class="tms-more-toggle-wrap">${buttonHtml13({
         id: "tms-more-toggle",
         color: "secondary",
         size: "xs",
@@ -24929,7 +25753,7 @@ order:initial
   // src/pages/transfer.js
   function initTransferPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    let allPlayers3 = [];
+    let allPlayers2 = [];
     let isLoading = false;
     const tooltipPromiseCache = /* @__PURE__ */ new Map();
     let tooltipFetchAbort = false;
@@ -24952,7 +25776,7 @@ order:initial
       _tickInterval = setInterval(() => {
         var _a3;
         let needsRefresh = false;
-        for (const p of allPlayers3) {
+        for (const p of allPlayers2) {
           if (p.timeleft <= 0) continue;
           const pollInterval = p.timeleft <= 120 ? 10 : 60;
           p._pollCountdown = ((_a3 = p._pollCountdown) != null ? _a3 : pollInterval) - 1;
@@ -25008,7 +25832,7 @@ order:initial
     }
     function getVisible() {
       const pf = TmTransferFilters.getPostFilters();
-      return allPlayers3.filter((player2) => TmTransferFilters.passesPostFilters(player2, pf)).sort((a, b) => (b.bump ? 1 : 0) - (a.bump ? 1 : 0));
+      return allPlayers2.filter((player2) => TmTransferFilters.passesPostFilters(player2, pf)).sort((a, b) => (b.bump ? 1 : 0) - (a.bump ? 1 : 0));
     }
     function refreshDisplay() {
       const container = document.getElementById("tms-table-wrap");
@@ -25031,7 +25855,7 @@ order:initial
         const playerRow = e.target.closest("tr[data-pid]");
         if (!playerRow || !container.contains(playerRow)) return;
         const playerId = playerRow.dataset.pid;
-        const player2 = allPlayers3.find((x) => String(x.id) === playerId);
+        const player2 = allPlayers2.find((x) => String(x.id) === playerId);
         if (!player2) return;
         const anchor = playerRow.querySelector(".tmpt-link") || playerRow;
         TmPlayerTooltip.show(anchor, player2);
@@ -25059,7 +25883,7 @@ order:initial
       const failsR5 = p.r5 != null ? pf.r5min !== null && p.r5 < pf.r5min || pf.r5max !== null && p.r5 > pf.r5max : pf.r5min !== null && p.r5Hi != null && p.r5Hi < pf.r5min || pf.r5max !== null && p.r5Lo != null && p.r5Lo > pf.r5max;
       const failsTI = pf.timin !== null && p.ti != null && p.ti < pf.timin || pf.timax !== null && p.ti != null && p.ti > pf.timax;
       if (failsRec || failsR5 || failsTI) {
-        allPlayers3 = allPlayers3.filter((pl) => pl.id !== p.id);
+        allPlayers2 = allPlayers2.filter((pl) => pl.id !== p.id);
       }
       scheduleRefresh();
     }
@@ -25113,11 +25937,11 @@ order:initial
         }
         const raw = Array.isArray(data.list) ? data.list : [];
         window.transfer_info_ar = raw;
-        allPlayers3 = raw.map(processPlayer);
+        allPlayers2 = raw.map(processPlayer);
         refreshDisplay();
         startTick();
         tooltipFetchAbort = true;
-        setTimeout(() => startTooltipFetch(allPlayers3), 300);
+        setTimeout(() => startTooltipFetch(allPlayers2), 300);
       }).catch(function(error) {
         console.warn("[TMS] Search failed", error);
         isLoading = false;
@@ -25226,11 +26050,11 @@ order:initial
         if (choice === "cancel") return;
         fetchTooltips = choice === "full";
       }
-      allPlayers3 = [...collected.values()].map(processPlayer);
+      allPlayers2 = [...collected.values()].map(processPlayer);
       _tableWrap = null;
       refreshDisplay();
       startTick();
-      if (fetchTooltips) setTimeout(() => startTooltipFetch(allPlayers3), 300);
+      if (fetchTooltips) setTimeout(() => startTooltipFetch(allPlayers2), 300);
     }
     function buildLayout() {
       if (document.getElementById("tms-main") || document.getElementById("tms-sidebar")) return;
@@ -25262,7 +26086,7 @@ order:initial
           e.stopPropagation();
           e.stopImmediatePropagation();
           const pid = reloadBtn.dataset.pid;
-          const player2 = allPlayers3.find((x) => x.id == pid);
+          const player2 = allPlayers2.find((x) => x.id == pid);
           if (!player2) return;
           reloadBtn.classList.add("tms-reloading");
           player2.tooltipFetched = false;
@@ -25281,7 +26105,7 @@ order:initial
           e.stopPropagation();
           e.stopImmediatePropagation();
           const pid = bidBtn.dataset.pid;
-          const player2 = allPlayers3.find((x) => String(x.id) === pid);
+          const player2 = allPlayers2.find((x) => String(x.id) === pid);
           if (player2) TmBidsDialog.open(player2);
           return;
         }
@@ -25348,14 +26172,14 @@ order:initial
         if (e.target.matches("#tms-r5min, #tms-r5max, #tms-timin, #tms-timax")) refreshDisplay();
       });
     }
-    function init3() {
+    function init2() {
       TmTransferStyles.inject();
       buildLayout();
       bindEvents();
       TmTransferFilters.populateSavedFiltersDropdown();
       doSearch();
     }
-    init3();
+    init2();
   }
 
   // src/components/league/tm-league-standings.js
@@ -25767,7 +26591,7 @@ order:initial
         `;
     document.head.appendChild(_s2);
   }
-  var buttonHtml8 = (opts) => TmUI.button(opts).outerHTML;
+  var buttonHtml7 = (opts) => TmUI.button(opts).outerHTML;
   var createAutocomplete = (opts) => TmUI.autocomplete({ tone: "overlay", density: "comfy", size: "full", grow: true, ...opts });
   var createFlag = (suffix) => {
     if (!suffix) return null;
@@ -25793,7 +26617,7 @@ order:initial
             <div class="tsa-ld-box" id="tsa-ld-box">
                 <div class="tsa-ld-header">
                     <span class="tsa-ld-title">Change League</span>
-                    ${buttonHtml8({ id: "tsa-ld-close", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>', variant: "icon", color: "secondary", size: "xs" })}
+                    ${buttonHtml7({ id: "tsa-ld-close", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>', variant: "icon", color: "secondary", size: "xs" })}
                 </div>
                 <div class="tsa-ld-body" id="tsa-ld-body">
                     ${TmUI.loading("Loading leagues...")}
@@ -25831,7 +26655,7 @@ order:initial
                     <div id="tsa-ld-group-ac"></div>
                 </div>
                 <div class="tsa-ld-footer">
-                    ${buttonHtml8({ id: "tsa-ld-go", label: "Go", color: "primary", disabled: true })}
+                    ${buttonHtml7({ id: "tsa-ld-go", label: "Go", color: "primary", disabled: true })}
                 </div>
             </div>`;
     let selCountry = null, selDivision = null, selGroup = null, divisionData = null;
@@ -26061,7 +26885,7 @@ order:initial
         `;
     document.head.appendChild(_s2);
   }
-  var buttonHtml9 = ({ label, slot, cls = "", active = false, ...opts }) => TmButton.button({
+  var buttonHtml8 = ({ label, slot, cls = "", active = false, ...opts }) => TmButton.button({
     color: "primary",
     size: "sm",
     label,
@@ -26215,8 +27039,8 @@ order:initial
     container.innerHTML = `
         <div class="tsa-stats-bar">
             <div>
-                ${buttonHtml9({ cls: "tsa-stat-mode-btn", label: "Players", active: isPlayers, attrs: { "data-mode": "players" } })}
-                ${buttonHtml9({ cls: "tsa-stat-mode-btn", label: "Clubs", active: !isPlayers, attrs: { "data-mode": "clubs" } })}
+                ${buttonHtml8({ cls: "tsa-stat-mode-btn", label: "Players", active: isPlayers, attrs: { "data-mode": "players" } })}
+                ${buttonHtml8({ cls: "tsa-stat-mode-btn", label: "Clubs", active: !isPlayers, attrs: { "data-mode": "clubs" } })}
             </div>
         </div>
         <div id="tsa-stats-content-inner"></div>
@@ -26248,7 +27072,7 @@ order:initial
     inner.innerHTML = `
         <div class="tsa-stats-bar">
             <div class="tsa-stat-btns">
-                ${CLUB_STAT_DEFS.map(([k, v]) => buttonHtml9({ cls: "tsa-stat-btn", label: v, active: curStat === k, attrs: { "data-stat": k } })).join("")}
+                ${CLUB_STAT_DEFS.map(([k, v]) => buttonHtml8({ cls: "tsa-stat-btn", label: v, active: curStat === k, attrs: { "data-stat": k } })).join("")}
             </div>
         </div>
         <div id="tsa-stats-table-wrap">${TmUI.loading("Loading\u2026")}</div>
@@ -26406,9 +27230,9 @@ order:initial
       container.innerHTML = `
                 <div class="tsa-stats-bar">
                     <div>
-                        ${buttonHtml9({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "bought", slot: `Bought <span class="tsa-tr-count">${data.bought.length}</span>` })}
-                        ${buttonHtml9({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "sold", slot: `Sold <span class="tsa-tr-count">${data.sold.length}</span>` })}
-                        ${buttonHtml9({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "teams", slot: "Teams" })}
+                        ${buttonHtml8({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "bought", slot: `Bought <span class="tsa-tr-count">${data.bought.length}</span>` })}
+                        ${buttonHtml8({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "sold", slot: `Sold <span class="tsa-tr-count">${data.sold.length}</span>` })}
+                        ${buttonHtml8({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "teams", slot: "Teams" })}
                     </div>
                 </div>
                 <div id="tsa-tr-bought-wrap" style="display:${s6.transfersView === "bought" ? "" : "none"}"></div>
@@ -27509,7 +28333,7 @@ order:initial
   var STYLE_ID41 = "tmvu-social-feed-style";
   var clean3 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml25 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  var buttonHtml10 = ({ cls = "", attrs = {}, shape = "full", size = "sm", color = "secondary", ...opts } = {}) => TmUI.button({
+  var buttonHtml9 = ({ cls = "", attrs = {}, shape = "full", size = "sm", color = "secondary", ...opts } = {}) => TmUI.button({
     cls,
     attrs,
     shape,
@@ -27670,7 +28494,7 @@ order:initial
                     <div id="tmvu-home-feed-likes-title" class="tmvu-home-feed-likes-title">Likes</div>
                     <div class="tmvu-home-feed-likes-subtitle">Loading clubs who liked this post...</div>
                 </div>
-                ${buttonHtml10({ label: "Close", cls: "tmvu-home-feed-likes-close", attrs: { "data-feed-likes-close": true } })}
+                ${buttonHtml9({ label: "Close", cls: "tmvu-home-feed-likes-close", attrs: { "data-feed-likes-close": true } })}
             </div>
             <div class="tmvu-home-feed-likes-body" data-feed-likes-body>
                 ${TmUI.loading("Loading likes...", true)}
@@ -27813,8 +28637,8 @@ order:initial
       targetEl.innerHTML = `
             <textarea class="tmvu-home-feed-composer-input" data-role="input" placeholder="${mode === "reply" ? "Write a reply..." : "Write a comment..."}"></textarea>
             <div class="tmvu-home-feed-composer-actions">
-                ${buttonHtml10({ label: "Cancel", cls: "tmvu-home-feed-composer-btn", attrs: { "data-role": "cancel" } })}
-                ${buttonHtml10({ label: mode === "reply" ? "Reply" : "Comment", cls: "tmvu-home-feed-composer-btn", attrs: { "data-role": "submit" } })}
+                ${buttonHtml9({ label: "Cancel", cls: "tmvu-home-feed-composer-btn", attrs: { "data-role": "cancel" } })}
+                ${buttonHtml9({ label: mode === "reply" ? "Reply" : "Comment", cls: "tmvu-home-feed-composer-btn", attrs: { "data-role": "submit" } })}
             </div>
         `;
       targetEl.hidden = false;
@@ -27892,11 +28716,11 @@ order:initial
                                     </div>
                                 </div>
                                 <div class="tmvu-home-feed-actions">
-                                    ${buttonHtml10({ label: "Like", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "like" } })}
-                                    ${buttonHtml10({ label: "Comment", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "comment" } })}
-                                    ${buttonHtml10({ label: "Reply", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "reply" } })}
-                                    ${buttonHtml10({ label: "Link", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "link" } })}
-                                    ${buttonHtml10({ label: "Mute", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "mute" } })}
+                                    ${buttonHtml9({ label: "Like", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "like" } })}
+                                    ${buttonHtml9({ label: "Comment", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "comment" } })}
+                                    ${buttonHtml9({ label: "Reply", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "reply" } })}
+                                    ${buttonHtml9({ label: "Link", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "link" } })}
+                                    ${buttonHtml9({ label: "Mute", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "mute" } })}
                                 </div>
                                 <div class="tmvu-home-feed-composer" data-feed-composer hidden></div>
                                 ${post.totalCommentCount > 0 || post.comments.length ? `
@@ -27919,7 +28743,7 @@ order:initial
                                 ` : ""}
                                 ${similarStoriesLabel ? `
                                     <div class="tmvu-home-feed-similar">
-                                        ${buttonHtml10({ label: similarStoriesLabel, cls: "tmvu-home-feed-similar-btn", color: "secondary", attrs: { "data-feed-similar-stories": true } })}
+                                        ${buttonHtml9({ label: similarStoriesLabel, cls: "tmvu-home-feed-similar-btn", color: "secondary", attrs: { "data-feed-similar-stories": true } })}
                                     </div>
                                 ` : ""}
                             </div>
@@ -27928,7 +28752,7 @@ order:initial
       }).join("")}
                 ${(feedModel == null ? void 0 : feedModel.kind) === "api" && ((feedModel == null ? void 0 : feedModel.canLoadMore) || (feedModel == null ? void 0 : feedModel.isLoadingMore)) ? `
                     <div class="tmvu-home-feed-load-more">
-                        ${buttonHtml10({
+                        ${buttonHtml9({
         label: (feedModel == null ? void 0 : feedModel.isLoadingMore) ? "Loading more..." : "Load older feed posts",
         cls: "tmvu-home-feed-load-more-btn",
         attrs: {
@@ -28157,8 +28981,8 @@ order:initial
     const SKILL_NAMES_FIELD = TmConst.SKILL_DEFS_OUT.map((d) => d.label || d.key);
     const SKILL_NAMES_GK2 = TmConst.SKILL_DEFS_GK.map((d) => d.label || d.key);
     const { REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS5, AGE_THRESHOLDS: AGE_THRESHOLDS2 } = TmConst;
-    const htmlOf8 = (node) => (node == null ? void 0 : node.outerHTML) || "";
-    const inputHtml4 = (opts) => htmlOf8(TmUI.input({ tone: "overlay", density: "regular", ...opts }));
+    const htmlOf7 = (node) => (node == null ? void 0 : node.outerHTML) || "";
+    const inputHtml4 = (opts) => htmlOf7(TmUI.input({ tone: "overlay", density: "regular", ...opts }));
     const appendHtml = (parent, html2) => {
       if (!parent) return null;
       const template = document.createElement("template");
@@ -29278,8 +30102,8 @@ order:initial
     const t = md.match_time_of_day || "";
     return (d || "") + (t ? " \xB7 " + t : "");
   };
-  var htmlOf7 = (node) => node ? node.outerHTML : "";
-  var buttonHtml11 = (opts) => TmUI.button(opts).outerHTML;
+  var htmlOf6 = (node) => node ? node.outerHTML : "";
+  var buttonHtml10 = (opts) => TmUI.button(opts).outerHTML;
   var buildTabs = (matchIsFuture, isLeague) => {
     const items = matchIsFuture ? [
       { key: "lineups", label: "Expected Lineups" },
@@ -29296,7 +30120,7 @@ order:initial
       { key: "venue", label: "Venue" },
       { key: "h2h", label: "H2H" }
     ];
-    return htmlOf7(TmUI.tabs({
+    return htmlOf6(TmUI.tabs({
       items,
       active: "lineups",
       color: "primary",
@@ -29323,17 +30147,17 @@ order:initial
       const liveControls = matchIsFuture ? "" : `
                 <div class="rnd-live-progress"><div class="rnd-live-progress-fill" id="rnd-live-progress-head" style="width:0%"></div></div>
                 <div class="rnd-live-filter-group">
-                  ${buttonHtml11({ label: "All", color: "secondary", size: "xs", cls: "rnd-live-filter-btn", attrs: { "data-filter": "all" } })}
-                  ${buttonHtml11({ label: "Key", color: "secondary", size: "xs", cls: `rnd-live-filter-btn${matchIsLive ? "" : " active"}`, attrs: { "data-filter": "key" } })}
-                  ${matchIsLive ? buttonHtml11({ slot: '<span class="rnd-live-filter-dot"></span><span>Live</span>', color: "secondary", size: "xs", cls: "rnd-live-filter-btn live-btn active", attrs: { "data-filter": "live" } }) : ""}
+                  ${buttonHtml10({ label: "All", color: "secondary", size: "xs", cls: "rnd-live-filter-btn", attrs: { "data-filter": "all" } })}
+                  ${buttonHtml10({ label: "Key", color: "secondary", size: "xs", cls: `rnd-live-filter-btn${matchIsLive ? "" : " active"}`, attrs: { "data-filter": "key" } })}
+                  ${matchIsLive ? buttonHtml10({ slot: '<span class="rnd-live-filter-dot"></span><span>Live</span>', color: "secondary", size: "xs", cls: "rnd-live-filter-btn live-btn active", attrs: { "data-filter": "live" } }) : ""}
                 </div>
-                ${buttonHtml11({ id: "rnd-live-play-head", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>', title: "Play / Pause", color: "secondary", size: "xs", cls: "rnd-live-btn" })}
-                ${buttonHtml11({ id: "rnd-live-skip-head", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 4 15 12 5 20 5 4"/><rect x="17" y="4" width="2" height="16" rx="1" fill="currentColor"/></svg>', title: "Skip to end", color: "secondary", size: "xs", cls: "rnd-live-btn" })}`;
+                ${buttonHtml10({ id: "rnd-live-play-head", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>', title: "Play / Pause", color: "secondary", size: "xs", cls: "rnd-live-btn" })}
+                ${buttonHtml10({ id: "rnd-live-skip-head", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 4 15 12 5 20 5 4"/><rect x="17" y="4" width="2" height="16" rx="1" fill="currentColor"/></svg>', title: "Skip to end", color: "secondary", size: "xs", cls: "rnd-live-btn" })}`;
       return $(`
                 <div class="rnd-overlay" id="rnd-overlay">
                     <div class="rnd-dialog">
                         <div class="rnd-dlg-head">
-                            ${buttonHtml11({ id: "rnd-dlg-close", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>', color: "secondary", size: "sm", shape: "full", cls: "rnd-dlg-close" })}
+                            ${buttonHtml10({ id: "rnd-dlg-close", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>', color: "secondary", size: "sm", shape: "full", cls: "rnd-dlg-close" })}
                             <div class="rnd-dlg-head-content">
                               <div class="rnd-dlg-head-row">
                                 <div class="rnd-dlg-team-group home">
@@ -29409,19 +30233,19 @@ order:initial
       tooltipEl.className = "rnd-h2h-tooltip";
       tooltipEl.dataset.matchId = String(matchId);
       anchorEl.appendChild(tooltipEl);
-      const render17 = (html2) => {
+      const render16 = (html2) => {
         if (!tooltipEl.isConnected || tooltipEl.dataset.matchId !== String(matchId)) return;
         tooltipEl.innerHTML = html2;
       };
-      render17(TmUI.loading("Loading\u2026", true));
+      render16(TmUI.loading("Loading\u2026", true));
       requestAnimationFrame(() => tooltipEl.classList.add("visible"));
       fetchTooltipData(matchId, !!rich, anchorEl).then((data) => {
         if (!data) {
-          render17(TmUI.error("Failed", true));
+          render16(TmUI.error("Failed", true));
           return;
         }
-        render17(data._rich ? TmMatchTooltip.buildRichTooltip(data) : TmMatchTooltip.buildLegacyTooltipContent(data));
-      }).catch(() => render17(TmUI.error("Failed", true)));
+        render16(data._rich ? TmMatchTooltip.buildRichTooltip(data) : TmMatchTooltip.buildLegacyTooltipContent(data));
+      }).catch(() => render16(TmUI.error("Failed", true)));
       return tooltipEl;
     }
   };
@@ -30093,7 +30917,7 @@ order:initial
   };
 
   // src/components/match/tm-match-player-dialog.js
-  var buttonHtml12 = (opts) => TmUI.button(opts).outerHTML;
+  var buttonHtml11 = (opts) => TmUI.button(opts).outerHTML;
   var badgeHtml6 = (opts, tone = "muted") => TmUI.badge({ size: "sm", shape: "full", weight: "bold", ...opts }, tone);
   var metricHtml8 = (opts) => TmUI.metric(opts);
   var buildPlayerStatsCompact = (statsArray, isGK) => {
@@ -30223,7 +31047,7 @@ order:initial
     }
     let html2 = `<div class="rnd-plr-overlay">
         <div class="rnd-plr-dialog" style="position:relative">
-            ${buttonHtml12({ icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>', color: "secondary", size: "sm", shape: "full", cls: "rnd-plr-close" })}
+            ${buttonHtml11({ icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>', color: "secondary", size: "sm", shape: "full", cls: "rnd-plr-close" })}
             <div class="rnd-plr-header">
                 <div class="rnd-plr-face"><img src="${player2.faceUrl}" alt="${player2.no}"></div>
                 <div class="rnd-plr-header-main">
@@ -30349,8 +31173,8 @@ order:initial
       const matchEnded = !matchFuture && (!liveState || liveState.ended);
       const homeColor = mData.teams.home.color;
       const awayColor = mData.teams.away.color;
-      const allPlayers3 = [...mData.teams.home.lineup || [], ...mData.teams.away.lineup || []];
-      const pEvents = Object.fromEntries(allPlayers3.map((player2) => [String(player2.id), player2]));
+      const allPlayers2 = [...mData.teams.home.lineup || [], ...mData.teams.away.lineup || []];
+      const pEvents = Object.fromEntries(allPlayers2.map((player2) => [String(player2.id), player2]));
       const eventIcons = (pid) => {
         var _a2;
         const result = pEvents[String(pid)];
@@ -30815,9 +31639,9 @@ order:initial
     return (_c = (_b = (_a2 = TmConst.POSITION_MAP) == null ? void 0 : _a2[key]) == null ? void 0 : _b.ordering) != null ? _c : 99;
   };
   var _injectPlayerStats = (homeTeam, awayTeam, bodyEl, liveState) => {
-    const allPlayers3 = [...homeTeam.lineup, ...awayTeam.lineup];
+    const allPlayers2 = [...homeTeam.lineup, ...awayTeam.lineup];
     const openPlayerDialog = (tablePlayer) => {
-      const player2 = allPlayers3.find((item) => Number(item.id) === Number(tablePlayer.pid));
+      const player2 = allPlayers2.find((item) => Number(item.id) === Number(tablePlayer.pid));
       if (player2) showPlayerDialog(player2, liveState);
     };
     const buildTeamBlock = (team, sideClass, containerId) => {
@@ -34024,7 +34848,7 @@ order:initial
       document.head.appendChild(style);
     };
     const cleanText28 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-    const htmlOf8 = (node) => node ? node.outerHTML : "";
+    const htmlOf7 = (node) => node ? node.outerHTML : "";
     const extractClubId4 = (node) => {
       if (!node) return "";
       const explicit = node.getAttribute("club_link");
@@ -34129,7 +34953,7 @@ order:initial
       return {
         clubName: cleanText28((clubLink == null ? void 0 : clubLink.textContent) || "Cup"),
         clubHref: (clubLink == null ? void 0 : clubLink.getAttribute("href")) || "#",
-        changeHtml: htmlOf8(changeLink),
+        changeHtml: htmlOf7(changeLink),
         competitionHtml,
         emblemSrc: (emblem == null ? void 0 : emblem.getAttribute("src")) || "",
         currentRoundHref: (roundLink == null ? void 0 : roundLink.getAttribute("href")) || "",
@@ -34195,7 +35019,7 @@ order:initial
     const renderRouteCard2 = (routeRows, overview) => TmTournamentCards.renderRouteCard(routeRows, { ...overview, sponsorHtml: "" }, { season: CURRENT_SEASON2 });
     const renderDrawCard2 = (section) => TmTournamentCards.renderDrawCard(section, { season: CURRENT_SEASON2 });
     const renderHistoryCard3 = (history) => TmTournamentCards.renderHistoryCard(history);
-    const render17 = () => {
+    const render16 = () => {
       injectStyles39();
       TmTournamentCards.injectStyles();
       TmMatchHoverCard.injectStyles();
@@ -34218,7 +35042,7 @@ order:initial
         season: CURRENT_SEASON2
       });
     };
-    render17();
+    render16();
   }
 
   // src/pages/home.js
@@ -35197,7 +36021,7 @@ order:initial
     const CURRENT_SEASON2 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const cleanText28 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml34 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-    const htmlOf8 = (node) => node ? node.outerHTML : "";
+    const htmlOf7 = (node) => node ? node.outerHTML : "";
     const stripShadow = (root2) => {
       if (!root2) return null;
       const clone = root2.cloneNode(true);
@@ -35627,16 +36451,16 @@ order:initial
             return TmTournamentCards.buildGroupedFixtureList(matchGroups, { season: CURRENT_SEASON2 });
           }
           const matches = Array.from(node.querySelectorAll("li")).map(parseMatchListItem2).filter(Boolean);
-          return matches.length ? TmTournamentCards.buildFixtureList(matches, { season: CURRENT_SEASON2 }) : htmlOf8(node);
+          return matches.length ? TmTournamentCards.buildFixtureList(matches, { season: CURRENT_SEASON2 }) : htmlOf7(node);
         }
         if (node.tagName === "TABLE") {
-          return renderStandingsTable(node) || htmlOf8(node);
+          return renderStandingsTable(node) || htmlOf7(node);
         }
         const table2 = (_a2 = node.querySelector) == null ? void 0 : _a2.call(node, "table");
         if (table2 && node.children.length === 1) {
-          return renderStandingsTable(table2) || htmlOf8(node);
+          return renderStandingsTable(table2) || htmlOf7(node);
         }
-        const raw = htmlOf8(node);
+        const raw = htmlOf7(node);
         return isGroupStage ? `<section class="tmvu-icup-node-card">${raw}</section>` : raw;
       }).join("");
       if (/group.?stage/i.test(section.title)) {
@@ -35696,13 +36520,11 @@ order:initial
 
   // src/pages/forum.js
   function initForumPage(main2) {
-    console.log("Initializing forum page");
     if (!main2 || !main2.isConnected) return;
-    console.log("Initializing forum page 2");
     const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const esc2 = (v) => String(v || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-    const htmlOf8 = (node) => node ? node.outerHTML : "";
-    const buttonHtml14 = ({ cls = "", attrs = {}, ...opts } = {}) => htmlOf8(TmUI.button({ ...opts, cls, attrs }));
+    const htmlOf7 = (node) => node ? node.outerHTML : "";
+    const buttonHtml13 = ({ cls = "", attrs = {}, ...opts } = {}) => htmlOf7(TmUI.button({ ...opts, cls, attrs }));
     function parseSidebar(src) {
       var _a2, _b, _c;
       const countryOptions = Array.from(src.querySelectorAll("#menu_country_select_hidden option")).map((o) => ({
@@ -36002,18 +36824,18 @@ order:initial
         },
         showColors: function() {
           this._open('<div class="tmvu-fpanel-colors">' + ["yellow", "orange", "red", "purple", "blue", "pink", "black"].map(function(c) {
-            return buttonHtml14({ cls: "tmvu-fcolor tmvu-fcolor--" + c, title: c, size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.color('" + c + "')" } });
-          }).join("") + buttonHtml14({ slot: "&times;", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF._close()" } }) + "</div>");
+            return buttonHtml13({ cls: "tmvu-fcolor tmvu-fcolor--" + c, title: c, size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.color('" + c + "')" } });
+          }).join("") + buttonHtml13({ slot: "&times;", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF._close()" } }) + "</div>");
         },
         showSmileys: function() {
           this._open('<div class="tmvu-fpanel-smileys">' + [1, 2, 3, 4, 5, 6, 7].map(function(n) {
-            return buttonHtml14({ slot: '<span class="smiley smiley' + n + '"></span>', cls: "tmvu-fsmiley", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.smiley(" + n + ")" } });
-          }).join("") + buttonHtml14({ slot: "&times;", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF._close()" } }) + "</div>");
+            return buttonHtml13({ slot: '<span class="smiley smiley' + n + '"></span>', cls: "tmvu-fsmiley", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.smiley(" + n + ")" } });
+          }).join("") + buttonHtml13({ slot: "&times;", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF._close()" } }) + "</div>");
         },
         showPrompt: function(type) {
           var ph = type === "player" ? "Player ID" : type === "image" ? "Image URL" : "https://";
           var call = "_tmvuF." + type + "(document.getElementById('tmvu-fpanel-input').value)";
-          this._open('<div class="tmvu-fpanel-prompt"><input id="tmvu-fpanel-input" type="text" class="tmvu-fpanel-input" placeholder="' + ph + `" onkeydown="if(event.key==='Enter'){` + call + `}else if(event.key==='Escape'){_tmvuF._close()}">` + buttonHtml14({ label: "OK", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: call } }) + buttonHtml14({ slot: "&times;", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF._close()" } }) + "</div>");
+          this._open('<div class="tmvu-fpanel-prompt"><input id="tmvu-fpanel-input" type="text" class="tmvu-fpanel-input" placeholder="' + ph + `" onkeydown="if(event.key==='Enter'){` + call + `}else if(event.key==='Escape'){_tmvuF._close()}">` + buttonHtml13({ label: "OK", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: call } }) + buttonHtml13({ slot: "&times;", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF._close()" } }) + "</div>");
           setTimeout(function() {
             var i = document.getElementById("tmvu-fpanel-input");
             if (i) i.focus();
@@ -36040,7 +36862,7 @@ order:initial
       var svgSmiley = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="6"/><circle cx="5.5" cy="7" r=".7" fill="currentColor" stroke="none"/><circle cx="10.5" cy="7" r=".7" fill="currentColor" stroke="none"/><path d="M5.5 10.5 Q8 12.5 10.5 10.5" stroke-linejoin="round"/></svg>';
       var tb = document.createElement("div");
       tb.className = "tmvu-forum-form-toolbar";
-      tb.innerHTML = buttonHtml14({ slot: svgB, cls: "tmvu-ftool", title: "Bold", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.bold()" } }) + buttonHtml14({ slot: svgI, cls: "tmvu-ftool", title: "Italic", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.italic()" } }) + buttonHtml14({ slot: svgCode, cls: "tmvu-ftool", title: "Code", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.code()" } }) + buttonHtml14({ slot: svgColor, cls: "tmvu-ftool", title: "Color", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showColors()" } }) + buttonHtml14({ slot: svgLink, cls: "tmvu-ftool", title: "Link", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showPrompt('link')" } }) + buttonHtml14({ slot: svgImg, cls: "tmvu-ftool", title: "Image", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showPrompt('image')" } }) + buttonHtml14({ slot: svgUser, cls: "tmvu-ftool", title: "Player", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showPrompt('player')" } }) + buttonHtml14({ slot: svgSmiley, cls: "tmvu-ftool", title: "Smileys", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showSmileys()" } });
+      tb.innerHTML = buttonHtml13({ slot: svgB, cls: "tmvu-ftool", title: "Bold", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.bold()" } }) + buttonHtml13({ slot: svgI, cls: "tmvu-ftool", title: "Italic", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.italic()" } }) + buttonHtml13({ slot: svgCode, cls: "tmvu-ftool", title: "Code", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.code()" } }) + buttonHtml13({ slot: svgColor, cls: "tmvu-ftool", title: "Color", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showColors()" } }) + buttonHtml13({ slot: svgLink, cls: "tmvu-ftool", title: "Link", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showPrompt('link')" } }) + buttonHtml13({ slot: svgImg, cls: "tmvu-ftool", title: "Image", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showPrompt('image')" } }) + buttonHtml13({ slot: svgUser, cls: "tmvu-ftool", title: "Player", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showPrompt('player')" } }) + buttonHtml13({ slot: svgSmiley, cls: "tmvu-ftool", title: "Smileys", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showSmileys()" } });
       var panel = document.createElement("div");
       panel.id = "tmvu-forum-panel";
       panel.className = "tmvu-forum-panel";
@@ -36055,7 +36877,7 @@ order:initial
       wrap.appendChild(panel);
       wrap.appendChild(liveForm);
       var acts = document.createElement("div");
-      acts.innerHTML = buttonHtml14({ label: "Submit", cls: "tmvu-post-btn tmvu-post-btn--primary", color: "primary", size: "xs", attrs: { onclick: "document.getElementById('forum_post_form').submit()" } }) + buttonHtml14({ label: "Preview", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "pop_preview2()" } });
+      acts.innerHTML = buttonHtml13({ label: "Submit", cls: "tmvu-post-btn tmvu-post-btn--primary", color: "primary", size: "xs", attrs: { onclick: "document.getElementById('forum_post_form').submit()" } }) + buttonHtml13({ label: "Preview", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "pop_preview2()" } });
       wrap.appendChild(acts);
       return card;
     }
@@ -36098,8 +36920,6 @@ order:initial
           lastPageHref: (lastPageA == null ? void 0 : lastPageA.getAttribute("href")) || ""
         };
       }).filter((t) => t == null ? void 0 : t.title);
-      const liveFormL = main3.querySelector("#forum_post_form");
-      if (liveFormL) liveFormL.remove();
       injectStyles39();
       main3.classList.add("tmvu-forum-page", "tmu-page-layout-2col", "tmu-page-density-compact", "tmu-page-stack-early");
       main3.innerHTML = "";
@@ -36125,8 +36945,20 @@ order:initial
         bodyHtml: topics.length ? '<div class="tmvu-forum-topic-list">' + topics.map(topicHtml).join("") + '</div><div class="tmvu-forum-pager-footer">' + pagerHtml(pagerLinks) + "</div>" : TmUI.empty("No topics found.")
       });
       col.appendChild(topicsHost.firstElementChild || topicsHost);
-      const composeCard = buildForumCard(liveFormL, "Post New Topic");
-      if (composeCard) col.appendChild(composeCard);
+      const tryAppendCompose = () => {
+        const f = document.querySelector("#forum_post_form");
+        if (!f) return false;
+        f.remove();
+        const card = buildForumCard(f, "Post New Topic");
+        if (card) col.appendChild(card);
+        return true;
+      };
+      if (!tryAppendCompose()) {
+        const obs = new MutationObserver(() => {
+          if (tryAppendCompose()) obs.disconnect();
+        });
+        obs.observe(document.body || document.documentElement, { childList: true, subtree: true });
+      }
       main3.appendChild(col);
     }
     function renderThread(main3, src) {
@@ -36138,8 +36970,6 @@ order:initial
       const pagerSummary = clean4(((_b = topicPagesEl == null ? void 0 : topicPagesEl.querySelector(".subtle")) == null ? void 0 : _b.textContent) || "");
       const pagerLinks = parsePager(forumEl, ".topic_pages");
       const topicTitle = clean4(((_c = forumEl.querySelector("h1.mega_headline")) == null ? void 0 : _c.textContent) || "Thread");
-      const liveFormT = main3.querySelector("#forum_post_form");
-      if (liveFormT) liveFormT.remove();
       const posts = Array.from(forumEl.querySelectorAll(".topic_post")).map((postEl) => {
         var _a3, _b2, _c2, _d, _e, _f, _g;
         const userEl = postEl.querySelector(".user");
@@ -36203,7 +37033,7 @@ order:initial
           kicker: "Thread",
           title: topicTitle,
           subtitle: sidebarData.currentCountry,
-          side: '<div class="tmvu-forum-thread-hero-actions">' + (backHref ? buttonHtml14({ label: "? Back", href: esc2(backHref), color: "secondary", size: "sm" }) : "") + buttonHtml14({ label: "? Reply", color: "primary", size: "sm", attrs: { onclick: "reply()" } }) + "</div>",
+          side: '<div class="tmvu-forum-thread-hero-actions">' + (backHref ? buttonHtml13({ label: "? Back", href: esc2(backHref), color: "secondary", size: "sm" }) : "") + buttonHtml13({ label: "? Reply", color: "primary", size: "sm", attrs: { onclick: "reply()" } }) + "</div>",
           footer: pagerHtml(pagerLinks)
         }
       });
@@ -36215,7 +37045,7 @@ order:initial
         const veteranEl = p.veteranSrc ? '<img class="tmvu-forum-post-veteran" src="' + esc2(p.veteranSrc) + '" title="' + esc2(p.veteranTip) + '" alt="' + esc2(p.veteranTip) + '">' : "";
         const proEl = p.isPro ? '<img class="tmvu-forum-post-pro" src="/pics/pro_icon.png" title="TM Pro" alt="Pro">' : "";
         const forumRanksEl = p.forumRankImgs.length ? '<div class="tmvu-forum-post-franks">' + p.forumRankImgs.map((src2) => '<img src="' + esc2(src2) + '">').join("") + "</div>" : "";
-        return '<div class="tmvu-forum-post"><div class="tmvu-forum-post-user"><div class="tmvu-forum-post-logo">' + (p.clubHref ? '<a href="' + esc2(p.clubHref) + '">' : "") + (p.logoSrc ? '<img src="' + esc2(p.logoSrc) + '" alt="">' : '<span style="font-size:var(--tmu-font-xl);opacity:.35">\u26BD</span>') + (p.clubHref ? "</a>" : "") + "</div>" + (p.clubHref ? '<a class="tmvu-forum-post-club" href="' + esc2(p.clubHref) + '">' + esc2(p.clubName) + "</a>" : p.clubName ? '<span class="tmvu-forum-post-club">' + esc2(p.clubName) + "</span>" : "") + flagEl + '<div class="tmvu-forum-post-badges">' + proEl + veteranEl + forumRanksEl + "</div>" + (p.rank ? '<div class="tmvu-forum-post-rank">' + esc2(p.rank) + "</div>" : "") + '</div><div class="tmvu-forum-post-body"><div class="tmvu-forum-post-meta">' + (p.postAnchorId ? '<a class="tmvu-forum-post-num" id="' + esc2(p.postAnchorId) + '" href="#' + esc2(posNum) + '">' + esc2(p.postNum) + "</a>" : "") + (likesHtml && p.postDbId ? '<span class="tmvu-forum-post-likes" onclick="pop_likes(' + p.postDbId + ')" title="See who liked this">' + likesHtml + "</span>" : likesHtml ? '<span class="tmvu-forum-post-likes">' + likesHtml + "</span>" : "") + (p.postDate ? '<span class="tmvu-forum-post-date">' + esc2(p.postDate) + "</span>" : "") + '</div><div class="tmvu-forum-post-content">' + p.contentHtml + '</div><div class="tmvu-forum-post-actions">' + (p.postDbId ? buttonHtml14({ label: "\u2665 " + (p.likesPos || 0), cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "pop_likes(" + p.postDbId + ")" } }) : "") + (p.seqNum ? buttonHtml14({ label: "Quote", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "quote(" + p.seqNum + ")" } }) : "") + buttonHtml14({ label: "Reply", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "reply()" } }) + '</div><div class="tmvu-post-hidden">' + p.likesDivHtml + p.quoteSpanHtml + "</div></div></div>";
+        return '<div class="tmvu-forum-post"><div class="tmvu-forum-post-user"><div class="tmvu-forum-post-logo">' + (p.clubHref ? '<a href="' + esc2(p.clubHref) + '">' : "") + (p.logoSrc ? '<img src="' + esc2(p.logoSrc) + '" alt="">' : '<span style="font-size:var(--tmu-font-xl);opacity:.35">\u26BD</span>') + (p.clubHref ? "</a>" : "") + "</div>" + (p.clubHref ? '<a class="tmvu-forum-post-club" href="' + esc2(p.clubHref) + '">' + esc2(p.clubName) + "</a>" : p.clubName ? '<span class="tmvu-forum-post-club">' + esc2(p.clubName) + "</span>" : "") + flagEl + '<div class="tmvu-forum-post-badges">' + proEl + veteranEl + forumRanksEl + "</div>" + (p.rank ? '<div class="tmvu-forum-post-rank">' + esc2(p.rank) + "</div>" : "") + '</div><div class="tmvu-forum-post-body"><div class="tmvu-forum-post-meta">' + (p.postAnchorId ? '<a class="tmvu-forum-post-num" id="' + esc2(p.postAnchorId) + '" href="#' + esc2(posNum) + '">' + esc2(p.postNum) + "</a>" : "") + (likesHtml && p.postDbId ? '<span class="tmvu-forum-post-likes" onclick="pop_likes(' + p.postDbId + ')" title="See who liked this">' + likesHtml + "</span>" : likesHtml ? '<span class="tmvu-forum-post-likes">' + likesHtml + "</span>" : "") + (p.postDate ? '<span class="tmvu-forum-post-date">' + esc2(p.postDate) + "</span>" : "") + '</div><div class="tmvu-forum-post-content">' + p.contentHtml + '</div><div class="tmvu-forum-post-actions">' + (p.postDbId ? buttonHtml13({ label: "\u2665 " + (p.likesPos || 0), cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "pop_likes(" + p.postDbId + ")" } }) : "") + (p.seqNum ? buttonHtml13({ label: "Quote", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "quote(" + p.seqNum + ")" } }) : "") + buttonHtml13({ label: "Reply", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "reply()" } }) + '</div><div class="tmvu-post-hidden">' + p.likesDivHtml + p.quoteSpanHtml + "</div></div></div>";
       }).join("");
       const postsHost = document.createElement("div");
       TmSectionCard.mount(postsHost, {
@@ -36226,42 +37056,15 @@ order:initial
       });
       col.appendChild(postsHost.firstElementChild || postsHost);
       (function resolvePlayerMentions() {
-        const starsSvg = (rec, pid) => {
-          const D = "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z";
-          const full = Math.min(5, Math.max(0, rec || 0));
-          const fullN = Math.floor(full);
-          const frac = full - fullN;
-          let s6 = "";
-          for (let i = 1; i <= 5; i++) {
-            if (i <= fullN) {
-              s6 += `<svg width="13" height="13" viewBox="0 0 24 24"><path d="${D}" fill="var(--tmu-text-highlight)"/></svg>`;
-            } else if (i === fullN + 1 && frac >= 0.1) {
-              const pct = Math.round(frac * 100);
-              const gid = `tmvupg_${pid}_${i}`;
-              s6 += `<svg width="13" height="13" viewBox="0 0 24 24"><defs><linearGradient id="${gid}" x1="0" x2="1" y1="0" y2="0"><stop offset="${pct}%" stop-color="var(--tmu-text-highlight)"/><stop offset="${pct}%" stop-color="var(--tmu-border-soft)"/></linearGradient></defs><path d="${D}" fill="url(#${gid})"/></svg>`;
-            } else {
-              s6 += `<svg width="13" height="13" viewBox="0 0 24 24"><path d="${D}" fill="none" stroke="var(--tmu-text-dim)" stroke-width="1.5"/></svg>`;
-            }
-          }
-          return `<span class="tmvu-pstars">${s6}</span>`;
-        };
         const fetchAndEnrich = (pid, anchor) => {
-          const fd = new FormData();
-          fd.append("player_id", pid);
-          fetch("/ajax/tooltip.ajax.php", { method: "POST", body: fd, credentials: "include" }).then((r) => r.ok ? r.json() : null).then((data) => {
-            var _a3;
-            if (!(data == null ? void 0 : data.player)) return;
-            const p = data.player;
-            const name = p.player_name || p.name || "";
+          TmPlayerModel.fetchTooltipCached(pid).then((player2) => {
+            if (!player2) return;
+            const name = player2.name || "";
             if (!name) return;
-            const retired = p.club_id == null;
-            const starsHtml = p.rec != null ? starsSvg(p.rec, pid) : "";
-            const age = Number(p.age);
-            const months = Number((_a3 = p.month) != null ? _a3 : p.months);
-            const hasAge = Number.isFinite(age) && Number.isFinite(months);
-            const ageHtml = !retired && hasAge ? `<span class="tmvu-pinfo">${age}.${months}</span> ` : "";
-            const r5Value = Number(p.r5);
-            const r5Html = !retired && Number.isFinite(r5Value) ? ` <span class="tmvu-pinfo">${r5Value.toFixed(2)}</span>` : "";
+            const retired = !player2.club_id;
+            const starsHtml = player2.rec != null ? TmStars.recommendation(player2.rec, "tmvu-pstars") : "";
+            const ageHtml = !retired && player2.ageMonthsString ? `<span class="tmvu-pinfo">${player2.ageMonthsString}</span> ` : "";
+            const r5Html = !retired && player2.r5 != null ? ` <span class="tmvu-pinfo">${Number(player2.r5).toFixed(2)}</span>` : "";
             anchor.innerHTML = starsHtml + ageHtml + esc2(name) + r5Html;
           }).catch(() => {
           });
@@ -36273,7 +37076,7 @@ order:initial
             if (!m) return;
             const pid = m[1];
             if (!a.getAttribute("player_link")) a.setAttribute("player_link", pid);
-            if (/@player\d+/.test(a.textContent)) fetchAndEnrich(pid, a);
+            fetchAndEnrich(pid, a);
           });
           const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT, null, false);
           const textNodes = [];
@@ -36311,8 +37114,8 @@ order:initial
         const pid = anchor.getAttribute("player_link");
         if (!pid) return;
         _playerTipTimer = setTimeout(() => {
-          TmPlayerModel.fetchPlayerTooltip(pid).then((data) => {
-            if (data == null ? void 0 : data.player) TmPlayerTooltip.show(anchor, data.player);
+          TmPlayerModel.fetchTooltipCached(pid).then((player2) => {
+            if (player2) TmPlayerTooltip.show(anchor, player2);
           }).catch(() => {
           });
         }, 200);
@@ -36323,8 +37126,20 @@ order:initial
         clearTimeout(_playerTipTimer);
         TmPlayerTooltip.hide();
       });
-      const replyCard = buildForumCard(liveFormT, "Reply");
-      if (replyCard) col.appendChild(replyCard);
+      const tryAppendReply = () => {
+        const f = document.querySelector("#forum_post_form");
+        if (!f) return false;
+        f.remove();
+        const card = buildForumCard(f, "Reply");
+        if (card) col.appendChild(card);
+        return true;
+      };
+      if (!tryAppendReply()) {
+        const obs = new MutationObserver(() => {
+          if (tryAppendReply()) obs.disconnect();
+        });
+        obs.observe(document.body || document.documentElement, { childList: true, subtree: true });
+      }
       main3.appendChild(col);
     }
     function renderNewTopic(main3, src) {
@@ -36346,7 +37161,7 @@ order:initial
           kicker: "Forum",
           title: "New Topic",
           subtitle: sidebarData.currentCountry,
-          side: buttonHtml14({ label: "\u2190 Back", href: esc2(backHref), color: "secondary", size: "sm" })
+          side: buttonHtml13({ label: "\u2190 Back", href: esc2(backHref), color: "secondary", size: "sm" })
         }
       });
       col.appendChild(heroHost.firstElementChild || heroHost);
@@ -37851,7 +38666,7 @@ order:initial
     const coefficientTierBreakIndexes = [];
     let activeCoefficientGroup = null;
     const cleanText28 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-    const htmlOf8 = (node) => node ? node.outerHTML : "";
+    const htmlOf7 = (node) => node ? node.outerHTML : "";
     const COEFFICIENT_GROUPS = [
       { slug: "fita", label: "FITA (Global)", overviewIds: ["1", "2", "3", "4", "5", "6"], matchIds: [], aliases: ["fita", "global", "world", "globalno"], hasQualificationTiers: false },
       { slug: "ueta", label: "UETA", overviewIds: ["1", "2"], matchIds: ["1", "2"], aliases: ["ueta"], hasQualificationTiers: true },
@@ -38258,7 +39073,7 @@ order:initial
         hostClass: "tmvu-icup-host",
         bodyClass: "tmvu-icup-stage tmvu-icup-coeff",
         bodyHtml: `
-                ${htmlOf8(tabsNode)}
+                ${htmlOf7(tabsNode)}
                 <div class="tmvu-icup-tab-panels">
                     ${panels.map((panel, index) => `
                         <section class="tmvu-icup-tab-panel" data-tab-panel="${escapeHtml34(panel.id)}"${index === 0 ? "" : " hidden"}>
@@ -38783,7 +39598,7 @@ order:initial
   function matchesTargetCountry(player2, targetCountryCode) {
     return resolvePlayerCountryCode(player2) === normalizeCountryCode2(targetCountryCode);
   }
-  var buttonHtml13 = (opts) => TmUI.button(opts).outerHTML;
+  var buttonHtml12 = (opts) => TmUI.button(opts).outerHTML;
   function injectStyles32() {
     if (document.getElementById(STYLE_ID43)) return;
     const style = document.createElement("style");
@@ -39643,13 +40458,13 @@ order:initial
         return lowerText(item.name);
     }
   }
-  function compareResultItems(left, right, sortKey, sortDir2) {
+  function compareResultItems(left, right, sortKey, sortDir) {
     const a = getResultSortValue(left, sortKey);
     const b = getResultSortValue(right, sortKey);
     let cmp = 0;
     if (typeof a === "number" && typeof b === "number") cmp = a - b;
     else cmp = String(a).localeCompare(String(b));
-    if (cmp !== 0) return cmp * sortDir2;
+    if (cmp !== 0) return cmp * sortDir;
     const nameCmp = lowerText(left.name).localeCompare(lowerText(right.name));
     if (nameCmp !== 0) return nameCmp;
     return (Number(right.asi) || 0) - (Number(left.asi) || 0);
@@ -39769,9 +40584,9 @@ order:initial
       headers: getResultHeaders(),
       sortKey: state5.sortKey,
       sortDir: state5.sortDir,
-      afterRender: ({ sortedItems, sortKey, sortDir: sortDir2 }) => {
+      afterRender: ({ sortedItems, sortKey, sortDir }) => {
         state5.sortKey = sortKey;
-        state5.sortDir = sortDir2;
+        state5.sortDir = sortDir;
         updateResultsToolbar(state5, sortedItems);
       }
     });
@@ -39837,9 +40652,9 @@ order:initial
                     <p>Scans the selected season and league range for transfers, inactive clubs, banned clubs and flagged squads.</p>
                 </div>
                 <div class="tmvu-nt-save-actions">
-                    ${buttonHtml13({ label: "Run Scan", color: "primary", size: "sm", attrs: { "data-nt-save-run": "1" } })}
-                    ${buttonHtml13({ label: "Export Excel CSV", color: "secondary", size: "sm", cls: "tmvu-nt-save-export", attrs: { "data-nt-save-export": "1" } })}
-                    ${buttonHtml13({ label: "Close", color: "secondary", size: "sm", attrs: { "data-nt-save-close": "1" } })}
+                    ${buttonHtml12({ label: "Run Scan", color: "primary", size: "sm", attrs: { "data-nt-save-run": "1" } })}
+                    ${buttonHtml12({ label: "Export Excel CSV", color: "secondary", size: "sm", cls: "tmvu-nt-save-export", attrs: { "data-nt-save-export": "1" } })}
+                    ${buttonHtml12({ label: "Close", color: "secondary", size: "sm", attrs: { "data-nt-save-close": "1" } })}
                 </div>
             </div>
             <div class="tmvu-nt-save-body">
@@ -40346,7 +41161,7 @@ order:initial
             <div class="tmvu-nt-save-kicker">National Teams</div>
             <div class="tmvu-nt-save-title">NT Save Finder \xB7 ${escapeHtml27(state5.countryCode.toUpperCase())}</div>
             <div class="tmvu-nt-save-copy">Scans league transfer history, inactive clubs, banned clubs and flagged league squads for players eligible for NT save.</div>
-            ${buttonHtml13({ label: "Find NT Save Players", color: "secondary", size: "sm", attrs: { "data-nt-save-open": "1" } })}
+            ${buttonHtml12({ label: "Find NT Save Players", color: "secondary", size: "sm", attrs: { "data-nt-save-open": "1" } })}
             <div class="tmvu-nt-save-mini" data-nt-save-mini>Idle</div>
         `;
       panel.onclick = (event) => {
@@ -40611,7 +41426,7 @@ order:initial
             </tm-card>
         `);
       const state5 = { active: ((_a2 = overview.panels[0]) == null ? void 0 : _a2.id) || "" };
-      const renderPanel3 = (panelId) => {
+      const renderPanel2 = (panelId) => {
         const panel = overview.panels.find((item) => item.id === panelId) || overview.panels[0];
         if (!panel) {
           refs.panel.innerHTML = TmUI.notice("No rankings table was available.", { variant: "footnote" });
@@ -40627,15 +41442,15 @@ order:initial
         active: state5.active,
         onChange: (key) => {
           state5.active = key;
-          renderPanel3(key);
+          renderPanel2(key);
         }
       });
       tabs.classList.add("tmvu-nt-rankings-tabs");
       refs.tabs.appendChild(tabs);
-      renderPanel3(state5.active);
+      renderPanel2(state5.active);
       return wrap.firstElementChild || wrap;
     };
-    const render17 = () => {
+    const render16 = () => {
       injectStyles39();
       const overview = parseOverview4();
       if (!overview || !overview.panels.length) return;
@@ -40653,7 +41468,7 @@ order:initial
       mainColumn5.appendChild(renderTableCard3(overview));
       main2.appendChild(mainColumn5);
     };
-    render17();
+    render16();
   }
 
   // src/pages/national-teams-fixtures.js
@@ -40790,7 +41605,7 @@ order:initial
         }
       }));
     };
-    const init3 = async () => {
+    const init2 = async () => {
       var _a3, _b2;
       panelHost.innerHTML = TmUI.loading("Loading fixtures...");
       const data = await TmApi.fetchFixtures(countryCode);
@@ -40804,7 +41619,7 @@ order:initial
       renderTabs();
       renderMonth(activeMonthKey);
     };
-    init3();
+    init2();
   }
 
   // src/pages/national-teams-history.js
@@ -41085,7 +41900,7 @@ order:initial
     const routeMatch = window.location.pathname.match(/^\/statistics\/national-teams\/([a-z]{2,3})(?:\/players\/[^/]+)?\/?$/i);
     if (!routeMatch) return;
     const countryCode = routeMatch[1].toLowerCase();
-    const init3 = async () => {
+    const init2 = async () => {
       var _a2, _b, _c, _d, _e;
       injectTmPageLayoutStyles();
       injectStyles35();
@@ -41145,7 +41960,7 @@ order:initial
         rowCls: (item) => item._rowClass || ""
       }));
     };
-    init3().catch((error) => {
+    init2().catch((error) => {
       console.error("Failed to initialize national team statistics page:", error);
       main2.innerHTML = TmUI.error(`Error loading national team statistics: ${error.message}`);
     });
@@ -41959,7 +42774,7 @@ order:initial
     const tabsHost = card.querySelector('[data-ref="tabs"]');
     const panelHost = card.querySelector('[data-ref="panel"]');
     const activeKey = ((_k = tabs.find((tab) => tab.active)) == null ? void 0 : _k.key) || ((_l = tabs[0]) == null ? void 0 : _l.key) || "";
-    const renderPanel3 = (key) => {
+    const renderPanel2 = (key) => {
       const tab = tabs.find((item) => item.key === key) || tabs[0];
       if (!tab) {
         panelHost.innerHTML = TmUI.empty("No data available.", true);
@@ -41975,10 +42790,10 @@ order:initial
       tabsHost.appendChild(TmUI.tabs({
         items: tabs.map((tab) => ({ key: tab.key, label: tab.label })),
         active: activeKey,
-        onChange: renderPanel3
+        onChange: renderPanel2
       }));
     }
-    renderPanel3(activeKey);
+    renderPanel2(activeKey);
     if ((_m = sideBody == null ? void 0 : sideBody.innerHTML) == null ? void 0 : _m.trim()) {
       const rail = document.createElement("aside");
       rail.className = "tmu-page-rail-stack";
@@ -42601,7 +43416,7 @@ order:initial
         `);
       return wrap.firstElementChild || wrap;
     };
-    const render17 = () => {
+    const render16 = () => {
       var _a2;
       injectStyles39();
       TmMatchHoverCard.injectStyles();
@@ -42638,7 +43453,7 @@ order:initial
       hydrateSquadCard(squadCard.querySelector('[data-ref="squad-host"]'), squad);
       TmMatchRow.enhance(main2, { season: CURRENT_SEASON2 });
     };
-    render17();
+    render16();
   }
 
   // src/pages/support-pro.js
@@ -43480,7 +44295,7 @@ order:initial
     let lastData = null;
     let containerRef = null;
     let _player = null;
-    const render17 = (container, player2) => {
+    const render16 = (container, player2) => {
       containerRef = container;
       lastData = player2;
       _player = player2;
@@ -43520,12 +44335,12 @@ order:initial
       buildPeaksChart(container, player2);
     };
     const reRender2 = () => {
-      if (containerRef && lastData) render17(containerRef, lastData);
+      if (containerRef && lastData) render16(containerRef, lastData);
     };
     const load2 = (container, player2) => {
-      render17(container, player2);
+      render16(container, player2);
     };
-    return { render: render17, reRender: reRender2, load: load2 };
+    return { render: render16, reRender: reRender2, load: load2 };
   })();
 
   // src/components/player/skills/tm-player-data-table.js
@@ -43593,7 +44408,7 @@ order:initial
 `;
   document.head.appendChild(Object.assign(document.createElement("style"), { textContent: CSS6 }));
   var player = null;
-  var activeTab3 = "nat";
+  var activeTab2 = "nat";
   var root = null;
   var q = (sel) => root ? root.querySelector(sel) : null;
   var setContent = (el2, content) => {
@@ -43727,10 +44542,10 @@ order:initial
     }
     return null;
   };
-  var render15 = (container, p) => {
+  var render14 = (container, p) => {
     var _a2;
     player = p;
-    activeTab3 = "nat";
+    activeTab2 = "nat";
     container.innerHTML = "";
     const wrapper = document.createElement("div");
     wrapper.id = "tmph-root";
@@ -43744,13 +44559,13 @@ order:initial
         label,
         disabled: key === "nt" ? !player.stats.nationalTeam : !(player.stats[key] || []).length
       })),
-      active: activeTab3,
+      active: activeTab2,
       color: "primary",
       cls: "tmph-tabs",
       stretch: true,
       onChange: (key) => {
         var _a3;
-        activeTab3 = key;
+        activeTab2 = key;
         const tabContent = q("#tmph-tab-content");
         if (tabContent) setContent(tabContent, key === "nt" ? buildNTTable(player.stats.nationalTeam) : buildTable(player.stats[key]));
         if (tabContent) (_a3 = TmUI) == null ? void 0 : _a3.render(tabContent);
@@ -43762,7 +44577,7 @@ order:initial
     const bodyEl = document.createElement("div");
     bodyEl.className = "tmph-body";
     bodyEl.id = "tmph-tab-content";
-    setContent(bodyEl, buildTable(player.stats[activeTab3]));
+    setContent(bodyEl, buildTable(player.stats[activeTab2]));
     wrap.appendChild(bodyEl);
     (_a2 = TmUI) == null ? void 0 : _a2.render(root);
   };
@@ -43778,10 +44593,10 @@ order:initial
       }
       playerArg.stats = stats;
       playerArg.stats.nationalTeam = nt;
-      render15(container, playerArg);
+      render14(container, playerArg);
     });
   };
-  var TmHistoryMod = { render: render15, load };
+  var TmHistoryMod = { render: render14, load };
 
   // src/components/player/card/tm-player-card.js
   var CSS7 = `
@@ -43891,7 +44706,7 @@ order:initial
     if (player2 == null ? void 0 : player2.retire) return "Retiring";
     return "Active";
   };
-  var render16 = ({ player: player2 } = {}) => {
+  var render15 = ({ player: player2 } = {}) => {
     var _a2;
     const { getColor: getColor6 } = TmUtils;
     const { R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2 } = TmConst;
@@ -43996,7 +44811,7 @@ order:initial
     }
     return;
   };
-  var TmPlayerCard = { render: render16 };
+  var TmPlayerCard = { render: render15 };
 
   // src/components/player/card/tm-player-sidebar.js
   var CSS8 = `
@@ -44589,7 +45404,7 @@ order:initial
   var TmScoutMod = /* @__PURE__ */ (() => {
     let containerRef = null;
     let player2 = null;
-    let activeTab4 = "report";
+    let activeTab3 = "report";
     let root2 = null;
     const q2 = (sel) => root2 ? root2.querySelector(sel) : null;
     const mountTab = (el2, tab) => {
@@ -44598,17 +45413,17 @@ order:initial
           return mountScoutReport(el2, player2.scoutReports);
         case "scouts":
           return mountScoutScouts(el2, player2.scouts, player2, {
-            onReRender: (newData) => render17(containerRef, { player: player2 })
+            onReRender: (newData) => render16(containerRef, { player: player2 })
           });
         case "interested":
           return mountScoutInterested(el2, player2.interestedClubs);
       }
     };
-    const render17 = (container, { player: p } = {}) => {
+    const render16 = (container, { player: p } = {}) => {
       var _a2;
       containerRef = container;
       player2 = p;
-      activeTab4 = player2.scoutReports && player2.scoutReports.length ? "report" : "scouts";
+      activeTab3 = player2.scoutReports && player2.scoutReports.length ? "report" : "scouts";
       container.innerHTML = "";
       const wrapper = document.createElement("div");
       wrapper.id = "tmsc-root";
@@ -44622,12 +45437,12 @@ order:initial
       const hasData = (k) => k === "report" ? !!(player2.scoutReports && player2.scoutReports.length > 0) : k === "interested" ? !!(player2.interestedClubs && player2.interestedClubs.length > 0) : k === "scouts" ? !!(player2.scouts && Object.keys(player2.scouts).length > 0) : true;
       const tabsEl = TmUI.tabs({
         items: Object.entries(TAB_LABELS).map(([key, label]) => ({ key, label, disabled: !hasData(key) })),
-        active: activeTab4,
+        active: activeTab3,
         color: "primary",
         cls: "tmsc-tabs",
         stretch: true,
         onChange: (key) => {
-          activeTab4 = key;
+          activeTab3 = key;
           const c = q2("#tmsc-tab-content");
           if (!c) return;
           mountTab(c, key);
@@ -44640,12 +45455,12 @@ order:initial
       bodyEl.className = "tmsc-body";
       bodyEl.id = "tmsc-tab-content";
       scWrap.appendChild(bodyEl);
-      mountTab(bodyEl, activeTab4);
+      mountTab(bodyEl, activeTab3);
       (_a2 = TmUI) == null ? void 0 : _a2.render(root2);
     };
     const load2 = (container, player3) => {
       if (player3.scoutReports) {
-        render17(container, { player: player3 });
+        render16(container, { player: player3 });
         return;
       }
       container.innerHTML = TmUI.loading();
@@ -44658,10 +45473,10 @@ order:initial
         player3.scouts = data.scouts || {};
         player3.interestedClubs = data.interested || [];
         player3.bestEstimate = data.bestEstimate || null;
-        render17(container, { player: player3 });
+        render16(container, { player: player3 });
       });
     };
-    return { render: render17, load: load2 };
+    return { render: render16, load: load2 };
   })();
 
   // src/components/player/skills/tm-skills-grid.js
@@ -44923,619 +45738,14 @@ order:initial
       }
       switchTab("history");
     };
-    const mount8 = ({ player: p, injectCSS: injectCSS5 }) => {
+    const mount8 = ({ player: p, injectCSS: injectCSS4 }) => {
       player2 = p;
-      _cssInjector = injectCSS5;
+      _cssInjector = injectCSS4;
       initRetries = 0;
       _tryMount();
     };
     return { mount: mount8, isLoaded };
   })();
-
-  // src/workflows/player-history/filter.js
-  var parseKey = (key) => {
-    const [age, month] = String(key).split(".").map(Number);
-    return age * 12 + month;
-  };
-  var absToKey = (abs) => `${Math.floor(abs / 12)}.${abs % 12}`;
-  var hasBrokenRecords = (DBPlayer) => {
-    const records = DBPlayer == null ? void 0 : DBPlayer.records;
-    if (!records) return false;
-    return Object.values(records).some((r) => {
-      if (r.TI == null && r.ASI == null) return true;
-      if (Array.isArray(r.skills) && r.skills.some((v) => typeof v === "number" && isNaN(v))) return true;
-      return false;
-    });
-  };
-  var hasMissingMonths = (player2, DBPlayer) => {
-    const records = DBPlayer == null ? void 0 : DBPlayer.records;
-    if (!records) return false;
-    const keys = Object.keys(records);
-    if (!keys.length) return false;
-    const currentAbs = parseKey(player2.ageMonthsString);
-    const firstAbs = Math.min(...keys.map(parseKey));
-    for (let abs = firstAbs; abs <= currentAbs; abs++) {
-      if (!records[absToKey(abs)]) return true;
-    }
-    return false;
-  };
-  var attachSyncStatus = async (players, { mode = "full" } = {}) => {
-    return Promise.all(
-      players.map(async (player2) => {
-        var _a2;
-        let DBPlayer = await TmPlayerDB.get(player2.id);
-        const currentRecord = (_a2 = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _a2[player2.ageMonthsString];
-        const synced = (currentRecord == null ? void 0 : currentRecord.fullySynced) === true;
-        const missing = hasMissingMonths(player2, DBPlayer);
-        const broken = hasBrokenRecords(DBPlayer);
-        const needSync = broken || (mode === "missing-only" ? missing : mode === "force-resync" ? true : !(synced && !missing));
-        return { ...player2, needSync, DBPlayer, records: (DBPlayer == null ? void 0 : DBPlayer.records) || {} };
-      })
-    );
-  };
-
-  // src/workflows/player-history/sources.js
-  var { GRAPH_KEYS_OUT: GRAPH_KEYS_OUT3, GRAPH_KEYS_GK: GRAPH_KEYS_GK3 } = TmConst;
-  var { skillValue: skillValue3 } = TmUtils;
-  var keyToAbs = (key) => {
-    const [a, m] = String(key).split(".").map(Number);
-    return a * 12 + m;
-  };
-  var absToKey2 = (abs) => `${Math.floor(abs / 12)}.${abs % 12}`;
-  var buildMonthKeys = (player2, graphData, DBPlayer) => {
-    var _a2;
-    const currentAbs = keyToAbs(player2.ageMonthsString);
-    let firstAbs;
-    const graphMonths = ((_a2 = graphData == null ? void 0 : graphData.TI) == null ? void 0 : _a2.length) ? graphData.TI.length - 1 : 0;
-    if (player2.isOwnPlayer && graphMonths > 0) {
-      firstAbs = currentAbs - graphMonths + 1;
-    } else {
-      const dbKeys = Object.keys((DBPlayer == null ? void 0 : DBPlayer.records) || {});
-      firstAbs = dbKeys.length ? Math.min(...dbKeys.map(keyToAbs)) : currentAbs;
-    }
-    const keys = [];
-    for (let abs = firstAbs; abs <= currentAbs; abs++) {
-      keys.push(absToKey2(abs));
-    }
-    return keys;
-  };
-  var buildRecordSkeleton = (player2, monthKeys, graphData, DBPlayer) => {
-    var _a2, _b, _c, _d, _e;
-    const statKeys = player2.isGK ? GRAPH_KEYS_GK3 : GRAPH_KEYS_OUT3;
-    const skillCount = statKeys.length;
-    const currentAbs = keyToAbs(player2.ageMonthsString);
-    const graphMonths = ((_a2 = graphData == null ? void 0 : graphData.TI) == null ? void 0 : _a2.length) ? graphData.TI.length - 1 : 0;
-    const graphKeyMap = /* @__PURE__ */ new Map();
-    for (let i = 0; i < graphMonths; i++) {
-      const abs = currentAbs - graphMonths + 1 + i;
-      graphKeyMap.set(absToKey2(abs), i);
-    }
-    const records = {};
-    for (const key of monthKeys) {
-      const isCurrentMonth = key === player2.ageMonthsString;
-      const graphIndex = graphKeyMap.get(key);
-      const dbRecord = (_b = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _b[key];
-      let skills = null;
-      if (isCurrentMonth) {
-        skills = Array.isArray(player2.skills) ? player2.skills.map((s6) => Math.floor(skillValue3(s6) || 0)) : new Array(skillCount).fill(null);
-      } else if (graphIndex != null && graphData) {
-        const fromGraph = statKeys.map((sk) => {
-          var _a3;
-          const v = (_a3 = graphData[sk]) == null ? void 0 : _a3[graphIndex];
-          return v != null ? Number(v) : null;
-        });
-        if (fromGraph.some((v) => v != null)) {
-          skills = fromGraph;
-        }
-      }
-      if (skills === null && (dbRecord == null ? void 0 : dbRecord.skills)) {
-        skills = dbRecord.skills.map((s6) => Math.floor(skillValue3(s6) || 0));
-      }
-      const weeklyChanges = isCurrentMonth ? player2.weeklyChanges || null : (dbRecord == null ? void 0 : dbRecord.weeklyChanges) || null;
-      const routine = isCurrentMonth ? (_d = (_c = dbRecord == null ? void 0 : dbRecord.routine) != null ? _c : player2.routine) != null ? _d : null : (_e = dbRecord == null ? void 0 : dbRecord.routine) != null ? _e : null;
-      records[key] = { TI: null, ASI: null, skills, weeklyChanges, routine };
-    }
-    return records;
-  };
-  var buildHistorySkeletons = async (players, onProgress) => {
-    const total = players.filter((p) => p.needSync && p.isOwnPlayer).length;
-    let done = 0;
-    const fetches = await Promise.all(
-      players.map(async (player2) => {
-        if (!player2.needSync || !player2.isOwnPlayer) {
-          return { graphData: null, training: null };
-        }
-        const [graphData, training] = await Promise.all([
-          TmPlayerService.fetchPlayerGraphs(player2),
-          TmPlayerService.fetchPlayerTrainingForSync(player2)
-        ]);
-        done++;
-        onProgress == null ? void 0 : onProgress(done, total);
-        return { graphData, training };
-      })
-    );
-    return players.map((player2, i) => {
-      var _a2;
-      if (!player2.needSync) return player2;
-      const { graphData: rawGraphData, training } = fetches[i];
-      const graphData = (_a2 = rawGraphData == null ? void 0 : rawGraphData.graphs) != null ? _a2 : null;
-      const monthKeys = buildMonthKeys(player2, graphData, player2.DBPlayer);
-      const records = buildRecordSkeleton(player2, monthKeys, graphData, player2.DBPlayer);
-      return { ...player2, graphData, training, monthKeys, records };
-    });
-  };
-
-  // src/workflows/player-history/shared.js
-  var {
-    TRAINING_GROUPS_OUT: TRAINING_GROUPS_OUT3,
-    TRAINING_GROUPS_GK: TRAINING_GROUPS_GK3,
-    STD_FOCUS: STD_FOCUS3,
-    SMOOTH_WEIGHT: SMOOTH_WEIGHT3
-  } = TmConst;
-  var normalizeTrainingWeights = (training, isGK) => {
-    const groups = isGK ? TRAINING_GROUPS_GK3 : TRAINING_GROUPS_OUT3;
-    const groupCount = groups.length;
-    const skillCount = isGK ? 11 : 14;
-    const equal = new Array(groupCount).fill(1 / groupCount);
-    if (isGK) return [1];
-    if (Array.isArray(training)) {
-      const dots = training.slice(0, groupCount).map((value) => Math.max(0, Number(value) || 0));
-      if (!dots.some(Boolean)) return equal;
-      const smoothed = dots.map((value) => value + SMOOTH_WEIGHT3);
-      const total2 = smoothed.reduce((sum, value) => sum + value, 0);
-      return total2 > 0 ? smoothed.map((value) => value / total2) : equal;
-    }
-    if (training && typeof training === "object") {
-      if (Array.isArray(training.custom)) return normalizeTrainingWeights(training.custom, isGK);
-      if (training.standard != null) return normalizeTrainingWeights(training.standard, isGK);
-    }
-    const focusIdx = STD_FOCUS3 == null ? void 0 : STD_FOCUS3[String(training)];
-    if (focusIdx == null) return equal;
-    const weights = groups.map((group) => 0.75 * (group.length / skillCount));
-    weights[focusIdx] += 0.25;
-    const total = weights.reduce((sum, value) => sum + value, 0);
-    return total > 0 ? weights.map((value) => value / total) : equal;
-  };
-  var buildWeightedIntegerSeries = (total, count, liveTI = null) => {
-    const safeTotal = Math.round(Number(total) || 0);
-    if (count <= 0) return [];
-    if (count === 1) return [safeTotal];
-    const sign = safeTotal < 0 ? -1 : 1;
-    const magnitude = Math.abs(safeTotal);
-    const avg2 = magnitude / count;
-    const liveRaw = Number.isFinite(Number(liveTI)) ? Math.round(Number(liveTI)) : sign * avg2;
-    const live = Math.abs(liveRaw);
-    const slope = Math.min(0.75, Math.abs(live - avg2) / Math.max(1, avg2 || 1));
-    const rawWeights = Array.from({ length: count }, (_, index) => {
-      const progress = count === 1 ? 1 : index / (count - 1);
-      const directional = live >= avg2 ? progress : 1 - progress;
-      return 1 + directional * slope;
-    });
-    const rawTotal = rawWeights.reduce((sum, weight) => sum + weight, 0) || 1;
-    const quotas = rawWeights.map((weight) => magnitude * weight / rawTotal);
-    const series = quotas.map((value) => Math.floor(value));
-    let remainder = magnitude - series.reduce((sum, value) => sum + value, 0);
-    quotas.map((value, index) => ({ index, frac: value - Math.floor(value) })).sort((a, b) => b.frac - a.frac).forEach(({ index }) => {
-      if (remainder <= 0) return;
-      series[index] += 1;
-      remainder -= 1;
-    });
-    return series.map((value) => value * sign);
-  };
-
-  // src/workflows/player-history/ti_asi.js
-  var keyToAbs2 = (key) => {
-    const [a, m] = String(key).split(".").map(Number);
-    return a * 12 + m;
-  };
-  var absToKey3 = (abs) => `${Math.floor(abs / 12)}.${abs % 12}`;
-  var asiOneMonthBack = (asi, ti, isGK) => TmLib.calcASIProjection({ player: { asi, isGK }, trainings: 1, avgTI: -ti }).newASI;
-  var fillOwnPlayerTIandASI = (player2) => {
-    var _a2, _b, _c;
-    const { monthKeys, records, graphData } = player2;
-    const currentKey = player2.ageMonthsString;
-    const currentAbs = keyToAbs2(currentKey);
-    const graphMonths = ((_a2 = graphData == null ? void 0 : graphData.TI) == null ? void 0 : _a2.length) ? graphData.TI.length - 1 : 0;
-    for (let i = 0; i < graphMonths; i++) {
-      const abs = currentAbs - graphMonths + 1 + i;
-      const key = absToKey3(abs);
-      if (records[key]) {
-        const ti = graphData.TI[i + 1];
-        records[key].TI = ti != null ? Number(ti) : null;
-      }
-    }
-    records[currentKey].ASI = player2.asi;
-    for (let i = monthKeys.length - 2; i >= 0; i--) {
-      const key = monthKeys[i];
-      const nextKey = monthKeys[i + 1];
-      const nextASI = (_b = records[nextKey]) == null ? void 0 : _b.ASI;
-      const nextTI = (_c = records[nextKey]) == null ? void 0 : _c.TI;
-      if (nextASI == null || nextTI == null) continue;
-      records[key].ASI = asiOneMonthBack(nextASI, nextTI, player2.isGK);
-    }
-  };
-  var fillForeignPlayerTIandASI = (player2) => {
-    var _a2, _b, _c, _d, _e;
-    const { monthKeys, records, DBPlayer } = player2;
-    const currentKey = player2.ageMonthsString;
-    const liveTI = (_a2 = player2.ti) != null ? _a2 : null;
-    records[currentKey].ASI = player2.asi;
-    const anchors = monthKeys.map((key) => {
-      var _a3, _b2, _c2;
-      const asi = key === currentKey ? player2.asi : (_c2 = (_b2 = (_a3 = DBPlayer == null ? void 0 : DBPlayer.records) == null ? void 0 : _a3[key]) == null ? void 0 : _b2.SI) != null ? _c2 : null;
-      return asi != null && Number.isFinite(Number(asi)) ? { key, abs: keyToAbs2(key), asi: Number(asi) } : null;
-    }).filter(Boolean);
-    for (let ai = 0; ai < anchors.length - 1; ai++) {
-      const startA = anchors[ai];
-      const endA = anchors[ai + 1];
-      const gapKeys = monthKeys.filter((k) => {
-        const abs = keyToAbs2(k);
-        return abs > startA.abs && abs <= endA.abs;
-      });
-      if (!gapKeys.length) continue;
-      const K = TmConst.ASI_WEIGHT_OUTFIELD;
-      const startBase = Math.pow(startA.asi * K, 1 / 7);
-      const endBase = Math.pow(endA.asi * K, 1 / 7);
-      const totalTI = Math.round((endBase - startBase) * (player2.isGK ? 11 / 14 : 1) * 10);
-      const series = buildWeightedIntegerSeries(totalTI, gapKeys.length, liveTI);
-      gapKeys.forEach((key, i) => {
-        records[key].TI = series[i];
-      });
-    }
-    for (let i = monthKeys.length - 2; i >= 0; i--) {
-      const key = monthKeys[i];
-      const nextKey = monthKeys[i + 1];
-      const nextASI = (_b = records[nextKey]) == null ? void 0 : _b.ASI;
-      const nextTI = (_c = records[nextKey]) == null ? void 0 : _c.TI;
-      if (nextASI == null || nextTI == null) continue;
-      records[key].ASI = asiOneMonthBack(nextASI, nextTI, player2.isGK);
-    }
-    if (monthKeys.length > 0) (_e = (_d = records[monthKeys[0]]).TI) != null ? _e : _d.TI = 0;
-  };
-  var fillTIandASI = (players) => {
-    var _a2, _b;
-    for (const player2 of players) {
-      if (!player2.needSync) continue;
-      if (player2.isOwnPlayer && ((_b = (_a2 = player2.graphData) == null ? void 0 : _a2.TI) == null ? void 0 : _b.length)) {
-        fillOwnPlayerTIandASI(player2);
-      } else {
-        fillForeignPlayerTIandASI(player2);
-      }
-    }
-    return players;
-  };
-
-  // src/workflows/player-history/skills.js
-  var { TRAINING_GROUPS_OUT: TRAINING_GROUPS_OUT4, TRAINING_GROUPS_GK: TRAINING_GROUPS_GK4, GRAPH_KEYS_OUT: GRAPH_KEYS_OUT4, GRAPH_KEYS_GK: GRAPH_KEYS_GK4, ASI_WEIGHT_OUTFIELD: ASI_WEIGHT_OUTFIELD3 } = TmConst;
-  var findSkillsAnchor = (monthKeys, records) => {
-    var _a2;
-    for (const key of monthKeys) {
-      const skills = (_a2 = records[key]) == null ? void 0 : _a2.skills;
-      if (Array.isArray(skills) && skills.some((v) => v != null)) return key;
-    }
-    return null;
-  };
-  var applyDecimalsToAnchor = (player2) => {
-    const { skillsAnchorKey, records, isGK } = player2;
-    if (!skillsAnchorKey) return;
-    const record = records[skillsAnchorKey];
-    if (!record) return;
-    const intSkills = record.skills;
-    const anchorASI = record.ASI;
-    if (!Array.isArray(intSkills) || anchorASI == null) return;
-    const skillCount = isGK ? 11 : 14;
-    record.skills = TmLib.calcSkillDecimalsSimple({
-      asi: anchorASI,
-      isGK,
-      skills: intSkills.slice(0, skillCount).map((v) => ({ value: v != null ? v : 0 }))
-    }).map((s6) => s6.value);
-  };
-  var balanceSkillsToASI = (newSkills, caps, floors, asi, isGK) => {
-    if (asi == null) return;
-    const hardCap = 20;
-    const base = Math.pow(asi * ASI_WEIGHT_OUTFIELD3, 1 / 7);
-    const expectedSum = isGK ? base / 14 * 11 : base;
-    let delta = expectedSum - newSkills.reduce((s6, v) => s6 + v, 0);
-    let passes = 0;
-    while (Math.abs(delta) > 1e-4 && passes++ < 20) {
-      const eligible = newSkills.map((v, si) => (delta > 0 ? v < Math.min(caps[si], hardCap) : v > floors[si]) ? si : -1).filter((si) => si >= 0);
-      if (!eligible.length) break;
-      const share = delta / eligible.length;
-      let remaining = 0;
-      for (const si of eligible) {
-        const effectiveCap = Math.min(caps[si], hardCap);
-        const candidate = newSkills[si] + share;
-        if (delta > 0 && candidate > effectiveCap) {
-          remaining += candidate - effectiveCap;
-          newSkills[si] = effectiveCap;
-        } else if (delta < 0 && candidate < floors[si]) {
-          remaining += candidate - floors[si];
-          newSkills[si] = floors[si];
-        } else {
-          newSkills[si] = candidate;
-        }
-      }
-      delta = remaining;
-    }
-  };
-  var fillSkillsBackward = (player2) => {
-    var _a2, _b;
-    const { monthKeys, records, isGK, training, skillsAnchorKey } = player2;
-    if (!skillsAnchorKey) return;
-    const anchorIdx = monthKeys.indexOf(skillsAnchorKey);
-    if (anchorIdx <= 0) return;
-    const GRP = isGK ? TRAINING_GROUPS_GK4 : TRAINING_GROUPS_OUT4;
-    const N = isGK ? 11 : 14;
-    const gw = normalizeTrainingWeights(training != null ? training : null, isGK);
-    const skillShare = new Array(N).fill(0);
-    for (let gi = 0; gi < GRP.length; gi++) {
-      const perSkill = gw[gi] / GRP[gi].length;
-      for (const si of GRP[gi]) {
-        if (si < N) skillShare[si] = perSkill;
-      }
-    }
-    let curSkills = records[skillsAnchorKey].skills.map(Number);
-    for (let i = anchorIdx - 1; i >= 0; i--) {
-      const key = monthKeys[i];
-      const nextKey = monthKeys[i + 1];
-      const ti = (_b = (_a2 = records[nextKey]) == null ? void 0 : _a2.TI) != null ? _b : 0;
-      const totalGain = ti / 10;
-      const hasKnown = records[key].skills != null && records[key].skills.some((v) => v != null);
-      const knownInts = hasKnown ? records[key].skills.map((v) => v != null ? Math.floor(Number(v)) : null) : null;
-      const caps = new Array(N);
-      const floors = new Array(N);
-      for (let si = 0; si < N; si++) {
-        if ((knownInts == null ? void 0 : knownInts[si]) != null) {
-          caps[si] = Math.min(knownInts[si] + 0.99, 20);
-          floors[si] = knownInts[si];
-        } else {
-          caps[si] = Math.min(curSkills[si], 20);
-          floors[si] = 1;
-        }
-      }
-      const newSkills = curSkills.map(
-        (v, si) => Math.max(floors[si], Math.min(caps[si], v - skillShare[si] * totalGain))
-      );
-      balanceSkillsToASI(newSkills, caps, floors, records[key].ASI, isGK);
-      records[key].skills = newSkills;
-      curSkills = newSkills;
-    }
-    const tableKeys = monthKeys.slice(0, anchorIdx + 1);
-    console.groupCollapsed(`[Step 7b] \u2190 ${player2.name} (${tableKeys.length} months to anchor)`);
-    console.log(player2.records);
-    console.groupEnd();
-  };
-  var fillSkillsForward = (player2) => {
-    var _a2, _b, _c;
-    const { monthKeys, records, isGK, training, skillsAnchorKey } = player2;
-    if (!skillsAnchorKey) return;
-    const anchorIdx = monthKeys.indexOf(skillsAnchorKey);
-    if (anchorIdx < 0 || anchorIdx >= monthKeys.length - 1) return;
-    const GRP = isGK ? TRAINING_GROUPS_GK4 : TRAINING_GROUPS_OUT4;
-    const N = isGK ? 11 : 14;
-    const gw = normalizeTrainingWeights(training != null ? training : null, isGK);
-    const defaultShare = new Array(N).fill(0);
-    for (let gi = 0; gi < GRP.length; gi++) {
-      const perSkill = gw[gi] / GRP[gi].length;
-      for (const si of GRP[gi]) {
-        if (si < N) defaultShare[si] = perSkill;
-      }
-    }
-    let curSkills = records[skillsAnchorKey].skills.map(Number);
-    for (let i = anchorIdx + 1; i < monthKeys.length; i++) {
-      const key = monthKeys[i];
-      const record = records[key];
-      if (!record) continue;
-      const ti = (_a2 = record.TI) != null ? _a2 : 0;
-      const totalGain = ti / 10;
-      const wc = record.weeklyChanges;
-      let gain = defaultShare.map((w) => w * totalGain);
-      if ((_b = wc == null ? void 0 : wc.skillChanges) == null ? void 0 : _b.length) {
-        const upIdxs = wc.skillChanges.map((c, idx) => (c === "one_up" || c === "part_up") && idx < N ? idx : -1).filter((idx) => idx >= 0);
-        const downIdxs = wc.skillChanges.map((c, idx) => (c === "one_down" || c === "part_down") && idx < N ? idx : -1).filter((idx) => idx >= 0);
-        if (upIdxs.length > 0 || downIdxs.length > 0) {
-          gain = new Array(N).fill(0);
-          if (upIdxs.length > 0 && downIdxs.length > 0) {
-            const nominalTotal = (upIdxs.length - downIdxs.length) * 0.1;
-            const excess = totalGain - nominalTotal;
-            if (excess >= 0) {
-              const upGainPer = 0.1 + excess / upIdxs.length;
-              for (const si of upIdxs) gain[si] = upGainPer;
-              for (const si of downIdxs) gain[si] = -0.1;
-            } else {
-              const downGainPer = -0.1 + excess / downIdxs.length;
-              for (const si of upIdxs) gain[si] = 0.1;
-              for (const si of downIdxs) gain[si] = downGainPer;
-            }
-          } else if (upIdxs.length > 0) {
-            const upGainPer = totalGain / upIdxs.length;
-            for (const si of upIdxs) gain[si] = upGainPer;
-          } else {
-            const downGainPer = totalGain / downIdxs.length;
-            for (const si of downIdxs) gain[si] = downGainPer;
-          }
-        }
-      }
-      const hasKnown = record.skills != null && record.skills.some((v) => v != null);
-      const knownInts = hasKnown ? record.skills.map((v) => v != null ? Math.floor(Number(v)) : null) : null;
-      let futureInts = null;
-      if (!hasKnown) {
-        for (let j = i + 1; j < monthKeys.length; j++) {
-          const fSkills = (_c = records[monthKeys[j]]) == null ? void 0 : _c.skills;
-          if (fSkills && fSkills.some((v) => v != null)) {
-            futureInts = fSkills.map((v) => v != null ? Math.floor(Number(v)) : null);
-            break;
-          }
-        }
-      }
-      const caps = new Array(N);
-      const floors = new Array(N);
-      for (let si = 0; si < N; si++) {
-        const curInt = Math.floor(curSkills[si]);
-        if ((knownInts == null ? void 0 : knownInts[si]) != null) {
-          caps[si] = knownInts[si] + 0.99;
-          floors[si] = knownInts[si];
-        } else if ((futureInts == null ? void 0 : futureInts[si]) != null) {
-          const futInt = futureInts[si];
-          caps[si] = ti >= 0 && futInt === curInt ? curInt + 0.99 : ti < 0 ? curInt + 0.99 : Infinity;
-          floors[si] = ti < 0 ? futInt : curInt;
-        } else {
-          caps[si] = Infinity;
-          floors[si] = 1;
-        }
-        if (curInt >= 20) {
-          caps[si] = 20;
-          floors[si] = 20;
-        }
-        caps[si] = Math.min(caps[si], 20);
-      }
-      const newSkills = curSkills.map(
-        (v, si) => Math.max(floors[si], Math.min(caps[si], v + gain[si]))
-      );
-      balanceSkillsToASI(newSkills, caps, floors, record.ASI, isGK);
-      record.skills = newSkills;
-      curSkills = newSkills;
-    }
-    const tableKeys = monthKeys.slice(anchorIdx);
-    console.groupCollapsed(`[Step 7c] \u2192 ${player2.name} (${tableKeys.length} months from anchor)`);
-    console.log(player2.records);
-    console.groupEnd();
-  };
-  var attachSkillsAnchor = (players) => {
-    for (const player2 of players) {
-      if (!player2.needSync) continue;
-      player2.skillsAnchorKey = findSkillsAnchor(player2.monthKeys, player2.records);
-      applyDecimalsToAnchor(player2);
-      fillSkillsBackward(player2);
-      fillSkillsForward(player2);
-    }
-    return players;
-  };
-
-  // src/workflows/player-history/routine.js
-  var attachRoutine = (players) => {
-    var _a2, _b, _c, _d;
-    for (const player2 of players) {
-      if (!player2.needSync) continue;
-      const { monthKeys, records } = player2;
-      if (!(monthKeys == null ? void 0 : monthKeys.length)) continue;
-      const n = monthKeys.length;
-      const anchors = [{ idx: 0, value: 0 }];
-      for (let i = 1; i < n; i++) {
-        const rou = (_a2 = records[monthKeys[i]]) == null ? void 0 : _a2.routine;
-        if (rou != null && Number.isFinite(Number(rou))) {
-          anchors.push({ idx: i, value: Number(rou) });
-        }
-      }
-      const firstRecordRoutine = (_b = records[monthKeys[0]]) == null ? void 0 : _b.routine;
-      if (firstRecordRoutine != null && Number.isFinite(Number(firstRecordRoutine))) {
-        anchors[0].value = Number(firstRecordRoutine);
-      }
-      const lastIdx = n - 1;
-      const existingLast = anchors.findIndex((a) => a.idx === lastIdx);
-      const lastValue = Number((_d = (_c = records[monthKeys[lastIdx]]) == null ? void 0 : _c.routine) != null ? _d : 0);
-      if (existingLast >= 0) {
-        anchors[existingLast].value = lastValue;
-      } else {
-        anchors.push({ idx: lastIdx, value: lastValue });
-      }
-      for (let ai = 0; ai < anchors.length - 1; ai++) {
-        const { idx: i1, value: v1 } = anchors[ai];
-        const { idx: i2, value: v2 } = anchors[ai + 1];
-        for (let i = i1; i <= i2; i++) {
-          const t = i2 > i1 ? (i - i1) / (i2 - i1) : 1;
-          const interpolated = Math.round((v1 + (v2 - v1) * t) * 10) / 10;
-          if (records[monthKeys[i]]) {
-            records[monthKeys[i]].routine = interpolated;
-          }
-        }
-      }
-    }
-    return players;
-  };
-
-  // src/workflows/player-history/r5rec.js
-  var attachR5Rec = (players) => {
-    var _a2;
-    for (const player2 of players) {
-      if (!player2.needSync) continue;
-      if (!Array.isArray(player2.positions)) continue;
-      const preferredPositions = player2.positions.filter((p) => p.preferred);
-      const positionsForRatings = preferredPositions.length ? preferredPositions : player2.positions;
-      for (const key of player2.monthKeys) {
-        const record = player2.records[key];
-        if (!record || !Array.isArray(record.skills)) continue;
-        const snapshot = {
-          skills: record.skills,
-          asi: record.ASI,
-          routine: (_a2 = record.routine) != null ? _a2 : 0
-        };
-        let maxR5 = null;
-        let maxRec = null;
-        for (const position of positionsForRatings) {
-          const r5 = Number(TmLib.calculatePlayerR5(position, snapshot));
-          const rec = Number(TmLib.calculatePlayerREC(position, snapshot));
-          if (Number.isFinite(r5) && (maxR5 === null || r5 > maxR5)) maxR5 = r5;
-          if (Number.isFinite(rec) && (maxRec === null || rec > maxRec)) maxRec = rec;
-        }
-        record.r5 = maxR5;
-        record.rec = maxRec;
-      }
-    }
-    return players;
-  };
-
-  // src/workflows/player-history/save.js
-  var saveHistoryRecords = async (players, { writeFullySynced = true } = {}) => {
-    const tasks = players.filter((p) => p.needSync && p.records).map(async (player2) => {
-      var _a2, _b;
-      const { DBPlayer, records, ageMonthsString } = player2;
-      const merged = { ...(DBPlayer == null ? void 0 : DBPlayer.records) || {}, ...records };
-      if (ageMonthsString && merged[ageMonthsString]) {
-        if (writeFullySynced) {
-          merged[ageMonthsString] = { ...merged[ageMonthsString], fullySynced: true };
-        } else {
-          const cur = { ...merged[ageMonthsString] };
-          delete cur.fullySynced;
-          merged[ageMonthsString] = cur;
-        }
-      }
-      const preferredPositions = (player2.positions || []).filter((p) => p.preferred);
-      await TmPlayerDB.set(player2.id, {
-        ...DBPlayer || {},
-        _v: (DBPlayer == null ? void 0 : DBPlayer._v) || 1,
-        meta: {
-          ...(DBPlayer == null ? void 0 : DBPlayer.meta) || {},
-          name: ((_a2 = DBPlayer == null ? void 0 : DBPlayer.meta) == null ? void 0 : _a2.name) || player2.name,
-          pos: ((_b = DBPlayer == null ? void 0 : DBPlayer.meta) == null ? void 0 : _b.pos) || (preferredPositions.length ? preferredPositions.map((p) => p.position).join(", ") : (player2.positions || []).map((p) => p.position).join(", "))
-        },
-        records: merged
-      });
-    });
-    console.log(`Saving ${tasks.length} players to DB...`);
-    await Promise.all(tasks);
-  };
-
-  // src/workflows/player-history/sync-pipeline.js
-  var runSyncPipeline = async (players, onProgress, { mode = "full" } = {}) => {
-    var _a2;
-    const withSync = await attachSyncStatus(players, { mode });
-    if (!withSync.filter((p) => p.needSync).length) return withSync;
-    const withData = await buildHistorySkeletons(withSync, onProgress);
-    fillTIandASI(withData);
-    attachSkillsAnchor(withData);
-    attachRoutine(withData);
-    const needSync = withData.filter((p) => p.needSync);
-    for (const player2 of needSync) {
-      attachR5Rec([player2]);
-      if (mode === "full") {
-        const currentRecord = (_a2 = player2.records) == null ? void 0 : _a2[player2.ageMonthsString];
-        if (currentRecord) currentRecord.fullySynced = true;
-      }
-    }
-    await saveHistoryRecords(withData, { writeFullySynced: mode === "full" });
-    return withData;
-  };
 
   // src/pages/player.js
   function initPlayerPage(main2) {
@@ -45545,12 +45755,12 @@ order:initial
     const PLAYER_ID = urlMatch[1];
     let nativeSidebarSnapshot = null;
     let player2 = null;
-    const injectCSS5 = () => {
+    const injectCSS4 = () => {
       injectTmPageLayoutStyles();
       TmPlayerStyles.inject();
     };
     const bootstrapShell = () => {
-      injectCSS5();
+      injectCSS4();
       ensurePlayerLayout();
     };
     const ensureRailSlot = (rail, slotId, { prepend = false } = {}) => {
@@ -45646,7 +45856,7 @@ order:initial
       player2 = data;
       renderPlayerChrome();
       fetchScoutData();
-      TmTabsMod.mount({ player: player2, injectCSS: injectCSS5 });
+      TmTabsMod.mount({ player: player2, injectCSS: injectCSS4 });
     };
     bootstrapShell();
     TmPlayerModel.fetchPlayerTooltip(PLAYER_ID).then(async (data) => {
@@ -46136,7 +46346,7 @@ order:initial
       const squad = state5.squads.main;
       if (!((_a2 = squad.rawPlayers) == null ? void 0 : _a2.length) || squad.loading) return;
       squad.loading = true;
-      render17();
+      render16();
       const syncBar = TmProgress.progressBar({ title: "\u26A1 Force resyncing players" });
       try {
         const resynced = await runSyncPipeline(squad.rawPlayers, (done, total) => {
@@ -46150,7 +46360,7 @@ order:initial
         squad.loadError = (err == null ? void 0 : err.message) || "Resync failed.";
       }
       squad.loading = false;
-      render17();
+      render16();
     };
     const renderControls = () => {
       var _a2;
@@ -46162,7 +46372,7 @@ order:initial
         label: "Main Squad",
         onChange: (event) => {
           state5.squads.main.visible = !!event.target.checked;
-          render17();
+          render16();
         }
       });
       const reserveToggle = TmCheckbox.checkboxField({
@@ -46170,7 +46380,7 @@ order:initial
         label: "Reserves",
         onChange: (event) => {
           state5.squads.reserves.visible = !!event.target.checked;
-          render17();
+          render16();
         }
       });
       row.appendChild(mainToggle);
@@ -46241,7 +46451,7 @@ order:initial
       if (showMain) renderTeamPanel(visiblePlayers.filter((p) => !p.b), "A Team");
       if (showReserves) renderTeamPanel(visiblePlayers.filter((p) => p.b), "B Team");
     };
-    const render17 = () => {
+    const render16 = () => {
       renderControls();
       renderSections();
     };
@@ -46284,7 +46494,7 @@ order:initial
       const squad = state5.squads.main;
       squad.loading = true;
       squad.loadError = "";
-      render17();
+      render16();
       const skillChangesMap = await waitForSkillChanges(document);
       console.log("[Step 1] Skill changes parsed from DOM \u2014 total:", skillChangesMap);
       const mainClubId = String(((_a2 = window.SESSION) == null ? void 0 : _a2.main_id) || "").trim();
@@ -46294,16 +46504,16 @@ order:initial
         bTeamId ? fetchRawPlayers(bTeamId) : Promise.resolve([])
       ]);
       const reserveIds = new Set(reservePlayers.map((p) => p.id));
-      const allPlayers3 = [...mainPlayers, ...reservePlayers].map((player2) => ({
+      const allPlayers2 = [...mainPlayers, ...reservePlayers].map((player2) => ({
         ...player2,
         b: reserveIds.has(player2.id) ? true : void 0,
         weeklyChanges: skillChangesMap.get(player2.id) || null
       }));
-      console.group("[Step 2] Players loaded \u2014 total:", allPlayers3.length);
-      console.log(allPlayers3);
+      console.group("[Step 2] Players loaded \u2014 total:", allPlayers2.length);
+      console.log(allPlayers2);
       console.groupEnd();
       let syncBar = null;
-      const allPlayersWithData = await runSyncPipeline(allPlayers3, (done, total) => {
+      const allPlayersWithData = await runSyncPipeline(allPlayers2, (done, total) => {
         if (!syncBar) syncBar = TmProgress.progressBar({ title: "\u26A1 Syncing players" });
         syncBar.update(done, total, `Syncing ${done}/${total}`);
       });
@@ -46314,13 +46524,13 @@ order:initial
       squad.loaded = true;
       squad.syncMessage = null;
       squad.loading = false;
-      render17();
+      render16();
     };
-    render17();
+    render16();
     loadMainSquad().catch((error) => {
       state5.squads.main.loading = false;
       state5.squads.main.loadError = (error == null ? void 0 : error.message) || "Main squad load failed.";
-      render17();
+      render16();
     });
   }
 
@@ -46690,11 +46900,11 @@ order:initial
       "#ffb74d"
     ];
     const getColor6 = TmUtils.getColor;
-    const htmlOf8 = (node) => (node == null ? void 0 : node.outerHTML) || "";
-    const buttonHtml14 = (opts) => htmlOf8(TmUI.button(opts));
-    const checkboxHtml2 = (opts) => htmlOf8(TmUI.checkbox(opts));
-    const checkboxFieldHtml = (opts) => htmlOf8(TmUI.checkboxField(opts));
-    const inputHtml4 = (opts) => htmlOf8(TmUI.input({ size: "full", density: "compact", tone: "overlay", grow: true, ...opts }));
+    const htmlOf7 = (node) => (node == null ? void 0 : node.outerHTML) || "";
+    const buttonHtml13 = (opts) => htmlOf7(TmUI.button(opts));
+    const checkboxHtml2 = (opts) => htmlOf7(TmUI.checkbox(opts));
+    const checkboxFieldHtml = (opts) => htmlOf7(TmUI.checkboxField(opts));
+    const inputHtml4 = (opts) => htmlOf7(TmUI.input({ size: "full", density: "compact", tone: "overlay", grow: true, ...opts }));
     const getPositionIndex2 = TmLib.getPositionIndex;
     const posGroupColor = (posIdx) => TmPosition.groupColor(posIdx);
     const posLabel2 = (posIdx) => TmPosition.groupLabel(posIdx);
@@ -46829,7 +47039,7 @@ order:initial
     const createDialog = () => {
       const ov = document.createElement("div");
       ov.className = "tmrc-overlay";
-      const issuesButton = buttonHtml14({
+      const issuesButton = buttonHtml13({
         id: "tmrc-issues-btn",
         label: "\u26A0 Sync Issues",
         title: "Players with incomplete sync",
@@ -46837,15 +47047,15 @@ order:initial
         size: "xs",
         attrs: { "data-tone": "warn" }
       });
-      const closeButton = buttonHtml14({
+      const closeButton = buttonHtml13({
         id: "tmrc-close",
         icon: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
         title: "Close",
         variant: "icon"
       });
-      const zoomInButton = buttonHtml14({ id: "tmrc-zoom-in", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>', title: "Zoom In", color: "secondary", size: "xs" });
-      const zoomOutButton = buttonHtml14({ id: "tmrc-zoom-out", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>', title: "Zoom Out", color: "secondary", size: "xs" });
-      const zoomResetButton = buttonHtml14({ id: "tmrc-zoom-reset", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.12"/></svg>', title: "Reset Zoom", color: "secondary", size: "xs" });
+      const zoomInButton = buttonHtml13({ id: "tmrc-zoom-in", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>', title: "Zoom In", color: "secondary", size: "xs" });
+      const zoomOutButton = buttonHtml13({ id: "tmrc-zoom-out", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>', title: "Zoom Out", color: "secondary", size: "xs" });
+      const zoomResetButton = buttonHtml13({ id: "tmrc-zoom-reset", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.12"/></svg>', title: "Reset Zoom", color: "secondary", size: "xs" });
       ov.innerHTML = `
             <div class="tmrc-modal">
                 <div class="tmrc-head">
@@ -46951,7 +47161,7 @@ order:initial
       const container = overlay.querySelector("#tmrc-filters");
       let h = '<span class="tmrc-filter-label">Position:</span>';
       POS_GROUPS.forEach((g) => {
-        h += buttonHtml14({
+        h += buttonHtml13({
           label: g.label,
           color: currentFilter === g.key ? "lime" : "secondary",
           size: "xs",
@@ -47000,8 +47210,8 @@ order:initial
       const searchLower = legendSearch.toLowerCase();
       const filteredLegend = searchLower ? allInLegend.filter((s6) => s6.name.toLowerCase().includes(searchLower)) : allInLegend;
       const filteredChecked = filteredLegend.filter((s6) => s6.visible).length;
-      const selectAllButton = buttonHtml14({ id: "tmrc-sel-all", label: "All", title: "Select All", color: "secondary", size: "xs" });
-      const selectNoneButton = buttonHtml14({ id: "tmrc-sel-none", label: "None", title: "Deselect All", color: "secondary", size: "xs" });
+      const selectAllButton = buttonHtml13({ id: "tmrc-sel-all", label: "All", title: "Select All", color: "secondary", size: "xs" });
+      const selectNoneButton = buttonHtml13({ id: "tmrc-sel-none", label: "None", title: "Deselect All", color: "secondary", size: "xs" });
       let h = `<div class="tmrc-legend-hdr">
             <span class="tmrc-legend-hdr-title">Players (${filteredChecked}/${filteredLegend.length}${searchLower ? " / " + totalCount : ""})</span>
             <div class="tmrc-legend-hdr-btns">
@@ -49828,7 +50038,7 @@ order:initial
       }
       return col;
     }
-    function render17() {
+    function render16() {
       const content = document.createElement("div");
       const body = document.createElement("div");
       body.className = "tmtc-co-dialog-body";
@@ -49954,7 +50164,7 @@ order:initial
       destroy();
       onSaved == null ? void 0 : onSaved();
     }
-    render17();
+    render16();
   }
   async function mountTacticsOrders(container, data, opts = {}) {
     const { reserves = 0, national = 0, miniGameId = 0 } = opts;
@@ -50114,7 +50324,7 @@ order:initial
   };
 
   // src/pages/tactics.js
-  var mountedMain5 = null;
+  var mountedMain4 = null;
   var mountedPath2 = "";
   var tacticsSyncListener = null;
   function getBTeamClubId2() {
@@ -50145,8 +50355,8 @@ order:initial
     var _a2, _b, _c, _d, _e, _f;
     if (!/^\/tactics(?:\/reserves)?\/?$/i.test(window.location.pathname)) return;
     if (!main2 || !main2.isConnected) return;
-    if (mountedMain5 === main2 && mountedPath2 === window.location.pathname && ((_a2 = main2.querySelector(".tmtc-page")) == null ? void 0 : _a2.isConnected)) return;
-    mountedMain5 = main2;
+    if (mountedMain4 === main2 && mountedPath2 === window.location.pathname && ((_a2 = main2.querySelector(".tmtc-page")) == null ? void 0 : _a2.isConnected)) return;
+    mountedMain4 = main2;
     mountedPath2 = window.location.pathname;
     const teamMode = getTacticsTeamMode(window.location.pathname);
     const bTeamClubId = getBTeamClubId2();

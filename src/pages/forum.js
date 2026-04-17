@@ -5,11 +5,10 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmPlayerModel } from '../models/player.js';
 import { TmPlayerTooltip } from '../components/player/tooltip/tm-player-tooltip.js';
+import { TmStars } from '../components/shared/tm-stars.js';
 
 export function initForumPage(main) {
-    console.log('Initializing forum page');
     if (!main || !main.isConnected) return;
-    console.log('Initializing forum page 2');
 
     const clean = (v) => String(v || '').replace(/\s+/g, ' ').trim();
     const esc = (v) => String(v || '')
@@ -468,9 +467,6 @@ export function initForumPage(main) {
             };
         }).filter(t => t?.title);
 
-        const liveFormL = main.querySelector('#forum_post_form');
-        if (liveFormL) liveFormL.remove();
-
         injectStyles();
         main.classList.add('tmvu-forum-page', 'tmu-page-layout-2col', 'tmu-page-density-compact', 'tmu-page-stack-early');
         main.innerHTML = '';
@@ -504,8 +500,18 @@ export function initForumPage(main) {
         });
         col.appendChild(topicsHost.firstElementChild || topicsHost);
 
-        const composeCard = buildForumCard(liveFormL, 'Post New Topic');
-        if (composeCard) col.appendChild(composeCard);
+        const tryAppendCompose = () => {
+            const f = document.querySelector('#forum_post_form');
+            if (!f) return false;
+            f.remove();
+            const card = buildForumCard(f, 'Post New Topic');
+            if (card) col.appendChild(card);
+            return true;
+        };
+        if (!tryAppendCompose()) {
+            const obs = new MutationObserver(() => { if (tryAppendCompose()) obs.disconnect(); });
+            obs.observe(document.body || document.documentElement, { childList: true, subtree: true });
+        }
 
         main.appendChild(col);
     }
@@ -520,8 +526,6 @@ export function initForumPage(main) {
         const pagerSummary = clean(topicPagesEl?.querySelector('.subtle')?.textContent || '');
         const pagerLinks = parsePager(forumEl, '.topic_pages');
         const topicTitle = clean(forumEl.querySelector('h1.mega_headline')?.textContent || 'Thread');
-        const liveFormT = main.querySelector('#forum_post_form');
-        if (liveFormT) liveFormT.remove();
 
         const posts = Array.from(forumEl.querySelectorAll('.topic_post')).map(postEl => {
             const userEl = postEl.querySelector('.user');
@@ -663,47 +667,17 @@ export function initForumPage(main) {
 
         // -- Resolve @playerID text ? named <a player_link> -----------------
         (function resolvePlayerMentions() {
-            // Fetch player data, normalize, render name + fractional SVG stars + compact stats inline
-            const starsSvg = (rec, pid) => {
-                const D = 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z';
-                const full = Math.min(5, Math.max(0, rec || 0));
-                const fullN = Math.floor(full);
-                const frac = full - fullN;
-                let s = '';
-                for (let i = 1; i <= 5; i++) {
-                    if (i <= fullN) {
-                        s += `<svg width="13" height="13" viewBox="0 0 24 24"><path d="${D}" fill="var(--tmu-text-highlight)"/></svg>`;
-                    } else if (i === fullN + 1 && frac >= 0.1) {
-                        const pct = Math.round(frac * 100);
-                        const gid = `tmvupg_${pid}_${i}`;
-                        s += `<svg width="13" height="13" viewBox="0 0 24 24"><defs><linearGradient id="${gid}" x1="0" x2="1" y1="0" y2="0"><stop offset="${pct}%" stop-color="var(--tmu-text-highlight)"/><stop offset="${pct}%" stop-color="var(--tmu-border-soft)"/></linearGradient></defs><path d="${D}" fill="url(#${gid})"/></svg>`;
-                    } else {
-                        s += `<svg width="13" height="13" viewBox="0 0 24 24"><path d="${D}" fill="none" stroke="var(--tmu-text-dim)" stroke-width="1.5"/></svg>`;
-                    }
-                }
-                return `<span class="tmvu-pstars">${s}</span>`;
-            };
             const fetchAndEnrich = (pid, anchor) => {
-                const fd = new FormData();
-                fd.append('player_id', pid);
-                fetch('/ajax/tooltip.ajax.php', { method: 'POST', body: fd, credentials: 'include' })
-                    .then(r => r.ok ? r.json() : null)
-                    .then(data => {
-                        if (!data?.player) return;
-                        const p = data.player;
-                        const name = p.player_name || p.name || '';
-                        if (!name) return;
-                        const retired = p.club_id == null;
-                        const starsHtml = p.rec != null ? starsSvg(p.rec, pid) : '';
-                        const age = Number(p.age);
-                        const months = Number(p.month ?? p.months);
-                        const hasAge = Number.isFinite(age) && Number.isFinite(months);
-                        const ageHtml = !retired && hasAge ? `<span class="tmvu-pinfo">${age}.${months}</span> ` : '';
-                        const r5Value = Number(p.r5);
-                        const r5Html = !retired && Number.isFinite(r5Value) ? ` <span class="tmvu-pinfo">${r5Value.toFixed(2)}</span>` : '';
-                        anchor.innerHTML = starsHtml + ageHtml + esc(name) + r5Html;
-                    })
-                    .catch(() => { });
+                TmPlayerModel.fetchTooltipCached(pid).then(player => {
+                    if (!player) return;
+                    const name = player.name || '';
+                    if (!name) return;
+                    const retired = !player.club_id;
+                    const starsHtml = player.rec != null ? TmStars.recommendation(player.rec, 'tmvu-pstars') : '';
+                    const ageHtml = !retired && player.ageMonthsString ? `<span class="tmvu-pinfo">${player.ageMonthsString}</span> ` : '';
+                    const r5Html = !retired && player.r5 != null ? ` <span class="tmvu-pinfo">${Number(player.r5).toFixed(2)}</span>` : '';
+                    anchor.innerHTML = starsHtml + ageHtml + esc(name) + r5Html;
+                }).catch(() => { });
             };
 
             col.querySelectorAll('.tmvu-forum-post-content').forEach(content => {
@@ -713,7 +687,7 @@ export function initForumPage(main) {
                     if (!m) return;
                     const pid = m[1];
                     if (!a.getAttribute('player_link')) a.setAttribute('player_link', pid);
-                    if (/@player\d+/.test(a.textContent)) fetchAndEnrich(pid, a);
+                    fetchAndEnrich(pid, a);
                 });
 
                 // Step 2: bare @playerID or [player=ID] text nodes not inside any anchor
@@ -756,8 +730,8 @@ export function initForumPage(main) {
             const pid = anchor.getAttribute('player_link');
             if (!pid) return;
             _playerTipTimer = setTimeout(() => {
-                TmPlayerModel.fetchPlayerTooltip(pid).then(data => {
-                    if (data?.player) TmPlayerTooltip.show(anchor, data.player);
+                TmPlayerModel.fetchTooltipCached(pid).then(player => {
+                    if (player) TmPlayerTooltip.show(anchor, player);
                 }).catch(() => { });
             }, 200);
         });
@@ -768,8 +742,18 @@ export function initForumPage(main) {
             TmPlayerTooltip.hide();
         });
 
-        const replyCard = buildForumCard(liveFormT, 'Reply');
-        if (replyCard) col.appendChild(replyCard);
+        const tryAppendReply = () => {
+            const f = document.querySelector('#forum_post_form');
+            if (!f) return false;
+            f.remove();
+            const card = buildForumCard(f, 'Reply');
+            if (card) col.appendChild(card);
+            return true;
+        };
+        if (!tryAppendReply()) {
+            const obs = new MutationObserver(() => { if (tryAppendReply()) obs.disconnect(); });
+            obs.observe(document.body || document.documentElement, { childList: true, subtree: true });
+        }
 
         main.appendChild(col);
     }

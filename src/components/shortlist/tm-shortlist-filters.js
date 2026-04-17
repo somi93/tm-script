@@ -19,6 +19,7 @@ const NUMERIC_FILTER_IDS = [
   'tmsl-agemin', 'tmsl-agemax', 'tmsl-r5min', 'tmsl-r5max',
   'tmsl-recmin', 'tmsl-recmax', 'tmsl-timin', 'tmsl-timax'
 ];
+const TEXT_FILTER_IDS = ['tmsl-name'];
 
 function renderToggleGroup(items, opts) {
   const baseCls = opts.baseCls;
@@ -38,9 +39,13 @@ function renderToggleGroup(items, opts) {
      * @returns {string} HTML string
      */
     function buildFilters(state, { loadHtml = '' } = {}) {
-        const { fPos, fSide, fAgeMin, fAgeMax, fR5Min, fR5Max, fRecMin, fRecMax, fTiMin, fTiMax } = state;
+        const { fPos, fSide, fName, fAgeMin, fAgeMax, fR5Min, fR5Max, fRecMin, fRecMax, fTiMin, fTiMax } = state;
         return `
 <div id="tmsl-filters">
+  <div class="tmsl-fgroup" style="flex:0 0 auto">
+    ${TmUI.input({ id: 'tmsl-name', type: 'text', size: 'sm', density: 'regular', value: fName || '', placeholder: 'Search name…', attrs: { style: 'width:130px' } }).outerHTML}
+  </div>
+  <div class="tmsl-fsep"></div>
   ${renderToggleGroup(POSITION_FILTERS, { baseCls: 'tmsl-pos-btn', dataAttr: 'group', isActive: key => fPos.has(key) })}
   ${renderToggleGroup(SIDE_FILTERS, { baseCls: 'tmsl-side-btn', dataAttr: 'side', isActive: key => fSide.has(key) })}
   <div class="tmsl-fsep"></div>
@@ -100,8 +105,17 @@ function renderToggleGroup(items, opts) {
     panel.addEventListener('change', event => {
       const filterHandlers = panel._tmslFilterHandlers;
       const filterId = event.target?.id;
-      if (!filterHandlers || !NUMERIC_FILTER_IDS.includes(filterId)) return;
-      filterHandlers.onNumFilter(filterId, event.target.value);
+      if (!filterHandlers) return;
+      if (NUMERIC_FILTER_IDS.includes(filterId)) {
+        filterHandlers.onNumFilter(filterId, event.target.value);
+      }
+    });
+
+    panel.addEventListener('input', event => {
+      const filterHandlers = panel._tmslFilterHandlers;
+      const filterId = event.target?.id;
+      if (!filterHandlers || !TEXT_FILTER_IDS.includes(filterId)) return;
+      filterHandlers.onTextFilter(filterId, event.target.value);
     });
   }
 
@@ -112,7 +126,11 @@ function renderToggleGroup(items, opts) {
      * @returns {boolean}
      */
     function playerMatchesFilters(p, state) {
-        const { fPos, fSide, fAgeMin, fAgeMax, fR5Min, fR5Max, fRecMin, fRecMax, fTiMin, fTiMax } = state;
+        const { fPos, fSide, fName, fAgeMin, fAgeMax, fR5Min, fR5Max, fRecMin, fRecMax, fTiMin, fTiMax } = state;
+
+        if (fName && fName.trim()) {
+            if (!String(p.name || '').toLowerCase().includes(fName.trim().toLowerCase())) return false;
+        }
 
         if (fPos.size > 0) {
             const groups = new Set((p.positions || []).map(pp => TmPosition.filterGroup(pp.id)));
@@ -128,7 +146,7 @@ function renderToggleGroup(items, opts) {
             }));
             if (![...fSide].some(s => sides.has(s))) return false;
         }
-        const ageFloat = p.age + (p.months || 0) / 12;
+        const ageFloat = p.age + (p.month || 0) / 12;
         if (ageFloat < fAgeMin || ageFloat > fAgeMax) return false;
         if (fR5Min  !== '' && p.r5  < parseFloat(fR5Min))  return false;
         if (fR5Max  !== '' && p.r5  > parseFloat(fR5Max))  return false;

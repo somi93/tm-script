@@ -90,7 +90,7 @@ import { TmPlayersTable } from '../shared/tm-players-table.js';
         TmPlayersTable.mount(tmp, players, {
             sortKey: sortCol, sortDir,
             nameDecorator: p => {
-                const noteIcon = p.txt ? `<span class="tmsl-note-icon" data-note="${p.txt.replace(/"/g, '&quot;')}">📋</span>` : '';
+                const noteIcon = p.note ? `<span class="tmsl-note-icon" data-note="${p.note.replace(/"/g, '&quot;')}">📋</span>` : '';
                 const pendingIcon = p.pending ? ' <span class="tmsl-pending-icon">⏳</span>' : '';
                 return noteIcon + pendingIcon;
             },

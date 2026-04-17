@@ -28,6 +28,7 @@ export const saveHistoryRecords = async (players, { writeFullySynced = true } = 
             await TmPlayerDB.set(player.id, {
                 ...(DBPlayer || {}),
                 _v: DBPlayer?._v || 1,
+                lastSeen: Date.now(),
                 meta: {
                     ...(DBPlayer?.meta || {}),
                     name: DBPlayer?.meta?.name || player.name,

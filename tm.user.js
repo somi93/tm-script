@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TM Scripts
 // @namespace    https://trophymanager.com
-// @version      2.0.2191.1776367408716
+// @version      2.0.2208.1776385967965
 // @description  TrophyManager enhancement suite
 // @match        https://trophymanager.com/*
 // @grant        none
@@ -19,7 +19,7 @@
 
     if (window.top !== window.self) return;
 
-    const BUNDLE_URL = "file://H:/projects/Moji/tmscripts/dist/tm-bundle.js?v=0120ce07";
+    const BUNDLE_URL = "file://H:/projects/Moji/tmscripts/dist/tm-bundle.js?v=02c95127";
     const PREBOOT_STYLE_ID = 'tmvu-player-preboot-style';
 
     const isPlayerPage = /^\/players\/\d+\/?$/i.test(window.location.pathname);
