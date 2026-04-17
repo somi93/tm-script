@@ -12,7 +12,7 @@ const TMU_TABLE_CSS = `
 .tmu-tbl thead th.sortable{cursor:pointer;user-select:none}
 .tmu-tbl thead th.sortable:hover{color:var(--tmu-text-main)}
 .tmu-tbl thead th.sort-active{color:var(--tmu-text-main)}
-.tmu-tbl tbody td{padding:var(--tmu-tbl-body-py) var(--tmu-tbl-body-px);border-bottom:1px solid var(--tmu-border-faint);color:var(--tmu-text-main);font-variant-numeric:tabular-nums;text-align:left}
+.tmu-tbl tbody td{padding:var(--tmu-tbl-body-py) var(--tmu-tbl-body-px);border-bottom:1px solid var(--tmu-border-faint);color:var(--tmu-text-main);font-variant-numeric:tabular-nums;}
 .tmu-tbl tbody td.r{text-align:right} .tmu-tbl tbody td.c{text-align:center}
 .tmu-tbl tbody tr:nth-child(odd){background:var(--tmu-color-accent)}
 .tmu-tbl tbody tr:nth-child(even){background:var(--tmu-color-base)}

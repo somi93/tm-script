@@ -29,8 +29,8 @@ if (!document.getElementById('tsa-league-stats-style')) {
             .tsa-stats-me { background: var(--tmu-success-fill-faint) !important; box-shadow: inset 3px 0 0 var(--tmu-success); }
             .tsa-stats-me .tsa-stats-name a { color: var(--tmu-accent); }
             .tsa-stats-me .tsa-stats-val { color: var(--tmu-success); }
-            .tsa-tr-rec { text-align: center; }
-            .tsa-tr-count { display: inline-block; margin-left: var(--tmu-space-sm); background: var(--tmu-surface-accent-soft); color: var(--tmu-text-strong); border-radius: var(--tmu-space-sm); padding: 0 var(--tmu-space-sm); font-size: var(--tmu-font-xs); }
+            .tsa-tr-rec { text-align: right; }
+            .tsa-tr-count { display: inline-block; margin-left: var(--tmu-space-sm); background: var(--tmu-text-inverse); color: var(--tmu-text-disabled); border-radius: var(--tmu-space-sm); padding: 0 var(--tmu-space-sm); font-size: var(--tmu-font-xs); }
             .tsa-tr-totals {
                 display: flex; gap: var(--tmu-space-lg); justify-content: flex-end;
                 padding: var(--tmu-space-sm) var(--tmu-space-md); font-size: var(--tmu-font-xs); color: var(--tmu-text-faint);
@@ -118,10 +118,14 @@ const fetchClubStats = (stat, season, onDone) => {
         .catch(() => onDone(null));
 };
 
-const parseTransfers = (html) => {
+/**
+ * Parse a single club's /history/club/transfers/{clubId}/{season}/ page.
+ * Each row gets leagueClubId/leagueClubName = the league club we fetched for,
+ * and clubId/clubName = the counterparty (seller for bought, buyer for sold).
+ */
+const parseClubTransfers = (html, leagueClubId, leagueClubName, isMe) => {
     const doc = new DOMParser().parseFromString(html, 'text/html');
-    const myId = typeof SESSION !== 'undefined' ? String(SESSION.id) : null;
-    const result = { bought: [], sold: [], totals: {} };
+    const result = { bought: [], sold: [] };
     let boughtTable = null, soldTable = null;
     doc.querySelectorAll('h3').forEach(h3 => {
         const text = h3.textContent.trim().toLowerCase();
@@ -142,46 +146,93 @@ const parseTransfers = (html) => {
             const recTd = tds[1];
             const clubA = tds[2].querySelector('a[club_link]');
             if (!clubA) return;
-            const recVal = parseFloat(recTd.getAttribute('sortvalue')) || 0;
             const isRetired = recTd.textContent.trim() === 'Retired';
+            let stars = 0;
+            recTd.querySelectorAll('img').forEach(img => {
+                const src = img.getAttribute('src') || '';
+                if (src.includes('half_star')) stars += 0.5;
+                else if (src.includes('star') && !src.includes('dark_star')) stars += 1;
+            });
+            const recVal = stars * 3.38;
             const price = parseFloat(tds[3].textContent.trim().replace(/,/g, '')) || 0;
             const clubId = clubA.getAttribute('club_link');
+            if (!clubId) return; // skip total rows
             rows.push({
                 name: playerA.textContent.trim(),
                 playerId: playerA.getAttribute('player_link'),
                 rec: recVal, isRetired,
-                clubName: clubA.textContent.trim(),
-                clubId, price,
-                isMe: myId && clubId === myId
+                clubId, clubName: clubA.textContent.trim(),
+                leagueClubId, leagueClubName,
+                price, isMe,
             });
         });
         return rows;
     };
     result.bought = parseRows(boughtTable);
-    result.sold = parseRows(soldTable);
-    doc.querySelectorAll('td').forEach(td => {
-        const strong = td.querySelector('strong');
-        if (!strong) return;
-        const text = td.textContent;
-        if (text.includes('Total Bought:')) result.totals.bought = strong.textContent.trim();
-        else if (text.includes('Total Sold:')) result.totals.sold = strong.textContent.trim();
-        else if (text.includes('Balance:')) result.totals.balance = strong.textContent.trim();
-    });
+    result.sold   = parseRows(soldTable);
     return result;
 };
 
-const fetchTransfers = (season, onDone) => {
+/**
+ * Resolve the list of clubs for a given season.
+ * For the current season, use standingsRows from context (already in DOM).
+ * For a past season, fetch the league standings page and parse club links.
+ */
+const fetchClubsForSeason = (season, onDone) => {
+    const s = window.TmLeagueCtx;
+    const currentSeason = typeof SESSION !== 'undefined' ? SESSION.season : null;
+    if (!season || season === currentSeason) {
+        onDone(s.standingsRows || []);
+        return;
+    }
+    const cacheKey = `clubs|${season}`;
+    if (s.statsCache[cacheKey]) { onDone(s.statsCache[cacheKey]); return; }
+    const { panelCountry, panelDivision, panelGroup } = s;
+    if (!panelCountry || !panelDivision) { onDone(s.standingsRows || []); return; }
+    const group = panelGroup || '1';
+    window.fetch(`/history/league/${panelCountry}/${panelDivision}/${group}/standings/${season}/`)
+        .then(r => r.text())
+        .then(html => {
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            const clubs = [];
+            doc.querySelectorAll('table.border_bottom tr').forEach(tr => {
+                const a = tr.querySelector('a[club_link]');
+                if (!a) return;
+                clubs.push({ clubId: a.getAttribute('club_link'), clubName: a.textContent.trim() });
+            });
+            s.statsCache[cacheKey] = clubs;
+            onDone(clubs);
+        })
+        .catch(() => onDone(s.standingsRows || []));
+};
+
+/**
+ * Fetch transfer data for every club in the league for that season in parallel.
+ * Because we fetch each club's own page, intra-league transfers appear
+ * naturally in both the buyer's bought list and the seller's sold list —
+ * no extra player-history calls needed.
+ */
+const fetchAllClubTransfers = (season, onDone) => {
     const s = window.TmLeagueCtx;
     const key = `transfers|${season}`;
     if (s.statsCache[key]) { onDone(s.statsCache[key]); return; }
-    window.fetch(`/history/league/${s.panelCountry}/${s.panelDivision}/${s.panelGroup}/transfers/${season}/`)
-        .then(r => r.text())
-        .then(html => {
-            const data = parseTransfers(html);
-            s.statsCache[key] = data;
-            onDone(data);
-        })
-        .catch(() => onDone(null));
+    const myId = typeof SESSION !== 'undefined' ? String(SESSION.id || SESSION.main_id || '') : '';
+    fetchClubsForSeason(season, clubs => {
+    if (!clubs.length) { onDone(null); return; }
+    Promise.all(clubs.map(club =>
+        window.fetch(`/history/club/transfers/${club.clubId}/${season}/`)
+            .then(r => r.text())
+            .then(html => parseClubTransfers(html, club.clubId, club.clubName, club.clubId === myId))
+            .catch(() => ({ bought: [], sold: [] }))
+    )).then(results => {
+        const data = {
+            bought: results.flatMap(r => r.bought),
+            sold:   results.flatMap(r => r.sold),
+        };
+        s.statsCache[key] = data;
+        onDone(data);
+    });
+    });
 };
 
 const renderPlayerStatsTab = () => {
@@ -272,11 +323,12 @@ const renderTransfersTab = () => {
         : (typeof SESSION !== 'undefined' ? SESSION.season : null);
     container.innerHTML = TmUI.loading(`Loading Season ${season} transfers…`);
 
-    fetchTransfers(season, data => {
+    fetchAllClubTransfers(season, data => {
         if (!data) {
             container.innerHTML = TmUI.error('Failed to load transfers.');
             return;
         }
+
         const recColor = v => {
             if (v >= 18) return 'var(--tmu-success)';
             if (v >= 15) return 'var(--tmu-text-main)';
@@ -284,9 +336,9 @@ const renderTransfersTab = () => {
             return 'var(--tmu-text-disabled)';
         };
         const recDisplay = v => (v / 3.38).toFixed(2);
-        const buildSection = (rows, clubLabel) => {
+        const buildSection = (rows, counterpartyLabel) => {
             const enriched = rows.map((r, i) => ({
-                ...r, _sortVals: [i + 1, r.name, r.clubName, r.rec, r.price]
+                ...r, _sortVals: [i + 1, r.name, r.leagueClubName, r.clubName, r.rec, r.price]
             }));
             const buildRowsHtml = data => data.map((r, i) => {
                 const recCell = r.isRetired
@@ -296,32 +348,38 @@ const renderTransfersTab = () => {
                         <td class="tsa-stats-rank">${i + 1}</td>
                         <td class="tsa-stats-name"><a href="/players/${r.playerId}/" target="_blank">${r.name}</a></td>
                         ${recCell}
-                        <td><a href="/club/${r.clubId}/" target="_blank" style="color:${r.isMe ? 'var(--tmu-accent)' : 'var(--tmu-text-main)'};text-decoration:none">${r.clubName}</a></td>
+                        <td><a href="/club/${r.leagueClubId}/" target="_blank" style="color:${r.isMe ? 'var(--tmu-accent)' : 'var(--tmu-text-main)'};text-decoration:none">${r.leagueClubName}</a></td>
+                        <td style="color:var(--tmu-text-muted)"><a href="/club/${r.clubId}/" target="_blank" style="color:inherit;text-decoration:none">${r.clubName}</a></td>
                         <td class="tsa-stats-val">${r.price.toFixed(1)}</td>
                     </tr>`;
             }).join('');
             return {
                 enriched, buildRowsHtml, headerRows: [[
-                    { label: '#', sortIndex: 0, style: 'text-align:right' },
-                    { label: 'Player', sortIndex: 1, style: 'text-align:left' },
-                    { label: 'Rec', sortIndex: 3, style: 'text-align:center' },
-                    { label: clubLabel, sortIndex: 2, style: 'text-align:left' },
-                    { label: 'Price (M)', sortIndex: 4, className: 'tsa-stats-val', style: 'text-align:right', dataLabel: 'Price' },
+                    { label: '#',          sortIndex: 0, style: 'text-align:right;width:32px' },
+                    { label: 'Player',     sortIndex: 1, style: 'text-align:left' },
+                    { label: 'Rec',        sortIndex: 4, style: 'text-align:right;width:48px' },
+                    { label: 'Team',       sortIndex: 2, style: 'text-align:left' },
+                    { label: counterpartyLabel, sortIndex: 3, style: 'text-align:left' },
+                    { label: 'Price (M)',  sortIndex: 5, style: 'text-align:right;width:80px' },
                 ]]
             };
         };
-        const bought = buildSection(data.bought, 'Buyer');
-        const sold = buildSection(data.sold, 'Seller');
+        const bought = buildSection(data.bought, 'Seller');
+        const sold   = buildSection(data.sold,   'Buyer');
 
         const teamMap = {};
-        const ensureClub = r => {
-            if (!teamMap[r.clubId]) teamMap[r.clubId] = {
-                clubId: r.clubId, clubName: r.clubName, isMe: r.isMe,
-                bCount: 0, bTotal: 0, sCount: 0, sTotal: 0
-            };
-        };
-        data.bought.forEach(r => { ensureClub(r); teamMap[r.clubId].bCount++; teamMap[r.clubId].bTotal += r.price; });
-        data.sold.forEach(r => { ensureClub(r); teamMap[r.clubId].sCount++; teamMap[r.clubId].sTotal += r.price; });
+        data.bought.forEach(r => {
+            const cid = r.leagueClubId;
+            if (!teamMap[cid]) teamMap[cid] = { clubId: cid, clubName: r.leagueClubName, isMe: r.isMe, bCount: 0, bTotal: 0, sCount: 0, sTotal: 0 };
+            teamMap[cid].bCount++;
+            teamMap[cid].bTotal += r.price;
+        });
+        data.sold.forEach(r => {
+            const cid = r.leagueClubId;
+            if (!teamMap[cid]) teamMap[cid] = { clubId: cid, clubName: r.leagueClubName, isMe: r.isMe, bCount: 0, bTotal: 0, sCount: 0, sTotal: 0 };
+            teamMap[cid].sCount++;
+            teamMap[cid].sTotal += r.price;
+        });
         const teamGroups = Object.values(teamMap).sort((a, b) => (b.sTotal - b.bTotal) - (a.sTotal - a.bTotal));
         const teamEnriched = teamGroups.map((g, i) => ({
             ...g,
@@ -360,14 +418,16 @@ const renderTransfersTab = () => {
             ],
         };
 
-        const bal = parseFloat((data.totals.balance || '').replace(/,/g, ''));
-        const balColor = isNaN(bal) ? 'var(--tmu-text-main)' : (bal >= 0 ? 'var(--tmu-success)' : 'var(--tmu-danger)');
-        const totalsHtml = data.totals.bought ? `
+        const totalBought = data.bought.reduce((acc, r) => acc + r.price, 0);
+        const totalSold   = data.sold.reduce((acc, r) => acc + r.price, 0);
+        const totalBal    = totalSold - totalBought;
+        const balColor    = totalBal >= 0 ? 'var(--tmu-success)' : 'var(--tmu-danger)';
+        const totalsHtml  = `
                 <div class="tsa-tr-totals">
-                    <span>Bought: <strong style="color:var(--tmu-text-main)">${data.totals.bought}M</strong></span>
-                    <span>Sold: <strong style="color:var(--tmu-text-main)">${data.totals.sold}M</strong></span>
-                    <span>Balance: <strong style="color:${balColor}">${data.totals.balance}M</strong></span>
-                </div>` : '';
+                    <span>Bought: <strong style="color:var(--tmu-text-main)">${totalBought.toFixed(1)}M</strong></span>
+                    <span>Sold: <strong style="color:var(--tmu-text-main)">${totalSold.toFixed(1)}M</strong></span>
+                    <span>Balance: <strong style="color:${balColor}">${totalBal >= 0 ? '+' : ''}${totalBal.toFixed(1)}M</strong></span>
+                </div>`;
 
         container.innerHTML = `
                 <div class="tsa-stats-bar">

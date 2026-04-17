@@ -94,31 +94,31 @@
       const resolvedVariant = COLORS.has(variant) ? "button" : variant;
       const resolvedColor = COLORS.has(variant) ? variant : color;
       const sizeClass = `tmu-btn-size-${VALID_SIZES.has(size) ? size : "md"}`;
-      const btn = document.createElement("button");
-      btn.className = `tmu-btn tmu-btn-variant-${resolvedVariant} tmu-btn-${resolvedColor} ${SHAPES[shape] || SHAPES.md} ${sizeClass}${icon ? " tmu-btn-icon" : ""}${block ? " tmu-btn-block" : ""}${active ? " tmu-btn-active" : ""}${cls ? " " + cls : ""}`;
-      if (id) btn.id = id;
-      if (title) btn.title = title;
-      btn.type = type;
-      if (disabled) btn.disabled = true;
+      const btn4 = document.createElement("button");
+      btn4.className = `tmu-btn tmu-btn-variant-${resolvedVariant} tmu-btn-${resolvedColor} ${SHAPES[shape] || SHAPES.md} ${sizeClass}${icon ? " tmu-btn-icon" : ""}${block ? " tmu-btn-block" : ""}${active ? " tmu-btn-active" : ""}${cls ? " " + cls : ""}`;
+      if (id) btn4.id = id;
+      if (title) btn4.title = title;
+      btn4.type = type;
+      if (disabled) btn4.disabled = true;
       Object.entries(attrs || {}).forEach(([key, value]) => {
         if (value == null || value === false) return;
         if (value === true) {
-          btn.setAttribute(key, "");
+          btn4.setAttribute(key, "");
           return;
         }
-        btn.setAttribute(key, String(value));
+        btn4.setAttribute(key, String(value));
       });
       if (icon) {
-        btn.innerHTML = icon;
+        btn4.innerHTML = icon;
       } else if (slot instanceof Node) {
-        btn.appendChild(slot);
+        btn4.appendChild(slot);
       } else if (typeof slot === "string") {
-        btn.innerHTML = slot;
+        btn4.innerHTML = slot;
       } else if (label != null) {
-        btn.textContent = label;
+        btn4.textContent = label;
       }
-      if (onClick) btn.addEventListener("click", onClick);
-      return btn;
+      if (onClick) btn4.addEventListener("click", onClick);
+      return btn4;
     }
   };
 
@@ -1384,7 +1384,7 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
       el2.querySelectorAll("tm-button").forEach((tmBtn) => {
         const action = tmBtn.dataset.action;
         const inner = tmBtn.innerHTML.trim();
-        const btn = TmButton.button({
+        const btn4 = TmButton.button({
           label: inner ? void 0 : tmBtn.dataset.label,
           slot: inner || void 0,
           id: tmBtn.dataset.id,
@@ -1395,15 +1395,15 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
           block: tmBtn.hasAttribute("data-block"),
           onClick: void 0
         });
-        if (tmBtn.getAttribute("title")) btn.title = tmBtn.getAttribute("title");
-        if (tmBtn.getAttribute("style")) btn.setAttribute("style", tmBtn.getAttribute("style"));
-        if (action) btn.dataset.action = action;
+        if (tmBtn.getAttribute("title")) btn4.title = tmBtn.getAttribute("title");
+        if (tmBtn.getAttribute("style")) btn4.setAttribute("style", tmBtn.getAttribute("style"));
+        if (action) btn4.dataset.action = action;
         const skipAttrs = /* @__PURE__ */ new Set(["data-label", "data-variant", "data-color", "data-action", "data-id", "data-block", "data-size", "data-cls"]);
         for (const attr of tmBtn.attributes) {
-          if (attr.name.startsWith("data-") && !skipAttrs.has(attr.name)) btn.setAttribute(attr.name, attr.value);
+          if (attr.name.startsWith("data-") && !skipAttrs.has(attr.name)) btn4.setAttribute(attr.name, attr.value);
         }
-        tmBtn.replaceWith(btn);
-        if (action) refs[action] = btn;
+        tmBtn.replaceWith(btn4);
+        if (action) refs[action] = btn4;
       });
       el2.querySelectorAll("tm-input").forEach((tmInput) => {
         const input = TmInput.input({
@@ -2533,7 +2533,7 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
 .tmu-tbl thead th.sortable{cursor:pointer;user-select:none}
 .tmu-tbl thead th.sortable:hover{color:var(--tmu-text-main)}
 .tmu-tbl thead th.sort-active{color:var(--tmu-text-main)}
-.tmu-tbl tbody td{padding:var(--tmu-tbl-body-py) var(--tmu-tbl-body-px);border-bottom:1px solid var(--tmu-border-faint);color:var(--tmu-text-main);font-variant-numeric:tabular-nums;text-align:left}
+.tmu-tbl tbody td{padding:var(--tmu-tbl-body-py) var(--tmu-tbl-body-px);border-bottom:1px solid var(--tmu-border-faint);color:var(--tmu-text-main);font-variant-numeric:tabular-nums;}
 .tmu-tbl tbody td.r{text-align:right} .tmu-tbl tbody td.c{text-align:center}
 .tmu-tbl tbody tr:nth-child(odd){background:var(--tmu-color-accent)}
 .tmu-tbl tbody tr:nth-child(even){background:var(--tmu-color-base)}
@@ -2796,8 +2796,8 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
       return new Promise((resolve) => {
         const overlay = document.createElement("div");
         overlay.id = "tmu-modal-overlay";
-        const esc2 = (s6) => (s6 || "").replace(/"/g, "&quot;");
-        overlay.innerHTML = `<div class="tmu-modal"><div class="tmu-modal-icon">${icon || ""}</div><div class="tmu-modal-title">${title}</div><div class="tmu-prompt-field">${inputHtml({ id: "tmu-prompt-input", type: "text", placeholder: esc2(placeholder), value: esc2(defaultValue) })}</div><div class="tmu-modal-btns">` + buttonHtml2({ style: "primary", label: "\u{1F4BE} Save", attrs: { "data-val": "ok" } }) + buttonHtml2({ style: "danger", label: "Cancel", attrs: { "data-val": "cancel" } }) + `</div></div>`;
+        const esc3 = (s6) => (s6 || "").replace(/"/g, "&quot;");
+        overlay.innerHTML = `<div class="tmu-modal"><div class="tmu-modal-icon">${icon || ""}</div><div class="tmu-modal-title">${title}</div><div class="tmu-prompt-field">${inputHtml({ id: "tmu-prompt-input", type: "text", placeholder: esc3(placeholder), value: esc3(defaultValue) })}</div><div class="tmu-modal-btns">` + buttonHtml2({ style: "primary", label: "\u{1F4BE} Save", attrs: { "data-val": "ok" } }) + buttonHtml2({ style: "danger", label: "Cancel", attrs: { "data-val": "cancel" } }) + `</div></div>`;
         const getVal = () => overlay.querySelector("#tmu-prompt-input").value.trim();
         const closeWith = (val) => {
           overlay.remove();
@@ -3230,8 +3230,8 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   }
   injectTmTabsCss();
   var setActive = (wrap, activeKey) => {
-    wrap.querySelectorAll(".tmu-tab").forEach((btn) => {
-      btn.classList.toggle("active", btn.dataset.tab === String(activeKey));
+    wrap.querySelectorAll(".tmu-tab").forEach((btn4) => {
+      btn4.classList.toggle("active", btn4.dataset.tab === String(activeKey));
     });
   };
   var TmTabs = {
@@ -3239,35 +3239,35 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       const wrap = document.createElement("div");
       wrap.className = ["tmu-tabs", `tmu-tabs-color-${color}`, stretch ? "tmu-tabs-stretch" : "", cls].filter(Boolean).join(" ");
       wrap.onclick = (event) => {
-        const btn = event.target.closest(".tmu-tab");
-        if (!btn || !wrap.contains(btn) || btn.disabled) return;
-        const key = btn.dataset.tab;
+        const btn4 = event.target.closest(".tmu-tab");
+        if (!btn4 || !wrap.contains(btn4) || btn4.disabled) return;
+        const key = btn4.dataset.tab;
         setActive(wrap, key);
         onChange == null ? void 0 : onChange(key);
       };
       items.forEach(({ key, label, slot, disabled, icon, cls: itemOwnCls, title }) => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = ["tmu-tab", itemCls, itemOwnCls, key === active ? "active" : ""].filter(Boolean).join(" ");
-        btn.dataset.tab = key;
-        if (title) btn.title = title;
+        const btn4 = document.createElement("button");
+        btn4.type = "button";
+        btn4.className = ["tmu-tab", itemCls, itemOwnCls, key === active ? "active" : ""].filter(Boolean).join(" ");
+        btn4.dataset.tab = key;
+        if (title) btn4.title = title;
         if (icon) {
           const iconEl = document.createElement("span");
           iconEl.className = "tmu-tab-icon";
           iconEl.textContent = icon;
-          btn.appendChild(iconEl);
+          btn4.appendChild(iconEl);
           const labelEl = document.createElement("span");
           labelEl.textContent = label;
-          btn.appendChild(labelEl);
+          btn4.appendChild(labelEl);
         } else if (slot instanceof Node) {
-          btn.appendChild(slot);
+          btn4.appendChild(slot);
         } else if (typeof slot === "string") {
-          btn.innerHTML = slot;
+          btn4.innerHTML = slot;
         } else {
-          btn.textContent = label;
+          btn4.textContent = label;
         }
-        if (disabled) btn.disabled = true;
-        wrap.appendChild(btn);
+        if (disabled) btn4.disabled = true;
+        wrap.appendChild(btn4);
       });
       return wrap;
     },
@@ -8023,9 +8023,9 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         if (e.target === overlay) this.close();
       });
       wrap.querySelector(".tmu-td-close").addEventListener("click", () => this.close());
-      wrap.querySelectorAll("[data-td-theme]").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const id = btn.getAttribute("data-td-theme");
+      wrap.querySelectorAll("[data-td-theme]").forEach((btn4) => {
+        btn4.addEventListener("click", () => {
+          const id = btn4.getAttribute("data-td-theme");
           applyTheme(id);
           wrap.querySelectorAll("[data-td-theme]").forEach((b) => {
             const isNow = b.getAttribute("data-td-theme") === id;
@@ -8533,13 +8533,13 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         return;
       }
       const { deadline, shortlist, is_pro, bid_history, transfer } = bidData;
-      async function handleShortlistToggle(btn, removing) {
+      async function handleShortlistToggle(btn4, removing) {
         var _a2;
-        const savedHtml = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<span class="tmu-spinner tmu-spinner-sm"></span>';
+        const savedHtml = btn4.innerHTML;
+        btn4.disabled = true;
+        btn4.innerHTML = '<span class="tmu-spinner tmu-spinner-sm"></span>';
         const result = removing ? await TmShortlistService.removeFromShortlist(player2.id) : await TmShortlistService.addToShortlist(player2.id);
-        btn.disabled = false;
+        btn4.disabled = false;
         if (result !== null) {
           if (removing) {
             TmAlert.show({ message: "Player removed from shortlist", tone: "success" });
@@ -8547,12 +8547,12 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
             close();
             return;
           } else {
-            btn.dataset.action = "unshortlist";
-            btn.textContent = "Remove From Shortlist";
+            btn4.dataset.action = "unshortlist";
+            btn4.textContent = "Remove From Shortlist";
             TmAlert.show({ message: "Player added to shortlist", tone: "success" });
           }
         } else {
-          btn.innerHTML = savedHtml;
+          btn4.innerHTML = savedHtml;
           TmAlert.show({ message: "Action failed. Please try again.", tone: "error" });
         }
       }
@@ -9506,7 +9506,7 @@ order:initial
     const periodBtns = document.createElement("div");
     periodBtns.className = "tmvu-fin-maint-period-btns";
     ["weekly", "season"].forEach((key) => {
-      const btn = TmUI.button({
+      const btn4 = TmUI.button({
         label: key === "weekly" ? "Per Week" : "Per Season",
         color: "primary",
         size: "sm",
@@ -9516,7 +9516,7 @@ order:initial
           onChange();
         }
       });
-      periodBtns.appendChild(btn);
+      periodBtns.appendChild(btn4);
     });
     wrap.appendChild(periodBtns);
     wrap.appendChild(renderCombinedTable(data, state5.payPeriod));
@@ -10238,7 +10238,7 @@ order:initial
     const periodBtns = document.createElement("div");
     periodBtns.className = "tmvu-fin-wages-period-btns";
     ["weekly", "season"].forEach((key) => {
-      const btn = TmUI.button({
+      const btn4 = TmUI.button({
         label: key === "weekly" ? "Per Week" : "Per Season",
         color: "primary",
         size: "sm",
@@ -10248,7 +10248,7 @@ order:initial
           onChange();
         }
       });
-      periodBtns.appendChild(btn);
+      periodBtns.appendChild(btn4);
     });
     refs.period.appendChild(periodBtns);
     renderActive();
@@ -11401,10 +11401,10 @@ order:initial
       const extraEls = {};
       extraButtons.forEach((eb) => {
         var _a3;
-        const btn = TmUI.button({ id: eb.id, label: eb.label, color: (_a3 = eb.color) != null ? _a3 : "secondary", size: "xs" });
-        if (eb.active) btn.classList.add("tmu-btn-active");
-        if (eb.id) extraEls[eb.id] = btn;
-        bar.appendChild(btn);
+        const btn4 = TmUI.button({ id: eb.id, label: eb.label, color: (_a3 = eb.color) != null ? _a3 : "secondary", size: "xs" });
+        if (eb.active) btn4.classList.add("tmu-btn-active");
+        if (eb.id) extraEls[eb.id] = btn4;
+        bar.appendChild(btn4);
       });
       const ssnInput = ac.inputEl;
       const renderItems = (query = "") => {
@@ -11491,8 +11491,8 @@ order:initial
         },
         /** Highlight one extra button as active; pass null to clear all */
         setExtraBtnActive(id) {
-          Object.entries(extraEls).forEach(([bid, btn]) => {
-            btn.classList.toggle("tmu-btn-active", bid === id);
+          Object.entries(extraEls).forEach(([bid, btn4]) => {
+            btn4.classList.toggle("tmu-btn-active", bid === id);
           });
         }
       };
@@ -19705,14 +19705,14 @@ order:initial
                 const age = fmtLastSeen(p.lastSeen);
                 const color = p.stale ? "var(--tmu-text-warn)" : "var(--tmu-text-accent-soft)";
                 const reloading = ixReloading.has(String(p.id));
-                const btn = TmUI.button({
+                const btn4 = TmUI.button({
                   slot: reloading ? "\u2026" : "&#x21BB;",
                   variant: "icon",
                   size: "xs",
                   title: "Sync to DB",
                   attrs: { "data-ix-reload": String(p.id) }
                 }).outerHTML;
-                return `<span style="display:inline-flex;gap:4px;align-items:center;color:${color}"><span style="font-size:var(--tmu-font-xs)">${age}</span>${btn}</span>`;
+                return `<span style="display:inline-flex;gap:4px;align-items:center;color:${color}"><span style="font-size:var(--tmu-font-xs)">${age}</span>${btn4}</span>`;
               }
             }]
           });
@@ -21429,11 +21429,11 @@ order:initial
     H3().prefetchPlayers(arr.map((p) => p.pid), () => wrap.refresh(makePlayers()));
   }
   function loadStillPlaying() {
-    const btn = _el4.querySelector("#tmh-still-btn");
+    const btn4 = _el4.querySelector("#tmh-still-btn");
     const wrap = _el4.querySelector("#tmh-tdata");
-    if (btn) {
-      btn.classList.add("busy");
-      btn.textContent = "Loading\u2026";
+    if (btn4) {
+      btn4.classList.add("busy");
+      btn4.textContent = "Loading\u2026";
     }
     const total = _seasons3.length;
     let loaded = 0;
@@ -21462,9 +21462,9 @@ order:initial
       });
     });
     function finishStillPlaying(c, all) {
-      if (btn) {
-        btn.classList.remove("busy");
-        btn.textContent = "Still Playing (sold)";
+      if (btn4) {
+        btn4.classList.remove("busy");
+        btn4.textContent = "Still Playing (sold)";
       }
       const pMap = {};
       _seasons3.forEach((s6) => {
@@ -21528,11 +21528,11 @@ order:initial
     }
   }
   function loadAllSeasons() {
-    const btn = _el4.querySelector("#tmh-all-btn");
+    const btn4 = _el4.querySelector("#tmh-all-btn");
     const wrap = _el4.querySelector("#tmh-tdata");
-    if (btn) {
-      btn.classList.add("busy");
-      btn.textContent = "Loading\u2026";
+    if (btn4) {
+      btn4.classList.add("busy");
+      btn4.textContent = "Loading\u2026";
     }
     const total = _seasons3.length;
     let loaded = 0;
@@ -21544,9 +21544,9 @@ order:initial
       if (loaded === total) finish();
     }
     function finish() {
-      if (btn) {
-        btn.classList.remove("busy");
-        btn.textContent = "Load All Seasons Summary";
+      if (btn4) {
+        btn4.classList.remove("busy");
+        btn4.textContent = "Load All Seasons Summary";
       }
       renderAllSeasons(wrap, allData);
     }
@@ -24411,10 +24411,10 @@ order:initial
       body.addEventListener("click", (e) => {
         const ctx = body.__tmStatsTacticDropdownCtx;
         if (!ctx) return;
-        const btn = e.target.closest(".tsa-dd-btn");
-        if (btn && body.contains(btn)) {
+        const btn4 = e.target.closest(".tsa-dd-btn");
+        if (btn4 && body.contains(btn4)) {
           e.stopPropagation();
-          const key = btn.dataset.dd;
+          const key = btn4.dataset.dd;
           const panel = body.querySelector(`.tsa-dd-panel[data-dd-panel="${key}"]`);
           if (!panel) return;
           const wasOpen = panel.classList.contains("open");
@@ -24612,9 +24612,9 @@ order:initial
       if (phMl) phMl.replaceWith(TmStatsMatchList.build(opts.getLastFilteredMatches()));
       opts.bindMatchTypeButtons(body);
       body.addEventListener("click", (event) => {
-        const btn = event.target.closest("[data-tfilter]");
-        if (!btn || !body.contains(btn)) return;
-        const key = btn.dataset.tfilter;
+        const btn4 = event.target.closest("[data-tfilter]");
+        if (!btn4 || !body.contains(btn4)) return;
+        const key = btn4.dataset.tfilter;
         if (!key || key === opts.getActiveTeamFilter()) return;
         opts.setActiveTeamFilter(key);
         opts.rerender();
@@ -26384,8 +26384,8 @@ order:initial
     const tabs = TmUI.tabs({ items, active, onChange });
     tabs.classList.add("fix-month-tabs");
     const currentKeySet = new Set(currentKeys);
-    tabs.querySelectorAll(".tmu-tab").forEach((btn) => {
-      if (currentKeySet.has(btn.dataset.tab)) btn.classList.add("fix-month-current");
+    tabs.querySelectorAll(".tmu-tab").forEach((btn4) => {
+      if (currentKeySet.has(btn4.dataset.tab)) btn4.classList.add("fix-month-current");
     });
     return tabs;
   };
@@ -26875,8 +26875,8 @@ order:initial
             .tsa-stats-me { background: var(--tmu-success-fill-faint) !important; box-shadow: inset 3px 0 0 var(--tmu-success); }
             .tsa-stats-me .tsa-stats-name a { color: var(--tmu-accent); }
             .tsa-stats-me .tsa-stats-val { color: var(--tmu-success); }
-            .tsa-tr-rec { text-align: center; }
-            .tsa-tr-count { display: inline-block; margin-left: var(--tmu-space-sm); background: var(--tmu-surface-accent-soft); color: var(--tmu-text-strong); border-radius: var(--tmu-space-sm); padding: 0 var(--tmu-space-sm); font-size: var(--tmu-font-xs); }
+            .tsa-tr-rec { text-align: right; }
+            .tsa-tr-count { display: inline-block; margin-left: var(--tmu-space-sm); background: var(--tmu-text-inverse); color: var(--tmu-text-disabled); border-radius: var(--tmu-space-sm); padding: 0 var(--tmu-space-sm); font-size: var(--tmu-font-xs); }
             .tsa-tr-totals {
                 display: flex; gap: var(--tmu-space-lg); justify-content: flex-end;
                 padding: var(--tmu-space-sm) var(--tmu-space-md); font-size: var(--tmu-font-xs); color: var(--tmu-text-faint);
@@ -26964,10 +26964,9 @@ order:initial
       onDone(rows);
     }).catch(() => onDone(null));
   };
-  var parseTransfers2 = (html2) => {
+  var parseClubTransfers = (html2, leagueClubId, leagueClubName, isMe) => {
     const doc = new DOMParser().parseFromString(html2, "text/html");
-    const myId = typeof SESSION !== "undefined" ? String(SESSION.id) : null;
-    const result = { bought: [], sold: [], totals: {} };
+    const result = { bought: [], sold: [] };
     let boughtTable = null, soldTable = null;
     doc.querySelectorAll("h3").forEach((h3) => {
       const text = h3.textContent.trim().toLowerCase();
@@ -26988,47 +26987,90 @@ order:initial
         const recTd = tds[1];
         const clubA = tds[2].querySelector("a[club_link]");
         if (!clubA) return;
-        const recVal = parseFloat(recTd.getAttribute("sortvalue")) || 0;
         const isRetired = recTd.textContent.trim() === "Retired";
+        let stars = 0;
+        recTd.querySelectorAll("img").forEach((img) => {
+          const src = img.getAttribute("src") || "";
+          if (src.includes("half_star")) stars += 0.5;
+          else if (src.includes("star") && !src.includes("dark_star")) stars += 1;
+        });
+        const recVal = stars * 3.38;
         const price = parseFloat(tds[3].textContent.trim().replace(/,/g, "")) || 0;
         const clubId2 = clubA.getAttribute("club_link");
+        if (!clubId2) return;
         rows.push({
           name: playerA.textContent.trim(),
           playerId: playerA.getAttribute("player_link"),
           rec: recVal,
           isRetired,
-          clubName: clubA.textContent.trim(),
           clubId: clubId2,
+          clubName: clubA.textContent.trim(),
+          leagueClubId,
+          leagueClubName,
           price,
-          isMe: myId && clubId2 === myId
+          isMe
         });
       });
       return rows;
     };
     result.bought = parseRows2(boughtTable);
     result.sold = parseRows2(soldTable);
-    doc.querySelectorAll("td").forEach((td) => {
-      const strong = td.querySelector("strong");
-      if (!strong) return;
-      const text = td.textContent;
-      if (text.includes("Total Bought:")) result.totals.bought = strong.textContent.trim();
-      else if (text.includes("Total Sold:")) result.totals.sold = strong.textContent.trim();
-      else if (text.includes("Balance:")) result.totals.balance = strong.textContent.trim();
-    });
     return result;
   };
-  var fetchTransfers = (season, onDone) => {
+  var fetchClubsForSeason = (season, onDone) => {
+    const s6 = window.TmLeagueCtx;
+    const currentSeason5 = typeof SESSION !== "undefined" ? SESSION.season : null;
+    if (!season || season === currentSeason5) {
+      onDone(s6.standingsRows || []);
+      return;
+    }
+    const cacheKey = `clubs|${season}`;
+    if (s6.statsCache[cacheKey]) {
+      onDone(s6.statsCache[cacheKey]);
+      return;
+    }
+    const { panelCountry, panelDivision, panelGroup } = s6;
+    if (!panelCountry || !panelDivision) {
+      onDone(s6.standingsRows || []);
+      return;
+    }
+    const group = panelGroup || "1";
+    window.fetch(`/history/league/${panelCountry}/${panelDivision}/${group}/standings/${season}/`).then((r) => r.text()).then((html2) => {
+      const doc = new DOMParser().parseFromString(html2, "text/html");
+      const clubs = [];
+      doc.querySelectorAll("table.border_bottom tr").forEach((tr) => {
+        const a = tr.querySelector("a[club_link]");
+        if (!a) return;
+        clubs.push({ clubId: a.getAttribute("club_link"), clubName: a.textContent.trim() });
+      });
+      s6.statsCache[cacheKey] = clubs;
+      onDone(clubs);
+    }).catch(() => onDone(s6.standingsRows || []));
+  };
+  var fetchAllClubTransfers = (season, onDone) => {
     const s6 = window.TmLeagueCtx;
     const key = `transfers|${season}`;
     if (s6.statsCache[key]) {
       onDone(s6.statsCache[key]);
       return;
     }
-    window.fetch(`/history/league/${s6.panelCountry}/${s6.panelDivision}/${s6.panelGroup}/transfers/${season}/`).then((r) => r.text()).then((html2) => {
-      const data = parseTransfers2(html2);
-      s6.statsCache[key] = data;
-      onDone(data);
-    }).catch(() => onDone(null));
+    const myId = typeof SESSION !== "undefined" ? String(SESSION.id || SESSION.main_id || "") : "";
+    fetchClubsForSeason(season, (clubs) => {
+      if (!clubs.length) {
+        onDone(null);
+        return;
+      }
+      Promise.all(clubs.map(
+        (club) => window.fetch(`/history/club/transfers/${club.clubId}/${season}/`).then((r) => r.text()).then((html2) => parseClubTransfers(html2, club.clubId, club.clubName, club.clubId === myId)).catch(() => ({ bought: [], sold: [] }))
+      )).then((results) => {
+        const data = {
+          bought: results.flatMap((r) => r.bought),
+          sold: results.flatMap((r) => r.sold)
+        };
+        s6.statsCache[key] = data;
+        onDone(data);
+      });
+    });
   };
   var renderPlayerStatsTab = () => {
     const s6 = window.TmLeagueCtx;
@@ -27046,9 +27088,9 @@ order:initial
         <div id="tsa-stats-content-inner"></div>
     `;
     container.querySelector(".tsa-stats-bar").addEventListener("click", (e) => {
-      const btn = e.target.closest(".tsa-stat-mode-btn[data-mode]");
-      if (btn) {
-        s6.statsMode = btn.dataset.mode;
+      const btn4 = e.target.closest(".tsa-stat-mode-btn[data-mode]");
+      if (btn4) {
+        s6.statsMode = btn4.dataset.mode;
         renderPlayerStatsTab();
       }
     });
@@ -27078,9 +27120,9 @@ order:initial
         <div id="tsa-stats-table-wrap">${TmUI.loading("Loading\u2026")}</div>
     `;
     inner.querySelector(".tsa-stats-bar").addEventListener("click", (e) => {
-      const btn = e.target.closest(".tsa-stat-btn[data-stat]");
-      if (btn) {
-        s6.statsClubStat = btn.dataset.stat;
+      const btn4 = e.target.closest(".tsa-stat-btn[data-stat]");
+      if (btn4) {
+        s6.statsClubStat = btn4.dataset.stat;
         renderPlayerStatsTab();
       }
     });
@@ -27119,7 +27161,7 @@ order:initial
     if (!container) return;
     const season = s6.displayedSeason !== null ? s6.displayedSeason : typeof SESSION !== "undefined" ? SESSION.season : null;
     container.innerHTML = TmUI.loading(`Loading Season ${season} transfers\u2026`);
-    fetchTransfers(season, (data) => {
+    fetchAllClubTransfers(season, (data) => {
       if (!data) {
         container.innerHTML = TmUI.error("Failed to load transfers.");
         return;
@@ -27131,10 +27173,10 @@ order:initial
         return "var(--tmu-text-disabled)";
       };
       const recDisplay = (v) => (v / 3.38).toFixed(2);
-      const buildSection = (rows, clubLabel) => {
+      const buildSection = (rows, counterpartyLabel) => {
         const enriched = rows.map((r, i) => ({
           ...r,
-          _sortVals: [i + 1, r.name, r.clubName, r.rec, r.price]
+          _sortVals: [i + 1, r.name, r.leagueClubName, r.clubName, r.rec, r.price]
         }));
         const buildRowsHtml = (data2) => data2.map((r, i) => {
           const recCell = r.isRetired ? `<td class="tsa-tr-rec" style="color:var(--tmu-text-dim);font-style:italic">Ret</td>` : `<td class="tsa-tr-rec" style="color:${recColor(r.rec)}">${recDisplay(r.rec)}</td>`;
@@ -27142,7 +27184,8 @@ order:initial
                         <td class="tsa-stats-rank">${i + 1}</td>
                         <td class="tsa-stats-name"><a href="/players/${r.playerId}/" target="_blank">${r.name}</a></td>
                         ${recCell}
-                        <td><a href="/club/${r.clubId}/" target="_blank" style="color:${r.isMe ? "var(--tmu-accent)" : "var(--tmu-text-main)"};text-decoration:none">${r.clubName}</a></td>
+                        <td><a href="/club/${r.leagueClubId}/" target="_blank" style="color:${r.isMe ? "var(--tmu-accent)" : "var(--tmu-text-main)"};text-decoration:none">${r.leagueClubName}</a></td>
+                        <td style="color:var(--tmu-text-muted)"><a href="/club/${r.clubId}/" target="_blank" style="color:inherit;text-decoration:none">${r.clubName}</a></td>
                         <td class="tsa-stats-val">${r.price.toFixed(1)}</td>
                     </tr>`;
         }).join("");
@@ -27150,37 +27193,29 @@ order:initial
           enriched,
           buildRowsHtml,
           headerRows: [[
-            { label: "#", sortIndex: 0, style: "text-align:right" },
+            { label: "#", sortIndex: 0, style: "text-align:right;width:32px" },
             { label: "Player", sortIndex: 1, style: "text-align:left" },
-            { label: "Rec", sortIndex: 3, style: "text-align:center" },
-            { label: clubLabel, sortIndex: 2, style: "text-align:left" },
-            { label: "Price (M)", sortIndex: 4, className: "tsa-stats-val", style: "text-align:right", dataLabel: "Price" }
+            { label: "Rec", sortIndex: 4, style: "text-align:right;width:48px" },
+            { label: "Team", sortIndex: 2, style: "text-align:left" },
+            { label: counterpartyLabel, sortIndex: 3, style: "text-align:left" },
+            { label: "Price (M)", sortIndex: 5, style: "text-align:right;width:80px" }
           ]]
         };
       };
-      const bought = buildSection(data.bought, "Buyer");
-      const sold = buildSection(data.sold, "Seller");
+      const bought = buildSection(data.bought, "Seller");
+      const sold = buildSection(data.sold, "Buyer");
       const teamMap = {};
-      const ensureClub = (r) => {
-        if (!teamMap[r.clubId]) teamMap[r.clubId] = {
-          clubId: r.clubId,
-          clubName: r.clubName,
-          isMe: r.isMe,
-          bCount: 0,
-          bTotal: 0,
-          sCount: 0,
-          sTotal: 0
-        };
-      };
       data.bought.forEach((r) => {
-        ensureClub(r);
-        teamMap[r.clubId].bCount++;
-        teamMap[r.clubId].bTotal += r.price;
+        const cid = r.leagueClubId;
+        if (!teamMap[cid]) teamMap[cid] = { clubId: cid, clubName: r.leagueClubName, isMe: r.isMe, bCount: 0, bTotal: 0, sCount: 0, sTotal: 0 };
+        teamMap[cid].bCount++;
+        teamMap[cid].bTotal += r.price;
       });
       data.sold.forEach((r) => {
-        ensureClub(r);
-        teamMap[r.clubId].sCount++;
-        teamMap[r.clubId].sTotal += r.price;
+        const cid = r.leagueClubId;
+        if (!teamMap[cid]) teamMap[cid] = { clubId: cid, clubName: r.leagueClubName, isMe: r.isMe, bCount: 0, bTotal: 0, sCount: 0, sTotal: 0 };
+        teamMap[cid].sCount++;
+        teamMap[cid].sTotal += r.price;
       });
       const teamGroups = Object.values(teamMap).sort((a, b) => b.sTotal - b.bTotal - (a.sTotal - a.bTotal));
       const teamEnriched = teamGroups.map((g, i) => ({
@@ -27188,8 +27223,8 @@ order:initial
         _sortVals: [i + 1, g.clubName, g.bCount, g.bTotal, g.sCount, g.sTotal, g.sTotal - g.bTotal]
       }));
       const buildTeamRowsHtml = (rows) => rows.map((g, i) => {
-        const bal2 = g.sTotal - g.bTotal;
-        const balCol = bal2 > 0 ? "var(--tmu-success)" : bal2 < 0 ? "var(--tmu-danger)" : "var(--tmu-text-main)";
+        const bal = g.sTotal - g.bTotal;
+        const balCol = bal > 0 ? "var(--tmu-success)" : bal < 0 ? "var(--tmu-danger)" : "var(--tmu-text-main)";
         return `<tr class="${g.isMe ? "tsa-stats-me" : ""}">
                     <td class="tsa-stats-rank">${i + 1}</td>
                 <td class="tsa-stats-name"><a href="/club/${g.clubId}/" target="_blank" style="color:${g.isMe ? "var(--tmu-accent)" : "var(--tmu-text-main)"};text-decoration:none">${g.clubName}</a></td>
@@ -27197,7 +27232,7 @@ order:initial
                     <td class="tsa-stats-val">${g.bTotal.toFixed(1)}</td>
                     <td class="tsa-stats-val">${g.sCount}</td>
                     <td class="tsa-stats-val">${g.sTotal.toFixed(1)}</td>
-                    <td class="tsa-stats-val" style="color:${balCol};font-weight:700">${bal2 >= 0 ? "+" : ""}${bal2.toFixed(1)}</td>
+                    <td class="tsa-stats-val" style="color:${balCol};font-weight:700">${bal >= 0 ? "+" : ""}${bal.toFixed(1)}</td>
                 </tr>`;
       }).join("");
       const teamData = {
@@ -27219,14 +27254,16 @@ order:initial
           ]
         ]
       };
-      const bal = parseFloat((data.totals.balance || "").replace(/,/g, ""));
-      const balColor = isNaN(bal) ? "var(--tmu-text-main)" : bal >= 0 ? "var(--tmu-success)" : "var(--tmu-danger)";
-      const totalsHtml = data.totals.bought ? `
+      const totalBought = data.bought.reduce((acc, r) => acc + r.price, 0);
+      const totalSold = data.sold.reduce((acc, r) => acc + r.price, 0);
+      const totalBal = totalSold - totalBought;
+      const balColor = totalBal >= 0 ? "var(--tmu-success)" : "var(--tmu-danger)";
+      const totalsHtml = `
                 <div class="tsa-tr-totals">
-                    <span>Bought: <strong style="color:var(--tmu-text-main)">${data.totals.bought}M</strong></span>
-                    <span>Sold: <strong style="color:var(--tmu-text-main)">${data.totals.sold}M</strong></span>
-                    <span>Balance: <strong style="color:${balColor}">${data.totals.balance}M</strong></span>
-                </div>` : "";
+                    <span>Bought: <strong style="color:var(--tmu-text-main)">${totalBought.toFixed(1)}M</strong></span>
+                    <span>Sold: <strong style="color:var(--tmu-text-main)">${totalSold.toFixed(1)}M</strong></span>
+                    <span>Balance: <strong style="color:${balColor}">${totalBal >= 0 ? "+" : ""}${totalBal.toFixed(1)}M</strong></span>
+                </div>`;
       container.innerHTML = `
                 <div class="tsa-stats-bar">
                     <div>
@@ -35049,13 +35086,13 @@ order:initial
   function initHomePage(main2) {
     if (!main2 || !main2.isConnected) return;
     const STYLE_ID51 = "tmvu-home-style";
-    const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
+    const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const escapeHtml34 = (v) => String(v != null ? v : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const findColumnBoxByTitle = (root2, title) => {
-      const wanted = clean4(title).toLowerCase();
+      const wanted = clean5(title).toLowerCase();
       return Array.from((root2 == null ? void 0 : root2.querySelectorAll(":scope > .box")) || []).find((box) => {
         var _a2;
-        const heading = clean4(((_a2 = box.querySelector(".box_head h1, .box_head h2, .box_head h3")) == null ? void 0 : _a2.textContent) || "").toLowerCase();
+        const heading = clean5(((_a2 = box.querySelector(".box_head h1, .box_head h2, .box_head h3")) == null ? void 0 : _a2.textContent) || "").toLowerCase();
         return heading === wanted;
       }) || null;
     };
@@ -35219,7 +35256,7 @@ order:initial
           copy.className = "tmvu-home-nm-copy";
           const name = document.createElement("span");
           name.className = "tmvu-home-nm-name";
-          name.textContent = clean4(nameEl.textContent);
+          name.textContent = clean5(nameEl.textContent);
           copy.appendChild(name);
           team.appendChild(badge);
           team.appendChild(copy);
@@ -35243,7 +35280,7 @@ order:initial
       }
       const btnEl = nmStd.querySelector(".match_link:not(.event) a") || nmStd.querySelector('.match_link a[href*="/matches/"]');
       if (btnEl) {
-        const btnText = clean4(btnEl.textContent) || (isLive ? "Watch Live" : "Open Match");
+        const btnText = clean5(btnEl.textContent) || (isLive ? "Watch Live" : "Open Match");
         const btnContent = document.createElement("span");
         btnContent.className = "tmvu-home-nm-btn-content";
         if (isLive) {
@@ -35260,7 +35297,7 @@ order:initial
         const btnLabel = document.createElement("span");
         btnLabel.textContent = btnText;
         btnContent.appendChild(btnLabel);
-        const btn = TmButton.button({
+        const btn4 = TmButton.button({
           slot: btnContent,
           color: "primary",
           block: true,
@@ -35268,7 +35305,7 @@ order:initial
             location.href = btnEl.getAttribute("href");
           }
         });
-        wrap.appendChild(btn);
+        wrap.appendChild(btn4);
       }
       const prevDiv = (nextMatchBox == null ? void 0 : nextMatchBox.querySelector("#previous_matches")) || col2.querySelector("#previous_matches");
       if (prevDiv) {
@@ -35286,7 +35323,7 @@ order:initial
           if (placeEl) {
             const p = document.createElement("div");
             p.className = "tmvu-home-prevmatch-place";
-            p.textContent = clean4(placeEl.textContent);
+            p.textContent = clean5(placeEl.textContent);
             row.appendChild(p);
           }
           if (logoEl) {
@@ -35301,12 +35338,12 @@ order:initial
             info.className = "tmvu-home-prevmatch-info";
             const a = document.createElement("a");
             a.href = linkEl.getAttribute("href");
-            a.textContent = clean4(linkEl.textContent);
+            a.textContent = clean5(linkEl.textContent);
             info.appendChild(a);
             if (typeEl) {
               const sub = document.createElement("div");
               sub.className = "tmvu-home-prevmatch-sub";
-              sub.textContent = clean4(typeEl.textContent);
+              sub.textContent = clean5(typeEl.textContent);
               info.appendChild(sub);
             }
             row.appendChild(info);
@@ -35319,7 +35356,7 @@ order:initial
         const a = document.createElement("a");
         a.href = fixturesA.getAttribute("href");
         a.className = "tmvu-home-nm-all";
-        a.textContent = clean4(fixturesA.textContent) || "All Fixtures";
+        a.textContent = clean5(fixturesA.textContent) || "All Fixtures";
         wrap.appendChild(a);
       }
       return wrap;
@@ -35337,13 +35374,13 @@ order:initial
         div.className = "tmvu-home-thread";
         const date = document.createElement("div");
         date.className = "tmvu-home-thread-date";
-        date.textContent = dateEl ? clean4(dateEl.textContent) : "";
+        date.textContent = dateEl ? clean5(dateEl.textContent) : "";
         div.appendChild(date);
         const copy = document.createElement("div");
         copy.className = "tmvu-home-thread-copy";
         const a = document.createElement("a");
         a.href = linkEl.getAttribute("href");
-        a.textContent = clean4(linkEl.textContent);
+        a.textContent = clean5(linkEl.textContent);
         copy.appendChild(a);
         div.appendChild(copy);
         wrap.appendChild(div);
@@ -35369,13 +35406,13 @@ order:initial
       const tabs = [];
       const HIDDEN_LABELS = /* @__PURE__ */ new Set(["inbox", "sent", "trash"]);
       col1.querySelectorAll(".tabs_new > [tab_active]").forEach((el2) => {
-        const label = clean4(el2.textContent).toLowerCase();
+        const label = clean5(el2.textContent).toLowerCase();
         if (HIDDEN_LABELS.has(label)) return;
         const targetId = el2.getAttribute("tab_active") || "";
         tabs.push({
           id: el2.getAttribute("id") || "",
           element: el2,
-          label: clean4(el2.textContent).replace(/private messages/i, "Messages"),
+          label: clean5(el2.textContent).replace(/private messages/i, "Messages"),
           targetId,
           onclick: el2.getAttribute("onclick") || "",
           isActive: el2.hasAttribute("selected") || el2.classList.contains("active_tab")
@@ -35384,7 +35421,7 @@ order:initial
       return tabs;
     };
     const appendText = (parent, text) => {
-      const value = clean4(text);
+      const value = clean5(text);
       if (!value) return;
       parent.appendChild(document.createTextNode((parent.childNodes.length ? " " : "") + value));
     };
@@ -35410,20 +35447,20 @@ order:initial
       return { wrap, refs };
     };
     const parseMatchTitle = (value) => {
-      const text = clean4(value);
+      const text = clean5(value);
       const sideMatch = text.match(/^(Home|Away)\b/i);
       if (!sideMatch) return null;
-      let rest = clean4(text.slice(sideMatch[0].length));
+      let rest = clean5(text.slice(sideMatch[0].length));
       let isBTeam = false;
       if (/^B\b/i.test(rest)) {
         isBTeam = true;
-        rest = clean4(rest.replace(/^B\b/i, ""));
+        rest = clean5(rest.replace(/^B\b/i, ""));
       }
       const splitToken = " Match VS ";
       const splitIdx = rest.toLowerCase().indexOf(splitToken.toLowerCase());
       if (splitIdx < 0) return null;
-      const competition = clean4(rest.slice(0, splitIdx));
-      const opponent = clean4(rest.slice(splitIdx + splitToken.length));
+      const competition = clean5(rest.slice(0, splitIdx));
+      const opponent = clean5(rest.slice(splitIdx + splitToken.length));
       if (!competition || !opponent) return null;
       return {
         side: sideMatch[1],
@@ -35433,7 +35470,7 @@ order:initial
       };
     };
     const parseMarketMeta = (value) => {
-      const text = clean4(String(value || "").replace(/^»\s*/, ""));
+      const text = clean5(String(value || "").replace(/^»\s*/, ""));
       if (!text) return null;
       if (/current\s+bid/i.test(text)) {
         return { status: "Current bid" };
@@ -35442,7 +35479,7 @@ order:initial
         return { status: "No bids" };
       }
       const firstChunk = text.split(/\s-\s|:/)[0];
-      return { status: clean4(firstChunk) || text };
+      return { status: clean5(firstChunk) || text };
     };
     const createEventRow = (ev) => {
       var _a2, _b;
@@ -35456,7 +35493,7 @@ order:initial
       let timeSet = false;
       let matchInfo = null;
       let marketInfo = null;
-      const fullEventText = clean4(ev.textContent || "");
+      const fullEventText = clean5(ev.textContent || "");
       row.href = ev.getAttribute("href") || "#";
       row.className = "tmvu-home-cal-event";
       timeEl.className = "tmvu-home-cal-time";
@@ -35474,7 +35511,7 @@ order:initial
               timeEl.textContent = match[1];
               timeSet = true;
               value = value.slice(match[0].length);
-            } else if (clean4(value)) {
+            } else if (clean5(value)) {
               timeSet = true;
             }
           }
@@ -35508,7 +35545,7 @@ order:initial
           mode = "market";
           const coin = document.createElement("span");
           coin.className = "tmvu-home-cal-coin";
-          coin.textContent = clean4(node.textContent);
+          coin.textContent = clean5(node.textContent);
           (target === "meta" ? meta : title).appendChild(coin);
           return;
         }
@@ -35586,7 +35623,7 @@ order:initial
           status.textContent = marketInfo.status;
           meta.appendChild(status);
         }
-        const coinText = clean4(((_b = ev.querySelector(".coin")) == null ? void 0 : _b.textContent) || "");
+        const coinText = clean5(((_b = ev.querySelector(".coin")) == null ? void 0 : _b.textContent) || "");
         if (coinText) {
           const price = document.createElement("span");
           price.className = "tmvu-home-cal-market-price";
@@ -35645,7 +35682,7 @@ order:initial
         if (day.classList.contains("subtle")) dayEl.classList.add("tmvu-home-cal-day--past");
         const headSrc = ((_a2 = day.querySelector(".day_name img")) == null ? void 0 : _a2.src) || "";
         const numMatch = headSrc.match(/calendar_numeral_(\d+)/);
-        const weekday = clean4(((_b = day.querySelector(".day_name")) == null ? void 0 : _b.textContent) || "");
+        const weekday = clean5(((_b = day.querySelector(".day_name")) == null ? void 0 : _b.textContent) || "");
         const stamp = document.createElement("div");
         stamp.className = "tmvu-home-cal-day-stamp";
         const num = document.createElement("div");
@@ -35676,13 +35713,13 @@ order:initial
       const seen = /* @__PURE__ */ new Set();
       const items = [];
       for (const message of messages) {
-        const key = clean4((message == null ? void 0 : message.conversation_id) || (message == null ? void 0 : message.id));
+        const key = clean5((message == null ? void 0 : message.conversation_id) || (message == null ? void 0 : message.id));
         if (!key || seen.has(key)) continue;
         seen.add(key);
         items.push({
-          senderName: clean4(message == null ? void 0 : message.sender_name) || "Unknown sender",
-          subject: clean4(message == null ? void 0 : message.subject) || "(No subject)",
-          time: clean4(message == null ? void 0 : message.time),
+          senderName: clean5(message == null ? void 0 : message.sender_name) || "Unknown sender",
+          subject: clean5(message == null ? void 0 : message.subject) || "(No subject)",
+          time: clean5(message == null ? void 0 : message.time),
           href: "/home/"
         });
         if (items.length >= 10) break;
@@ -35711,12 +35748,12 @@ order:initial
       const items = [];
       const seen = /* @__PURE__ */ new Set();
       anchors.forEach((anchor) => {
-        const title = clean4(anchor.textContent);
+        const title = clean5(anchor.textContent);
         const href = anchor.getAttribute("href") || "#";
         if (!title || seen.has(`${href}|${title}`)) return;
         seen.add(`${href}|${title}`);
         const row = anchor.closest("li, tr, .referral, .referrals_row, .friend, .content") || anchor.parentElement;
-        const sub = clean4((row == null ? void 0 : row.textContent) || "").replace(title, "").trim();
+        const sub = clean5((row == null ? void 0 : row.textContent) || "").replace(title, "").trim();
         items.push({ title, sub, href });
       });
       return items.slice(0, 12);
@@ -35743,7 +35780,7 @@ order:initial
       const origTabs = parseOrigTabs(col1);
       const tabsContent = col1.querySelector(".tabs_content");
       const activeKey = ((_a2 = origTabs.find((t) => t.isActive)) == null ? void 0 : _a2.targetId) || ((_b = origTabs[0]) == null ? void 0 : _b.targetId) || "";
-      const keyByLabel = Object.fromEntries(origTabs.map((tab) => [clean4(tab.label).toLowerCase(), tab.targetId]));
+      const keyByLabel = Object.fromEntries(origTabs.map((tab) => [clean5(tab.label).toLowerCase(), tab.targetId]));
       const calendarKey = keyByLabel.calendar || "calendar";
       const feedKey = keyByLabel.feed || "feed";
       const messagesKey = keyByLabel.messages || keyByLabel["private messages"] || "messages";
@@ -36518,14 +36555,148 @@ order:initial
     mountInternationalCupOverviewPage(main2);
   }
 
-  // src/pages/forum.js
-  function initForumPage(main2) {
-    if (!main2 || !main2.isConnected) return;
-    const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const esc2 = (v) => String(v || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-    const htmlOf7 = (node) => node ? node.outerHTML : "";
-    const buttonHtml13 = ({ cls = "", attrs = {}, ...opts } = {}) => htmlOf7(TmUI.button({ ...opts, cls, attrs }));
-    function parseSidebar(src) {
+  // src/components/forum/tm-forum-styles.js
+  function injectForumStyles() {
+    if (document.getElementById("tmvu-forum-style")) return;
+    injectTmPageLayoutStyles();
+    const s6 = document.createElement("style");
+    s6.id = "tmvu-forum-style";
+    s6.textContent = [
+      // layout
+      ".tmvu-forum-page{--tmu-page-sidebar-width:240px}",
+      ".tmvu-forum-sidebar .tmvu-side-menu{flex:1 1 auto;width:100%;position:static}",
+      ".tmvu-forum-thread-hero-actions{display:flex;gap:var(--tmu-space-sm);flex-wrap:wrap}",
+      ".tmvu-forum-thread-hero-actions .tmu-btn{flex-shrink:0}",
+      // country selector
+      ".tmvu-forum-country-wrap{display:flex;flex-direction:column;gap:var(--tmu-space-sm)}",
+      ".tmvu-forum-country-select{width:100%;padding:var(--tmu-space-sm) var(--tmu-space-md);border-radius:var(--tmu-space-sm);border:1px solid var(--tmu-border-soft-alpha-strong);background:var(--tmu-surface-input-dark);color:var(--tmu-text-strong);font:inherit;font-size:var(--tmu-font-sm)}",
+      // pager
+      ".tmvu-forum-pager{display:flex;gap:var(--tmu-space-xs);flex-wrap:wrap;align-items:center}",
+      ".tmvu-forum-pager-link{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:28px;padding:0 var(--tmu-space-sm);border-radius:999px;border:1px solid var(--tmu-border-soft-alpha-mid);background:var(--tmu-surface-dark-soft);color:var(--tmu-text-main);font-size:var(--tmu-font-xs);font-weight:700;text-decoration:none}",
+      ".tmvu-forum-pager-link:hover{background:var(--tmu-success-fill-soft);color:var(--tmu-text-strong)}",
+      ".tmvu-forum-pager-link.is-current{background:var(--tmu-success-fill-hover);border-color:var(--tmu-border-success);color:var(--tmu-text-strong)}",
+      ".tmvu-forum-pager-link.icon{min-width:28px;font-size:var(--tmu-font-md)}",
+      // listing topics
+      ".tmvu-forum-topic-list{display:flex;flex-direction:column;gap:var(--tmu-space-sm)}",
+      ".tmvu-forum-pager-footer{margin-top:var(--tmu-space-md)}",
+      ".tmvu-forum-topic{display:flex;justify-content:space-between;gap:var(--tmu-space-lg);padding:var(--tmu-space-md) var(--tmu-space-lg);border-radius:var(--tmu-space-md);border:1px solid var(--tmu-border-soft-alpha);background:var(--tmu-surface-dark-soft);transition:background .15s}",
+      ".tmvu-forum-topic:hover{background:var(--tmu-surface-panel)}",
+      ".tmvu-forum-topic.is-subtle{opacity:.84}",
+      ".tmvu-forum-topic-main{flex:1 1 auto;min-width:0}",
+      ".tmvu-forum-topic-title{color:var(--tmu-text-strong);font-size:var(--tmu-font-md);font-weight:700;line-height:1.35;text-decoration:none}",
+      ".tmvu-forum-topic-title:hover{color:var(--tmu-text-strong);text-decoration:underline}",
+      ".tmvu-forum-topic-badges{display:flex;gap:var(--tmu-space-xs);flex-wrap:wrap;align-items:center;margin-top:var(--tmu-space-xs)}",
+      ".tmvu-forum-topic-meta{margin-top:var(--tmu-space-sm);display:flex;gap:var(--tmu-space-sm);color:var(--tmu-text-muted);font-size:var(--tmu-font-xs)}",
+      ".tmvu-forum-topic-side{display:flex;flex-direction:column;align-items:flex-end;gap:var(--tmu-space-sm);flex-shrink:0;width:76px}",
+      ".tmvu-forum-topic-jump{color:var(--tmu-text-main);font-size:var(--tmu-font-xs);font-weight:700;text-decoration:none;white-space:nowrap}",
+      ".tmvu-forum-topic-jump:hover{color:var(--tmu-text-strong);text-decoration:underline}",
+      // thread posts
+      ".tmvu-forum-post{display:flex;gap:var(--tmu-space-lg);padding:var(--tmu-space-lg);border-radius:var(--tmu-space-md);border:1px solid var(--tmu-border-soft-alpha);background:var(--tmu-surface-dark-soft)}",
+      ".tmvu-forum-post-user{flex-shrink:0;width:140px;display:flex;flex-direction:column;align-items:center;gap:var(--tmu-space-xs);text-align:center}",
+      ".tmvu-forum-post-logo{width:72px;height:72px;border-radius:var(--tmu-space-md);overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--tmu-surface-accent-soft);border:1px solid var(--tmu-border-soft-alpha)}",
+      ".tmvu-forum-post-logo img{width:72px;height:72px;object-fit:contain}",
+      ".tmvu-forum-post-club{font-size:var(--tmu-font-xs);font-weight:700;color:var(--tmu-text-main);text-decoration:none;line-height:1.3;word-break:break-word}",
+      ".tmvu-forum-post-club:hover{color:var(--tmu-text-inverse)}",
+      ".tmvu-forum-post-rank{font-size:var(--tmu-font-xs);color:var(--tmu-text-muted);font-style:italic;text-align:center}",
+      ".tmvu-forum-post-flag img{height:14px;border-radius:var(--tmu-space-xs)}",
+      ".tmvu-forum-post-badges{display:flex;flex-wrap:wrap;justify-content:center;gap:var(--tmu-space-xs);margin-top:var(--tmu-space-xs);align-items:center}",
+      ".tmvu-forum-post-pro{height:12px}",
+      ".tmvu-forum-post-veteran{height:16px}",
+      ".tmvu-forum-post-franks{display:flex;gap:0;flex-wrap:wrap;justify-content:center}",
+      ".tmvu-forum-post-franks img{height:12px}",
+      '.tmvu-forum-post-franks img[src*="micro_gt"]{filter:hue-rotate(10deg)}',
+      '.tmvu-forum-post-franks img[src*="micro_dt"]{filter:hue-rotate(30deg)}',
+      '.tmvu-forum-post-franks img[src*="micro_ft"]{filter:hue-rotate(60deg)}',
+      '.tmvu-forum-post-franks img[src*="micro_lt"]{filter:hue-rotate(90deg)}',
+      '.tmvu-forum-post-franks img[src*="micro_wt"]{filter:hue-rotate(120deg)}',
+      '.tmvu-forum-post-franks img[src*="micro_mt"]{filter:hue-rotate(150deg)}',
+      '.tmvu-forum-post-franks img[src*="micro_st"]{filter:hue-rotate(180deg)}',
+      '.tmvu-forum-post-franks img[src*="micro_ct"]{filter:hue-rotate(210deg)}',
+      '.tmvu-forum-post-franks img[src*="micro_ot"]{filter:hue-rotate(240deg)}',
+      '.tmvu-forum-post-franks img[src*="micro_xt"]{filter:hue-rotate(270deg)}',
+      '.tmvu-forum-post-franks img[src*="micro_rt"]{filter:hue-rotate(300deg)}',
+      '.tmvu-forum-post-franks img[src*="micro_nt"]{filter:hue-rotate(330deg)}',
+      ".tmvu-forum-post-body{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:var(--tmu-space-sm)}",
+      ".tmvu-forum-post-meta{display:flex;align-items:center;gap:var(--tmu-space-md);padding-bottom:var(--tmu-space-sm);border-bottom:1px solid var(--tmu-border-soft-alpha)}",
+      ".tmvu-forum-post-num{font-size:var(--tmu-font-xs);font-weight:800;color:var(--tmu-text-dim);text-decoration:none}",
+      ".tmvu-forum-post-num:hover{color:var(--tmu-text-accent-soft)}",
+      ".tmvu-forum-post-date{font-size:var(--tmu-font-xs);color:var(--tmu-text-muted);margin-left:auto}",
+      ".tmvu-forum-post-likes{display:flex;gap:var(--tmu-space-xs);align-items:center;cursor:pointer;border-radius:var(--tmu-space-xs);padding:0 var(--tmu-space-xs);transition:background .12s}",
+      ".tmvu-forum-post-likes:hover{background:var(--tmu-success-fill-faint)}",
+      ".tmvu-forum-post-like-pos{color:var(--tmu-success);font-size:var(--tmu-font-xs);font-weight:700}",
+      ".tmvu-forum-post-like-neg{color:var(--tmu-warning-soft);font-size:var(--tmu-font-xs);font-weight:700}",
+      ".tmvu-forum-post-content{font-size:var(--tmu-font-sm);color:var(--tmu-text-main);line-height:1.65;word-break:break-word}",
+      ".tmvu-forum-post-content a{color:var(--tmu-text-accent-soft);text-decoration:none}",
+      ".tmvu-forum-post-content a:hover{text-decoration:underline}",
+      ".tmvu-forum-post-content a[player_link]{white-space:nowrap}",
+      ".tmvu-pstars{display:inline-flex;align-items:center;gap:0;vertical-align:middle;margin-right:var(--tmu-space-xs)}",
+      ".tmvu-pinfo{font-size:var(--tmu-font-xs);color:var(--tmu-text-panel-label);font-weight:600;margin-left:var(--tmu-space-xs);opacity:.85}",
+      ".tmvu-forum-post-content img{max-width:100%;border-radius:var(--tmu-space-sm);margin:var(--tmu-space-xs) 0}",
+      ".tmvu-forum-post-content .quote{margin:var(--tmu-space-sm) 0;padding:var(--tmu-space-sm) var(--tmu-space-md);border-left:var(--tmu-space-xs) solid var(--tmu-border-success);background:var(--tmu-surface-accent-soft);border-radius:0 var(--tmu-space-sm) var(--tmu-space-sm) 0;font-size:var(--tmu-font-sm);color:var(--tmu-text-accent-soft)}",
+      ".tmvu-forum-post-content .quote_text{display:block}",
+      ".tmvu-forum-post-content .mega_quotes{display:none!important}",
+      ".tmvu-forum-post-content .subtle.align_right{font-size:var(--tmu-font-xs);color:var(--tmu-text-muted);text-align:right;margin-top:var(--tmu-space-xs)}",
+      ".tmvu-forum-post-content .text_red{color:var(--tmu-danger)}",
+      ".tmvu-forum-post-content .text_blue{color:var(--tmu-info-alt)}",
+      ".tmvu-forum-post-content .text_orange{color:var(--tmu-warning-soft)}",
+      ".tmvu-forum-post-actions{display:flex;gap:var(--tmu-space-sm);align-items:center;padding-top:var(--tmu-space-sm);border-top:1px solid var(--tmu-border-soft-alpha)}",
+      ".tmvu-post-btn{line-height:1;display:inline-flex;align-items:center}",
+      ".tmvu-post-link{padding:var(--tmu-space-xs) var(--tmu-space-md);border-radius:var(--tmu-space-sm);border:1px solid var(--tmu-border-soft-alpha-strong);background:var(--tmu-surface-accent-soft);color:var(--tmu-text-accent-soft);font-size:var(--tmu-font-xs);font-weight:700;line-height:1;text-decoration:none;display:inline-flex;align-items:center}",
+      ".tmvu-post-link:hover{background:var(--tmu-success-fill-soft);color:var(--tmu-text-strong);border-color:var(--tmu-border-success)}",
+      ".tmvu-post-hidden{display:none!important}",
+      // reply / compose form
+      ".tmvu-forum-form{display:flex;flex-direction:column;gap:0}",
+      ".tmvu-forum-form-toolbar{display:flex;flex-wrap:wrap;gap:var(--tmu-space-xs);padding:var(--tmu-space-sm);background:var(--tmu-surface-dark-strong);border-radius:var(--tmu-space-sm) var(--tmu-space-sm) 0 0;border:1px solid var(--tmu-border-soft-alpha-mid);border-bottom:none}",
+      ".tmvu-ftool{min-width:26px;min-height:26px;line-height:1}",
+      ".tmvu-ftool img{height:14px;filter:brightness(1.5)saturate(.4);pointer-events:none;vertical-align:middle}",
+      ".tmvu-ftool svg{width:15px;height:15px;display:block;pointer-events:none}",
+      ".tmvu-ftool .smiley{pointer-events:none}",
+      ".tmvu-forum-form #forum_post_form{display:block!important}",
+      ".tmvu-forum-form #forum_post_form>.forum_center,.tmvu-forum-form #forum_post_form>.textarea_icons{display:none!important}",
+      ".tmvu-forum-title-input{width:100%;box-sizing:border-box;padding:var(--tmu-space-sm) var(--tmu-space-md);background:var(--tmu-surface-input-dark);border:1px solid var(--tmu-border-soft-alpha-strong);border-radius:var(--tmu-space-sm) var(--tmu-space-sm) 0 0;color:var(--tmu-text-main);font-size:var(--tmu-font-sm);font-family:inherit;outline:none;border-bottom:none;display:block}",
+      ".tmvu-forum-title-input:focus{border-color:var(--tmu-border-success);background:var(--tmu-surface-input-dark-focus)}",
+      ".tmvu-forum-title-input+.tmvu-forum-form-toolbar{border-radius:0;border-top:1px solid var(--tmu-border-soft-alpha-mid)}",
+      ".tmvu-forum-title-input~* .tmvu-forum-form #topic_content{border-radius:0 0 var(--tmu-space-sm) var(--tmu-space-sm)!important}",
+      ".tmvu-forum-form #forum_post_form .align_center{display:block!important;text-align:left!important}",
+      ".tmvu-forum-form #forum_post_form .textarea_buttons{visibility:hidden;height:0;overflow:hidden;margin:0;padding:0}",
+      ".tmvu-forum-form #topic_content{width:100%!important;max-width:100%!important;box-sizing:border-box!important;padding:var(--tmu-space-md)!important;background:var(--tmu-surface-input-dark)!important;border:1px solid var(--tmu-border-soft-alpha-strong)!important;border-radius:0 0 var(--tmu-space-sm) var(--tmu-space-sm)!important;color:var(--tmu-text-main)!important;font-size:var(--tmu-font-sm)!important;font-family:inherit!important;line-height:1.6!important;resize:vertical!important;min-height:120px!important;outline:none!important;display:block!important}",
+      ".tmvu-forum-form #topic_content:focus{border-color:var(--tmu-border-success)!important;background:var(--tmu-surface-input-dark-focus)!important}",
+      // inline panel (colors / smileys / url prompt)
+      ".tmvu-forum-panel{display:none;padding:var(--tmu-space-sm);background:var(--tmu-surface-panel-dark);border-left:1px solid var(--tmu-border-soft-alpha-mid);border-right:1px solid var(--tmu-border-soft-alpha-mid)}",
+      ".tmvu-fpanel-prompt{display:flex;gap:var(--tmu-space-sm);align-items:center}",
+      ".tmvu-fpanel-input{flex:1;min-width:0;padding:var(--tmu-space-xs) var(--tmu-space-sm);border-radius:var(--tmu-space-sm);border:1px solid var(--tmu-border-soft-alpha-strong);background:var(--tmu-surface-input-dark);color:var(--tmu-text-main);font-size:var(--tmu-font-sm);font-family:inherit;outline:none}",
+      ".tmvu-fpanel-input:focus{border-color:var(--tmu-border-success);background:var(--tmu-surface-input-dark-focus)}",
+      ".tmvu-fpanel-colors{display:flex;gap:var(--tmu-space-xs);align-items:center;flex-wrap:wrap}",
+      ".tmvu-fcolor{width:20px;height:20px;border-radius:var(--tmu-space-xs);border:1px solid var(--tmu-surface-overlay-strong);cursor:pointer;flex-shrink:0;transition:transform .1s}",
+      ".tmvu-fcolor:hover{transform:scale(1.18);border-color:var(--tmu-border-soft-alpha-strong)}",
+      ".tmvu-fcolor--yellow{background:#c8a800}",
+      ".tmvu-fcolor--orange{background:#c86400}",
+      ".tmvu-fcolor--red{background:#b82020}",
+      ".tmvu-fcolor--purple{background:#7818a8}",
+      ".tmvu-fcolor--blue{background:#1650c0}",
+      ".tmvu-fcolor--pink{background:#b02888}",
+      ".tmvu-fcolor--black{background:#182814}",
+      ".tmvu-fpanel-smileys{display:flex;gap:var(--tmu-space-xs);align-items:center;flex-wrap:wrap}",
+      ".tmvu-fsmiley{display:inline-flex;align-items:center;justify-content:center;padding:var(--tmu-space-xs);border-radius:var(--tmu-space-xs);background:var(--tmu-surface-accent-soft);border:1px solid var(--tmu-border-soft-alpha);cursor:pointer;min-width:26px;min-height:26px}",
+      ".tmvu-fsmiley:hover{background:var(--tmu-success-fill-soft)}",
+      ".tmvu-ftool--sm{padding:0 var(--tmu-space-sm)!important;font-size:var(--tmu-font-xs)!important;min-width:auto!important;min-height:auto!important}",
+      "@media(max-width:960px){.tmvu-forum-post-user{width:100px}}"
+    ].join("");
+    document.head.appendChild(s6);
+  }
+
+  // src/components/forum/tm-forum-utils.js
+  var esc2 = (v) => String(v || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
+
+  // src/components/forum/tm-forum-sidebar.js
+  var TmForumSidebar = {
+    /**
+     * Parse sidebar data from TM DOM.
+     * @param {Element} src
+     * @returns {{ countryOptions, currentCountry, menuGroups }}
+     */
+    parse(src) {
       var _a2, _b, _c;
       const countryOptions = Array.from(src.querySelectorAll("#menu_country_select_hidden option")).map((o) => ({
         val: o.value,
@@ -36536,7 +36707,9 @@ order:initial
       const urlCode = urlMatch ? urlMatch[1].toLowerCase() : "";
       let activeOption = countryOptions.find((o) => o.val.toLowerCase() === urlCode);
       if (!activeOption && urlCode) {
-        activeOption = countryOptions.find((o) => o.val.toLowerCase() === urlCode || o.label.toLowerCase().replace(/\s*\[.*$/, "").trim().toLowerCase() === urlCode);
+        activeOption = countryOptions.find(
+          (o) => o.val.toLowerCase() === urlCode || o.label.toLowerCase().replace(/\s*\[.*$/, "").trim() === urlCode
+        );
       }
       if (activeOption) {
         countryOptions.forEach((o) => {
@@ -36556,14 +36729,24 @@ order:initial
             group = { title: clean4(node.textContent), items: [] };
             result.push(group);
           } else if (node.tagName === "A") {
-            group.items.push({ href: node.getAttribute("href") || "#", label: clean4(node.textContent), active: node.classList.contains("selected") });
+            group.items.push({
+              href: node.getAttribute("href") || "#",
+              label: clean4(node.textContent),
+              active: node.classList.contains("selected")
+            });
           }
         });
         return result.filter((g) => g.items.length);
       })();
       return { countryOptions, currentCountry, menuGroups };
-    }
-    function buildSidebar({ countryOptions, currentCountry, menuGroups }) {
+    },
+    /**
+     * Mount the sidebar into host.
+     * @param {Element} host
+     * @param {{ countryOptions, currentCountry, menuGroups }} props
+     * @returns {Element}
+     */
+    mount(host, { countryOptions, currentCountry, menuGroups }) {
       var _a2;
       const sidebar = document.createElement("aside");
       sidebar.className = "tmvu-forum-sidebar tmu-page-sidebar-stack";
@@ -36571,10 +36754,11 @@ order:initial
       TmSectionCard.mount(scopeHost, {
         title: currentCountry || "Scope",
         icon: "\u{1F30D}",
-        bodyHtml: '<div class="tmvu-forum-country-wrap"><select class="tmvu-forum-country-select" data-forum-country>' + countryOptions.map((o) => '<option value="' + esc2(o.val) + '"' + (o.sel ? " selected" : "") + ">" + esc2(o.label) + "</option>").join("") + "</select></div>"
+        bodyHtml: '<div class="tmvu-forum-country-wrap"><select class="tmvu-forum-country-select" data-forum-country>' + countryOptions.map(
+          (o) => '<option value="' + esc2(o.val) + '"' + (o.sel ? " selected" : "") + ">" + esc2(o.label) + "</option>"
+        ).join("") + "</select></div>"
       });
       sidebar.appendChild(scopeHost.firstElementChild || scopeHost);
-      const navHost = document.createElement("div");
       const activeItem = menuGroups.flatMap((g) => g.items).find((item) => item.active);
       const currentHref = (activeItem == null ? void 0 : activeItem.href) || window.location.pathname;
       const navItems = [];
@@ -36583,14 +36767,26 @@ order:initial
         if (g.title) navItems.push({ type: "subtitle", label: g.title });
         g.items.forEach((item) => navItems.push({ type: "link", href: item.href, label: item.label }));
       });
+      const navHost = document.createElement("div");
       const navEl = TmSideMenu.mount(navHost, { id: "tmvu-forum-channels-nav", items: navItems, currentHref });
       if (navEl) sidebar.appendChild(navEl);
       (_a2 = sidebar.querySelector("[data-forum-country]")) == null ? void 0 : _a2.addEventListener("change", (e) => {
         window.location.assign("/forum/" + e.target.value + "/general/");
       });
+      host.appendChild(sidebar);
       return sidebar;
     }
-    function parsePager(container, sel) {
+  };
+
+  // src/components/forum/tm-forum-pager.js
+  var TmForumPager = {
+    /**
+     * Parse page navigation links from a container.
+     * @param {Element} container
+     * @param {string} sel  CSS selector for the pager element
+     * @returns {Array<{ label, href, current, icon }>}
+     */
+    parse(container, sel) {
       const el2 = container.querySelector(sel);
       return Array.from((el2 == null ? void 0 : el2.querySelectorAll(".page_navigation")) || []).map((node) => ({
         label: clean4(node.textContent) || "&rsaquo;",
@@ -36598,276 +36794,164 @@ order:initial
         current: node.tagName === "DIV" || node.classList.contains("selected"),
         icon: node.classList.contains("icon")
       }));
-    }
-    function pagerHtml(links) {
+    },
+    /**
+     * Render pager links to HTML string.
+     * @param {Array} links
+     * @returns {string}
+     */
+    html(links) {
       if (!links.length) return "";
       return '<div class="tmvu-forum-pager">' + links.map(
         (l) => l.href ? '<a class="tmvu-forum-pager-link' + (l.icon ? " icon" : "") + '" href="' + esc2(l.href) + '">' + (l.icon ? "&rsaquo;" : esc2(l.label)) + "</a>" : '<span class="tmvu-forum-pager-link is-current">' + esc2(l.label) + "</span>"
       ).join("") + "</div>";
     }
-    function injectStyles39() {
-      if (document.getElementById("tmvu-forum-style")) return;
-      injectTmPageLayoutStyles();
-      const s6 = document.createElement("style");
-      s6.id = "tmvu-forum-style";
-      s6.textContent = [
-        // layout
-        ".tmvu-forum-page{--tmu-page-sidebar-width:240px}",
-        ".tmvu-forum-sidebar .tmvu-side-menu{flex:1 1 auto;width:100%;position:static}",
-        ".tmvu-forum-thread-hero-actions{display:flex;gap:var(--tmu-space-sm);flex-wrap:wrap}",
-        ".tmvu-forum-thread-hero-actions .tmu-btn{flex-shrink:0}",
-        // country selector
-        ".tmvu-forum-country-wrap{display:flex;flex-direction:column;gap:var(--tmu-space-sm)}",
-        ".tmvu-forum-country-select{width:100%;padding:var(--tmu-space-sm) var(--tmu-space-md);border-radius:var(--tmu-space-sm);border:1px solid var(--tmu-border-soft-alpha-strong);background:var(--tmu-surface-input-dark);color:var(--tmu-text-strong);font:inherit;font-size:var(--tmu-font-sm)}",
-        // pager
-        ".tmvu-forum-pager{display:flex;gap:var(--tmu-space-xs);flex-wrap:wrap;align-items:center}",
-        ".tmvu-forum-pager-link{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:28px;padding:0 var(--tmu-space-sm);border-radius:999px;border:1px solid var(--tmu-border-soft-alpha-mid);background:var(--tmu-surface-dark-soft);color:var(--tmu-text-main);font-size:var(--tmu-font-xs);font-weight:700;text-decoration:none}",
-        ".tmvu-forum-pager-link:hover{background:var(--tmu-success-fill-soft);color:var(--tmu-text-strong)}",
-        ".tmvu-forum-pager-link.is-current{background:var(--tmu-success-fill-hover);border-color:var(--tmu-border-success);color:var(--tmu-text-strong)}",
-        ".tmvu-forum-pager-link.icon{min-width:28px;font-size:var(--tmu-font-md)}",
-        // listing topics
-        ".tmvu-forum-topic-list{display:flex;flex-direction:column;gap:var(--tmu-space-sm)}",
-        ".tmvu-forum-pager-footer{margin-top:var(--tmu-space-md)}",
-        ".tmvu-forum-topic{display:flex;justify-content:space-between;gap:var(--tmu-space-lg);padding:var(--tmu-space-md) var(--tmu-space-lg);border-radius:var(--tmu-space-md);border:1px solid var(--tmu-border-soft-alpha);background:var(--tmu-surface-dark-soft);transition:background .15s}",
-        ".tmvu-forum-topic:hover{background:var(--tmu-surface-panel)}",
-        ".tmvu-forum-topic.is-subtle{opacity:.84}",
-        ".tmvu-forum-topic-main{flex:1 1 auto;min-width:0}",
-        ".tmvu-forum-topic-title{color:var(--tmu-text-strong);font-size:var(--tmu-font-md);font-weight:700;line-height:1.35;text-decoration:none}",
-        ".tmvu-forum-topic-title:hover{color:var(--tmu-text-strong);text-decoration:underline}",
-        ".tmvu-forum-topic-badges{display:flex;gap:var(--tmu-space-xs);flex-wrap:wrap;align-items:center;margin-top:var(--tmu-space-xs)}",
-        ".tmvu-forum-topic-meta{margin-top:var(--tmu-space-sm);display:flex;gap:var(--tmu-space-sm);color:var(--tmu-text-muted);font-size:var(--tmu-font-xs)}",
-        ".tmvu-forum-topic-side{display:flex;flex-direction:column;align-items:flex-end;gap:var(--tmu-space-sm);flex-shrink:0;width:76px}",
-        ".tmvu-forum-topic-jump{color:var(--tmu-text-main);font-size:var(--tmu-font-xs);font-weight:700;text-decoration:none;white-space:nowrap}",
-        ".tmvu-forum-topic-jump:hover{color:var(--tmu-text-strong);text-decoration:underline}",
-        // thread posts
-        ".tmvu-forum-post{display:flex;gap:var(--tmu-space-lg);padding:var(--tmu-space-lg);border-radius:var(--tmu-space-md);border:1px solid var(--tmu-border-soft-alpha);background:var(--tmu-surface-dark-soft)}",
-        ".tmvu-forum-post-user{flex-shrink:0;width:140px;display:flex;flex-direction:column;align-items:center;gap:var(--tmu-space-xs);text-align:center}",
-        ".tmvu-forum-post-logo{width:72px;height:72px;border-radius:var(--tmu-space-md);overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--tmu-surface-accent-soft);border:1px solid var(--tmu-border-soft-alpha)}",
-        ".tmvu-forum-post-logo img{width:72px;height:72px;object-fit:contain}",
-        ".tmvu-forum-post-club{font-size:var(--tmu-font-xs);font-weight:700;color:var(--tmu-text-main);text-decoration:none;line-height:1.3;word-break:break-word}",
-        ".tmvu-forum-post-club:hover{color:var(--tmu-text-inverse)}",
-        ".tmvu-forum-post-rank{font-size:var(--tmu-font-xs);color:var(--tmu-text-muted);font-style:italic;text-align:center}",
-        ".tmvu-forum-post-flag img{height:14px;border-radius:var(--tmu-space-xs)}",
-        ".tmvu-forum-post-badges{display:flex;flex-wrap:wrap;justify-content:center;gap:var(--tmu-space-xs);margin-top:var(--tmu-space-xs);align-items:center}",
-        ".tmvu-forum-post-pro{height:12px}",
-        ".tmvu-forum-post-veteran{height:16px}",
-        ".tmvu-forum-post-franks{display:flex;gap:0;flex-wrap:wrap;justify-content:center}",
-        ".tmvu-forum-post-franks img{height:12px}",
-        '.tmvu-forum-post-franks img[src*="micro_gt"]{filter:hue-rotate(10deg)}',
-        '.tmvu-forum-post-franks img[src*="micro_dt"]{filter:hue-rotate(30deg)}',
-        '.tmvu-forum-post-franks img[src*="micro_ft"]{filter:hue-rotate(60deg)}',
-        '.tmvu-forum-post-franks img[src*="micro_lt"]{filter:hue-rotate(90deg)}',
-        '.tmvu-forum-post-franks img[src*="micro_wt"]{filter:hue-rotate(120deg)}',
-        '.tmvu-forum-post-franks img[src*="micro_mt"]{filter:hue-rotate(150deg)}',
-        '.tmvu-forum-post-franks img[src*="micro_st"]{filter:hue-rotate(180deg)}',
-        '.tmvu-forum-post-franks img[src*="micro_ct"]{filter:hue-rotate(210deg)}',
-        '.tmvu-forum-post-franks img[src*="micro_ot"]{filter:hue-rotate(240deg)}',
-        '.tmvu-forum-post-franks img[src*="micro_xt"]{filter:hue-rotate(270deg)}',
-        '.tmvu-forum-post-franks img[src*="micro_rt"]{filter:hue-rotate(300deg)}',
-        '.tmvu-forum-post-franks img[src*="micro_nt"]{filter:hue-rotate(330deg)}',
-        ".tmvu-forum-post-body{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:var(--tmu-space-sm)}",
-        ".tmvu-forum-post-meta{display:flex;align-items:center;gap:var(--tmu-space-md);padding-bottom:var(--tmu-space-sm);border-bottom:1px solid var(--tmu-border-soft-alpha)}",
-        ".tmvu-forum-post-num{font-size:var(--tmu-font-xs);font-weight:800;color:var(--tmu-text-dim);text-decoration:none}",
-        ".tmvu-forum-post-num:hover{color:var(--tmu-text-accent-soft)}",
-        ".tmvu-forum-post-date{font-size:var(--tmu-font-xs);color:var(--tmu-text-muted);margin-left:auto}",
-        ".tmvu-forum-post-likes{display:flex;gap:var(--tmu-space-xs);align-items:center;cursor:pointer;border-radius:var(--tmu-space-xs);padding:0 var(--tmu-space-xs);transition:background .12s}",
-        ".tmvu-forum-post-likes:hover{background:var(--tmu-success-fill-faint)}",
-        ".tmvu-forum-post-like-pos{color:var(--tmu-success);font-size:var(--tmu-font-xs);font-weight:700}",
-        ".tmvu-forum-post-like-neg{color:var(--tmu-warning-soft);font-size:var(--tmu-font-xs);font-weight:700}",
-        ".tmvu-forum-post-content{font-size:var(--tmu-font-sm);color:var(--tmu-text-main);line-height:1.65;word-break:break-word}",
-        ".tmvu-forum-post-content a{color:var(--tmu-text-accent-soft);text-decoration:none}",
-        ".tmvu-forum-post-content a:hover{text-decoration:underline}",
-        ".tmvu-forum-post-content a[player_link]{white-space:nowrap}",
-        ".tmvu-pstars{display:inline-flex;align-items:center;gap:0;vertical-align:middle;margin-right:var(--tmu-space-xs)}",
-        ".tmvu-pinfo{font-size:var(--tmu-font-xs);color:var(--tmu-text-panel-label);font-weight:600;margin-left:var(--tmu-space-xs);opacity:.85}",
-        ".tmvu-forum-post-content img{max-width:100%;border-radius:var(--tmu-space-sm);margin:var(--tmu-space-xs) 0}",
-        ".tmvu-forum-post-content .quote{margin:var(--tmu-space-sm) 0;padding:var(--tmu-space-sm) var(--tmu-space-md);border-left:var(--tmu-space-xs) solid var(--tmu-border-success);background:var(--tmu-surface-accent-soft);border-radius:0 var(--tmu-space-sm) var(--tmu-space-sm) 0;font-size:var(--tmu-font-sm);color:var(--tmu-text-accent-soft)}",
-        ".tmvu-forum-post-content .quote_text{display:block}",
-        ".tmvu-forum-post-content .mega_quotes{display:none!important}",
-        ".tmvu-forum-post-content .subtle.align_right{font-size:var(--tmu-font-xs);color:var(--tmu-text-muted);text-align:right;margin-top:var(--tmu-space-xs)}",
-        ".tmvu-forum-post-content .text_red{color:var(--tmu-danger)}",
-        ".tmvu-forum-post-content .text_blue{color:var(--tmu-info-alt)}",
-        ".tmvu-forum-post-content .text_orange{color:var(--tmu-warning-soft)}",
-        ".tmvu-forum-post-actions{display:flex;gap:var(--tmu-space-sm);align-items:center;padding-top:var(--tmu-space-sm);border-top:1px solid var(--tmu-border-soft-alpha)}",
-        ".tmvu-post-btn{line-height:1;display:inline-flex;align-items:center}",
-        ".tmvu-post-link{padding:var(--tmu-space-xs) var(--tmu-space-md);border-radius:var(--tmu-space-sm);border:1px solid var(--tmu-border-soft-alpha-strong);background:var(--tmu-surface-accent-soft);color:var(--tmu-text-accent-soft);font-size:var(--tmu-font-xs);font-weight:700;line-height:1;text-decoration:none;display:inline-flex;align-items:center}",
-        ".tmvu-post-link:hover{background:var(--tmu-success-fill-soft);color:var(--tmu-text-strong);border-color:var(--tmu-border-success)}",
-        ".tmvu-post-hidden{display:none!important}",
-        // reply / compose form
-        ".tmvu-forum-form{display:flex;flex-direction:column;gap:0}",
-        ".tmvu-forum-form-toolbar{display:flex;flex-wrap:wrap;gap:var(--tmu-space-xs);padding:var(--tmu-space-sm);background:var(--tmu-surface-dark-strong);border-radius:var(--tmu-space-sm) var(--tmu-space-sm) 0 0;border:1px solid var(--tmu-border-soft-alpha-mid);border-bottom:none}",
-        ".tmvu-ftool{min-width:26px;min-height:26px;line-height:1}",
-        ".tmvu-ftool img{height:14px;filter:brightness(1.5)saturate(.4);pointer-events:none;vertical-align:middle}",
-        ".tmvu-ftool svg{width:15px;height:15px;display:block;pointer-events:none}",
-        ".tmvu-ftool .smiley{pointer-events:none}",
-        ".tmvu-forum-form #forum_post_form{display:block!important}",
-        ".tmvu-forum-form #forum_post_form>.forum_center,.tmvu-forum-form #forum_post_form>.textarea_icons{display:none!important}",
-        ".tmvu-forum-title-input{width:100%;box-sizing:border-box;padding:var(--tmu-space-sm) var(--tmu-space-md);background:var(--tmu-surface-input-dark);border:1px solid var(--tmu-border-soft-alpha-strong);border-radius:var(--tmu-space-sm) var(--tmu-space-sm) 0 0;color:var(--tmu-text-main);font-size:var(--tmu-font-sm);font-family:inherit;outline:none;border-bottom:none;display:block}",
-        ".tmvu-forum-title-input:focus{border-color:var(--tmu-border-success);background:var(--tmu-surface-input-dark-focus)}",
-        ".tmvu-forum-title-input+.tmvu-forum-form-toolbar{border-radius:0;border-top:1px solid var(--tmu-border-soft-alpha-mid)}",
-        ".tmvu-forum-title-input~* .tmvu-forum-form #topic_content{border-radius:0 0 var(--tmu-space-sm) var(--tmu-space-sm)!important}",
-        ".tmvu-forum-form #forum_post_form .align_center{display:block!important;text-align:left!important}",
-        ".tmvu-forum-form #forum_post_form .textarea_buttons{visibility:hidden;height:0;overflow:hidden;margin:0;padding:0}",
-        ".tmvu-forum-form #topic_content{width:100%!important;max-width:100%!important;box-sizing:border-box!important;padding:var(--tmu-space-md)!important;background:var(--tmu-surface-input-dark)!important;border:1px solid var(--tmu-border-soft-alpha-strong)!important;border-radius:0 0 var(--tmu-space-sm) var(--tmu-space-sm)!important;color:var(--tmu-text-main)!important;font-size:var(--tmu-font-sm)!important;font-family:inherit!important;line-height:1.6!important;resize:vertical!important;min-height:120px!important;outline:none!important;display:block!important}",
-        ".tmvu-forum-form #topic_content:focus{border-color:var(--tmu-border-success)!important;background:var(--tmu-surface-input-dark-focus)!important}",
-        // inline panel (colors / smileys / url prompt)
-        ".tmvu-forum-panel{display:none;padding:var(--tmu-space-sm);background:var(--tmu-surface-panel-dark);border-left:1px solid var(--tmu-border-soft-alpha-mid);border-right:1px solid var(--tmu-border-soft-alpha-mid)}",
-        ".tmvu-fpanel-prompt{display:flex;gap:var(--tmu-space-sm);align-items:center}",
-        ".tmvu-fpanel-input{flex:1;min-width:0;padding:var(--tmu-space-xs) var(--tmu-space-sm);border-radius:var(--tmu-space-sm);border:1px solid var(--tmu-border-soft-alpha-strong);background:var(--tmu-surface-input-dark);color:var(--tmu-text-main);font-size:var(--tmu-font-sm);font-family:inherit;outline:none}",
-        ".tmvu-fpanel-input:focus{border-color:var(--tmu-border-success);background:var(--tmu-surface-input-dark-focus)}",
-        ".tmvu-fpanel-colors{display:flex;gap:var(--tmu-space-xs);align-items:center;flex-wrap:wrap}",
-        ".tmvu-fcolor{width:20px;height:20px;border-radius:var(--tmu-space-xs);border:1px solid var(--tmu-surface-overlay-strong);cursor:pointer;flex-shrink:0;transition:transform .1s}",
-        ".tmvu-fcolor:hover{transform:scale(1.18);border-color:var(--tmu-border-soft-alpha-strong)}",
-        ".tmvu-fcolor--yellow{background:#c8a800}",
-        ".tmvu-fcolor--orange{background:#c86400}",
-        ".tmvu-fcolor--red{background:#b82020}",
-        ".tmvu-fcolor--purple{background:#7818a8}",
-        ".tmvu-fcolor--blue{background:#1650c0}",
-        ".tmvu-fcolor--pink{background:#b02888}",
-        ".tmvu-fcolor--black{background:#182814}",
-        ".tmvu-fpanel-smileys{display:flex;gap:var(--tmu-space-xs);align-items:center;flex-wrap:wrap}",
-        ".tmvu-fsmiley{display:inline-flex;align-items:center;justify-content:center;padding:var(--tmu-space-xs);border-radius:var(--tmu-space-xs);background:var(--tmu-surface-accent-soft);border:1px solid var(--tmu-border-soft-alpha);cursor:pointer;min-width:26px;min-height:26px}",
-        ".tmvu-fsmiley:hover{background:var(--tmu-success-fill-soft)}",
-        ".tmvu-ftool--sm{padding:0 var(--tmu-space-sm)!important;font-size:var(--tmu-font-xs)!important;min-width:auto!important;min-height:auto!important}",
-        "@media(max-width:960px){.tmvu-forum-post-user{width:100px}}"
-      ].join("");
-      document.head.appendChild(s6);
-    }
-    function buildForumCard(liveForm, title) {
+  };
+
+  // src/components/forum/tm-forum-composer.js
+  var btn = (opts) => (TmUI.button(opts) || document.createElement("span")).outerHTML;
+  var TmForumComposer = {
+    /**
+     * Mount a reply/compose card wrapping TM's live form element.
+     * @param {Element} host  container to append the card into
+     * @param {{ liveForm: Element, title: string }} props
+     * @returns {Element|null}
+     */
+    mount(host, { liveForm, title }) {
       if (!liveForm) return null;
-      ["smiley_picker", "color_picker"].forEach(function(id) {
-        var el2 = liveForm.querySelector("#" + id);
+      ["smiley_picker", "color_picker"].forEach((id) => {
+        const el2 = liveForm.querySelector("#" + id);
         if (el2) {
           el2.style.cssText = "position:absolute;left:-9999px;top:-9999px;visibility:hidden";
           document.body.appendChild(el2);
         }
       });
       window._tmvuF = {
-        _ta: function() {
+        _ta() {
           return document.getElementById("topic_content");
         },
-        // Wrap selection with open+close tags (toggle: remove if already wrapped)
-        _wrap: function(open, close) {
-          var ta = this._ta();
+        _wrap(open, close) {
+          const ta = this._ta();
           if (!ta) return;
-          var s6 = ta.selectionStart, e = ta.selectionEnd;
-          var sel = ta.value.substring(s6, e);
-          var ins = sel.startsWith(open) && close && sel.endsWith(close) ? sel.slice(open.length, sel.length - close.length) : open + sel + close;
+          const s6 = ta.selectionStart, e = ta.selectionEnd;
+          const sel = ta.value.substring(s6, e);
+          const ins = sel.startsWith(open) && close && sel.endsWith(close) ? sel.slice(open.length, sel.length - close.length) : open + sel + close;
           ta.value = ta.value.slice(0, s6) + ins + ta.value.slice(e);
           ta.selectionStart = s6;
           ta.selectionEnd = s6 + ins.length;
           ta.focus();
         },
-        // Insert text at cursor (replaces selection)
-        _ins: function(text) {
-          var ta = this._ta();
+        _ins(text) {
+          const ta = this._ta();
           if (!ta) return;
-          var s6 = ta.selectionStart, e = ta.selectionEnd;
+          const s6 = ta.selectionStart, e = ta.selectionEnd;
           ta.value = ta.value.slice(0, s6) + text + ta.value.slice(e);
           ta.selectionStart = ta.selectionEnd = s6 + text.length;
           ta.focus();
         },
-        bold: function() {
+        bold() {
           this._wrap("[b]", "[/b]");
         },
-        italic: function() {
+        italic() {
           this._wrap("[i]", "[/i]");
         },
-        code: function() {
+        code() {
           this._wrap("[pre]", "[/pre]");
         },
-        color: function(c) {
+        color(c) {
           this._wrap("[color=" + c + "]", "[/color]");
           this._close();
         },
-        smiley: function(n) {
+        smiley(n) {
           this._ins("[smiley=" + n + "]");
           this._close();
         },
-        link: function(url) {
+        link(url) {
           url = (url || "").trim();
           if (!url) return;
-          var ta = this._ta();
+          const ta = this._ta();
           if (!ta) return;
-          var sel = ta.value.substring(ta.selectionStart, ta.selectionEnd);
+          const sel = ta.value.substring(ta.selectionStart, ta.selectionEnd);
           if (sel) this._wrap("[url=" + url + "]", "[/url]");
           else this._ins("[url=" + url + "]" + url + "[/url]");
           this._close();
         },
-        image: function(url) {
+        image(url) {
           url = (url || "").trim();
           if (!url) return;
           this._ins("[img=" + url + "]");
           this._close();
         },
-        player: function(id) {
+        player(id) {
           id = (id || "").trim();
           if (!id) return;
           this._ins("[player=" + id + "]");
           this._close();
         },
-        _panel: function() {
+        _panel() {
           return document.getElementById("tmvu-forum-panel");
         },
-        _close: function() {
-          var p = this._panel();
+        _close() {
+          const p = this._panel();
           if (p) {
             p.style.display = "none";
             p.innerHTML = "";
           }
         },
-        _open: function(html2) {
-          var p = this._panel();
+        _open(html2) {
+          const p = this._panel();
           if (!p) return;
           p.innerHTML = html2;
           p.style.display = "block";
         },
-        showColors: function() {
-          this._open('<div class="tmvu-fpanel-colors">' + ["yellow", "orange", "red", "purple", "blue", "pink", "black"].map(function(c) {
-            return buttonHtml13({ cls: "tmvu-fcolor tmvu-fcolor--" + c, title: c, size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.color('" + c + "')" } });
-          }).join("") + buttonHtml13({ slot: "&times;", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF._close()" } }) + "</div>");
+        showColors() {
+          this._open('<div class="tmvu-fpanel-colors">' + ["yellow", "orange", "red", "purple", "blue", "pink", "black"].map(
+            (c) => btn({ cls: "tmvu-fcolor tmvu-fcolor--" + c, title: c, size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.color('" + c + "')" } })
+          ).join("") + btn({ slot: "&times;", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF._close()" } }) + "</div>");
         },
-        showSmileys: function() {
-          this._open('<div class="tmvu-fpanel-smileys">' + [1, 2, 3, 4, 5, 6, 7].map(function(n) {
-            return buttonHtml13({ slot: '<span class="smiley smiley' + n + '"></span>', cls: "tmvu-fsmiley", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.smiley(" + n + ")" } });
-          }).join("") + buttonHtml13({ slot: "&times;", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF._close()" } }) + "</div>");
+        showSmileys() {
+          this._open('<div class="tmvu-fpanel-smileys">' + [1, 2, 3, 4, 5, 6, 7].map(
+            (n) => btn({ slot: '<span class="smiley smiley' + n + '"></span>', cls: "tmvu-fsmiley", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.smiley(" + n + ")" } })
+          ).join("") + btn({ slot: "&times;", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF._close()" } }) + "</div>");
         },
-        showPrompt: function(type) {
-          var ph = type === "player" ? "Player ID" : type === "image" ? "Image URL" : "https://";
-          var call = "_tmvuF." + type + "(document.getElementById('tmvu-fpanel-input').value)";
-          this._open('<div class="tmvu-fpanel-prompt"><input id="tmvu-fpanel-input" type="text" class="tmvu-fpanel-input" placeholder="' + ph + `" onkeydown="if(event.key==='Enter'){` + call + `}else if(event.key==='Escape'){_tmvuF._close()}">` + buttonHtml13({ label: "OK", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: call } }) + buttonHtml13({ slot: "&times;", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF._close()" } }) + "</div>");
-          setTimeout(function() {
-            var i = document.getElementById("tmvu-fpanel-input");
-            if (i) i.focus();
+        showPrompt(type) {
+          const ph = type === "player" ? "Player ID" : type === "image" ? "Image URL" : "https://";
+          const call = "_tmvuF." + type + "(document.getElementById('tmvu-fpanel-input').value)";
+          this._open('<div class="tmvu-fpanel-prompt"><input id="tmvu-fpanel-input" type="text" class="tmvu-fpanel-input" placeholder="' + ph + `" onkeydown="if(event.key==='Enter'){` + call + `}else if(event.key==='Escape'){_tmvuF._close()}">` + btn({ label: "OK", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: call } }) + btn({ slot: "&times;", cls: "tmvu-ftool tmvu-ftool--sm", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF._close()" } }) + "</div>");
+          setTimeout(() => {
+            var _a2;
+            (_a2 = document.getElementById("tmvu-fpanel-input")) == null ? void 0 : _a2.focus();
           }, 20);
         }
       };
-      var host = document.createElement("div");
-      TmSectionCard.mount(host, { title: title || "Reply", icon: "\u270D", bodyHtml: '<div class="tmvu-forum-form"></div>' });
-      var card = host.firstElementChild || host;
-      var wrap = card.querySelector(".tmvu-forum-form");
-      var titleInput = liveForm.querySelector("#topic_title");
+      const cardHost = document.createElement("div");
+      TmSectionCard.mount(cardHost, { title: title || "Reply", icon: "\u270D", bodyHtml: '<div class="tmvu-forum-form"></div>' });
+      const card = cardHost.firstElementChild || cardHost;
+      const wrap = card.querySelector(".tmvu-forum-form");
+      const titleInput = liveForm.querySelector("#topic_title");
       if (titleInput) {
         titleInput.className = "tmvu-forum-title-input";
-        titleInput.placeholder = "Topic title\uFFFD";
+        titleInput.placeholder = "Topic title\u2026";
         wrap.appendChild(titleInput);
       }
-      var svgB = '<svg viewBox="0 0 16 16" fill="none" stroke="none" xmlns="http://www.w3.org/2000/svg"><text x="2" y="13" font-size="13" font-weight="900" font-family="serif" fill="currentColor">B</text></svg>';
-      var svgI = '<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><text x="5" y="13" font-size="13" font-style="italic" font-weight="700" font-family="serif" fill="currentColor">I</text></svg>';
-      var svgCode = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><polyline points="5,4 1,8 5,12"/><polyline points="11,4 15,8 11,12"/></svg>';
-      var svgColor = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" xmlns="http://www.w3.org/2000/svg"><path d="M8 2 L14 13 H2 Z" stroke-linejoin="round"/><line x1="4.5" y1="9.5" x2="11.5" y2="9.5"/></svg>';
-      var svgLink = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M6.5 9.5a3.5 3.5 0 0 0 5 0l2-2a3.5 3.5 0 0 0-5-5L7 4"/><path d="M9.5 6.5a3.5 3.5 0 0 0-5 0l-2 2a3.5 3.5 0 0 0 5 5L9 12"/></svg>';
-      var svgImg = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><rect x="1.5" y="3" width="13" height="10" rx="1.5"/><circle cx="5.5" cy="6.5" r="1"/><path d="M1.5 11 L5 7.5 L8 10.5 L10.5 8 L14.5 13"/></svg>';
-      var svgUser = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="5.5" r="2.5"/><path d="M2.5 14c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/></svg>';
-      var svgSmiley = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="6"/><circle cx="5.5" cy="7" r=".7" fill="currentColor" stroke="none"/><circle cx="10.5" cy="7" r=".7" fill="currentColor" stroke="none"/><path d="M5.5 10.5 Q8 12.5 10.5 10.5" stroke-linejoin="round"/></svg>';
-      var tb = document.createElement("div");
+      const icons = {
+        B: '<svg viewBox="0 0 16 16" fill="none" stroke="none" xmlns="http://www.w3.org/2000/svg"><text x="2" y="13" font-size="13" font-weight="900" font-family="serif" fill="currentColor">B</text></svg>',
+        I: '<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><text x="5" y="13" font-size="13" font-style="italic" font-weight="700" font-family="serif" fill="currentColor">I</text></svg>',
+        code: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><polyline points="5,4 1,8 5,12"/><polyline points="11,4 15,8 11,12"/></svg>',
+        color: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" xmlns="http://www.w3.org/2000/svg"><path d="M8 2 L14 13 H2 Z" stroke-linejoin="round"/><line x1="4.5" y1="9.5" x2="11.5" y2="9.5"/></svg>',
+        link: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M6.5 9.5a3.5 3.5 0 0 0 5 0l2-2a3.5 3.5 0 0 0-5-5L7 4"/><path d="M9.5 6.5a3.5 3.5 0 0 0-5 0l-2 2a3.5 3.5 0 0 0 5 5L9 12"/></svg>',
+        img: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><rect x="1.5" y="3" width="13" height="10" rx="1.5"/><circle cx="5.5" cy="6.5" r="1"/><path d="M1.5 11 L5 7.5 L8 10.5 L10.5 8 L14.5 13"/></svg>',
+        user: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="5.5" r="2.5"/><path d="M2.5 14c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/></svg>',
+        smiley: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="6"/><circle cx="5.5" cy="7" r=".7" fill="currentColor" stroke="none"/><circle cx="10.5" cy="7" r=".7" fill="currentColor" stroke="none"/><path d="M5.5 10.5 Q8 12.5 10.5 10.5" stroke-linejoin="round"/></svg>'
+      };
+      const tb = document.createElement("div");
       tb.className = "tmvu-forum-form-toolbar";
-      tb.innerHTML = buttonHtml13({ slot: svgB, cls: "tmvu-ftool", title: "Bold", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.bold()" } }) + buttonHtml13({ slot: svgI, cls: "tmvu-ftool", title: "Italic", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.italic()" } }) + buttonHtml13({ slot: svgCode, cls: "tmvu-ftool", title: "Code", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.code()" } }) + buttonHtml13({ slot: svgColor, cls: "tmvu-ftool", title: "Color", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showColors()" } }) + buttonHtml13({ slot: svgLink, cls: "tmvu-ftool", title: "Link", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showPrompt('link')" } }) + buttonHtml13({ slot: svgImg, cls: "tmvu-ftool", title: "Image", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showPrompt('image')" } }) + buttonHtml13({ slot: svgUser, cls: "tmvu-ftool", title: "Player", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showPrompt('player')" } }) + buttonHtml13({ slot: svgSmiley, cls: "tmvu-ftool", title: "Smileys", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showSmileys()" } });
-      var panel = document.createElement("div");
+      tb.innerHTML = btn({ slot: icons.B, cls: "tmvu-ftool", title: "Bold", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.bold()" } }) + btn({ slot: icons.I, cls: "tmvu-ftool", title: "Italic", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.italic()" } }) + btn({ slot: icons.code, cls: "tmvu-ftool", title: "Code", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.code()" } }) + btn({ slot: icons.color, cls: "tmvu-ftool", title: "Color", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showColors()" } }) + btn({ slot: icons.link, cls: "tmvu-ftool", title: "Link", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showPrompt('link')" } }) + btn({ slot: icons.img, cls: "tmvu-ftool", title: "Image", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showPrompt('image')" } }) + btn({ slot: icons.user, cls: "tmvu-ftool", title: "Player", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showPrompt('player')" } }) + btn({ slot: icons.smiley, cls: "tmvu-ftool", title: "Smileys", size: "xs", color: "secondary", attrs: { onclick: "_tmvuF.showSmileys()" } });
+      const panel = document.createElement("div");
       panel.id = "tmvu-forum-panel";
       panel.className = "tmvu-forum-panel";
       if (!liveForm.querySelector('[name="submit_post"][type="hidden"]')) {
-        var hs = document.createElement("input");
+        const hs = document.createElement("input");
         hs.type = "hidden";
         hs.name = "submit_post";
         hs.value = "Submit";
@@ -36876,31 +36960,53 @@ order:initial
       wrap.appendChild(tb);
       wrap.appendChild(panel);
       wrap.appendChild(liveForm);
-      var acts = document.createElement("div");
-      acts.innerHTML = buttonHtml13({ label: "Submit", cls: "tmvu-post-btn tmvu-post-btn--primary", color: "primary", size: "xs", attrs: { onclick: "document.getElementById('forum_post_form').submit()" } }) + buttonHtml13({ label: "Preview", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "pop_preview2()" } });
+      const acts = document.createElement("div");
+      acts.innerHTML = btn({ label: "Submit", cls: "tmvu-post-btn tmvu-post-btn--primary", color: "primary", size: "xs", attrs: { onclick: "document.getElementById('forum_post_form').submit()" } }) + btn({ label: "Preview", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "pop_preview2()" } });
       wrap.appendChild(acts);
+      host.appendChild(card);
       return card;
+    },
+    /**
+     * Watch the DOM for #forum_post_form and mount it once available.
+     * @param {Element} col  column to append composer into
+     * @param {string} title
+     */
+    mountWhenReady(col, title) {
+      const tryMount = () => {
+        const f = document.querySelector("#forum_post_form");
+        if (!f) return false;
+        f.remove();
+        TmForumComposer.mount(col, { liveForm: f, title });
+        return true;
+      };
+      if (!tryMount()) {
+        const obs = new MutationObserver(() => {
+          if (tryMount()) obs.disconnect();
+        });
+        obs.observe(document.body || document.documentElement, { childList: true, subtree: true });
+      }
     }
-    function topicHtml(t) {
-      const badges = [
-        t.pinned ? TmUI.badge({ label: "Pinned", size: "xs", shape: "full", uppercase: true }, "highlight") : "",
-        t.isNew ? TmUI.badge({ label: "New", size: "xs", shape: "full", uppercase: true }, "success") : "",
-        t.locked ? TmUI.badge({ label: "Locked", size: "xs", shape: "full", uppercase: true }, "muted") : ""
-      ].filter(Boolean).join("");
-      const likeTone = t.likesNeg ? "danger" : t.likes > 0 ? "success" : "muted";
-      return '<article class="tmvu-forum-topic' + (t.subtle ? " is-subtle" : "") + '"><div class="tmvu-forum-topic-main"><a class="tmvu-forum-topic-title" href="' + esc2(t.href) + '">' + esc2(t.title) + "</a>" + (badges ? '<div class="tmvu-forum-topic-badges">' + badges + "</div>" : "") + (t.poster || t.date ? '<div class="tmvu-forum-topic-meta">' + (t.poster ? "<span>" + esc2(t.poster) + "</span>" : "") + (t.date ? "<span>" + esc2(t.date) + "</span>" : "") + "</div>" : "") + '</div><div class="tmvu-forum-topic-side">' + TmUI.badge({ label: "&#9829;", value: String(t.likes), size: "sm", shape: "full" }, likeTone) + (t.lastPageHref ? '<a class="tmvu-forum-topic-jump" href="' + esc2(t.lastPageHref) + '">' + esc2(t.lastPage || "last") + " &rarr;</a>" : "") + "</div></article>";
-    }
-    function renderListing(main3, src) {
-      var _a2, _b, _c;
-      const sidebarData = parseSidebar(src);
-      const forumEl = src.querySelector("#forum") || src;
-      const firstPager = forumEl.querySelector(".forum_pages");
-      const pagerSummary = clean4(((_a2 = firstPager == null ? void 0 : firstPager.querySelector(".subtle")) == null ? void 0 : _a2.textContent) || "");
-      const pagerLinks = parsePager(forumEl, ".forum_pages");
-      const titleNode = forumEl.querySelector(".topic_header");
-      const forumTitle = clean4(((_c = (_b = titleNode == null ? void 0 : titleNode.childNodes) == null ? void 0 : _b[0]) == null ? void 0 : _c.textContent) || (titleNode == null ? void 0 : titleNode.textContent) || "Forum");
-      const topics = Array.from(forumEl.querySelectorAll(".forum_topics")).map((row) => {
-        var _a3;
+  };
+
+  // src/components/forum/tm-forum-topic-list.js
+  function topicHtml(t) {
+    const badges = [
+      t.pinned ? TmUI.badge({ label: "Pinned", size: "xs", shape: "full", uppercase: true }, "highlight") : "",
+      t.isNew ? TmUI.badge({ label: "New", size: "xs", shape: "full", uppercase: true }, "success") : "",
+      t.locked ? TmUI.badge({ label: "Locked", size: "xs", shape: "full", uppercase: true }, "muted") : ""
+    ].filter(Boolean).join("");
+    const likeTone = t.likesNeg ? "danger" : t.likes > 0 ? "success" : "muted";
+    return '<article class="tmvu-forum-topic' + (t.subtle ? " is-subtle" : "") + '"><div class="tmvu-forum-topic-main"><a class="tmvu-forum-topic-title" href="' + esc2(t.href) + '">' + esc2(t.title) + "</a>" + (badges ? '<div class="tmvu-forum-topic-badges">' + badges + "</div>" : "") + (t.poster || t.date ? '<div class="tmvu-forum-topic-meta">' + (t.poster ? "<span>" + esc2(t.poster) + "</span>" : "") + (t.date ? "<span>" + esc2(t.date) + "</span>" : "") + "</div>" : "") + '</div><div class="tmvu-forum-topic-side">' + TmUI.badge({ label: "&#9829;", value: String(t.likes), size: "sm", shape: "full" }, likeTone) + (t.lastPageHref ? '<a class="tmvu-forum-topic-jump" href="' + esc2(t.lastPageHref) + '">' + esc2(t.lastPage || "last") + " &rarr;</a>" : "") + "</div></article>";
+  }
+  var TmForumTopicList = {
+    /**
+     * Parse topic rows from TM forum element.
+     * @param {Element} forumEl
+     * @returns {Array}
+     */
+    parse(forumEl) {
+      return Array.from(forumEl.querySelectorAll(".forum_topics")).map((row) => {
+        var _a2;
         const a = row.querySelector(".topic_name a");
         if (!a) return null;
         const lastDivs = Array.from(row.querySelectorAll(".topic_last_post > div")).map((d) => clean4(d.textContent));
@@ -36912,7 +37018,7 @@ order:initial
           pinned: !!row.querySelector(".topic_icon img"),
           locked: !!row.querySelector('[alt="Locked"]'),
           isNew: !!row.querySelector(".topic_new img"),
-          likes: parseInt(((_a3 = row.querySelector(".topic_likes span")) == null ? void 0 : _a3.textContent) || "0", 10) || 0,
+          likes: parseInt(((_a2 = row.querySelector(".topic_likes span")) == null ? void 0 : _a2.textContent) || "0", 10) || 0,
           likesNeg: !!row.querySelector(".likes .negative"),
           poster: lastDivs[0] || "",
           date: lastDivs[1] || "",
@@ -36920,58 +37026,93 @@ order:initial
           lastPageHref: (lastPageA == null ? void 0 : lastPageA.getAttribute("href")) || ""
         };
       }).filter((t) => t == null ? void 0 : t.title);
-      injectStyles39();
-      main3.classList.add("tmvu-forum-page", "tmu-page-layout-2col", "tmu-page-density-compact", "tmu-page-stack-early");
-      main3.innerHTML = "";
-      const sidebar = buildSidebar(sidebarData);
-      main3.appendChild(sidebar);
-      const col = document.createElement("div");
-      col.className = "tmvu-forum-main tmu-page-section-stack";
-      const heroHost = document.createElement("div");
-      TmPageHero.mount(heroHost, {
-        slots: {
-          kicker: "Forum",
-          title: forumTitle,
-          subtitle: sidebarData.currentCountry,
-          footer: pagerHtml(pagerLinks)
-        }
-      });
-      col.appendChild(heroHost.firstElementChild || heroHost);
-      const topicsHost = document.createElement("div");
-      TmSectionCard.mount(topicsHost, {
+    },
+    /**
+     * Mount the topics card into host.
+     * @param {Element} host
+     * @param {{ topics, pagerSummary, pagerLinks, pagerHtml }} props
+     * @returns {Element}
+     */
+    mount(host, { topics, pagerSummary, pagerLinks, pagerHtml }) {
+      TmSectionCard.mount(host, {
         title: "Topics",
         icon: "\u{1F9F5}",
         subtitle: pagerSummary,
         bodyHtml: topics.length ? '<div class="tmvu-forum-topic-list">' + topics.map(topicHtml).join("") + '</div><div class="tmvu-forum-pager-footer">' + pagerHtml(pagerLinks) + "</div>" : TmUI.empty("No topics found.")
       });
-      col.appendChild(topicsHost.firstElementChild || topicsHost);
-      const tryAppendCompose = () => {
-        const f = document.querySelector("#forum_post_form");
-        if (!f) return false;
-        f.remove();
-        const card = buildForumCard(f, "Post New Topic");
-        if (card) col.appendChild(card);
-        return true;
-      };
-      if (!tryAppendCompose()) {
-        const obs = new MutationObserver(() => {
-          if (tryAppendCompose()) obs.disconnect();
-        });
-        obs.observe(document.body || document.documentElement, { childList: true, subtree: true });
-      }
-      main3.appendChild(col);
+      return host.firstElementChild || host;
     }
-    function renderThread(main3, src) {
-      var _a2, _b, _c;
-      const sidebarData = parseSidebar(src);
-      const forumEl = src.querySelector("#forum") || src;
-      const topicPagesEl = forumEl.querySelector(".topic_pages");
-      const backHref = ((_a2 = topicPagesEl == null ? void 0 : topicPagesEl.querySelector(".arrow_left")) == null ? void 0 : _a2.getAttribute("href")) || "";
-      const pagerSummary = clean4(((_b = topicPagesEl == null ? void 0 : topicPagesEl.querySelector(".subtle")) == null ? void 0 : _b.textContent) || "");
-      const pagerLinks = parsePager(forumEl, ".topic_pages");
-      const topicTitle = clean4(((_c = forumEl.querySelector("h1.mega_headline")) == null ? void 0 : _c.textContent) || "Thread");
-      const posts = Array.from(forumEl.querySelectorAll(".topic_post")).map((postEl) => {
-        var _a3, _b2, _c2, _d, _e, _f, _g;
+  };
+
+  // src/components/forum/tm-forum-posts.js
+  var btn2 = (opts) => (TmUI.button(opts) || document.createElement("span")).outerHTML;
+  function postHtml(p) {
+    const posNum = p.postNum.replace("#", "");
+    const likesHtml = (p.likesPos > 0 ? '<span class="tmvu-forum-post-like-pos">+' + p.likesPos + "</span>" : "") + (p.likesNeg > 0 ? ' <span class="tmvu-forum-post-like-neg">-' + p.likesNeg + "</span>" : "");
+    const flagEl = p.flagSrc ? '<div class="tmvu-forum-post-flag">' + (p.flagHref ? '<a href="' + esc2(p.flagHref) + '">' : "") + '<img src="' + esc2(p.flagSrc) + '" alt="">' + (p.flagHref ? "</a>" : "") + "</div>" : "";
+    const veteranEl = p.veteranSrc ? '<img class="tmvu-forum-post-veteran" src="' + esc2(p.veteranSrc) + '" title="' + esc2(p.veteranTip) + '" alt="' + esc2(p.veteranTip) + '">' : "";
+    const proEl = p.isPro ? '<img class="tmvu-forum-post-pro" src="/pics/pro_icon.png" title="TM Pro" alt="Pro">' : "";
+    const franksEl = p.forumRankImgs.length ? '<div class="tmvu-forum-post-franks">' + p.forumRankImgs.map((src) => '<img src="' + esc2(src) + '">').join("") + "</div>" : "";
+    return '<div class="tmvu-forum-post"><div class="tmvu-forum-post-user"><div class="tmvu-forum-post-logo">' + (p.clubHref ? '<a href="' + esc2(p.clubHref) + '">' : "") + (p.logoSrc ? '<img src="' + esc2(p.logoSrc) + '" alt="">' : '<span style="font-size:var(--tmu-font-xl);opacity:.35">\u26BD</span>') + (p.clubHref ? "</a>" : "") + "</div>" + (p.clubHref ? '<a class="tmvu-forum-post-club" href="' + esc2(p.clubHref) + '">' + esc2(p.clubName) + "</a>" : p.clubName ? '<span class="tmvu-forum-post-club">' + esc2(p.clubName) + "</span>" : "") + flagEl + '<div class="tmvu-forum-post-badges">' + proEl + veteranEl + franksEl + "</div>" + (p.rank ? '<div class="tmvu-forum-post-rank">' + esc2(p.rank) + "</div>" : "") + '</div><div class="tmvu-forum-post-body"><div class="tmvu-forum-post-meta">' + (p.postAnchorId ? '<a class="tmvu-forum-post-num" id="' + esc2(p.postAnchorId) + '" href="#' + esc2(posNum) + '">' + esc2(p.postNum) + "</a>" : "") + (likesHtml && p.postDbId ? '<span class="tmvu-forum-post-likes" onclick="pop_likes(' + p.postDbId + ')" title="See who liked this">' + likesHtml + "</span>" : likesHtml ? '<span class="tmvu-forum-post-likes">' + likesHtml + "</span>" : "") + (p.postDate ? '<span class="tmvu-forum-post-date">' + esc2(p.postDate) + "</span>" : "") + '</div><div class="tmvu-forum-post-content">' + p.contentHtml + '</div><div class="tmvu-forum-post-actions">' + (p.postDbId ? btn2({ label: "\u2665 " + (p.likesPos || 0), cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "pop_likes(" + p.postDbId + ")" } }) : "") + (p.seqNum ? btn2({ label: "Quote", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "quote(" + p.seqNum + ")" } }) : "") + btn2({ label: "Reply", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "reply()" } }) + '</div><div class="tmvu-post-hidden">' + p.likesDivHtml + p.quoteSpanHtml + "</div></div></div>";
+  }
+  function resolvePlayerMentions(contentEl) {
+    var _a2;
+    const enrich = (pid, anchor) => {
+      TmPlayerModel.fetchTooltipCached(pid).then((player2) => {
+        if (!player2) return;
+        const name = player2.name || "";
+        if (!name) return;
+        const retired = !player2.club_id;
+        const starsHtml = player2.rec != null ? TmStars.recommendation(player2.rec, "tmvu-pstars") : "";
+        const ageHtml = !retired && player2.ageMonthsString ? `<span class="tmvu-pinfo">${player2.ageMonthsString}</span> ` : "";
+        const r5Html = !retired && player2.r5 != null ? ` <span class="tmvu-pinfo">${Number(player2.r5).toFixed(2)}</span>` : "";
+        anchor.innerHTML = starsHtml + ageHtml + esc2(name) + r5Html;
+      }).catch(() => {
+      });
+    };
+    contentEl.querySelectorAll("a[href]").forEach((a) => {
+      const m = (a.getAttribute("href") || "").match(/\/players?\/(\d+)\//);
+      if (!m) return;
+      const pid = m[1];
+      if (!a.getAttribute("player_link")) a.setAttribute("player_link", pid);
+      enrich(pid, a);
+    });
+    const walker = document.createTreeWalker(contentEl, NodeFilter.SHOW_TEXT, null, false);
+    const textNodes = [];
+    let n;
+    while (n = walker.nextNode()) {
+      if (/(@player\d+|\[player=\d+\])/.test(n.textContent) && !((_a2 = n.parentElement) == null ? void 0 : _a2.closest("a"))) textNodes.push(n);
+    }
+    textNodes.forEach((textNode) => {
+      var _a3;
+      const parts = textNode.textContent.split(/(@player(\d+)|\[player=(\d+)\])/);
+      if (parts.length <= 1) return;
+      const frag = document.createDocumentFragment();
+      for (let i = 0; i < parts.length; i++) {
+        if (i % 4 === 0) {
+          if (parts[i]) frag.appendChild(document.createTextNode(parts[i]));
+        } else if (i % 4 === 1) {
+          const pid = parts[i + 1] || parts[i + 2];
+          const a = document.createElement("a");
+          a.setAttribute("player_link", pid);
+          a.href = "/players/" + pid + "/";
+          a.textContent = parts[i];
+          enrich(pid, a);
+          frag.appendChild(a);
+        }
+      }
+      (_a3 = textNode.parentNode) == null ? void 0 : _a3.replaceChild(frag, textNode);
+    });
+  }
+  var TmForumPosts = {
+    /**
+     * Parse post elements from TM forum element.
+     * @param {Element} forumEl
+     * @returns {Array}
+     */
+    parse(forumEl) {
+      return Array.from(forumEl.querySelectorAll(".topic_post")).map((postEl) => {
+        var _a2, _b, _c, _d, _e, _f, _g;
         const userEl = postEl.querySelector(".user");
         const clubA = userEl == null ? void 0 : userEl.querySelector("a[club_link]");
         const logoLink = (userEl == null ? void 0 : userEl.querySelector("a[no_logo]")) || (userEl == null ? void 0 : userEl.querySelector("a.logo_large")) || (userEl == null ? void 0 : userEl.querySelector("a.logo_normal")) || (userEl == null ? void 0 : userEl.querySelector("a:has(.club_logo)"));
@@ -36987,14 +37128,12 @@ order:initial
         const actionsEl = postEl.querySelector(".actions");
         const postNumA = actionsEl == null ? void 0 : actionsEl.querySelector(".post_number a");
         const textEl = postEl.querySelector(".content .text");
-        if (textEl) {
-          textEl.querySelectorAll(".signature, .text_fade_overlay").forEach((el2) => el2.remove());
-        }
+        if (textEl) textEl.querySelectorAll(".signature, .text_fade_overlay").forEach((el2) => el2.remove());
         const likesDiv = actionsEl == null ? void 0 : actionsEl.querySelector(".likes");
-        const likesPos = parseInt(((_a3 = likesDiv == null ? void 0 : likesDiv.querySelector(".positive")) == null ? void 0 : _a3.getAttribute("current_value")) || "0", 10);
-        const likesNeg = parseInt(((_b2 = likesDiv == null ? void 0 : likesDiv.querySelector(".negative")) == null ? void 0 : _b2.getAttribute("current_value")) || "0", 10);
+        const likesPos = parseInt(((_a2 = likesDiv == null ? void 0 : likesDiv.querySelector(".positive")) == null ? void 0 : _a2.getAttribute("current_value")) || "0", 10);
+        const likesNeg = parseInt(((_b = likesDiv == null ? void 0 : likesDiv.querySelector(".negative")) == null ? void 0 : _b.getAttribute("current_value")) || "0", 10);
         const likesDivHtml = (likesDiv == null ? void 0 : likesDiv.outerHTML) || "";
-        const quoteSpanHtml = ((_c2 = actionsEl == null ? void 0 : actionsEl.querySelector('[id^="quote_post"]')) == null ? void 0 : _c2.outerHTML) || "";
+        const quoteSpanHtml = ((_c = actionsEl == null ? void 0 : actionsEl.querySelector('[id^="quote_post"]')) == null ? void 0 : _c.outerHTML) || "";
         const iAttr = postEl.getAttribute("i");
         const seqNum = iAttr != null ? String(parseInt(iAttr, 10) + 1) : "";
         return {
@@ -37020,100 +37159,33 @@ order:initial
           seqNum
         };
       });
-      injectStyles39();
-      main3.classList.add("tmvu-forum-page", "tmu-page-layout-2col", "tmu-page-density-compact", "tmu-page-stack-early");
-      main3.innerHTML = "";
-      const sidebar = buildSidebar(sidebarData);
-      main3.appendChild(sidebar);
-      const col = document.createElement("div");
-      col.className = "tmvu-forum-main tmu-page-section-stack";
-      const heroHost = document.createElement("div");
-      TmPageHero.mount(heroHost, {
-        slots: {
-          kicker: "Thread",
-          title: topicTitle,
-          subtitle: sidebarData.currentCountry,
-          side: '<div class="tmvu-forum-thread-hero-actions">' + (backHref ? buttonHtml13({ label: "? Back", href: esc2(backHref), color: "secondary", size: "sm" }) : "") + buttonHtml13({ label: "? Reply", color: "primary", size: "sm", attrs: { onclick: "reply()" } }) + "</div>",
-          footer: pagerHtml(pagerLinks)
-        }
-      });
-      col.appendChild(heroHost.firstElementChild || heroHost);
-      const postsHtml = posts.map((p) => {
-        const posNum = p.postNum.replace("#", "");
-        const likesHtml = (p.likesPos > 0 ? '<span class="tmvu-forum-post-like-pos">+' + p.likesPos + "</span>" : "") + (p.likesNeg > 0 ? ' <span class="tmvu-forum-post-like-neg">-' + p.likesNeg + "</span>" : "");
-        const flagEl = p.flagSrc ? '<div class="tmvu-forum-post-flag">' + (p.flagHref ? '<a href="' + esc2(p.flagHref) + '">' : "") + '<img src="' + esc2(p.flagSrc) + '" alt="">' + (p.flagHref ? "</a>" : "") + "</div>" : "";
-        const veteranEl = p.veteranSrc ? '<img class="tmvu-forum-post-veteran" src="' + esc2(p.veteranSrc) + '" title="' + esc2(p.veteranTip) + '" alt="' + esc2(p.veteranTip) + '">' : "";
-        const proEl = p.isPro ? '<img class="tmvu-forum-post-pro" src="/pics/pro_icon.png" title="TM Pro" alt="Pro">' : "";
-        const forumRanksEl = p.forumRankImgs.length ? '<div class="tmvu-forum-post-franks">' + p.forumRankImgs.map((src2) => '<img src="' + esc2(src2) + '">').join("") + "</div>" : "";
-        return '<div class="tmvu-forum-post"><div class="tmvu-forum-post-user"><div class="tmvu-forum-post-logo">' + (p.clubHref ? '<a href="' + esc2(p.clubHref) + '">' : "") + (p.logoSrc ? '<img src="' + esc2(p.logoSrc) + '" alt="">' : '<span style="font-size:var(--tmu-font-xl);opacity:.35">\u26BD</span>') + (p.clubHref ? "</a>" : "") + "</div>" + (p.clubHref ? '<a class="tmvu-forum-post-club" href="' + esc2(p.clubHref) + '">' + esc2(p.clubName) + "</a>" : p.clubName ? '<span class="tmvu-forum-post-club">' + esc2(p.clubName) + "</span>" : "") + flagEl + '<div class="tmvu-forum-post-badges">' + proEl + veteranEl + forumRanksEl + "</div>" + (p.rank ? '<div class="tmvu-forum-post-rank">' + esc2(p.rank) + "</div>" : "") + '</div><div class="tmvu-forum-post-body"><div class="tmvu-forum-post-meta">' + (p.postAnchorId ? '<a class="tmvu-forum-post-num" id="' + esc2(p.postAnchorId) + '" href="#' + esc2(posNum) + '">' + esc2(p.postNum) + "</a>" : "") + (likesHtml && p.postDbId ? '<span class="tmvu-forum-post-likes" onclick="pop_likes(' + p.postDbId + ')" title="See who liked this">' + likesHtml + "</span>" : likesHtml ? '<span class="tmvu-forum-post-likes">' + likesHtml + "</span>" : "") + (p.postDate ? '<span class="tmvu-forum-post-date">' + esc2(p.postDate) + "</span>" : "") + '</div><div class="tmvu-forum-post-content">' + p.contentHtml + '</div><div class="tmvu-forum-post-actions">' + (p.postDbId ? buttonHtml13({ label: "\u2665 " + (p.likesPos || 0), cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "pop_likes(" + p.postDbId + ")" } }) : "") + (p.seqNum ? buttonHtml13({ label: "Quote", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "quote(" + p.seqNum + ")" } }) : "") + buttonHtml13({ label: "Reply", cls: "tmvu-post-btn", color: "secondary", size: "xs", attrs: { onclick: "reply()" } }) + '</div><div class="tmvu-post-hidden">' + p.likesDivHtml + p.quoteSpanHtml + "</div></div></div>";
-      }).join("");
+    },
+    /**
+     * Mount the posts section into col.
+     * Resolves player mentions and wires hover tooltips.
+     * @param {Element} col
+     * @param {{ posts, pagerSummary, pagerLinks, pagerHtml }} props
+     * @returns {Element}
+     */
+    mount(col, { posts, pagerSummary, pagerLinks, pagerHtml }) {
       const postsHost = document.createElement("div");
       TmSectionCard.mount(postsHost, {
         title: "Posts",
         icon: "\u{1F4AC}",
         subtitle: pagerSummary,
-        bodyHtml: posts.length ? '<div class="tmvu-forum-posts tmu-stack tmu-stack-density-tight">' + postsHtml + '</div><div class="tmvu-forum-pager-footer">' + pagerHtml(pagerLinks) + "</div>" : TmUI.empty("No posts found.")
+        bodyHtml: posts.length ? '<div class="tmvu-forum-posts tmu-stack tmu-stack-density-tight">' + posts.map(postHtml).join("") + '</div><div class="tmvu-forum-pager-footer">' + pagerHtml(pagerLinks) + "</div>" : TmUI.empty("No posts found.")
       });
-      col.appendChild(postsHost.firstElementChild || postsHost);
-      (function resolvePlayerMentions() {
-        const fetchAndEnrich = (pid, anchor) => {
-          TmPlayerModel.fetchTooltipCached(pid).then((player2) => {
-            if (!player2) return;
-            const name = player2.name || "";
-            if (!name) return;
-            const retired = !player2.club_id;
-            const starsHtml = player2.rec != null ? TmStars.recommendation(player2.rec, "tmvu-pstars") : "";
-            const ageHtml = !retired && player2.ageMonthsString ? `<span class="tmvu-pinfo">${player2.ageMonthsString}</span> ` : "";
-            const r5Html = !retired && player2.r5 != null ? ` <span class="tmvu-pinfo">${Number(player2.r5).toFixed(2)}</span>` : "";
-            anchor.innerHTML = starsHtml + ageHtml + esc2(name) + r5Html;
-          }).catch(() => {
-          });
-        };
-        col.querySelectorAll(".tmvu-forum-post-content").forEach((content) => {
-          var _a3;
-          content.querySelectorAll("a[href]").forEach((a) => {
-            const m = (a.getAttribute("href") || "").match(/\/players?\/(\d+)\//);
-            if (!m) return;
-            const pid = m[1];
-            if (!a.getAttribute("player_link")) a.setAttribute("player_link", pid);
-            fetchAndEnrich(pid, a);
-          });
-          const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT, null, false);
-          const textNodes = [];
-          let n;
-          while (n = walker.nextNode()) {
-            if (/(@player\d+|\[player=\d+\])/.test(n.textContent) && !((_a3 = n.parentElement) == null ? void 0 : _a3.closest("a"))) textNodes.push(n);
-          }
-          textNodes.forEach((textNode) => {
-            var _a4;
-            const parts = textNode.textContent.split(/(@player(\d+)|\[player=(\d+)\])/);
-            if (parts.length <= 1) return;
-            const frag = document.createDocumentFragment();
-            for (let i = 0; i < parts.length; i++) {
-              if (i % 4 === 0) {
-                if (parts[i]) frag.appendChild(document.createTextNode(parts[i]));
-              } else if (i % 4 === 1) {
-                const pid = parts[i + 1] || parts[i + 2];
-                const a = document.createElement("a");
-                a.setAttribute("player_link", pid);
-                a.href = "/players/" + pid + "/";
-                a.textContent = parts[i];
-                fetchAndEnrich(pid, a);
-                frag.appendChild(a);
-              }
-            }
-            (_a4 = textNode.parentNode) == null ? void 0 : _a4.replaceChild(frag, textNode);
-          });
-        });
-      })();
-      let _playerTipTimer = null;
+      const el2 = postsHost.firstElementChild || postsHost;
+      col.appendChild(el2);
+      el2.querySelectorAll(".tmvu-forum-post-content").forEach(resolvePlayerMentions);
+      let tipTimer = null;
       col.addEventListener("mouseover", (e) => {
         const anchor = e.target.closest("[player_link]");
         if (!anchor || anchor.contains(e.relatedTarget)) return;
-        clearTimeout(_playerTipTimer);
+        clearTimeout(tipTimer);
         const pid = anchor.getAttribute("player_link");
         if (!pid) return;
-        _playerTipTimer = setTimeout(() => {
+        tipTimer = setTimeout(() => {
           TmPlayerModel.fetchTooltipCached(pid).then((player2) => {
             if (player2) TmPlayerTooltip.show(anchor, player2);
           }).catch(() => {
@@ -37123,35 +37195,106 @@ order:initial
       col.addEventListener("mouseout", (e) => {
         const anchor = e.target.closest("[player_link]");
         if (!anchor || anchor.contains(e.relatedTarget)) return;
-        clearTimeout(_playerTipTimer);
+        clearTimeout(tipTimer);
         TmPlayerTooltip.hide();
       });
-      const tryAppendReply = () => {
-        const f = document.querySelector("#forum_post_form");
-        if (!f) return false;
-        f.remove();
-        const card = buildForumCard(f, "Reply");
-        if (card) col.appendChild(card);
-        return true;
-      };
-      if (!tryAppendReply()) {
-        const obs = new MutationObserver(() => {
-          if (tryAppendReply()) obs.disconnect();
-        });
-        obs.observe(document.body || document.documentElement, { childList: true, subtree: true });
-      }
-      main3.appendChild(col);
+      return el2;
     }
-    function renderNewTopic(main3, src) {
+  };
+
+  // src/pages/forum.js
+  var btn3 = (opts) => (TmUI.button(opts) || document.createElement("span")).outerHTML;
+  function initForumPage(main2) {
+    if (!main2 || !main2.isConnected) return;
+    function setupPage() {
+      injectForumStyles();
+      main2.classList.add("tmvu-forum-page", "tmu-page-layout-2col", "tmu-page-density-compact", "tmu-page-stack-early");
+      main2.innerHTML = "";
+    }
+    function renderListing(src) {
       var _a2;
-      const sidebarData = parseSidebar(src);
-      const liveForm = main3.querySelector("#forum_post_form");
-      if (liveForm) liveForm.remove();
-      injectStyles39();
-      main3.classList.add("tmvu-forum-page", "tmu-page-layout-2col", "tmu-page-density-compact", "tmu-page-stack-early");
-      main3.innerHTML = "";
-      const sidebar = buildSidebar(sidebarData);
-      main3.appendChild(sidebar);
+      const sidebarProps = TmForumSidebar.parse(src);
+      const forumEl = src.querySelector("#forum") || src;
+      const firstPager = forumEl.querySelector(".forum_pages");
+      const pagerSummary = clean4(((_a2 = firstPager == null ? void 0 : firstPager.querySelector(".subtle")) == null ? void 0 : _a2.textContent) || "");
+      const pagerLinks = TmForumPager.parse(forumEl, ".forum_pages");
+      const forumTitle = clean4(
+        ((n) => {
+          var _a3, _b;
+          return ((_b = (_a3 = n == null ? void 0 : n.childNodes) == null ? void 0 : _a3[0]) == null ? void 0 : _b.textContent) || (n == null ? void 0 : n.textContent) || "Forum";
+        })(forumEl.querySelector(".topic_header"))
+      );
+      const topics = TmForumTopicList.parse(forumEl);
+      setupPage();
+      const sidebar = document.createElement("div");
+      TmForumSidebar.mount(sidebar, sidebarProps);
+      main2.appendChild(sidebar.firstElementChild || sidebar);
+      const col = document.createElement("div");
+      col.className = "tmvu-forum-main tmu-page-section-stack";
+      const heroHost = document.createElement("div");
+      TmPageHero.mount(heroHost, {
+        slots: {
+          kicker: "Forum",
+          title: forumTitle,
+          subtitle: sidebarProps.currentCountry,
+          footer: TmForumPager.html(pagerLinks)
+        }
+      });
+      col.appendChild(heroHost.firstElementChild || heroHost);
+      const topicsHost = document.createElement("div");
+      const topicsEl = TmForumTopicList.mount(topicsHost, {
+        topics,
+        pagerSummary,
+        pagerLinks,
+        pagerHtml: TmForumPager.html.bind(TmForumPager)
+      });
+      col.appendChild(topicsEl);
+      main2.appendChild(col);
+      TmForumComposer.mountWhenReady(col, "Post New Topic");
+    }
+    function renderThread(src) {
+      var _a2, _b, _c;
+      const sidebarProps = TmForumSidebar.parse(src);
+      const forumEl = src.querySelector("#forum") || src;
+      const topicPagesEl = forumEl.querySelector(".topic_pages");
+      const backHref = ((_a2 = topicPagesEl == null ? void 0 : topicPagesEl.querySelector(".arrow_left")) == null ? void 0 : _a2.getAttribute("href")) || "";
+      const pagerSummary = clean4(((_b = topicPagesEl == null ? void 0 : topicPagesEl.querySelector(".subtle")) == null ? void 0 : _b.textContent) || "");
+      const pagerLinks = TmForumPager.parse(forumEl, ".topic_pages");
+      const topicTitle = clean4(((_c = forumEl.querySelector("h1.mega_headline")) == null ? void 0 : _c.textContent) || "Thread");
+      const posts = TmForumPosts.parse(forumEl);
+      setupPage();
+      const sidebar = document.createElement("div");
+      TmForumSidebar.mount(sidebar, sidebarProps);
+      main2.appendChild(sidebar.firstElementChild || sidebar);
+      const col = document.createElement("div");
+      col.className = "tmvu-forum-main tmu-page-section-stack";
+      const heroHost = document.createElement("div");
+      TmPageHero.mount(heroHost, {
+        slots: {
+          kicker: "Thread",
+          title: topicTitle,
+          subtitle: sidebarProps.currentCountry,
+          side: '<div class="tmvu-forum-thread-hero-actions">' + (backHref ? btn3({ label: "\u2190 Back", href: esc2(backHref), color: "secondary", size: "sm" }) : "") + btn3({ label: "\u270F Reply", color: "primary", size: "sm", attrs: { onclick: "reply()" } }) + "</div>",
+          footer: TmForumPager.html(pagerLinks)
+        }
+      });
+      col.appendChild(heroHost.firstElementChild || heroHost);
+      TmForumPosts.mount(col, {
+        posts,
+        pagerSummary,
+        pagerLinks,
+        pagerHtml: TmForumPager.html.bind(TmForumPager)
+      });
+      main2.appendChild(col);
+      TmForumComposer.mountWhenReady(col, "Reply");
+    }
+    function renderNewTopic(src) {
+      var _a2;
+      const sidebarProps = TmForumSidebar.parse(src);
+      setupPage();
+      const sidebar = document.createElement("div");
+      TmForumSidebar.mount(sidebar, sidebarProps);
+      main2.appendChild(sidebar.firstElementChild || sidebar);
       const col = document.createElement("div");
       col.className = "tmvu-forum-main tmu-page-section-stack";
       const backHref = document.referrer && document.referrer.includes("/forum/") ? document.referrer : "/forum/" + (((_a2 = window.location.pathname.match(/^\/forum\/([^/]+)\//)) == null ? void 0 : _a2[1]) || "") + "/general/";
@@ -37160,14 +37303,13 @@ order:initial
         slots: {
           kicker: "Forum",
           title: "New Topic",
-          subtitle: sidebarData.currentCountry,
-          side: buttonHtml13({ label: "\u2190 Back", href: esc2(backHref), color: "secondary", size: "sm" })
+          subtitle: sidebarProps.currentCountry,
+          side: btn3({ label: "\u2190 Back", href: esc2(backHref), color: "secondary", size: "sm" })
         }
       });
       col.appendChild(heroHost.firstElementChild || heroHost);
-      const formCard = buildForumCard(liveForm, "New Topic");
-      if (formCard) col.appendChild(formCard);
-      main3.appendChild(col);
+      main2.appendChild(col);
+      TmForumComposer.mountWhenReady(col, "New Topic");
     }
     function waitForContent(cb) {
       const check = () => document.querySelector(".forum_topics, .topic_post, #forum_post_form");
@@ -37183,14 +37325,14 @@ order:initial
       });
       obs.observe(document.body || document.documentElement, { childList: true, subtree: true });
     }
-    waitForContent(function() {
+    waitForContent(() => {
       const src = document.querySelector(".main_center:not(.top_user_info)") || main2;
       if (src.querySelector(".forum_topics")) {
-        renderListing(main2, src);
+        renderListing(src);
       } else if (src.querySelector(".topic_post")) {
-        renderThread(main2, src);
+        renderThread(src);
       } else if (src.querySelector("#forum_post_form")) {
-        renderNewTopic(main2, src);
+        renderNewTopic(src);
       }
     });
   }
@@ -37212,7 +37354,7 @@ order:initial
   function initTeamstersPage(main2) {
     if (!main2 || !main2.isConnected) return;
     const STYLE_ID51 = "tmvu-teamsters-style";
-    const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
+    const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const injectStyles39 = () => {
       if (document.getElementById(STYLE_ID51)) return;
       injectTmPageLayoutStyles();
@@ -37266,7 +37408,7 @@ order:initial
     };
     const parseNav = (col1) => Array.from(col1.querySelectorAll(".content_menu a")).map((a) => ({
       href: a.getAttribute("href") || "#",
-      label: clean4(a.textContent)
+      label: clean5(a.textContent)
     }));
     const parseArticle = (col2) => {
       var _a2;
@@ -37290,7 +37432,7 @@ order:initial
       const tabEls = col3.querySelectorAll(".tabs > div[set_active]");
       return Array.from(container.querySelectorAll(":scope > div[id]")).map((panel, i) => {
         var _a2, _b;
-        const label = clean4(((_a2 = tabEls[i]) == null ? void 0 : _a2.textContent) || ((_b = panel.querySelector("h3")) == null ? void 0 : _b.textContent) || panel.id);
+        const label = clean5(((_a2 = tabEls[i]) == null ? void 0 : _a2.textContent) || ((_b = panel.querySelector("h3")) == null ? void 0 : _b.textContent) || panel.id);
         const items = Array.from(panel.querySelectorAll("li")).map((li) => {
           const flagIb = li.querySelector('ib[class*="flag-img-"]');
           const flagClass = (flagIb == null ? void 0 : flagIb.className) || "";
@@ -37298,7 +37440,7 @@ order:initial
           return {
             flagClass,
             clubHref: (clubA == null ? void 0 : clubA.getAttribute("href")) || "#",
-            clubName: clean4((clubA == null ? void 0 : clubA.textContent) || "")
+            clubName: clean5((clubA == null ? void 0 : clubA.textContent) || "")
           };
         }).filter((it) => it.clubName);
         return { key: panel.id, label, items };
@@ -37315,7 +37457,7 @@ order:initial
       const snap1 = col1 == null ? void 0 : col1.cloneNode(true);
       const snap2 = col2.cloneNode(true);
       const snap3 = col3 == null ? void 0 : col3.cloneNode(true);
-      const title = clean4(((_a2 = snap2.querySelector(".box_head h2.std, .box_head h1.std")) == null ? void 0 : _a2.textContent) || "Teamsters");
+      const title = clean5(((_a2 = snap2.querySelector(".box_head h2.std, .box_head h1.std")) == null ? void 0 : _a2.textContent) || "Teamsters");
       const navItems = snap1 ? parseNav(snap1) : [];
       const articleHtml = parseArticle(snap2);
       const tabDefs = snap3 ? parseTabs2(snap3) : [];
@@ -37361,10 +37503,10 @@ order:initial
           panelsEl.appendChild(panelEl);
         });
         tabsBar.addEventListener("click", (e) => {
-          const btn = e.target.closest(".tmu-tab[data-tab]");
-          if (!btn) return;
+          const btn4 = e.target.closest(".tmu-tab[data-tab]");
+          if (!btn4) return;
           panelsEl.querySelectorAll("[data-tab-panel]").forEach((p) => {
-            p.classList.toggle("is-active", p.dataset.tabPanel === btn.dataset.tab);
+            p.classList.toggle("is-active", p.dataset.tabPanel === btn4.dataset.tab);
           });
         });
         const listWrap = document.createElement("section");
@@ -37537,7 +37679,7 @@ order:initial
   function initAboutTmPage(main2) {
     if (!main2 || !main2.isConnected) return;
     const STYLE_ID51 = "tmvu-abouttm-style";
-    const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
+    const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const injectStyles39 = () => {
       if (document.getElementById(STYLE_ID51)) return;
       injectTmPageLayoutStyles();
@@ -37578,7 +37720,7 @@ order:initial
       const col2 = nativeMain.querySelector(".column2_b");
       if (!col2) return;
       const snap = col2.cloneNode(true);
-      const title = clean4(
+      const title = clean5(
         ((_a2 = snap.querySelector(".box_head h1.std, .box_head h2.std")) == null ? void 0 : _a2.textContent) || "About TM"
       );
       const articleHtml = transformArticle(snap.querySelector(".box_body .std"));
@@ -37622,7 +37764,7 @@ order:initial
   function initAboutProPage(main2) {
     if (!main2 || !main2.isConnected) return;
     const STYLE_ID51 = "tmvu-aboutpro-style";
-    const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
+    const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const injectStyles39 = () => {
       if (document.getElementById(STYLE_ID51)) return;
       injectTmPageLayoutStyles();
@@ -37652,7 +37794,7 @@ order:initial
     };
     const parseNav = (col1) => Array.from(col1.querySelectorAll(".content_menu a")).map((a) => ({
       href: a.getAttribute("href"),
-      label: clean4(a.textContent)
+      label: clean5(a.textContent)
     }));
     const buildIntro = (col2) => {
       const p = col2.querySelector(".box_body p.std");
@@ -37673,7 +37815,7 @@ order:initial
       col2.querySelectorAll(".box_body h3").forEach((h3) => {
         const rawId = h3.getAttribute("id") || "";
         const contentId = rawId.replace(/_arrow$/, "");
-        const title = clean4(h3.textContent);
+        const title = clean5(h3.textContent);
         const contentEl = contentId ? col2.querySelector(`#${contentId}`) : null;
         if (!contentEl) return;
         const items = [];
@@ -37682,8 +37824,8 @@ order:initial
           const descEl = itemEl.querySelector("p.small");
           if (!nameEl) return;
           items.push({
-            name: clean4(nameEl.textContent),
-            desc: clean4((descEl == null ? void 0 : descEl.textContent) || ""),
+            name: clean5(nameEl.textContent),
+            desc: clean5((descEl == null ? void 0 : descEl.textContent) || ""),
             thumb: parseThumbnail(itemEl.querySelector("a.screenshot_frame"))
           });
         });
@@ -37702,9 +37844,9 @@ order:initial
         const clone = textDiv.cloneNode(true);
         clone.querySelectorAll("img").forEach((img) => img.remove());
         const attrEl = clone.querySelector(".subtle, .align_right");
-        const attr = clean4((attrEl == null ? void 0 : attrEl.textContent) || "");
+        const attr = clean5((attrEl == null ? void 0 : attrEl.textContent) || "");
         if (attrEl) attrEl.remove();
-        const text = clean4(clone.textContent);
+        const text = clean5(clone.textContent);
         quotes.push({ text, attr, logoSrc: (logoImg == null ? void 0 : logoImg.src) || "" });
       });
       return quotes;
@@ -37842,7 +37984,7 @@ order:initial
   function initBuyProPage(main2) {
     if (!main2 || !main2.isConnected) return;
     const STYLE_ID51 = "tmvu-buypro-style";
-    const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
+    const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const PRO_NAV = [
       { href: "/buy-pro", label: "Buy Pro" },
       { href: "/free-pro", label: "Free Pro" },
@@ -37895,8 +38037,8 @@ order:initial
         const priceEl = row.querySelector(".large strong");
         if (!value || !periodEl || !priceEl) return;
         const badge = parseSaveBadge(row);
-        const period = clean4(periodEl.textContent);
-        const price = clean4(priceEl.textContent);
+        const period = clean5(periodEl.textContent);
+        const price = clean5(priceEl.textContent);
         const card = document.createElement("div");
         card.className = "tmvu-buypro-product";
         const periodDiv = document.createElement("div");
@@ -37940,7 +38082,7 @@ order:initial
       const liveCountry = document.getElementById("payment_country-button");
       if (liveCountry) liveCountry.style.display = "none";
       const recipientEl = col1 == null ? void 0 : col1.querySelector("#pro_recipient_name");
-      const recipientName = clean4((recipientEl == null ? void 0 : recipientEl.textContent) || "");
+      const recipientName = clean5((recipientEl == null ? void 0 : recipientEl.textContent) || "");
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-buypro-hero",
@@ -38014,7 +38156,7 @@ order:initial
   function initFreeProPage(main2) {
     if (!main2 || !main2.isConnected) return;
     const STYLE_ID51 = "tmvu-freepro-style";
-    const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
+    const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const PRO_NAV = [
       { href: "/buy-pro", label: "Buy Pro" },
       { href: "/free-pro", label: "Free Pro" },
@@ -38093,7 +38235,7 @@ order:initial
   function initDonationsPage(main2) {
     if (!main2 || !main2.isConnected) return;
     const STYLE_ID51 = "tmvu-donations-style";
-    const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
+    const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const injectStyles39 = () => {
       if (document.getElementById(STYLE_ID51)) return;
       injectTmPageLayoutStyles();
@@ -38130,7 +38272,7 @@ order:initial
     };
     const parseNav = (col1) => Array.from(col1.querySelectorAll(".content_menu a")).map((a) => ({
       href: a.getAttribute("href"),
-      label: clean4(a.textContent)
+      label: clean5(a.textContent)
     }));
     const buildIntro = (stdDiv) => {
       const wrap = document.createElement("div");
@@ -38146,7 +38288,7 @@ order:initial
       const wrap = document.createElement("div");
       const heading = document.createElement("div");
       heading.className = "tmvu-donations-section";
-      heading.textContent = clean4(((_a2 = stdDiv.querySelector("h3")) == null ? void 0 : _a2.textContent) || "Top Donators");
+      heading.textContent = clean5(((_a2 = stdDiv.querySelector("h3")) == null ? void 0 : _a2.textContent) || "Top Donators");
       wrap.appendChild(heading);
       let currentTier = null;
       let inDonators = false;
@@ -38162,7 +38304,7 @@ order:initial
           currentTier.className = "tmvu-donations-tier";
           const amtBadge = document.createElement("div");
           amtBadge.className = "tmvu-donations-amount";
-          amtBadge.textContent = clean4(node.textContent);
+          amtBadge.textContent = clean5(node.textContent);
           currentTier.appendChild(amtBadge);
           const clubList = document.createElement("ul");
           clubList.className = "tmvu-donations-clubs";
@@ -38311,7 +38453,7 @@ order:initial
   function initUserGuidePage(main2) {
     if (!main2 || !main2.isConnected) return;
     const STYLE_ID51 = "tmvu-ug-style";
-    const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
+    const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const injectStyles39 = () => {
       if (document.getElementById(STYLE_ID51)) return;
       injectTmPageLayoutStyles();
@@ -38350,12 +38492,12 @@ order:initial
       const sections = [];
       col1.querySelectorAll('[id$="_section"]:not([id*="_arrow"])').forEach((span) => {
         const arrowEl = col1.querySelector("#" + span.id + "_arrow");
-        let label = arrowEl ? clean4(arrowEl.textContent) : "";
+        let label = arrowEl ? clean5(arrowEl.textContent) : "";
         if (!label) {
           let el2 = span.previousElementSibling;
           while (el2) {
             if (el2.tagName === "H3") {
-              label = clean4(el2.textContent);
+              label = clean5(el2.textContent);
               break;
             }
             el2 = el2.previousElementSibling;
@@ -38363,7 +38505,7 @@ order:initial
         }
         const links = Array.from(span.querySelectorAll(":scope > a")).map((a) => ({
           href: a.getAttribute("href") || "#",
-          label: clean4(a.textContent),
+          label: clean5(a.textContent),
           active: a.classList.contains("selected")
         }));
         if (!links.length) return;
@@ -38389,7 +38531,7 @@ order:initial
       if (!col1 || !col2) return;
       const snap1 = col1.cloneNode(true);
       const snap2 = col2.cloneNode(true);
-      const title = clean4(
+      const title = clean5(
         ((_a2 = snap2.querySelector(".box_head h1.std")) == null ? void 0 : _a2.textContent) || ((_b = snap2.querySelector(".box_head h2.std")) == null ? void 0 : _b.textContent) || "User Guide"
       );
       const sections = parseSections2(snap1);
@@ -43460,7 +43602,7 @@ order:initial
   function initSupportProPage(main2) {
     if (!main2 || !main2.isConnected) return;
     const STYLE_ID51 = "tmvu-spro-style";
-    const clean4 = (v) => String(v || "").replace(/\s+/g, " ").trim();
+    const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const injectStyles39 = () => {
       if (document.getElementById(STYLE_ID51)) return;
       injectTmPageLayoutStyles();
@@ -43491,7 +43633,7 @@ order:initial
     };
     const parseNav = (col1) => Array.from(col1.querySelectorAll(".content_menu a")).map((a) => ({
       href: a.getAttribute("href"),
-      label: clean4(a.textContent)
+      label: clean5(a.textContent)
     }));
     const buildContent = (boxBody) => {
       const clone = boxBody.cloneNode(true);
@@ -43509,7 +43651,7 @@ order:initial
       if (h3) {
         h3.className = "tmvu-spro-section";
         h3.removeAttribute("style");
-        h3.textContent = clean4(h3.textContent);
+        h3.textContent = clean5(h3.textContent);
         wrap.appendChild(h3);
       }
       const faqUl = clone.querySelector(".std ul");
@@ -43531,7 +43673,7 @@ order:initial
           if (strong) {
             const qDiv = document.createElement("div");
             qDiv.className = "tmvu-spro-faq-q";
-            qDiv.textContent = clean4(strong.textContent);
+            qDiv.textContent = clean5(strong.textContent);
             item.appendChild(qDiv);
           }
           if (answerDiv) {
@@ -44954,7 +45096,7 @@ order:initial
       }
       if (!transferListed && /pending bid/i.test(tbText)) {
         const amount = ((_a2 = transferBox.querySelector(".coin")) == null ? void 0 : _a2.textContent.trim()) || "0";
-        const withdrawBtn = Array.from(transferBox.querySelectorAll("span.button")).find((btn) => /withdraw bid/i.test(btn.textContent || ""));
+        const withdrawBtn = Array.from(transferBox.querySelectorAll("span.button")).find((btn4) => /withdraw bid/i.test(btn4.textContent || ""));
         const copy = cleanPendingBidCopy(transferBox);
         if (withdrawBtn) {
           pendingBid = {
@@ -44965,9 +45107,9 @@ order:initial
         }
       }
       if (!transferListed && !pendingBid) {
-        transferBox.querySelectorAll("span.button").forEach((btn) => {
-          const onclick = btn.getAttribute("onclick") || "";
-          const label = btn.textContent.trim();
+        transferBox.querySelectorAll("span.button").forEach((btn4) => {
+          const onclick = btn4.getAttribute("onclick") || "";
+          const label = btn4.textContent.trim();
           let icon = "\u26A1", cls = "muted";
           if (/set_asking/i.test(onclick)) {
             icon = "\u{1F4B0}";
@@ -44995,9 +45137,9 @@ order:initial
       noteText = notePar.innerHTML.replace(/<span[^>]*>Note:\s*<\/span>/i, "").replace(/<br\s*\/?>/gi, " ").trim();
     }
     if (otherDiv) {
-      otherDiv.querySelectorAll("span.button").forEach((btn) => {
-        const onclick = btn.getAttribute("onclick") || "";
-        const label = btn.textContent.trim();
+      otherDiv.querySelectorAll("span.button").forEach((btn4) => {
+        const onclick = btn4.getAttribute("onclick") || "";
+        const label = btn4.textContent.trim();
         let icon = "\u2699\uFE0F", cls = "muted";
         if (/note/i.test(label)) {
           icon = "\u{1F4DD}";
@@ -45217,19 +45359,19 @@ order:initial
     wrapper.appendChild(buildTable2(scouts));
     (_a2 = TmUI) == null ? void 0 : _a2.render(wrapper);
     wrapper.addEventListener("click", (event) => {
-      const btn = event.target.closest(".tmsc-send-btn");
-      if (!btn || !wrapper.contains(btn) || btn.classList.contains("tmsc-away") || btn.disabled) return;
-      const scoutId = btn.dataset.scoutId;
-      btn.disabled = true;
-      btn.textContent = "...";
+      const btn4 = event.target.closest(".tmsc-send-btn");
+      if (!btn4 || !wrapper.contains(btn4) || btn4.classList.contains("tmsc-away") || btn4.disabled) return;
+      const scoutId = btn4.dataset.scoutId;
+      btn4.disabled = true;
+      btn4.textContent = "...";
       TmPlayerModel.fetchPlayerInfo(player2 == null ? void 0 : player2.id, "scout", { scout_id: scoutId }).then((d) => {
         if (!d) {
-          btn.textContent = "Error";
-          btn.style.color = "var(--tmu-danger)";
+          btn4.textContent = "Error";
+          btn4.style.color = "var(--tmu-danger)";
           setTimeout(() => {
-            btn.textContent = "Send";
-            btn.disabled = false;
-            btn.style.color = "";
+            btn4.textContent = "Send";
+            btn4.disabled = false;
+            btn4.style.color = "";
           }, 2e3);
           return;
         }
@@ -45237,9 +45379,9 @@ order:initial
           onReRender(d);
           return;
         }
-        btn.textContent = "Sent";
-        btn.style.background = "var(--tmu-surface-tab-hover)";
-        btn.style.color = "var(--tmu-success)";
+        btn4.textContent = "Sent";
+        btn4.style.background = "var(--tmu-surface-tab-hover)";
+        btn4.style.color = "var(--tmu-success)";
       });
     });
   };
@@ -47174,9 +47316,9 @@ order:initial
         label: "My Players"
       })}</span>`;
       container.innerHTML = h;
-      container.querySelectorAll("[data-filter]").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          currentFilter = btn.dataset.filter;
+      container.querySelectorAll("[data-filter]").forEach((btn4) => {
+        btn4.addEventListener("click", () => {
+          currentFilter = btn4.dataset.filter;
           legendSearch = "";
           zoomAgeMin = zoomAgeMax = zoomYMin = zoomYMax = null;
           renderAll();
@@ -47507,15 +47649,15 @@ order:initial
     const injectButton = () => {
       const h2 = document.querySelector(".box_head h2");
       if (!h2) return;
-      const btn = TmUI.button({
+      const btn4 = TmUI.button({
         id: "tmrc-launch-btn",
         label: "\u{1F4CA} R5 History",
         title: "Show R5 rating history for all tracked players",
         color: "secondary",
         size: "sm"
       });
-      btn.addEventListener("click", openDialog);
-      h2.appendChild(btn);
+      btn4.addEventListener("click", openDialog);
+      h2.appendChild(btn4);
     };
     let resizeTimer;
     window.addEventListener("resize", () => {
@@ -49891,18 +50033,18 @@ order:initial
     };
     let destroy;
     function pickBtn(label, isActive, onPick, container) {
-      const btn = TmButton.button({
+      const btn4 = TmButton.button({
         label: String(label),
         color: "primary",
         size: "xs",
         active: isActive,
         onClick: () => {
           container.querySelectorAll(".tmu-btn").forEach((b) => b.classList.remove("tmu-btn-active"));
-          btn.classList.add("tmu-btn-active");
+          btn4.classList.add("tmu-btn-active");
           onPick();
         }
       });
-      return btn;
+      return btn4;
     }
     function chipGroup(map, getKey, onPick) {
       const el2 = document.createElement("div");
