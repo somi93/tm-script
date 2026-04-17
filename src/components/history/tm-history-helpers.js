@@ -1,6 +1,4 @@
 import { TmConst } from '../../lib/tm-constants.js';
-import { TmPosition } from '../../lib/tm-position.js';
-import { TmPlayerModel } from '../../models/player.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmUI } from '../shared/tm-ui.js';
 
@@ -23,37 +21,6 @@ const { R5_THRESHOLDS } = TmConst;
         const full = (html.match(/star\.png/g) || []).length;
         const half = (html.match(/half_star\.png/g) || []).length;
         return full + half * 0.5;
-    }
-
-    /* returns chip variant key for TmUI.chip() */
-    function posVariant(pos) { return TmPosition.variant(pos) || 'default'; }
-
-    /* Ensures all pids are in playerInfoCache, then calls onDone(). */
-    function prefetchPlayers(pids, onDone) {
-        const missing = pids.map(String).filter(pid => playerInfoCache[pid] === undefined);
-        if (!missing.length) { onDone(); return; }
-        Promise.all(missing.map(pid => fetchPlayerInfo(pid))).then(onDone);
-    }
-
-    const playerInfoCache = {};
-
-    function fetchPlayerInfo(pid) {
-        pid = String(pid);
-        if (playerInfoCache[pid] !== undefined) return Promise.resolve(playerInfoCache[pid]);
-        return TmPlayerModel.fetchPlayerTooltip(pid).then(function (data) {
-            if (!data?.player) { playerInfoCache[pid] = null; return null; }
-            const p = data.player;
-            const info = {
-                pos: (p.favposition || '').toUpperCase().replace(/,/g, '/'),
-                age: p.age || 0,
-                months: p.months || 0,
-                asi: p.asi || 0,
-                r5: Number(p.r5 || 0),
-                rec: Number(p.rec || 0),
-            };
-            playerInfoCache[pid] = info;
-            return info;
-        });
     }
 
     function progressState(container, opts) {
@@ -138,4 +105,4 @@ const { R5_THRESHOLDS } = TmConst;
         });
     }
 
-    export const TmHistoryHelpers = { fmt, balCls, starVal, fix2, r5Color, posVariant, prefetchPlayers, progressState, playerInfoCache };
+    export const TmHistoryHelpers = { fmt, balCls, starVal, fix2, r5Color, progressState };

@@ -47,11 +47,10 @@ const inject = () => {
 /* ── Loading / placeholder ── */
 .tmh-load{text-align:center;color:var(--tmu-text-faint);padding:var(--tmu-space-xxl);font-size:var(--tmu-font-sm)}
 
-/* ── Records native tables ── */
-.tmh-wrap table.border_bottom{width:100%;font-size:var(--tmu-font-sm)}
-.tmh-wrap table.border_bottom td{padding:var(--tmu-space-xs) var(--tmu-space-sm);color:var(--tmu-text-main);}
-.tmh-wrap table.border_bottom tr:hover{background:var(--tmu-border-contrast)}
-.tmh-wrap table.border_bottom a{color:var(--tmu-accent)}
+/* ── Records ── */
+.tmh-records{border:1px solid var(--tmu-border-soft);border-radius:var(--tmu-space-sm);overflow:hidden;margin-bottom:var(--tmu-space-md)}
+.tmh-records>.tmu-metric-layout-row+.tmu-metric-layout-row{border-top:1px solid var(--tmu-border-faint)}
+.tmh-records>.tmu-metric-layout-row:hover{background:var(--tmu-surface-tab-hover)}
 
 /* ── Progress bar ── */
 .tmh-prog{width:100%;height:5px;background:var(--tmu-surface-tab-active);border-radius:var(--tmu-space-xs);margin:var(--tmu-space-sm) 0;overflow:hidden}

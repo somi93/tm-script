@@ -4894,6 +4894,60 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   };
 
   // src/utils/normalize/club.js
+  var normalizeClubTransfers = (html2, opts = {}) => {
+    const doc = new DOMParser().parseFromString(html2, "text/html");
+    let boughtTable = null, soldTable = null;
+    doc.querySelectorAll("h3").forEach((h3) => {
+      const text = h3.textContent.trim().toLowerCase();
+      let next = h3.nextElementSibling;
+      while (next && next.tagName !== "TABLE") next = next.nextElementSibling;
+      if (!next) return;
+      if (text.includes("bought")) boughtTable = next;
+      else if (text.includes("sold")) soldTable = next;
+    });
+    const parseRow = (tr) => {
+      const tds = tr.querySelectorAll("td");
+      if (tds.length < 4) return null;
+      const playerA = tds[0].querySelector("a[player_link]");
+      if (!playerA) return null;
+      const recTd = tds[1];
+      const isRetired = recTd.textContent.trim() === "Retired";
+      let stars = 0;
+      recTd.querySelectorAll("img").forEach((img) => {
+        const src = img.getAttribute("src") || "";
+        if (src.includes("half_star")) stars += 0.5;
+        else if (src.includes("star") && !src.includes("dark_star")) stars += 1;
+      });
+      const clubA = tds[2].querySelector("a[club_link]");
+      return {
+        pid: playerA.getAttribute("player_link"),
+        name: playerA.textContent.trim(),
+        url: playerA.getAttribute("href"),
+        rec: stars * 3.38,
+        isRetired,
+        clubId: clubA ? clubA.getAttribute("club_link") : null,
+        clubName: clubA ? clubA.textContent.trim() : tds[2].textContent.trim(),
+        price: parseFloat(tds[3].textContent.trim().replace(/,/g, "")) || 0,
+        ...opts
+      };
+    };
+    const parseRows2 = (table2) => !table2 ? [] : Array.from(table2.querySelectorAll("tr")).map(parseRow).filter(Boolean);
+    const bought = parseRows2(boughtTable);
+    const sold = parseRows2(soldTable);
+    let totalBought = 0, totalSold = 0, balance = 0;
+    doc.querySelectorAll("td[colspan]").forEach((td) => {
+      var _a2;
+      const val = parseFloat((((_a2 = td.querySelector("strong")) == null ? void 0 : _a2.textContent) || "0").replace(/,/g, "")) || 0;
+      const txt = td.textContent.trim();
+      if (/Total Bought/i.test(txt)) totalBought = val;
+      else if (/Total Sold/i.test(txt)) totalSold = val;
+      else if (/Balance/i.test(txt)) balance = val;
+    });
+    if (!totalBought && bought.length) totalBought = bought.reduce((s6, p) => s6 + p.price, 0);
+    if (!totalSold && sold.length) totalSold = sold.reduce((s6, p) => s6 + p.price, 0);
+    if (!balance) balance = totalSold - totalBought;
+    return { bought, sold, totalBought, totalSold, balance };
+  };
   var normalizeClubFromTooltip = (raw) => {
     var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
     return {
@@ -5279,6 +5333,10 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     const post = await TmClubService.fetchSquadPost(clubId2);
     if (!post) return [];
     return Object.values(post).map(normalizeSquadPlayer);
+  };
+  var fetchClubTransfers = async (clubId2, season, opts = {}) => {
+    const html2 = await TmClubService.fetchClubTransferHistory(clubId2, season);
+    return html2 ? normalizeClubTransfers(html2, opts) : null;
   };
 
   // src/services/player.js
@@ -20509,39 +20567,6 @@ order:initial
     const half = (html2.match(/half_star\.png/g) || []).length;
     return full + half * 0.5;
   }
-  function posVariant(pos) {
-    return TmPosition.variant(pos) || "default";
-  }
-  function prefetchPlayers(pids, onDone) {
-    const missing = pids.map(String).filter((pid) => playerInfoCache[pid] === void 0);
-    if (!missing.length) {
-      onDone();
-      return;
-    }
-    Promise.all(missing.map((pid) => fetchPlayerInfo(pid))).then(onDone);
-  }
-  var playerInfoCache = {};
-  function fetchPlayerInfo(pid) {
-    pid = String(pid);
-    if (playerInfoCache[pid] !== void 0) return Promise.resolve(playerInfoCache[pid]);
-    return TmPlayerModel.fetchPlayerTooltip(pid).then(function(data) {
-      if (!(data == null ? void 0 : data.player)) {
-        playerInfoCache[pid] = null;
-        return null;
-      }
-      const p = data.player;
-      const info = {
-        pos: (p.favposition || "").toUpperCase().replace(/,/g, "/"),
-        age: p.age || 0,
-        months: p.months || 0,
-        asi: p.asi || 0,
-        r5: Number(p.r5 || 0),
-        rec: Number(p.rec || 0)
-      };
-      playerInfoCache[pid] = info;
-      return info;
-    });
-  }
   function progressState(container, opts) {
     const message = (opts == null ? void 0 : opts.message) || "Loading\u2026";
     const total = Number(opts == null ? void 0 : opts.total) || 0;
@@ -20562,7 +20587,7 @@ order:initial
       }
     };
   }
-  var TmHistoryHelpers = { fmt, balCls, starVal, fix2: fix22, r5Color: r5Color2, posVariant, prefetchPlayers, progressState, playerInfoCache };
+  var TmHistoryHelpers = { fmt, balCls, starVal, fix2: fix22, r5Color: r5Color2, progressState };
 
   // src/components/history/tm-history-league.js
   var H = () => TmHistoryHelpers;
@@ -21172,6 +21197,77 @@ order:initial
   var _clubId3 = null;
   var _el3 = null;
   var recordsCache = null;
+  function parsePlayerRecords(tbl) {
+    const rows = [];
+    tbl.querySelectorAll("tbody tr").forEach((tr) => {
+      const tds = tr.querySelectorAll("td");
+      if (tds.length < 3) return;
+      const label = tds[0].textContent.trim();
+      const playerA = Array.from(tds[1].querySelectorAll("a")).find((a) => {
+        var _a2;
+        return (_a2 = a.getAttribute("href")) == null ? void 0 : _a2.startsWith("/players/");
+      });
+      const player2 = playerA ? { name: playerA.textContent.trim(), url: playerA.getAttribute("href") } : { name: tds[1].textContent.trim(), url: null };
+      const subtle = tds[2].querySelector(".subtle");
+      const season = subtle ? subtle.textContent.trim() : "";
+      const val = tds[2].textContent.replace(season, "").trim();
+      rows.push({ label, player: player2, val, season });
+    });
+    return rows;
+  }
+  function parseTournamentHistory(tab0) {
+    var _a2;
+    const rows = [];
+    const note = ((_a2 = tab0.querySelector("p.std")) == null ? void 0 : _a2.textContent.trim()) || null;
+    tab0.querySelectorAll("table tbody tr").forEach((tr) => {
+      const tds = tr.querySelectorAll("td");
+      if (!tds.length) return;
+      const label = tds[0].textContent.trim();
+      if (tds.length === 2) {
+        const subtle = tds[1].querySelector(".subtle");
+        const dim = subtle ? subtle.textContent.trim() : "";
+        const val = tds[1].textContent.replace(dim, "").trim();
+        rows.push({ label, wide: true, val, dim });
+      } else {
+        const num = tds[1].textContent.trim();
+        const ctxTd = tds[2];
+        const subtle = ctxTd.querySelector(".subtle");
+        const season = subtle ? subtle.textContent.trim() : "";
+        const ctx = ctxTd.textContent.replace(season, "").trim();
+        rows.push({ label, num, ctx, season });
+      }
+    });
+    return { rows, note };
+  }
+  var _rec = (opts) => TmMetric.metric({
+    layout: "row",
+    tone: "",
+    size: "sm",
+    valueAttrs: { style: "font-size:var(--tmu-font-sm);font-weight:700" },
+    ...opts
+  });
+  function buildRecordsHtml(playerRows, { rows: tournRows, note }) {
+    const playerSection = playerRows.length ? playerRows.map((r) => {
+      const playerNote = r.player.url ? `<a href="${r.player.url}">${r.player.name}</a>` : r.player.name;
+      const valHtml = r.season ? `${r.val} <span class="tmu-meta">${r.season}</span>` : r.val;
+      return _rec({ label: r.label, note: playerNote, value: valHtml });
+    }).join("") : TmUI.empty("No data");
+    const noteHtml = note ? `<p class="tmu-meta" style="padding:var(--tmu-space-xs) var(--tmu-space-md);margin:0;border-bottom:1px solid var(--tmu-border-faint)">${note}</p>` : "";
+    const tournSection = tournRows.length ? noteHtml + tournRows.map((r) => {
+      if (r.wide) {
+        const valHtml = r.dim ? `${r.val} <span class="tmu-meta">${r.dim}</span>` : r.val;
+        return _rec({ label: r.label, value: valHtml });
+      }
+      const ctxNote = r.ctx + (r.season ? ` <span class="tmu-meta">${r.season}</span>` : "");
+      return _rec({ label: r.label, note: ctxNote, value: r.num });
+    }).join("") : TmUI.empty("No data");
+    return `
+        <div class="tmh-sec">Player Records</div>
+        <div class="tmh-records">${playerSection}</div>
+        <div class="tmh-sec">Tournament History</div>
+        <div class="tmh-records">${tournSection}</div>
+    `;
+  }
   function renderRecords() {
     const el2 = _el3;
     if (recordsCache) {
@@ -21188,15 +21284,13 @@ order:initial
       const doc = document.createElement("div");
       doc.innerHTML = html2;
       const h3s = Array.from(doc.querySelectorAll("h3"));
-      const prTblH3 = h3s.find((h2) => /player\s*records/i.test(h2.textContent));
+      const prTblH3 = h3s.find((h) => /player\s*records/i.test(h.textContent));
       const prTbl = ((_a2 = prTblH3 == null ? void 0 : prTblH3.nextElementSibling) == null ? void 0 : _a2.tagName) === "TABLE" ? prTblH3.nextElementSibling : null;
       const thBlk = doc.querySelector("#tab0");
-      let h = '<div class="tmh-sec">Player Records</div>';
-      h += prTbl ? prTbl.outerHTML : TmUI.empty("No player records found");
-      h += '<div class="tmh-sec">Tournament History</div>';
-      h += thBlk ? thBlk.innerHTML : TmUI.empty("No tournament history found");
-      recordsCache = h;
-      el2.innerHTML = h;
+      const playerRows = prTbl ? parsePlayerRecords(prTbl) : [];
+      const tournData = thBlk ? parseTournamentHistory(thBlk) : { rows: [], note: null };
+      recordsCache = buildRecordsHtml(playerRows, tournData);
+      el2.innerHTML = recordsCache;
     });
   }
   var TmHistoryRecords = {
@@ -21253,11 +21347,10 @@ order:initial
 /* \u2500\u2500 Loading / placeholder \u2500\u2500 */
 .tmh-load{text-align:center;color:var(--tmu-text-faint);padding:var(--tmu-space-xxl);font-size:var(--tmu-font-sm)}
 
-/* \u2500\u2500 Records native tables \u2500\u2500 */
-.tmh-wrap table.border_bottom{width:100%;font-size:var(--tmu-font-sm)}
-.tmh-wrap table.border_bottom td{padding:var(--tmu-space-xs) var(--tmu-space-sm);color:var(--tmu-text-main);}
-.tmh-wrap table.border_bottom tr:hover{background:var(--tmu-border-contrast)}
-.tmh-wrap table.border_bottom a{color:var(--tmu-accent)}
+/* \u2500\u2500 Records \u2500\u2500 */
+.tmh-records{border:1px solid var(--tmu-border-soft);border-radius:var(--tmu-space-sm);overflow:hidden;margin-bottom:var(--tmu-space-md)}
+.tmh-records>.tmu-metric-layout-row+.tmu-metric-layout-row{border-top:1px solid var(--tmu-border-faint)}
+.tmh-records>.tmu-metric-layout-row:hover{background:var(--tmu-surface-tab-hover)}
 
 /* \u2500\u2500 Progress bar \u2500\u2500 */
 .tmh-prog{width:100%;height:5px;background:var(--tmu-surface-tab-active);border-radius:var(--tmu-space-xs);margin:var(--tmu-space-sm) 0;overflow:hidden}
@@ -21272,6 +21365,142 @@ order:initial
     document.head.appendChild(style);
   };
   var TmHistoryStyles = { inject };
+
+  // src/components/league/tm-league-table.js
+  var sortableValue = (row, sortIndex) => {
+    var _a2;
+    return (_a2 = row == null ? void 0 : row._sortVals) == null ? void 0 : _a2[sortIndex];
+  };
+  var compareValues = (leftValue, rightValue) => {
+    const leftNumber = Number.parseFloat(leftValue);
+    const rightNumber = Number.parseFloat(rightValue);
+    if (!Number.isNaN(leftNumber) && !Number.isNaN(rightNumber)) {
+      return leftNumber - rightNumber;
+    }
+    return String(leftValue != null ? leftValue : "").localeCompare(String(rightValue != null ? rightValue : ""));
+  };
+  var TmLeagueTable = {
+    mountSortable(wrap, { headerRows = [], getRows, renderRows, defaultAsc = (sortIndex) => sortIndex === 1 || sortIndex === 2 } = {}) {
+      if (!wrap) return;
+      const sortDefs = {};
+      const groupHeaders = headerRows.map((row) => ({
+        cells: row.map((cell) => {
+          const sortKey = cell.sortIndex !== void 0 ? `sort-${cell.sortIndex}` : void 0;
+          if (sortKey) {
+            sortDefs[sortKey] = {
+              defaultSortDir: defaultAsc(cell.sortIndex) ? 1 : -1,
+              sort: (leftRow, rightRow) => compareValues(sortableValue(leftRow, cell.sortIndex), sortableValue(rightRow, cell.sortIndex))
+            };
+          }
+          return {
+            label: cell.label,
+            cls: cell.className || "",
+            key: sortKey,
+            style: cell.style,
+            title: cell.title,
+            rowspan: cell.rowspan,
+            colspan: cell.colspan
+          };
+        })
+      }));
+      wrap.innerHTML = "";
+      const scroll = document.createElement("div");
+      scroll.className = "tsa-stats-scroll";
+      scroll.appendChild(TmTable.table({
+        cls: "tsa-stats-table",
+        items: getRows(),
+        headers: [],
+        groupHeaders,
+        sortDefs,
+        sortKey: null,
+        renderRowsHtml: renderRows
+      }));
+      wrap.appendChild(scroll);
+    }
+  };
+
+  // src/components/shared/tm-transfer-table.js
+  var TmTransferTable = {
+    /**
+     * Parse one <tr> from a TM transfer history table.
+     * Returns null for header/total rows (no player link).
+     * Result: { pid, name, url, rec, isRetired, clubId, clubName, price }
+     */
+    parseRow(tr) {
+      const tds = tr.querySelectorAll("td");
+      if (tds.length < 4) return null;
+      const playerA = tds[0].querySelector("a[player_link]");
+      if (!playerA) return null;
+      const recTd = tds[1];
+      const isRetired = recTd.textContent.trim() === "Retired";
+      let stars = 0;
+      recTd.querySelectorAll("img").forEach((img) => {
+        const src = img.getAttribute("src") || "";
+        if (src.includes("half_star")) stars += 0.5;
+        else if (src.includes("star") && !src.includes("dark_star")) stars += 1;
+      });
+      const clubA = tds[2].querySelector("a[club_link]");
+      return {
+        pid: playerA.getAttribute("player_link"),
+        name: playerA.textContent.trim(),
+        url: playerA.getAttribute("href"),
+        rec: stars * 3.38,
+        isRetired,
+        clubId: clubA ? clubA.getAttribute("club_link") : null,
+        clubName: clubA ? clubA.textContent.trim() : tds[2].textContent.trim(),
+        price: parseFloat(tds[3].textContent.trim().replace(/,/g, "")) || 0
+      };
+    },
+    /**
+     * Fetch and parse a club's transfer history page for a given season.
+     * opts: { leagueClubId?, leagueClubName?, isMe? }
+     * Returns Promise<{ bought, sold, totalBought, totalSold, balance } | null>
+     */
+    fetchClub(clubId2, season, opts = {}) {
+      return fetchClubTransfers(clubId2, season, opts);
+    },
+    /**
+     * Mount a sortable player transfer table onto `el`.
+     * rows: [{ pid, name, url, rec, isRetired, clubId, clubName, price,
+     *           leagueClubId?, leagueClubName?, isMe?, season? }]
+     * opts: { clubLabel, teamLabel?, showSeason? }
+     */
+    mount(el2, rows, opts = {}) {
+      const hasTeam = !!opts.teamLabel;
+      const hasSeason = !!opts.showSeason;
+      const enriched = rows.map((r, i) => ({
+        ...r,
+        // _sortVals: [#, name, teamName, clubName, rec, price, season]
+        _sortVals: [i + 1, r.name, r.leagueClubName || "", r.clubName || "", r.rec || 0, r.price, r.season || 0]
+      }));
+      const buildRowsHtml = (data) => data.map((r, i) => {
+        const recCell = r.isRetired ? `<td class="tsa-tr-rec" style="color:var(--tmu-text-dim);font-style:italic">Ret</td>` : `<td class="tsa-tr-rec"><span style="font-size:var(--tmu-font-md)">${TmStars.recommendation(r.rec / 3.38)}</span></td>`;
+        const teamTd = hasTeam ? `<td><a href="/club/${r.leagueClubId}/" target="_blank" style="color:${r.isMe ? "var(--tmu-accent)" : "var(--tmu-text-main)"};text-decoration:none">${r.leagueClubName}</a></td>` : "";
+        const clubTd = r.clubId ? `<td style="color:var(--tmu-text-muted)"><a href="/club/${r.clubId}/" target="_blank" style="color:inherit;text-decoration:none">${r.clubName}</a></td>` : `<td style="color:var(--tmu-text-muted)">${r.clubName || ""}</td>`;
+        const seasonTd = hasSeason ? `<td style="text-align:center">S${r.season}</td>` : "";
+        return `<tr class="${r.isMe ? "tsa-stats-me" : ""}">
+                <td class="tsa-stats-rank">${i + 1}</td>
+                <td class="tsa-stats-name"><a href="${r.url || "/players/" + r.pid + "/"}">${r.name}</a></td>
+                ${recCell}${teamTd}${clubTd}${seasonTd}
+                <td class="tsa-stats-val">${r.price.toFixed(1)}</td>
+            </tr>`;
+      }).join("");
+      TmLeagueTable.mountSortable(el2, {
+        headerRows: [[
+          { label: "#", sortIndex: 0, style: "text-align:right;width:32px" },
+          { label: "Player", sortIndex: 1, style: "text-align:left" },
+          { label: "Rec", sortIndex: 4, style: "text-align:right;width:80px" },
+          ...hasTeam ? [{ label: opts.teamLabel, sortIndex: 2, style: "text-align:left" }] : [],
+          { label: opts.clubLabel || "Club", sortIndex: 3, style: "text-align:left" },
+          ...hasSeason ? [{ label: "Season", sortIndex: 6, style: "text-align:center;width:64px" }] : [],
+          { label: "Price (M)", sortIndex: 5, style: "text-align:right;width:80px" }
+        ]],
+        getRows: () => enriched,
+        renderRows: buildRowsHtml,
+        defaultAsc: (idx) => idx === 1 || idx === 2 || idx === 3
+      });
+    }
+  };
 
   // src/components/history/tm-history-transfers.js
   var H3 = () => TmHistoryHelpers;
@@ -21321,51 +21550,14 @@ order:initial
       return;
     }
     c.innerHTML = TmUI.loading("Loading Season " + sid + "\u2026");
-    TmClubService.fetchClubTransferHistory(_clubId4, sid).then(function(html2) {
-      if (html2) {
-        const d = parseTransfers(html2);
+    TmTransferTable.fetchClub(_clubId4, sid).then(function(d) {
+      if (d) {
         transferCache[sid] = d;
         renderSeasonData(c, d);
       } else {
         c.innerHTML = TmUI.error("Failed to load transfers");
       }
     });
-  }
-  function parseTransfers(html2) {
-    const doc = document.createElement("div");
-    doc.innerHTML = html2;
-    let boughtTable = null, soldTable = null;
-    Array.from(doc.querySelectorAll("h3")).forEach(function(h3) {
-      const txt = h3.textContent.trim().toLowerCase();
-      const next = h3.nextElementSibling;
-      if (txt === "bought" && (next == null ? void 0 : next.tagName) === "TABLE") boughtTable = next;
-      if (txt === "sold" && (next == null ? void 0 : next.tagName) === "TABLE") soldTable = next;
-    });
-    function parseTable(table2) {
-      if (!table2) return [];
-      return Array.from(table2.querySelectorAll("tr")).slice(1).flatMap((tr) => {
-        const tds = Array.from(tr.querySelectorAll("td"));
-        if (tds.length < 4 || tds[0].getAttribute("colspan")) return [];
-        const a = tds[0].querySelector("a[player_link]");
-        if (!a) return [];
-        return [{ name: a.textContent.trim(), pid: a.getAttribute("player_link"), url: a.getAttribute("href"), starsHtml: tds[1].innerHTML, price: parseFloat(tds[3].textContent.replace(/,/g, "").trim()) || 0 }];
-      });
-    }
-    const bought = parseTable(boughtTable);
-    const sold = parseTable(soldTable);
-    let totalBought = 0, totalSold = 0, balance = 0;
-    Array.from(doc.querySelectorAll("td[colspan]")).forEach(function(td) {
-      var _a2;
-      const txt = td.textContent.trim();
-      const val = parseFloat((((_a2 = td.querySelector("strong")) == null ? void 0 : _a2.textContent) || "0").replace(/,/g, "")) || 0;
-      if (/Total Bought/i.test(txt)) totalBought = val;
-      else if (/Total Sold/i.test(txt)) totalSold = val;
-      else if (/Balance/i.test(txt)) balance = val;
-    });
-    if (!totalBought && bought.length) totalBought = bought.reduce((s6, p) => s6 + p.price, 0);
-    if (!totalSold && sold.length) totalSold = sold.reduce((s6, p) => s6 + p.price, 0);
-    if (!balance) balance = totalSold - totalBought;
-    return { bought, sold, totalBought, totalSold, balance };
   }
   function transferSummaryHtml(b, s6, bal, n, extra) {
     return TmSummaryStrip.render([
@@ -21387,46 +21579,11 @@ order:initial
     renderSortablePlayerTable(c.querySelector("#tmh-sold-wrap"), d.sold, "To");
   }
   function renderSortablePlayerTable(c, arr, clubLabel, opts) {
-    opts = opts || {};
     if (!arr.length) {
       c.innerHTML = TmUI.empty("No players", true);
       return;
     }
-    const pic = H3().playerInfoCache;
-    const makePlayers = () => arr.map((p, idx) => {
-      var _a2, _b, _c, _d, _e;
-      const retired = /retired/i.test(p.starsHtml || "");
-      const info = pic[p.pid];
-      return {
-        _idx: idx + 1,
-        id: p.pid,
-        pid: p.pid,
-        name: p.name,
-        href: p.url || `/players/${p.pid}/`,
-        fp: retired ? "" : (info == null ? void 0 : info.pos) || "",
-        age: retired ? null : (_a2 = info == null ? void 0 : info.age) != null ? _a2 : null,
-        months: retired ? 0 : (_b = info == null ? void 0 : info.months) != null ? _b : 0,
-        asi: retired ? null : (_c = info == null ? void 0 : info.asi) != null ? _c : null,
-        r5: retired ? null : (_d = info == null ? void 0 : info.r5) != null ? _d : null,
-        rec: retired ? null : (_e = info == null ? void 0 : info.rec) != null ? _e : null,
-        _starsHtml: p.starsHtml || "",
-        _price: p.price
-      };
-    });
-    c.innerHTML = "";
-    const wrap = TmPlayersTable.mount(c, makePlayers(), {
-      columns: { rtn: false, timeleft: false, curbid: false },
-      sortKey: opts.defaultSort || "_price",
-      sortDir: opts.defaultDir !== void 0 ? opts.defaultDir : -1,
-      onRowClick: null,
-      rowCls: null,
-      extraColsBefore: [{ key: "_idx", label: "#", sortable: false }],
-      extraColsAfter: [
-        { key: "_starsHtml", label: clubLabel, sortable: false, cls: "c tmh-stars", render: (v) => v },
-        { key: "_price", label: "Price (M)", align: "r", render: (v) => `<span class="tmu-tabular" style="color:var(--tmu-text-strong)">${H3().fmt(v)}</span>` }
-      ]
-    });
-    H3().prefetchPlayers(arr.map((p) => p.pid), () => wrap.refresh(makePlayers()));
+    TmTransferTable.mount(c, arr, { clubLabel, showSeason: opts == null ? void 0 : opts.showSeason });
   }
   function loadStillPlaying() {
     const btn4 = _el4.querySelector("#tmh-still-btn");
@@ -21450,9 +21607,8 @@ order:initial
         tick();
         return;
       }
-      TmClubService.fetchClubTransferHistory(_clubId4, s6.id).then(function(html2) {
-        if (html2) {
-          const d = parseTransfers(html2);
+      TmTransferTable.fetchClub(_clubId4, s6.id).then(function(d) {
+        if (d) {
           transferCache[s6.id] = d;
           allData[s6.id] = d;
         } else {
@@ -21471,21 +21627,13 @@ order:initial
         const d = all[s6.id];
         if (!d) return;
         d.sold.forEach((p) => {
-          if (!pMap[p.pid]) {
-            pMap[p.pid] = {
-              name: p.name,
-              url: p.url,
-              starsHtml: p.starsHtml,
-              retired: /retired/i.test(p.starsHtml || ""),
-              sales: []
-            };
-          }
+          if (!pMap[p.pid]) pMap[p.pid] = { name: p.name, url: p.url, rec: p.rec || 0, retired: p.isRetired, sales: [] };
           const entry = pMap[p.pid];
-          if (p.starsHtml && !/retired/i.test(p.starsHtml)) {
-            entry.starsHtml = p.starsHtml;
+          if (!p.isRetired) {
+            entry.rec = p.rec || 0;
             entry.retired = false;
           }
-          if (/retired/i.test(p.starsHtml || "")) entry.retired = true;
+          if (p.isRetired) entry.retired = true;
           entry.sales.push({ season: s6.id });
         });
       });
@@ -21498,31 +21646,12 @@ order:initial
         }
       }
       function renderStillPlayingTable(c2, list) {
-        let h = '<div class="tmh-sec">Sold Players Still Playing (' + list.length + ")</div>";
-        c2.innerHTML = h;
+        c2.innerHTML = '<div class="tmh-sec">Sold Players Still Playing (' + list.length + ")</div>";
         if (!list.length) {
           c2.insertAdjacentHTML("beforeend", TmUI.empty("No sold players still active"));
           return;
         }
-        const pic = H3().playerInfoCache;
-        const makePlayers = () => list.map((p, idx) => {
-          var _a2, _b, _c, _d, _e;
-          const info = pic[p.pid];
-          return { _idx: idx + 1, id: p.pid, pid: p.pid, name: p.name, href: p.url || `/players/${p.pid}/`, fp: (info == null ? void 0 : info.pos) || "", age: (_a2 = info == null ? void 0 : info.age) != null ? _a2 : null, months: (_b = info == null ? void 0 : info.months) != null ? _b : 0, asi: (_c = info == null ? void 0 : info.asi) != null ? _c : null, r5: (_d = info == null ? void 0 : info.r5) != null ? _d : null, rec: (_e = info == null ? void 0 : info.rec) != null ? _e : null, _sales: p.sales.length, _seasons: p.sales.map((s6) => "S" + s6.season).join(", ") };
-        });
-        const wrap2 = TmPlayersTable.mount(c2, makePlayers(), {
-          columns: { rtn: false, timeleft: false, curbid: false },
-          sortKey: "r5",
-          sortDir: -1,
-          onRowClick: null,
-          rowCls: null,
-          extraColsBefore: [{ key: "_idx", label: "#", sortable: false }],
-          extraColsAfter: [
-            { key: "_sales", label: "Sales", align: "r" },
-            { key: "_seasons", label: "Seasons", sortable: false, render: (v) => `<span style="font-size:var(--tmu-font-xs);color:var(--tmu-text-accent-soft)">${v}</span>` }
-          ]
-        });
-        H3().prefetchPlayers(list.map((p) => p.pid), () => wrap2.refresh(makePlayers()));
+        TmTransferTable.mount(c2, list.map((p) => ({ ...p, clubName: p.sales.map((s6) => "S" + s6.season).join(", "), clubId: null, price: p.sales.length, isRetired: false })), { clubLabel: "Sales / Seasons" });
       }
       renderStillPlayingTable(c, stillPlaying);
     }
@@ -21556,9 +21685,8 @@ order:initial
         tick();
         return;
       }
-      TmClubService.fetchClubTransferHistory(_clubId4, s6.id).then(function(html2) {
-        if (html2) {
-          const d = parseTransfers(html2);
+      TmTransferTable.fetchClub(_clubId4, s6.id).then(function(d) {
+        if (d) {
           transferCache[s6.id] = d;
           allData[s6.id] = d;
         } else {
@@ -23084,7 +23212,7 @@ order:initial
     if (!(layout == null ? void 0 : layout.mainColumn)) return;
     const container = layout.mainColumn;
     const htmlOf7 = (node) => (node == null ? void 0 : node.outerHTML) || "";
-    const buttonHtml13 = (opts) => htmlOf7(TmUI.button(opts));
+    const buttonHtml14 = (opts) => htmlOf7(TmUI.button(opts));
     const MATCH_TYPE_KEYS = {
       "League": "league",
       "Friendly": "friendly",
@@ -23182,7 +23310,7 @@ order:initial
         ["cup", "Cup"],
         ["international_cup", "International Cup"]
       ];
-      return buttons.filter(([key]) => counts[key] > 0).map(([key, label]) => buttonHtml13({
+      return buttons.filter(([key]) => counts[key] > 0).map(([key, label]) => buttonHtml14({
         label: `${label} (${counts[key]})`,
         color: "primary",
         active: activeFilter === key,
@@ -24927,7 +25055,7 @@ order:initial
   var TmTransferSidebar = {
     build() {
       const { SKILL_KEYS_OUT: SKILL_KEYS_OUT2, SKILL_KEYS_GK: SKILL_KEYS_GK2, SKILL_LABELS: SKILL_LABELS3 } = TmConst;
-      const buttonHtml13 = (opts) => TmUI.button(opts).outerHTML;
+      const buttonHtml14 = (opts) => TmUI.button(opts).outerHTML;
       const checkboxFieldHtml = (opts) => TmUI.checkboxField(opts).outerHTML;
       const inputHtml4 = (opts) => TmUI.input({ type: "number", size: "full", density: "regular", grow: true, ...opts }).outerHTML;
       const skillSelectOpts = (withNone = true) => {
@@ -25009,21 +25137,21 @@ order:initial
           </div>
       </div>
       <div class="tms-primary-actions">
-        ${buttonHtml13({ id: "tms-search-btn", label: "\u{1F50D} Search 100", color: "primary", block: true })}
-        ${buttonHtml13({ id: "tms-findall-btn", label: "\u2B07\uFE0F Find All", color: "secondary", size: "sm", block: true })}
+        ${buttonHtml14({ id: "tms-search-btn", label: "\u{1F50D} Search 100", color: "primary", block: true })}
+        ${buttonHtml14({ id: "tms-findall-btn", label: "\u2B07\uFE0F Find All", color: "secondary", size: "sm", block: true })}
       </div>
       <div class="tms-sb-section" style="margin-top:var(--tmu-space-sm)">
         <div class="tms-sb-head">Saved Filters</div>
         <div class="tms-sb-body">
           <select id="tms-saved-filters-sel" class="tms-sel" style="width:100%;margin-bottom:var(--tmu-space-sm)"><option value="">\u2014 no saved filters \u2014</option></select>
           <div class="tms-filter-actions">
-            <div class="tms-filter-action-cell">${buttonHtml13({ id: "tms-filter-load-btn", label: "\u{1F4C2} Load", color: "secondary", size: "xs", block: true })}</div>
-            <div class="tms-filter-action-cell tms-filter-action-cell-wide">${buttonHtml13({ id: "tms-filter-save-btn", label: "\u{1F4BE} Save Current", color: "secondary", size: "xs", block: true })}</div>
-            <div class="tms-filter-action-cell">${buttonHtml13({ id: "tms-filter-del-btn", icon: "\u{1F5D1}", color: "danger", size: "xs", block: true })}</div>
+            <div class="tms-filter-action-cell">${buttonHtml14({ id: "tms-filter-load-btn", label: "\u{1F4C2} Load", color: "secondary", size: "xs", block: true })}</div>
+            <div class="tms-filter-action-cell tms-filter-action-cell-wide">${buttonHtml14({ id: "tms-filter-save-btn", label: "\u{1F4BE} Save Current", color: "secondary", size: "xs", block: true })}</div>
+            <div class="tms-filter-action-cell">${buttonHtml14({ id: "tms-filter-del-btn", icon: "\u{1F5D1}", color: "danger", size: "xs", block: true })}</div>
           </div>
         </div>
       </div>
-      <div class="tms-more-toggle-wrap">${buttonHtml13({
+      <div class="tms-more-toggle-wrap">${buttonHtml14({
         id: "tms-more-toggle",
         color: "secondary",
         size: "xs",
@@ -25532,7 +25660,7 @@ order:initial
       }
     }]
   };
-  var TmTransferTable = { fmtRec, tiHtml, fmtR5, fmtR5Range, MOUNT_OPTIONS };
+  var TmTransferTable2 = { fmtRec, tiHtml, fmtR5, fmtR5Range, MOUNT_OPTIONS };
 
   // src/components/transfer/tm-transfer-filters.js
   var SAVED_FILTERS_KEY = "tms_saved_filters";
@@ -25850,7 +25978,7 @@ order:initial
         return;
       }
       container.innerHTML = "";
-      _tableWrap = TmPlayersTable.mount(container, adapted, TmTransferTable.MOUNT_OPTIONS);
+      _tableWrap = TmPlayersTable.mount(container, adapted, TmTransferTable2.MOUNT_OPTIONS);
       container.addEventListener("mouseover", (e) => {
         const playerRow = e.target.closest("tr[data-pid]");
         if (!playerRow || !container.contains(playerRow)) return;
@@ -26802,59 +26930,6 @@ order:initial
   };
   var TmLeaguePicker = { openLeagueDialog };
 
-  // src/components/league/tm-league-table.js
-  var sortableValue = (row, sortIndex) => {
-    var _a2;
-    return (_a2 = row == null ? void 0 : row._sortVals) == null ? void 0 : _a2[sortIndex];
-  };
-  var compareValues = (leftValue, rightValue) => {
-    const leftNumber = Number.parseFloat(leftValue);
-    const rightNumber = Number.parseFloat(rightValue);
-    if (!Number.isNaN(leftNumber) && !Number.isNaN(rightNumber)) {
-      return leftNumber - rightNumber;
-    }
-    return String(leftValue != null ? leftValue : "").localeCompare(String(rightValue != null ? rightValue : ""));
-  };
-  var TmLeagueTable = {
-    mountSortable(wrap, { headerRows = [], getRows, renderRows, defaultAsc = (sortIndex) => sortIndex === 1 || sortIndex === 2 } = {}) {
-      if (!wrap) return;
-      const sortDefs = {};
-      const groupHeaders = headerRows.map((row) => ({
-        cells: row.map((cell) => {
-          const sortKey = cell.sortIndex !== void 0 ? `sort-${cell.sortIndex}` : void 0;
-          if (sortKey) {
-            sortDefs[sortKey] = {
-              defaultSortDir: defaultAsc(cell.sortIndex) ? 1 : -1,
-              sort: (leftRow, rightRow) => compareValues(sortableValue(leftRow, cell.sortIndex), sortableValue(rightRow, cell.sortIndex))
-            };
-          }
-          return {
-            label: cell.label,
-            cls: cell.className || "",
-            key: sortKey,
-            style: cell.style,
-            title: cell.title,
-            rowspan: cell.rowspan,
-            colspan: cell.colspan
-          };
-        })
-      }));
-      wrap.innerHTML = "";
-      const scroll = document.createElement("div");
-      scroll.className = "tsa-stats-scroll";
-      scroll.appendChild(TmTable.table({
-        cls: "tsa-stats-table",
-        items: getRows(),
-        headers: [],
-        groupHeaders,
-        sortDefs,
-        sortKey: null,
-        renderRowsHtml: renderRows
-      }));
-      wrap.appendChild(scroll);
-    }
-  };
-
   // src/components/league/tm-league-stats.js
   if (!document.getElementById("tsa-league-stats-style")) {
     const _s2 = document.createElement("style");
@@ -26964,114 +27039,6 @@ order:initial
       onDone(rows);
     }).catch(() => onDone(null));
   };
-  var parseClubTransfers = (html2, leagueClubId, leagueClubName, isMe) => {
-    const doc = new DOMParser().parseFromString(html2, "text/html");
-    const result = { bought: [], sold: [] };
-    let boughtTable = null, soldTable = null;
-    doc.querySelectorAll("h3").forEach((h3) => {
-      const text = h3.textContent.trim().toLowerCase();
-      let next = h3.nextElementSibling;
-      while (next && next.tagName !== "TABLE") next = next.nextElementSibling;
-      if (!next) return;
-      if (text.includes("bought")) boughtTable = next;
-      else if (text.includes("sold")) soldTable = next;
-    });
-    const parseRows2 = (table2) => {
-      if (!table2) return [];
-      const rows = [];
-      table2.querySelectorAll("tr").forEach((tr) => {
-        const tds = tr.querySelectorAll("td");
-        if (tds.length < 4) return;
-        const playerA = tds[0].querySelector("a[player_link]");
-        if (!playerA) return;
-        const recTd = tds[1];
-        const clubA = tds[2].querySelector("a[club_link]");
-        if (!clubA) return;
-        const isRetired = recTd.textContent.trim() === "Retired";
-        let stars = 0;
-        recTd.querySelectorAll("img").forEach((img) => {
-          const src = img.getAttribute("src") || "";
-          if (src.includes("half_star")) stars += 0.5;
-          else if (src.includes("star") && !src.includes("dark_star")) stars += 1;
-        });
-        const recVal = stars * 3.38;
-        const price = parseFloat(tds[3].textContent.trim().replace(/,/g, "")) || 0;
-        const clubId2 = clubA.getAttribute("club_link");
-        if (!clubId2) return;
-        rows.push({
-          name: playerA.textContent.trim(),
-          playerId: playerA.getAttribute("player_link"),
-          rec: recVal,
-          isRetired,
-          clubId: clubId2,
-          clubName: clubA.textContent.trim(),
-          leagueClubId,
-          leagueClubName,
-          price,
-          isMe
-        });
-      });
-      return rows;
-    };
-    result.bought = parseRows2(boughtTable);
-    result.sold = parseRows2(soldTable);
-    return result;
-  };
-  var fetchClubsForSeason = (season, onDone) => {
-    const s6 = window.TmLeagueCtx;
-    const currentSeason5 = typeof SESSION !== "undefined" ? SESSION.season : null;
-    if (!season || season === currentSeason5) {
-      onDone(s6.standingsRows || []);
-      return;
-    }
-    const cacheKey = `clubs|${season}`;
-    if (s6.statsCache[cacheKey]) {
-      onDone(s6.statsCache[cacheKey]);
-      return;
-    }
-    const { panelCountry, panelDivision, panelGroup } = s6;
-    if (!panelCountry || !panelDivision) {
-      onDone(s6.standingsRows || []);
-      return;
-    }
-    const group = panelGroup || "1";
-    window.fetch(`/history/league/${panelCountry}/${panelDivision}/${group}/standings/${season}/`).then((r) => r.text()).then((html2) => {
-      const doc = new DOMParser().parseFromString(html2, "text/html");
-      const clubs = [];
-      doc.querySelectorAll("table.border_bottom tr").forEach((tr) => {
-        const a = tr.querySelector("a[club_link]");
-        if (!a) return;
-        clubs.push({ clubId: a.getAttribute("club_link"), clubName: a.textContent.trim() });
-      });
-      s6.statsCache[cacheKey] = clubs;
-      onDone(clubs);
-    }).catch(() => onDone(s6.standingsRows || []));
-  };
-  var fetchAllClubTransfers = (season, onDone) => {
-    const s6 = window.TmLeagueCtx;
-    const key = `transfers|${season}`;
-    if (s6.statsCache[key]) {
-      onDone(s6.statsCache[key]);
-      return;
-    }
-    const myId = typeof SESSION !== "undefined" ? String(SESSION.id || SESSION.main_id || "") : "";
-    fetchClubsForSeason(season, (clubs) => {
-      if (!clubs.length) {
-        onDone(null);
-        return;
-      }
-      Promise.all(clubs.map(
-        (club) => window.fetch(`/history/club/transfers/${club.clubId}/${season}/`).then((r) => r.text()).then((html2) => parseClubTransfers(html2, club.clubId, club.clubName, club.clubId === myId)).catch(() => ({ bought: [], sold: [] }))
-      )).then((results) => {
-        const data = {
-          bought: results.flatMap((r) => r.bought),
-          sold: results.flatMap((r) => r.sold)
-        };
-        s6.statsCache[key] = data;
-        onDone(data);
-      });
-    });
-  };
   var renderPlayerStatsTab = () => {
     const s6 = window.TmLeagueCtx;
     const container = document.getElementById("tsa-stats-content");
@@ -27155,6 +27122,73 @@ order:initial
       });
     });
   };
+  var TmLeagueStats = { renderPlayerStatsTab };
+
+  // src/components/league/tm-league-transfers.js
+  var buttonHtml9 = ({ label, slot, cls = "", active = false, ...opts }) => TmButton.button({
+    color: "primary",
+    size: "sm",
+    label,
+    slot,
+    cls,
+    active,
+    ...opts
+  }).outerHTML;
+  var fetchClubsForSeason = (season, onDone) => {
+    const s6 = window.TmLeagueCtx;
+    const currentSeason5 = typeof SESSION !== "undefined" ? SESSION.season : null;
+    if (!season || season === currentSeason5) {
+      onDone(s6.standingsRows || []);
+      return;
+    }
+    const cacheKey = `clubs|${season}`;
+    if (s6.statsCache[cacheKey]) {
+      onDone(s6.statsCache[cacheKey]);
+      return;
+    }
+    const { panelCountry, panelDivision, panelGroup } = s6;
+    if (!panelCountry || !panelDivision) {
+      onDone(s6.standingsRows || []);
+      return;
+    }
+    const group = panelGroup || "1";
+    window.fetch(`/history/league/${panelCountry}/${panelDivision}/${group}/standings/${season}/`).then((r) => r.text()).then((html2) => {
+      const doc = new DOMParser().parseFromString(html2, "text/html");
+      const clubs = [];
+      doc.querySelectorAll("table.border_bottom tr").forEach((tr) => {
+        const a = tr.querySelector("a[club_link]");
+        if (!a) return;
+        clubs.push({ clubId: a.getAttribute("club_link"), clubName: a.textContent.trim() });
+      });
+      s6.statsCache[cacheKey] = clubs;
+      onDone(clubs);
+    }).catch(() => onDone(s6.standingsRows || []));
+  };
+  var fetchAllClubTransfers = (season, onDone) => {
+    const s6 = window.TmLeagueCtx;
+    const key = `transfers|${season}`;
+    if (s6.statsCache[key]) {
+      onDone(s6.statsCache[key]);
+      return;
+    }
+    const myId = typeof SESSION !== "undefined" ? String(SESSION.id || SESSION.main_id || "") : "";
+    fetchClubsForSeason(season, (clubs) => {
+      if (!clubs.length) {
+        onDone(null);
+        return;
+      }
+      Promise.all(clubs.map(
+        (club) => TmTransferTable.fetchClub(club.clubId, season, { leagueClubId: club.clubId, leagueClubName: club.clubName, isMe: club.clubId === myId }).catch(() => ({ bought: [], sold: [] }))
+      )).then((results) => {
+        const data = {
+          bought: results.flatMap((r) => r.bought),
+          sold: results.flatMap((r) => r.sold)
+        };
+        s6.statsCache[key] = data;
+        onDone(data);
+      });
+    });
+  };
   var renderTransfersTab = () => {
     const s6 = window.TmLeagueCtx;
     const container = document.getElementById("tsa-transfers-content");
@@ -27166,44 +27200,6 @@ order:initial
         container.innerHTML = TmUI.error("Failed to load transfers.");
         return;
       }
-      const recColor = (v) => {
-        if (v >= 18) return "var(--tmu-success)";
-        if (v >= 15) return "var(--tmu-text-main)";
-        if (v >= 12) return "var(--tmu-warning)";
-        return "var(--tmu-text-disabled)";
-      };
-      const recDisplay = (v) => (v / 3.38).toFixed(2);
-      const buildSection = (rows, counterpartyLabel) => {
-        const enriched = rows.map((r, i) => ({
-          ...r,
-          _sortVals: [i + 1, r.name, r.leagueClubName, r.clubName, r.rec, r.price]
-        }));
-        const buildRowsHtml = (data2) => data2.map((r, i) => {
-          const recCell = r.isRetired ? `<td class="tsa-tr-rec" style="color:var(--tmu-text-dim);font-style:italic">Ret</td>` : `<td class="tsa-tr-rec" style="color:${recColor(r.rec)}">${recDisplay(r.rec)}</td>`;
-          return `<tr class="${r.isMe ? "tsa-stats-me" : ""}">
-                        <td class="tsa-stats-rank">${i + 1}</td>
-                        <td class="tsa-stats-name"><a href="/players/${r.playerId}/" target="_blank">${r.name}</a></td>
-                        ${recCell}
-                        <td><a href="/club/${r.leagueClubId}/" target="_blank" style="color:${r.isMe ? "var(--tmu-accent)" : "var(--tmu-text-main)"};text-decoration:none">${r.leagueClubName}</a></td>
-                        <td style="color:var(--tmu-text-muted)"><a href="/club/${r.clubId}/" target="_blank" style="color:inherit;text-decoration:none">${r.clubName}</a></td>
-                        <td class="tsa-stats-val">${r.price.toFixed(1)}</td>
-                    </tr>`;
-        }).join("");
-        return {
-          enriched,
-          buildRowsHtml,
-          headerRows: [[
-            { label: "#", sortIndex: 0, style: "text-align:right;width:32px" },
-            { label: "Player", sortIndex: 1, style: "text-align:left" },
-            { label: "Rec", sortIndex: 4, style: "text-align:right;width:48px" },
-            { label: "Team", sortIndex: 2, style: "text-align:left" },
-            { label: counterpartyLabel, sortIndex: 3, style: "text-align:left" },
-            { label: "Price (M)", sortIndex: 5, style: "text-align:right;width:80px" }
-          ]]
-        };
-      };
-      const bought = buildSection(data.bought, "Seller");
-      const sold = buildSection(data.sold, "Buyer");
       const teamMap = {};
       data.bought.forEach((r) => {
         const cid = r.leagueClubId;
@@ -27227,7 +27223,7 @@ order:initial
         const balCol = bal > 0 ? "var(--tmu-success)" : bal < 0 ? "var(--tmu-danger)" : "var(--tmu-text-main)";
         return `<tr class="${g.isMe ? "tsa-stats-me" : ""}">
                     <td class="tsa-stats-rank">${i + 1}</td>
-                <td class="tsa-stats-name"><a href="/club/${g.clubId}/" target="_blank" style="color:${g.isMe ? "var(--tmu-accent)" : "var(--tmu-text-main)"};text-decoration:none">${g.clubName}</a></td>
+                    <td class="tsa-stats-name"><a href="/club/${g.clubId}/" target="_blank" style="color:${g.isMe ? "var(--tmu-accent)" : "var(--tmu-text-main)"};text-decoration:none">${g.clubName}</a></td>
                     <td class="tsa-stats-val">${g.bCount}</td>
                     <td class="tsa-stats-val">${g.bTotal.toFixed(1)}</td>
                     <td class="tsa-stats-val">${g.sCount}</td>
@@ -27259,26 +27255,26 @@ order:initial
       const totalBal = totalSold - totalBought;
       const balColor = totalBal >= 0 ? "var(--tmu-success)" : "var(--tmu-danger)";
       const totalsHtml = `
-                <div class="tsa-tr-totals">
-                    <span>Bought: <strong style="color:var(--tmu-text-main)">${totalBought.toFixed(1)}M</strong></span>
-                    <span>Sold: <strong style="color:var(--tmu-text-main)">${totalSold.toFixed(1)}M</strong></span>
-                    <span>Balance: <strong style="color:${balColor}">${totalBal >= 0 ? "+" : ""}${totalBal.toFixed(1)}M</strong></span>
-                </div>`;
+            <div class="tsa-tr-totals">
+                <span>Bought: <strong style="color:var(--tmu-text-main)">${totalBought.toFixed(1)}M</strong></span>
+                <span>Sold: <strong style="color:var(--tmu-text-main)">${totalSold.toFixed(1)}M</strong></span>
+                <span>Balance: <strong style="color:${balColor}">${totalBal >= 0 ? "+" : ""}${totalBal.toFixed(1)}M</strong></span>
+            </div>`;
       container.innerHTML = `
-                <div class="tsa-stats-bar">
-                    <div>
-                        ${buttonHtml8({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "bought", slot: `Bought <span class="tsa-tr-count">${data.bought.length}</span>` })}
-                        ${buttonHtml8({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "sold", slot: `Sold <span class="tsa-tr-count">${data.sold.length}</span>` })}
-                        ${buttonHtml8({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "teams", slot: "Teams" })}
-                    </div>
+            <div class="tsa-stats-bar">
+                <div>
+                    ${buttonHtml9({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "bought", slot: `Bought <span class="tsa-tr-count">${data.bought.length}</span>` })}
+                    ${buttonHtml9({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "sold", slot: `Sold <span class="tsa-tr-count">${data.sold.length}</span>` })}
+                    ${buttonHtml9({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "teams", slot: "Teams" })}
                 </div>
-                <div id="tsa-tr-bought-wrap" style="display:${s6.transfersView === "bought" ? "" : "none"}"></div>
-                <div id="tsa-tr-sold-wrap" style="display:${s6.transfersView === "sold" ? "" : "none"}"></div>
-                <div id="tsa-tr-teams-wrap" style="display:${s6.transfersView === "teams" ? "" : "none"}">
-                    <div id="tsa-tr-teams-inner"></div>
-                </div>
-                ${totalsHtml}
-            `;
+            </div>
+            <div id="tsa-tr-bought-wrap" style="display:${s6.transfersView === "bought" ? "" : "none"}"></div>
+            <div id="tsa-tr-sold-wrap" style="display:${s6.transfersView === "sold" ? "" : "none"}"></div>
+            <div id="tsa-tr-teams-wrap" style="display:${s6.transfersView === "teams" ? "" : "none"}">
+                <div id="tsa-tr-teams-inner"></div>
+            </div>
+            ${totalsHtml}
+        `;
       const transferViewButtons = container.querySelectorAll(".tsa-stat-mode-btn");
       if (transferViewButtons[0]) transferViewButtons[0].dataset.tv = "bought";
       if (transferViewButtons[1]) transferViewButtons[1].dataset.tv = "sold";
@@ -27297,16 +27293,8 @@ order:initial
           if (el2) el2.style.display = k === s6.transfersView ? "" : "none";
         });
       };
-      TmLeagueTable.mountSortable(allWraps.bought, {
-        headerRows: bought.headerRows,
-        getRows: () => bought.enriched,
-        renderRows: bought.buildRowsHtml
-      });
-      TmLeagueTable.mountSortable(allWraps.sold, {
-        headerRows: sold.headerRows,
-        getRows: () => sold.enriched,
-        renderRows: sold.buildRowsHtml
-      });
+      TmTransferTable.mount(allWraps.bought, data.bought, { clubLabel: "Seller", teamLabel: "Team" });
+      TmTransferTable.mount(allWraps.sold, data.sold, { clubLabel: "Buyer", teamLabel: "Team" });
       TmLeagueTable.mountSortable(document.getElementById("tsa-tr-teams-inner"), {
         headerRows: teamData.headerRows,
         getRows: () => teamData.enriched,
@@ -27314,10 +27302,7 @@ order:initial
       });
     });
   };
-  var TmLeagueStats = {
-    renderPlayerStatsTab,
-    renderTransfersTab
-  };
+  var TmLeagueTransfers = { renderTransfersTab };
 
   // src/components/league/tm-league-totr.js
   if (!document.getElementById("tsa-league-totr-style")) {
@@ -27622,7 +27607,7 @@ order:initial
         else document.getElementById("tsa-totr-content").innerHTML = TmUI.empty("Waiting for fixtures data...");
       }
       if (which === "stats") TmLeagueStats.renderPlayerStatsTab();
-      if (which === "transfers") TmLeagueStats.renderTransfersTab();
+      if (which === "transfers") TmLeagueTransfers.renderTransfersTab();
     };
     (_a2 = panel.querySelector("#tsa-panel-tabs")) == null ? void 0 : _a2.appendChild(TmUI.tabs({
       items: [
@@ -27650,7 +27635,7 @@ order:initial
           const statsCont = document.getElementById("tsa-stats-content");
           if (statsCont && statsCont.style.display !== "none") TmLeagueStats.renderPlayerStatsTab();
           const trCont = document.getElementById("tsa-transfers-content");
-          if (trCont && trCont.style.display !== "none") TmLeagueStats.renderTransfersTab();
+          if (trCont && trCont.style.display !== "none") TmLeagueTransfers.renderTransfersTab();
         } else {
           ctx.setDisplayedSeason(s6);
           TmLeagueStandings.fetchHistoryStandings(s6);
@@ -27658,7 +27643,7 @@ order:initial
           const statsCont = document.getElementById("tsa-stats-content");
           if (statsCont && statsCont.style.display !== "none") TmLeagueStats.renderPlayerStatsTab();
           const trCont = document.getElementById("tsa-transfers-content");
-          if (trCont && trCont.style.display !== "none") TmLeagueStats.renderTransfersTab();
+          if (trCont && trCont.style.display !== "none") TmLeagueTransfers.renderTransfersTab();
         }
       };
       TmSeasonBar.mount(panel.querySelector("#tsa-ssnpick"), {
@@ -28370,7 +28355,7 @@ order:initial
   var STYLE_ID41 = "tmvu-social-feed-style";
   var clean3 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml25 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  var buttonHtml9 = ({ cls = "", attrs = {}, shape = "full", size = "sm", color = "secondary", ...opts } = {}) => TmUI.button({
+  var buttonHtml10 = ({ cls = "", attrs = {}, shape = "full", size = "sm", color = "secondary", ...opts } = {}) => TmUI.button({
     cls,
     attrs,
     shape,
@@ -28531,7 +28516,7 @@ order:initial
                     <div id="tmvu-home-feed-likes-title" class="tmvu-home-feed-likes-title">Likes</div>
                     <div class="tmvu-home-feed-likes-subtitle">Loading clubs who liked this post...</div>
                 </div>
-                ${buttonHtml9({ label: "Close", cls: "tmvu-home-feed-likes-close", attrs: { "data-feed-likes-close": true } })}
+                ${buttonHtml10({ label: "Close", cls: "tmvu-home-feed-likes-close", attrs: { "data-feed-likes-close": true } })}
             </div>
             <div class="tmvu-home-feed-likes-body" data-feed-likes-body>
                 ${TmUI.loading("Loading likes...", true)}
@@ -28674,8 +28659,8 @@ order:initial
       targetEl.innerHTML = `
             <textarea class="tmvu-home-feed-composer-input" data-role="input" placeholder="${mode === "reply" ? "Write a reply..." : "Write a comment..."}"></textarea>
             <div class="tmvu-home-feed-composer-actions">
-                ${buttonHtml9({ label: "Cancel", cls: "tmvu-home-feed-composer-btn", attrs: { "data-role": "cancel" } })}
-                ${buttonHtml9({ label: mode === "reply" ? "Reply" : "Comment", cls: "tmvu-home-feed-composer-btn", attrs: { "data-role": "submit" } })}
+                ${buttonHtml10({ label: "Cancel", cls: "tmvu-home-feed-composer-btn", attrs: { "data-role": "cancel" } })}
+                ${buttonHtml10({ label: mode === "reply" ? "Reply" : "Comment", cls: "tmvu-home-feed-composer-btn", attrs: { "data-role": "submit" } })}
             </div>
         `;
       targetEl.hidden = false;
@@ -28753,11 +28738,11 @@ order:initial
                                     </div>
                                 </div>
                                 <div class="tmvu-home-feed-actions">
-                                    ${buttonHtml9({ label: "Like", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "like" } })}
-                                    ${buttonHtml9({ label: "Comment", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "comment" } })}
-                                    ${buttonHtml9({ label: "Reply", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "reply" } })}
-                                    ${buttonHtml9({ label: "Link", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "link" } })}
-                                    ${buttonHtml9({ label: "Mute", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "mute" } })}
+                                    ${buttonHtml10({ label: "Like", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "like" } })}
+                                    ${buttonHtml10({ label: "Comment", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "comment" } })}
+                                    ${buttonHtml10({ label: "Reply", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "reply" } })}
+                                    ${buttonHtml10({ label: "Link", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "link" } })}
+                                    ${buttonHtml10({ label: "Mute", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "mute" } })}
                                 </div>
                                 <div class="tmvu-home-feed-composer" data-feed-composer hidden></div>
                                 ${post.totalCommentCount > 0 || post.comments.length ? `
@@ -28780,7 +28765,7 @@ order:initial
                                 ` : ""}
                                 ${similarStoriesLabel ? `
                                     <div class="tmvu-home-feed-similar">
-                                        ${buttonHtml9({ label: similarStoriesLabel, cls: "tmvu-home-feed-similar-btn", color: "secondary", attrs: { "data-feed-similar-stories": true } })}
+                                        ${buttonHtml10({ label: similarStoriesLabel, cls: "tmvu-home-feed-similar-btn", color: "secondary", attrs: { "data-feed-similar-stories": true } })}
                                     </div>
                                 ` : ""}
                             </div>
@@ -28789,7 +28774,7 @@ order:initial
       }).join("")}
                 ${(feedModel == null ? void 0 : feedModel.kind) === "api" && ((feedModel == null ? void 0 : feedModel.canLoadMore) || (feedModel == null ? void 0 : feedModel.isLoadingMore)) ? `
                     <div class="tmvu-home-feed-load-more">
-                        ${buttonHtml9({
+                        ${buttonHtml10({
         label: (feedModel == null ? void 0 : feedModel.isLoadingMore) ? "Loading more..." : "Load older feed posts",
         cls: "tmvu-home-feed-load-more-btn",
         attrs: {
@@ -30140,7 +30125,7 @@ order:initial
     return (d || "") + (t ? " \xB7 " + t : "");
   };
   var htmlOf6 = (node) => node ? node.outerHTML : "";
-  var buttonHtml10 = (opts) => TmUI.button(opts).outerHTML;
+  var buttonHtml11 = (opts) => TmUI.button(opts).outerHTML;
   var buildTabs = (matchIsFuture, isLeague) => {
     const items = matchIsFuture ? [
       { key: "lineups", label: "Expected Lineups" },
@@ -30184,17 +30169,17 @@ order:initial
       const liveControls = matchIsFuture ? "" : `
                 <div class="rnd-live-progress"><div class="rnd-live-progress-fill" id="rnd-live-progress-head" style="width:0%"></div></div>
                 <div class="rnd-live-filter-group">
-                  ${buttonHtml10({ label: "All", color: "secondary", size: "xs", cls: "rnd-live-filter-btn", attrs: { "data-filter": "all" } })}
-                  ${buttonHtml10({ label: "Key", color: "secondary", size: "xs", cls: `rnd-live-filter-btn${matchIsLive ? "" : " active"}`, attrs: { "data-filter": "key" } })}
-                  ${matchIsLive ? buttonHtml10({ slot: '<span class="rnd-live-filter-dot"></span><span>Live</span>', color: "secondary", size: "xs", cls: "rnd-live-filter-btn live-btn active", attrs: { "data-filter": "live" } }) : ""}
+                  ${buttonHtml11({ label: "All", color: "secondary", size: "xs", cls: "rnd-live-filter-btn", attrs: { "data-filter": "all" } })}
+                  ${buttonHtml11({ label: "Key", color: "secondary", size: "xs", cls: `rnd-live-filter-btn${matchIsLive ? "" : " active"}`, attrs: { "data-filter": "key" } })}
+                  ${matchIsLive ? buttonHtml11({ slot: '<span class="rnd-live-filter-dot"></span><span>Live</span>', color: "secondary", size: "xs", cls: "rnd-live-filter-btn live-btn active", attrs: { "data-filter": "live" } }) : ""}
                 </div>
-                ${buttonHtml10({ id: "rnd-live-play-head", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>', title: "Play / Pause", color: "secondary", size: "xs", cls: "rnd-live-btn" })}
-                ${buttonHtml10({ id: "rnd-live-skip-head", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 4 15 12 5 20 5 4"/><rect x="17" y="4" width="2" height="16" rx="1" fill="currentColor"/></svg>', title: "Skip to end", color: "secondary", size: "xs", cls: "rnd-live-btn" })}`;
+                ${buttonHtml11({ id: "rnd-live-play-head", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>', title: "Play / Pause", color: "secondary", size: "xs", cls: "rnd-live-btn" })}
+                ${buttonHtml11({ id: "rnd-live-skip-head", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 4 15 12 5 20 5 4"/><rect x="17" y="4" width="2" height="16" rx="1" fill="currentColor"/></svg>', title: "Skip to end", color: "secondary", size: "xs", cls: "rnd-live-btn" })}`;
       return $(`
                 <div class="rnd-overlay" id="rnd-overlay">
                     <div class="rnd-dialog">
                         <div class="rnd-dlg-head">
-                            ${buttonHtml10({ id: "rnd-dlg-close", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>', color: "secondary", size: "sm", shape: "full", cls: "rnd-dlg-close" })}
+                            ${buttonHtml11({ id: "rnd-dlg-close", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>', color: "secondary", size: "sm", shape: "full", cls: "rnd-dlg-close" })}
                             <div class="rnd-dlg-head-content">
                               <div class="rnd-dlg-head-row">
                                 <div class="rnd-dlg-team-group home">
@@ -30954,7 +30939,7 @@ order:initial
   };
 
   // src/components/match/tm-match-player-dialog.js
-  var buttonHtml11 = (opts) => TmUI.button(opts).outerHTML;
+  var buttonHtml12 = (opts) => TmUI.button(opts).outerHTML;
   var badgeHtml6 = (opts, tone = "muted") => TmUI.badge({ size: "sm", shape: "full", weight: "bold", ...opts }, tone);
   var metricHtml8 = (opts) => TmUI.metric(opts);
   var buildPlayerStatsCompact = (statsArray, isGK) => {
@@ -31084,7 +31069,7 @@ order:initial
     }
     let html2 = `<div class="rnd-plr-overlay">
         <div class="rnd-plr-dialog" style="position:relative">
-            ${buttonHtml11({ icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>', color: "secondary", size: "sm", shape: "full", cls: "rnd-plr-close" })}
+            ${buttonHtml12({ icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>', color: "secondary", size: "sm", shape: "full", cls: "rnd-plr-close" })}
             <div class="rnd-plr-header">
                 <div class="rnd-plr-face"><img src="${player2.faceUrl}" alt="${player2.no}"></div>
                 <div class="rnd-plr-header-main">
@@ -39740,7 +39725,7 @@ order:initial
   function matchesTargetCountry(player2, targetCountryCode) {
     return resolvePlayerCountryCode(player2) === normalizeCountryCode2(targetCountryCode);
   }
-  var buttonHtml12 = (opts) => TmUI.button(opts).outerHTML;
+  var buttonHtml13 = (opts) => TmUI.button(opts).outerHTML;
   function injectStyles32() {
     if (document.getElementById(STYLE_ID43)) return;
     const style = document.createElement("style");
@@ -40794,9 +40779,9 @@ order:initial
                     <p>Scans the selected season and league range for transfers, inactive clubs, banned clubs and flagged squads.</p>
                 </div>
                 <div class="tmvu-nt-save-actions">
-                    ${buttonHtml12({ label: "Run Scan", color: "primary", size: "sm", attrs: { "data-nt-save-run": "1" } })}
-                    ${buttonHtml12({ label: "Export Excel CSV", color: "secondary", size: "sm", cls: "tmvu-nt-save-export", attrs: { "data-nt-save-export": "1" } })}
-                    ${buttonHtml12({ label: "Close", color: "secondary", size: "sm", attrs: { "data-nt-save-close": "1" } })}
+                    ${buttonHtml13({ label: "Run Scan", color: "primary", size: "sm", attrs: { "data-nt-save-run": "1" } })}
+                    ${buttonHtml13({ label: "Export Excel CSV", color: "secondary", size: "sm", cls: "tmvu-nt-save-export", attrs: { "data-nt-save-export": "1" } })}
+                    ${buttonHtml13({ label: "Close", color: "secondary", size: "sm", attrs: { "data-nt-save-close": "1" } })}
                 </div>
             </div>
             <div class="tmvu-nt-save-body">
@@ -41303,7 +41288,7 @@ order:initial
             <div class="tmvu-nt-save-kicker">National Teams</div>
             <div class="tmvu-nt-save-title">NT Save Finder \xB7 ${escapeHtml27(state5.countryCode.toUpperCase())}</div>
             <div class="tmvu-nt-save-copy">Scans league transfer history, inactive clubs, banned clubs and flagged league squads for players eligible for NT save.</div>
-            ${buttonHtml12({ label: "Find NT Save Players", color: "secondary", size: "sm", attrs: { "data-nt-save-open": "1" } })}
+            ${buttonHtml13({ label: "Find NT Save Players", color: "secondary", size: "sm", attrs: { "data-nt-save-open": "1" } })}
             <div class="tmvu-nt-save-mini" data-nt-save-mini>Idle</div>
         `;
       panel.onclick = (event) => {
@@ -47043,7 +47028,7 @@ order:initial
     ];
     const getColor6 = TmUtils.getColor;
     const htmlOf7 = (node) => (node == null ? void 0 : node.outerHTML) || "";
-    const buttonHtml13 = (opts) => htmlOf7(TmUI.button(opts));
+    const buttonHtml14 = (opts) => htmlOf7(TmUI.button(opts));
     const checkboxHtml2 = (opts) => htmlOf7(TmUI.checkbox(opts));
     const checkboxFieldHtml = (opts) => htmlOf7(TmUI.checkboxField(opts));
     const inputHtml4 = (opts) => htmlOf7(TmUI.input({ size: "full", density: "compact", tone: "overlay", grow: true, ...opts }));
@@ -47181,7 +47166,7 @@ order:initial
     const createDialog = () => {
       const ov = document.createElement("div");
       ov.className = "tmrc-overlay";
-      const issuesButton = buttonHtml13({
+      const issuesButton = buttonHtml14({
         id: "tmrc-issues-btn",
         label: "\u26A0 Sync Issues",
         title: "Players with incomplete sync",
@@ -47189,15 +47174,15 @@ order:initial
         size: "xs",
         attrs: { "data-tone": "warn" }
       });
-      const closeButton = buttonHtml13({
+      const closeButton = buttonHtml14({
         id: "tmrc-close",
         icon: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
         title: "Close",
         variant: "icon"
       });
-      const zoomInButton = buttonHtml13({ id: "tmrc-zoom-in", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>', title: "Zoom In", color: "secondary", size: "xs" });
-      const zoomOutButton = buttonHtml13({ id: "tmrc-zoom-out", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>', title: "Zoom Out", color: "secondary", size: "xs" });
-      const zoomResetButton = buttonHtml13({ id: "tmrc-zoom-reset", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.12"/></svg>', title: "Reset Zoom", color: "secondary", size: "xs" });
+      const zoomInButton = buttonHtml14({ id: "tmrc-zoom-in", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>', title: "Zoom In", color: "secondary", size: "xs" });
+      const zoomOutButton = buttonHtml14({ id: "tmrc-zoom-out", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>', title: "Zoom Out", color: "secondary", size: "xs" });
+      const zoomResetButton = buttonHtml14({ id: "tmrc-zoom-reset", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.12"/></svg>', title: "Reset Zoom", color: "secondary", size: "xs" });
       ov.innerHTML = `
             <div class="tmrc-modal">
                 <div class="tmrc-head">
@@ -47303,7 +47288,7 @@ order:initial
       const container = overlay.querySelector("#tmrc-filters");
       let h = '<span class="tmrc-filter-label">Position:</span>';
       POS_GROUPS.forEach((g) => {
-        h += buttonHtml13({
+        h += buttonHtml14({
           label: g.label,
           color: currentFilter === g.key ? "lime" : "secondary",
           size: "xs",
@@ -47352,8 +47337,8 @@ order:initial
       const searchLower = legendSearch.toLowerCase();
       const filteredLegend = searchLower ? allInLegend.filter((s6) => s6.name.toLowerCase().includes(searchLower)) : allInLegend;
       const filteredChecked = filteredLegend.filter((s6) => s6.visible).length;
-      const selectAllButton = buttonHtml13({ id: "tmrc-sel-all", label: "All", title: "Select All", color: "secondary", size: "xs" });
-      const selectNoneButton = buttonHtml13({ id: "tmrc-sel-none", label: "None", title: "Deselect All", color: "secondary", size: "xs" });
+      const selectAllButton = buttonHtml14({ id: "tmrc-sel-all", label: "All", title: "Select All", color: "secondary", size: "xs" });
+      const selectNoneButton = buttonHtml14({ id: "tmrc-sel-none", label: "None", title: "Deselect All", color: "secondary", size: "xs" });
       let h = `<div class="tmrc-legend-hdr">
             <span class="tmrc-legend-hdr-title">Players (${filteredChecked}/${filteredLegend.length}${searchLower ? " / " + totalCount : ""})</span>
             <div class="tmrc-legend-hdr-btns">

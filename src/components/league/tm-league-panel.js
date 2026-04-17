@@ -2,6 +2,7 @@ import { TmLeagueFixtures } from './tm-league-fixtures.js';
 import { TmLeaguePicker } from './tm-league-picker.js';
 import { TmLeagueStandings } from './tm-league-standings.js';
 import { TmLeagueStats } from './tm-league-stats.js';
+import { TmLeagueTransfers } from './tm-league-transfers.js';
 import { TmLeagueTOTR } from './tm-league-totr.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmSeasonBar } from '../shared/tm-season-bar.js';
@@ -115,7 +116,7 @@ const injectStandingsPanel = () => {
             else document.getElementById('tsa-totr-content').innerHTML = TmUI.empty('Waiting for fixtures data...');
         }
         if (which === 'stats') TmLeagueStats.renderPlayerStatsTab();
-        if (which === 'transfers') TmLeagueStats.renderTransfersTab();
+        if (which === 'transfers') TmLeagueTransfers.renderTransfersTab();
     };
 
     panel.querySelector('#tsa-panel-tabs')?.appendChild(TmUI.tabs({
@@ -148,7 +149,7 @@ const injectStandingsPanel = () => {
                 const statsCont = document.getElementById('tsa-stats-content');
                 if (statsCont && statsCont.style.display !== 'none') TmLeagueStats.renderPlayerStatsTab();
                 const trCont = document.getElementById('tsa-transfers-content');
-                if (trCont && trCont.style.display !== 'none') TmLeagueStats.renderTransfersTab();
+                if (trCont && trCont.style.display !== 'none') TmLeagueTransfers.renderTransfersTab();
             } else {
                 ctx.setDisplayedSeason(s);
                 TmLeagueStandings.fetchHistoryStandings(s);
@@ -156,7 +157,7 @@ const injectStandingsPanel = () => {
                 const statsCont = document.getElementById('tsa-stats-content');
                 if (statsCont && statsCont.style.display !== 'none') TmLeagueStats.renderPlayerStatsTab();
                 const trCont = document.getElementById('tsa-transfers-content');
-                if (trCont && trCont.style.display !== 'none') TmLeagueStats.renderTransfersTab();
+                if (trCont && trCont.style.display !== 'none') TmLeagueTransfers.renderTransfersTab();
             }
         };
         TmSeasonBar.mount(panel.querySelector('#tsa-ssnpick'), {

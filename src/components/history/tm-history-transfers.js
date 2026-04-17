@@ -1,9 +1,8 @@
-import { TmClubService } from '../../services/club.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmHistoryHelpers } from './tm-history-helpers.js';
 import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
-import { TmPlayersTable } from '../shared/tm-players-table.js';
 import { TmSeasonBar } from '../shared/tm-season-bar.js';
+import { TmTransferTable } from '../shared/tm-transfer-table.js';
 
 const H = () => TmHistoryHelpers;
 
@@ -55,58 +54,14 @@ function loadSeason(sid) {
 
     c.innerHTML = TmUI.loading('Loading Season ' + sid + '…');
 
-    TmClubService.fetchClubTransferHistory(_clubId, sid).then(function (html) {
-        if (html) {
-            const d = parseTransfers(html);
+    TmTransferTable.fetchClub(_clubId, sid).then(function (d) {
+        if (d) {
             transferCache[sid] = d;
             renderSeasonData(c, d);
         } else {
             c.innerHTML = TmUI.error('Failed to load transfers');
         }
     });
-}
-
-/* ─── parse transfer page ─── */
-function parseTransfers(html) {
-    const doc = document.createElement('div');
-    doc.innerHTML = html;
-
-    let boughtTable = null, soldTable = null;
-    Array.from(doc.querySelectorAll('h3')).forEach(function (h3) {
-        const txt = h3.textContent.trim().toLowerCase();
-        const next = h3.nextElementSibling;
-        if (txt === 'bought' && next?.tagName === 'TABLE') boughtTable = next;
-        if (txt === 'sold' && next?.tagName === 'TABLE') soldTable = next;
-    });
-
-    function parseTable(table) {
-        if (!table) return [];
-        return Array.from(table.querySelectorAll('tr')).slice(1).flatMap(tr => {
-            const tds = Array.from(tr.querySelectorAll('td'));
-            if (tds.length < 4 || tds[0].getAttribute('colspan')) return [];
-            const a = tds[0].querySelector('a[player_link]');
-            if (!a) return [];
-            return [{ name: a.textContent.trim(), pid: a.getAttribute('player_link'), url: a.getAttribute('href'), starsHtml: tds[1].innerHTML, price: parseFloat(tds[3].textContent.replace(/,/g, '').trim()) || 0 }];
-        });
-    }
-
-    const bought = parseTable(boughtTable);
-    const sold = parseTable(soldTable);
-
-    let totalBought = 0, totalSold = 0, balance = 0;
-    Array.from(doc.querySelectorAll('td[colspan]')).forEach(function (td) {
-        const txt = td.textContent.trim();
-        const val = parseFloat((td.querySelector('strong')?.textContent || '0').replace(/,/g, '')) || 0;
-        if (/Total Bought/i.test(txt)) totalBought = val;
-        else if (/Total Sold/i.test(txt)) totalSold = val;
-        else if (/Balance/i.test(txt)) balance = val;
-    });
-
-    if (!totalBought && bought.length) totalBought = bought.reduce((s, p) => s + p.price, 0);
-    if (!totalSold && sold.length) totalSold = sold.reduce((s, p) => s + p.price, 0);
-    if (!balance) balance = totalSold - totalBought;
-
-    return { bought, sold, totalBought, totalSold, balance };
 }
 
 /* ─── render single season ─── */
@@ -135,43 +90,8 @@ function renderSeasonData(c, d) {
 }
 
 function renderSortablePlayerTable(c, arr, clubLabel, opts) {
-    opts = opts || {};
     if (!arr.length) { c.innerHTML = TmUI.empty('No players', true); return; }
-
-    const pic = H().playerInfoCache;
-    const makePlayers = () => arr.map((p, idx) => {
-        const retired = /retired/i.test(p.starsHtml || '');
-        const info = pic[p.pid];
-        return {
-            _idx: idx + 1,
-            id: p.pid, pid: p.pid,
-            name: p.name,
-            href: p.url || `/players/${p.pid}/`,
-            fp: retired ? '' : (info?.pos || ''),
-            age: retired ? null : (info?.age ?? null),
-            months: retired ? 0 : (info?.months ?? 0),
-            asi: retired ? null : (info?.asi ?? null),
-            r5: retired ? null : (info?.r5 ?? null),
-            rec: retired ? null : (info?.rec ?? null),
-            _starsHtml: p.starsHtml || '',
-            _price: p.price,
-        };
-    });
-
-    c.innerHTML = '';
-    const wrap = TmPlayersTable.mount(c, makePlayers(), {
-        columns: { rtn: false, timeleft: false, curbid: false },
-        sortKey: opts.defaultSort || '_price',
-        sortDir: opts.defaultDir !== undefined ? opts.defaultDir : -1,
-        onRowClick: null, rowCls: null,
-        extraColsBefore: [{ key: '_idx', label: '#', sortable: false }],
-        extraColsAfter: [
-            { key: '_starsHtml', label: clubLabel, sortable: false, cls: 'c tmh-stars', render: v => v },
-            { key: '_price', label: 'Price (M)', align: 'r', render: v => `<span class="tmu-tabular" style="color:var(--tmu-text-strong)">${H().fmt(v)}</span>` },
-        ],
-    });
-
-    H().prefetchPlayers(arr.map(p => p.pid), () => wrap.refresh(makePlayers()));
+    TmTransferTable.mount(c, arr, { clubLabel, showSeason: opts?.showSeason });
 }
 
 /* ═══════════════════════════════════════
@@ -200,9 +120,8 @@ function loadStillPlaying() {
             tick();
             return;
         }
-        TmClubService.fetchClubTransferHistory(_clubId, s.id).then(function (html) {
-            if (html) {
-                const d = parseTransfers(html);
+        TmTransferTable.fetchClub(_clubId, s.id).then(function (d) {
+            if (d) {
                 transferCache[s.id] = d;
                 allData[s.id] = d;
             } else {
@@ -220,20 +139,10 @@ function loadStillPlaying() {
             const d = all[s.id];
             if (!d) return;
             d.sold.forEach(p => {
-                if (!pMap[p.pid]) {
-                    pMap[p.pid] = {
-                        name: p.name, url: p.url,
-                        starsHtml: p.starsHtml,
-                        retired: /retired/i.test(p.starsHtml || ''),
-                        sales: []
-                    };
-                }
+                if (!pMap[p.pid]) pMap[p.pid] = { name: p.name, url: p.url, rec: p.rec || 0, retired: p.isRetired, sales: [] };
                 const entry = pMap[p.pid];
-                if (p.starsHtml && !(/retired/i.test(p.starsHtml))) {
-                    entry.starsHtml = p.starsHtml;
-                    entry.retired = false;
-                }
-                if (/retired/i.test(p.starsHtml || '')) entry.retired = true;
+                if (!p.isRetired) { entry.rec = p.rec || 0; entry.retired = false; }
+                if (p.isRetired) entry.retired = true;
                 entry.sales.push({ season: s.id });
             });
         });
@@ -248,27 +157,9 @@ function loadStillPlaying() {
         }
 
         function renderStillPlayingTable(c, list) {
-            let h = '<div class="tmh-sec">Sold Players Still Playing (' + list.length + ')</div>';
-            c.innerHTML = h;
+            c.innerHTML = '<div class="tmh-sec">Sold Players Still Playing (' + list.length + ')</div>';
             if (!list.length) { c.insertAdjacentHTML('beforeend', TmUI.empty('No sold players still active')); return; }
-
-            const pic = H().playerInfoCache;
-            const makePlayers = () => list.map((p, idx) => {
-                const info = pic[p.pid];
-                return { _idx: idx + 1, id: p.pid, pid: p.pid, name: p.name, href: p.url || `/players/${p.pid}/`, fp: info?.pos || '', age: info?.age ?? null, months: info?.months ?? 0, asi: info?.asi ?? null, r5: info?.r5 ?? null, rec: info?.rec ?? null, _sales: p.sales.length, _seasons: p.sales.map(s => 'S' + s.season).join(', ') };
-            });
-
-            const wrap = TmPlayersTable.mount(c, makePlayers(), {
-                columns: { rtn: false, timeleft: false, curbid: false },
-                sortKey: 'r5', sortDir: -1,
-                onRowClick: null, rowCls: null,
-                extraColsBefore: [{ key: '_idx', label: '#', sortable: false }],
-                extraColsAfter: [
-                    { key: '_sales', label: 'Sales', align: 'r' },
-                    { key: '_seasons', label: 'Seasons', sortable: false, render: v => `<span style="font-size:var(--tmu-font-xs);color:var(--tmu-text-accent-soft)">${v}</span>` },
-                ],
-            });
-            H().prefetchPlayers(list.map(p => p.pid), () => wrap.refresh(makePlayers()));
+            TmTransferTable.mount(c, list.map(p => ({ ...p, clubName: p.sales.map(s => 'S' + s.season).join(', '), clubId: null, price: p.sales.length, isRetired: false })), { clubLabel: 'Sales / Seasons' });
         }
 
         renderStillPlayingTable(c, stillPlaying);
@@ -306,9 +197,8 @@ function loadAllSeasons() {
             tick();
             return;
         }
-        TmClubService.fetchClubTransferHistory(_clubId, s.id).then(function (html) {
-            if (html) {
-                const d = parseTransfers(html);
+        TmTransferTable.fetchClub(_clubId, s.id).then(function (d) {
+            if (d) {
                 transferCache[s.id] = d;
                 allData[s.id] = d;
             } else {
