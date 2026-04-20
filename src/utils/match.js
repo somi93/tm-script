@@ -309,7 +309,7 @@ export const TmMatchUtils = {
         ['home', 'away'].forEach(side => {
             const lineup = mData.lineup?.[side] || mData.teams?.[side]?.lineup || {};
             Object.values(lineup).forEach(p => {
-                names[p.player_id] = p.nameLast || p.name;
+                names[p.player_id] = p.name;
             });
         });
         return names;

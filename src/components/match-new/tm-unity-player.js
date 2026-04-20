@@ -26,15 +26,15 @@ const injectStyles = () => {
     s.textContent = `
         /* TV frame — bezel wrapping the canvas */
         #mp-viewport-wrap {
-            flex: 0 0 auto; align-self: stretch;
+            flex: 0 0 auto; width: 100%;
             position: relative;
-            display: flex; align-items: stretch; justify-content: center;
+            display: flex; align-items: flex-start; justify-content: center;
             background: transparent; overflow: visible; box-sizing: border-box;
         }
 
         /* Outer bezel */
         .mp-tv {
-            display: flex; flex-direction: column; height: 100%;
+            width: 100%;
             background: linear-gradient(160deg, #2a2a2a 0%, #141414 60%, #1c1c1c 100%);
             border-radius: 8px 8px 4px 4px;
             padding: 10px 10px 0;
@@ -44,7 +44,7 @@ const injectStyles = () => {
 
         /* Screen surround — position:relative so HUD and click overlay are scoped here */
         .mp-tv-screen {
-            position: relative; flex: 1;
+            position: relative;
             background: #050505;
             border-radius: 3px 3px 0 0;
             box-shadow: inset 0 0 8px rgba(0,0,0,0.9), inset 0 1px 3px rgba(0,0,0,0.6);
@@ -66,7 +66,7 @@ const injectStyles = () => {
 
         /* Viewport box */
         #mp-viewport {
-            position: relative; height: 100%;
+            position: relative; width: 100%;
             aspect-ratio: 780 / 447;
             overflow: hidden; background: #000;
         }
@@ -196,6 +196,132 @@ const injectStyles = () => {
             max-width: none;
         }
         #mp-viewport-wrap.mp-fs-active .mp-tv-brand { display: none; }
+
+        /* Exit-fullscreen button — visible only in fullscreen */
+        .mp-fs-exit-btn {
+            display: none;
+            position: absolute; top: 12px; right: 12px; z-index: 100;
+            background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 4px; cursor: pointer; padding: 5px 7px;
+            color: rgba(255,255,255,0.6); line-height: 1;
+            transition: background 0.15s, color 0.15s;
+        }
+        .mp-fs-exit-btn:hover { background: rgba(0,0,0,0.85); color: #fff; }
+        #mp-viewport-wrap.mp-fs-active .mp-fs-exit-btn { display: flex; align-items: center; }
+
+        /* Goal banner — TV lower-third */
+        .mp-goal-banner {
+            position: absolute; bottom: 15%; left: 0; z-index: 20;
+            pointer-events: none;
+            transform: translateX(-105%);
+        }
+        .mp-goal-banner.mp-gb-in {
+            animation: mp-gb-slide 9s ease forwards;
+        }
+        @keyframes mp-gb-slide {
+            0%   { transform: translateX(-105%); }
+            6%   { transform: translateX(0); }
+            85%  { transform: translateX(0); }
+            100% { transform: translateX(-105%); }
+        }
+        .mp-gb-label {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: #b71c1c;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            font-size: 9.5px; font-weight: 900;
+            letter-spacing: 0.2em; text-transform: uppercase;
+            padding: 4px 10px;
+        }
+        .mp-gb-body {
+            background: rgba(5,5,5,0.90);
+            border-left: 3px solid #b71c1c;
+            padding: 5px 18px 7px 10px;
+        }
+        .mp-gb-name {
+            font-family: Arial, sans-serif;
+            font-size: 17px; font-weight: 800;
+            color: #fff; letter-spacing: 0.01em;
+            line-height: 1.15; white-space: nowrap;
+        }
+        .mp-gb-assist {
+            font-family: Arial, sans-serif;
+            font-size: 10px; color: rgba(255,255,255,0.48);
+            margin-top: 2px; white-space: nowrap;
+        }
+        .mp-gb-score {
+            font-family: Arial, sans-serif;
+            font-size: 10px; font-weight: 700;
+            color: rgba(255,255,255,0.55);
+            margin-top: 4px; letter-spacing: 0.04em; white-space: nowrap;
+        }
+        .mp-gb-season-stats {
+            font-family: Arial, sans-serif;
+            font-size: 10px; color: rgba(255,255,255,0.35);
+            margin-top: 2px; white-space: nowrap;
+        }
+
+        /* Event banner (card / injury / sub) — TV lower-third, right side */
+        .mp-event-banner {
+            position: absolute; bottom: 20%; right: 0; z-index: 20;
+            pointer-events: none;
+            transform: translateX(105%);
+        }
+        .mp-event-banner.mp-eb-in {
+            animation: mp-eb-slide 6s ease forwards;
+        }
+        @keyframes mp-eb-slide {
+            0%   { transform: translateX(105%); }
+            10%  { transform: translateX(0); }
+            80%  { transform: translateX(0); }
+            100% { transform: translateX(105%); }
+        }
+        .mp-eb-strip {
+            display: flex; align-items: stretch;
+            background: rgba(8,8,8,0.90);
+            min-width: 165px;
+        }
+        .mp-eb-accent {
+            width: 4px; flex-shrink: 0;
+            background: var(--eb-color, #888);
+        }
+        .mp-eb-content {
+            padding: 7px 18px 8px 11px;
+        }
+        .mp-eb-type {
+            font-family: Arial, sans-serif; font-size: 8px; font-weight: 700;
+            letter-spacing: 0.18em; text-transform: uppercase;
+            color: var(--eb-color, #aaa);
+            display: flex; align-items: center; gap: 5px;
+            margin-bottom: 3px;
+        }
+        .mp-eb-card-icon {
+            display: inline-block; width: 7px; height: 10px;
+            background: var(--eb-color, #aaa); border-radius: 1px;
+            flex-shrink: 0;
+        }
+        .mp-eb-name {
+            font-family: Arial, sans-serif; font-size: 17px; font-weight: 800;
+            color: #fff; white-space: nowrap; letter-spacing: 0.01em; line-height: 1.2;
+        }
+        .mp-eb-sub-in {
+            font-family: Arial, sans-serif; font-size: 14px; font-weight: 700;
+            color: #69f0ae; white-space: nowrap; line-height: 1.35;
+        }
+        .mp-eb-sub-out {
+            font-family: Arial, sans-serif; font-size: 12px; font-weight: 500;
+            color: rgba(255,255,255,0.42); white-space: nowrap; line-height: 1.25;
+        }
+        .mp-eb-yellow { --eb-color: #fdd835; }
+        .mp-eb-red    { --eb-color: #ef5350; }
+        .mp-eb-yr     { --eb-color: #ff7043; }
+        .mp-eb-injury { --eb-color: #66bb6a; }
+        .mp-eb-sub    { --eb-color: #42a5f5; }
+        .mp-eb-tactic { --eb-color: #ab47bc; }
+        .mp-eb-tactic-team {
+            font-family: Arial, sans-serif; font-size: 10px; font-weight: 600;
+            color: rgba(255,255,255,0.5); white-space: nowrap; margin-bottom: 1px;
+        }
     `;
     document.head.appendChild(s);
 };
@@ -269,7 +395,12 @@ export const TmUnityPlayer = {
                     ${tvBrandSvg}
                     <button class="mp-tv-fullscreen" title="Fullscreen">${fullscreenSvg}</button>
                 </div>
-            </div>`;
+            </div>
+            <button class="mp-fs-exit-btn" title="Exit fullscreen">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4.5 1H1v3.5h1.5V2.5H4.5V1zM9.5 1v1.5h1.5V4.5H13V1H9.5zM1 9.5V13h3.5v-1.5H2.5V9.5H1zm10 2H9.5V13H13V9.5h-1.5V11.5z"/>
+                </svg>
+            </button>`;
 
         // HUD refs
         const hudHome    = wrap.querySelector('.mp-hud-home-val');
@@ -326,6 +457,93 @@ export const TmUnityPlayer = {
         wrap.querySelector('.mp-tv-fullscreen').addEventListener('click', () => {
             wrap.classList.contains('mp-fs-active') ? exitFs() : enterFs();
         });
+        wrap.querySelector('.mp-fs-exit-btn').addEventListener('click', () => exitFs());
+
+        const viewport = wrap.querySelector('#mp-viewport');
+
+        // ── Goal banner ───────────────────────────────────────────────
+        let _goalBannerTimer = null;
+        const showGoalBanner = ({ scorerName, assistName, isOwnGoal, h, a, homeName, awayName }) => {
+            let banner = viewport.querySelector('.mp-goal-banner');
+            if (!banner) {
+                banner = document.createElement('div');
+                banner.className = 'mp-goal-banner';
+                viewport.appendChild(banner);
+            }
+            banner.classList.remove('mp-gb-in');
+            void banner.offsetWidth; // reflow to restart animation
+            const label = isOwnGoal ? '⚽ OWN GOAL' : '⚽ GOAL';
+            banner.innerHTML =
+                `<div class="mp-gb-label">${label}</div>` +
+                `<div class="mp-gb-body">` +
+                `<div class="mp-gb-name">${scorerName}</div>` +
+                (assistName ? `<div class="mp-gb-assist">Assist: ${assistName}</div>` : '') +
+                `<div class="mp-gb-score">${homeName}  ${h} · ${a}  ${awayName}</div>` +
+                `<div class="mp-gb-season-stats"></div>` +
+                `</div>`;
+            clearTimeout(_goalBannerTimer);
+            banner.classList.add('mp-gb-in');
+            _goalBannerTimer = setTimeout(() => banner.classList.remove('mp-gb-in'), 9500);
+        };
+
+        const updateGoalBannerStats = ({ goals, games }) => {
+            const el = viewport.querySelector('.mp-gb-season-stats');
+            if (!el) return;
+            const goalsText = `${goals} goal${goals !== 1 ? 's' : ''}`;
+            el.textContent = games != null
+                ? `${goalsText} in ${games} match${games !== 1 ? 'es' : ''} this season`
+                : `${goalsText} this season`;
+        };
+
+        // ── Event banner (card / injury / sub) ───────────────────────
+        const EVENT_META = {
+            yellow:   { cls: 'mp-eb-yellow',  label: 'YELLOW CARD',  cardIcon: true },
+            red:      { cls: 'mp-eb-red',     label: 'RED CARD',     cardIcon: true },
+            yellowRed:{ cls: 'mp-eb-yr',      label: 'RED CARD',     cardIcon: true },
+            injury:   { cls: 'mp-eb-injury',  label: 'INJURY',       prefix: '\u271A' },
+            sub:      { cls: 'mp-eb-sub',     label: 'SUBSTITUTION' },
+            tactic:   { cls: 'mp-eb-tactic',  label: 'MENTALITY CHANGE', prefix: '\u25C6' },
+        };
+        let _eventBannerTimer = null;
+        const showEventBanner = ({ type, name, nameIn, nameOut, teamName }) => {
+            const meta = EVENT_META[type];
+            if (!meta) return;
+            let banner = viewport.querySelector('.mp-event-banner');
+            if (!banner) {
+                banner = document.createElement('div');
+                banner.className = 'mp-event-banner';
+                viewport.appendChild(banner);
+            }
+            banner.classList.remove('mp-eb-in');
+            void banner.offsetWidth;
+            const typeIcon = meta.cardIcon
+                ? '<span class="mp-eb-card-icon"></span>'
+                : (meta.prefix ? `<span>${meta.prefix}</span>` : '');
+            let innerHtml;
+            if (type === 'sub') {
+                innerHtml =
+                    `<div class="mp-eb-type">${typeIcon}${meta.label}</div>` +
+                    `<div class="mp-eb-sub-in">\u25B2 ${nameIn}</div>` +
+                    `<div class="mp-eb-sub-out">\u25BC ${nameOut}</div>`;
+            } else if (type === 'tactic') {
+                innerHtml =
+                    `<div class="mp-eb-type">${typeIcon}${meta.label}</div>` +
+                    (teamName ? `<div class="mp-eb-tactic-team">${teamName}</div>` : '') +
+                    `<div class="mp-eb-name">${name}</div>`;
+            } else {
+                innerHtml =
+                    `<div class="mp-eb-type">${typeIcon}${meta.label}</div>` +
+                    `<div class="mp-eb-name">${name}</div>`;
+            }
+            banner.innerHTML =
+                `<div class="mp-eb-strip ${meta.cls}">` +
+                `<div class="mp-eb-accent"></div>` +
+                `<div class="mp-eb-content">${innerHtml}</div>` +
+                `</div>`;
+            clearTimeout(_eventBannerTimer);
+            banner.classList.add('mp-eb-in');
+            _eventBannerTimer = setTimeout(() => banner.classList.remove('mp-eb-in'), 6500);
+        };
 
         const engine = TmUnityEngine.create({
             viewportId: 'mp-viewport',
@@ -343,6 +561,9 @@ export const TmUnityPlayer = {
             isPlaying:       () => engine.isPlaying(),
             getActiveMinute: () => engine.getActiveMinute(),
             updateHUD,
+            showGoalBanner,
+            updateGoalBannerStats,
+            showEventBanner,
         };
     },
 };

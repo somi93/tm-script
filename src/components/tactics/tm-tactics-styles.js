@@ -141,6 +141,7 @@ export function injectTacticsStyles() {
             border-radius: 10px;
             overflow: hidden;
             border: 1px solid rgba(255,255,255,0.08);
+            margin-top: 4px;
         }
         .tmtc-fob-formation,
         .tmtc-fob-item {
@@ -187,6 +188,7 @@ export function injectTacticsStyles() {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
             gap: 4px;
+            padding: 4px;
         }
         .tmtc-slot-spacer {
             /* empty cell to maintain 5-col grid alignment */

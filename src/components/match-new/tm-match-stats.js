@@ -23,13 +23,12 @@ const injectStyles = () => {
     s.id = STYLE_ID;
     s.textContent = `
         .mp-stats {
-            flex: 0 0 260px; min-width: 0;
+            flex: 0 0 220px; min-width: 0;
             display: flex; flex-direction: column;
             overflow-y: auto; overflow-x: hidden;
             scrollbar-width: none;
             padding: 10px 8px; box-sizing: border-box;
             border-left: 1px solid var(--tmu-border-soft-alpha);
-            max-height: var(--mp-canvas-h, 100%);
         }
         .mp-stats::-webkit-scrollbar { display: none; }
 

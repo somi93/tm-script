@@ -70,7 +70,7 @@ export const TmMatchService = {
         const nameMap = {};
         ['home', 'away'].forEach(side => {
             Object.values(lineup?.[side] || {}).forEach(p => {
-                nameMap[String(p.player_id)] = p.nameLast || p.name || '?';
+                nameMap[String(p.player_id)] = p.name || '?';
             });
         });
         const resolveText = (lines) =>
@@ -346,7 +346,6 @@ export const TmMatchService = {
             player_id: Number(p.player_id),
             id: Number(p.player_id),
             name: p.name,
-            nameLast: p.nameLast,
             position: p.position,
             fp: p.fp,
             no: p.no,

@@ -21,13 +21,12 @@ const injectStyles = () => {
     s.textContent = `
         /* Feed panel — 20% of mp-body */
         .mp-feed {
-            flex: 0 0 260px; min-width: 0;
+            flex: 1; min-width: 0;
             display: flex; flex-direction: column;
             gap: 3px; overflow-y: auto; overflow-x: hidden;
             scrollbar-width: none;
             padding: 8px; box-sizing: border-box;
             border-right: 1px solid var(--tmu-border-soft-alpha);
-            max-height: var(--mp-canvas-h, 100%);
         }
         .mp-feed::-webkit-scrollbar { display: none; }
 

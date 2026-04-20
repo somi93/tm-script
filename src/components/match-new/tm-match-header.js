@@ -16,6 +16,8 @@
 
 import { TmButton }      from '../shared/tm-button.js';
 import { TmButtonGroup } from '../shared/tm-button-group.js';
+import { TmChip }        from '../shared/tm-chip.js';
+import { MENTALITY_MAP, STYLE_MAP, FOCUS_MAP } from '../../constants/match.js';
 
 const STYLE_ID = 'mp-header-style';
 
@@ -33,13 +35,23 @@ const injectStyles = () => {
             display: flex; align-items: center; justify-content: center; gap: 16px;
         }
         .mp-team {
-            flex: 1; font-size: 15px; font-weight: 700;
-            color: var(--tmu-text-strong); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            flex: 1; min-width: 0;
+            display: flex; align-items: center; gap: 8px;
         }
-        .mp-team.home { text-align: right; }
-        .mp-team.away { text-align: left; }
+        .mp-team.home { flex-direction: row-reverse; }
+        .mp-team-logo { height: 64px; width: 64px; object-fit: contain; flex-shrink: 0; }
+        .mp-team-info {
+            flex: 1; min-width: 0;
+            display: flex; flex-direction: column; gap: 4px;
+        }
+        .mp-team.home .mp-team-info { align-items: flex-end; }
+        .mp-team-name {
+            font-size: 15px; font-weight: 700; color: var(--tmu-text-strong);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+        }
+        .mp-team-chips { display: flex; gap: 4px; flex-wrap: wrap; }
         .mp-score-block {
-            display: flex; flex-direction: column; align-items: center; flex-shrink: 0; min-width: 100px;
+            display: flex; flex-direction: column; align-items: center; flex-shrink: 0; min-width: 120px;
         }
         .mp-score {
             font-size: 28px; font-weight: 800; color: var(--tmu-text-inverse);
@@ -57,6 +69,7 @@ const injectStyles = () => {
         .mp-controls {
             display: flex; align-items: center; gap: 8px; margin-top: 8px; justify-content: center;
         }
+        /* ── Tactic strip ── removed — chips now inside .mp-team-chips */
         .mp-progress {
             flex: 1; max-width: 400px; height: 4px;
             background: var(--tmu-accent-fill); border-radius: 2px; overflow: hidden;
@@ -99,7 +112,7 @@ export const TmMatchHeader = {
      * @param {{ homeName, awayName, onToggle, onSkip, onClose, onModeChange }} opts
      * @returns {{ el, update(match, replayState, maximumMinute) }}
      */
-    create({ homeName, awayName, initialMode = 'all', onToggle, onSkip, onClose, onModeChange }) {
+    create({ homeName, awayName, homeId, awayId, match, initialMode = 'all', onToggle, onSkip, onClose, onModeChange }) {
         injectStyles();
 
         const el = document.createElement('div');
@@ -116,16 +129,49 @@ export const TmMatchHeader = {
         const headRow = document.createElement('div');
         headRow.className = 'mp-head-row';
         headRow.innerHTML = `
-            <div class="mp-team home">${homeName}</div>
+            <div class="mp-team home">
+                <img src="/pics/club_logos/${homeId}.png" class="mp-team-logo">
+                <div class="mp-team-info">
+                    <span class="mp-team-name">${homeName}</span>
+                    <div class="mp-team-chips"></div>
+                </div>
+            </div>
             <div class="mp-score-block">
                 <div class="mp-score">0 - 0</div>
                 <div class="mp-minute">0:00</div>
             </div>
-            <div class="mp-team away">${awayName}</div>
+            <div class="mp-team away">
+                <img src="/pics/club_logos/${awayId}.png" class="mp-team-logo">
+                <div class="mp-team-info">
+                    <span class="mp-team-name">${awayName}</span>
+                    <div class="mp-team-chips"></div>
+                </div>
+            </div>
         `;
         el.appendChild(headRow);
+        // ── Tactic chips inside team divs ─────────────────────────────────────────────
+        function makeTacticSide(side) {
+            const chipsEl = headRow.querySelector(`.mp-team.${side} .mp-team-chips`);
 
-        // ── Controls row ──────────────────────────────────────────────
+            const t = match[side].tactics;
+            const styleChip = TmChip.chip({ label: STYLE_MAP[t.style] || '—', tone: 'muted', size: 'xs' });
+            const focusChip = TmChip.chip({ label: FOCUS_MAP[t.focus] || '—', tone: 'overlay', size: 'xs' });
+
+            const mentChipWrap = document.createElement('span');
+            chipsEl.innerHTML = styleChip + focusChip;
+            chipsEl.appendChild(mentChipWrap);
+
+            function update(level) {
+                mentChipWrap.innerHTML = TmChip.chip({ label: MENTALITY_MAP[level] || String(level ?? ''), tone: 'muted', size: 'xs' });
+            }
+            update(t.mentality ?? 4);
+            return { update };
+        }
+
+        const homeTactic = makeTacticSide('home');
+        const awayTactic = makeTacticSide('away');
+
+        // ──────────────────────────────────────────────────        // ── Controls row ──────────────────────────────────────────────
         const controls = document.createElement('div');
         controls.className = 'mp-controls';
 
@@ -176,6 +222,26 @@ export const TmMatchHeader = {
             toggleBtn.textContent = (replayState.playing && !replayState.ended) ? '⏸' : '▶';
 
             setModeActive(replayState.mode);
+
+            // live mentality
+            const deriveMentality = (side) => {
+                const clubId = String(match[side].club.id);
+                let level = match[side].tactics.mentality ?? 4;
+                for (const min of Object.keys(match.plays).map(Number).sort((a, b) => a - b)) {
+                    if (min > replayState.currentMinute) break;
+                    for (const play of match.plays[String(min)]) {
+                        for (const clip of (play.clips || [])) {
+                            for (const act of (clip.actions || [])) {
+                                if (act.action === 'mentality_change' && String(act.team) === clubId)
+                                    level = act.mentality;
+                            }
+                        }
+                    }
+                }
+                return level;
+            };
+            homeTactic.update(deriveMentality('home'));
+            awayTactic.update(deriveMentality('away'));
         };
 
         return { el, update };

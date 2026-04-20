@@ -1,81 +1,55 @@
 /**
- * tm-match-lineup.js — Lineup panel below the match player
+ * tm-match-lineup.js — Home and away side panels for the match page.
  *
- * Four-column layout: home list | home field (read-only) | away field (read-only) | away list
+ * Returns { homePanel, awayPanel, update }.
+ * Home panel: tactics field (top) + squad list (bottom).
+ * Away panel: squad list (top) + tactics field (bottom).
+ * Fields are adjacent to the center canvas when assembled in the page.
  *
- * Player list shows: 11 starters (full opacity) → divider → 5 subs (dimmed).
+ * Player list: 11 starters (full opacity) → divider → 5 subs (dimmed).
  * On substitution: leaving player becomes dimmed + ↓, entering becomes full + ↑.
  * Tactics fields update accordingly with each minute advance.
  *
  * Usage:
  *   const lineup = TmMatchLineup.create(match);
- *   container.appendChild(lineup.el);
+ *   body.append(lineup.homePanel.el, center, lineup.awayPanel.el);
  *   lineup.update(replayState);   // on each tick / minute advance
  */
 
 import { POSITION_MAP } from '../../constants/player.js';
-import { TmPlayerRow } from '../shared/tm-player-row.js';
 import { TmMatchField } from './tm-match-field.js';
-import { TmMatchSquadList } from './tm-match-squad-list.js';
 
 const STYLE_ID = 'mp-lineup-style';
 
-const isStarter = p => !!POSITION_MAP[(p.position || '').toLowerCase()];
-
-// ── Styles ────────────────────────────────────────────────────────────────────
+// ── Styles ────────────────────────────────────────────────────────────────────────────────────────────
 
 function injectStyles() {
     if (document.getElementById(STYLE_ID)) return;
     const s = document.createElement('style');
     s.id = STYLE_ID;
     s.textContent = `
-        .mp-lu {
-            display: flex; flex-direction: row; align-items: stretch;
-            width: 100%; flex: 0 0 auto;
-            border-top: 1px solid var(--tmu-border-soft-alpha);
-        }
-
-        /* ── Player columns ── */
-        .mp-lu-col {
-            flex: 1; min-width: 180px; box-sizing: border-box;
+        /* ── Side panels ── */
+        .mp-lu-side {
+            flex: 0 0 450px; min-width: 0; min-height: 0;
             display: flex; flex-direction: column;
-            padding: 10px 6px 12px;
-            align-self: flex-start;
-            overflow-y: auto; scrollbar-width: none;
-        }
-        .mp-lu-col::-webkit-scrollbar { display: none; }
-        .mp-lu-col-home { border-right: 1px solid var(--tmu-border-soft-alpha); }
-        .mp-lu-col-away { border-left:  1px solid var(--tmu-border-soft-alpha); }
-
-        .mp-lu-div {
-            height: 1px; background: var(--tmu-border-soft-alpha);
-            margin: 5px 2px;
+            overflow: hidden; padding: 2px;
         }
 
-        /* ── Tactics field columns ── */
-        .mp-lu-tactics-col {
-            flex: 0 0 auto; min-width: 0;
-            align-self: stretch;
-            aspect-ratio: 2 / 3;
+        /* field: width-driven, height follows aspect-ratio */
+        .mp-lu-side .mp-lu-tactics-col {
+            flex: 0 0 auto; width: 100%;
+            align-self: auto; aspect-ratio: unset;
             display: flex; flex-direction: column;
-            padding: 10px 0 12px;
+            padding: 0;
         }
-        .mp-lu-tactics-col-home {
-            align-items: flex-end;
-            border-right: 1px solid var(--tmu-border-soft-alpha);
+        .mp-lu-side .mp-lu-tactics-col .tmtc-field {
+            flex: 0 0 auto; height: auto; width: 100%; aspect-ratio: 2 / 3;
         }
-        .mp-lu-tactics-col-away {
-            align-items: flex-start;
-            border-left: 1px solid var(--tmu-border-soft-alpha);
+        .mp-lu-side .mp-lu-tactics-col .tmtc-field-spacer {
+            flex: 0 0 32px;
         }
-
-        /* field fills the entire col */
-        .mp-lu-tactics-col .tmtc-field {
-            flex: 1; height: 0; width: 100%; aspect-ratio: unset;
-        }
-        .mp-lu-tactics-col .tmtc-field-spacer {
-            flex: 0 0 40px;
-        }
+        /* ── Tactic footer below field ── */ /* removed */
+    
     `;
     document.head.appendChild(s);
 }
@@ -105,12 +79,23 @@ function derivePitchState(match, currentMinute) {
             for (const clip of (play.clips || [])) {
                 const outs = [], ins = [];
                 const posChanges = new Map();
+                const injured = [];
 
                 for (const a of (clip.actions || [])) {
                     if (a.action === 'subOut') outs.push(String(a.by));
                     else if (a.action === 'subIn') ins.push(String(a.by));
+                    else if (a.action === 'injury') injured.push(String(a.by));
                     else if (a.action === 'positionChange')
                         posChanges.set(String(a.by), (String(a.position || '')).toLowerCase());
+                }
+
+                // If injured player is not already subbed out in this clip, remove them
+                for (const pid of injured) {
+                    if (!outs.includes(pid)) {
+                        const slot = playerSlot.get(pid);
+                        if (slot) slotPlayer.delete(slot);
+                        playerSlot.delete(pid);
+                    }
                 }
 
                 for (let i = 0; i < outs.length; i++) {
@@ -169,31 +154,48 @@ export const TmMatchLineup = {
     create(match) {
         injectStyles();
 
-        const el = document.createElement('div');
-        el.className = 'mp-lu';
+        // Home side panel: field (top) → squad (bottom)
+        const homePanel = document.createElement('div');
+        homePanel.className = 'mp-lu-side mp-lu-side-home';
 
-        const { el: homeCol, playerEls: homeEls } = TmMatchSquadList.create('home', match.home.lineup);
-        const { el: awayCol, playerEls: awayEls } = TmMatchSquadList.create('away', match.away.lineup);
+        // Away side panel: squad (top) → field (bottom)
+        const awayPanel = document.createElement('div');
+        awayPanel.className = 'mp-lu-side mp-lu-side-away';
 
         const homePosMap = buildInitialPosMap(match.home.lineup);
         const homeField = TmMatchField.create(homePosMap, match.home.lineup);
-        homeField.el.classList.add('mp-lu-tactics-col-home');
 
         const awayPosMap = buildInitialPosMap(match.away.lineup);
         const awayField = TmMatchField.create(awayPosMap, match.away.lineup);
-        awayField.el.classList.add('mp-lu-tactics-col-away');
 
-        el.append(homeCol, homeField.el, awayField.el, awayCol);
+        // ── Panels ────────────────────────────────────────────────────
+        homePanel.append(homeField.el);
+        awayPanel.append(awayField.el);
 
         const allPlayersById = new Map([
             ...match.home.lineup.map(p => [String(p.id), p]),
             ...match.away.lineup.map(p => [String(p.id), p]),
         ]);
 
-        const homeStarterSet = new Set(match.home.lineup.filter(isStarter).map(p => String(p.id)));
-        const awayStarterSet = new Set(match.away.lineup.filter(isStarter).map(p => String(p.id)));
-
         let lastMinute = -1;
+
+        function deriveLiveMentality(side, upToMinute) {
+            const clubId = String(match[side].club.id);
+            let mentality = match[side].tactics.mentality ?? 4;
+            for (const min of Object.keys(match.plays).map(Number).sort((a, b) => a - b)) {
+                if (min > upToMinute) break;
+                for (const play of match.plays[String(min)]) {
+                    for (const clip of (play.clips || [])) {
+                        for (const act of (clip.actions || [])) {
+                            if (act.action === 'mentality_change' && String(act.team) === clubId)
+                                mentality = act.mentality;
+                        }
+                    }
+                }
+            }
+            return mentality;
+        }
+        void deriveLiveMentality; // kept for future use
 
         function update(replayState) {
             const minute = replayState?.currentMinute ?? 0;
@@ -201,22 +203,6 @@ export const TmMatchLineup = {
             lastMinute = minute;
 
             const playerSlot = derivePitchState(match, minute);
-
-            const updateItems = (playerEls, starterSet) => {
-                for (const [pid, rowEl] of playerEls) {
-                    const onPitch = playerSlot.has(pid);
-                    const wasSt = starterSet.has(pid);
-                    let state;
-                    if (onPitch && !wasSt) state = 'sub-in';
-                    else if (!onPitch && wasSt) state = 'off';
-                    else if (onPitch) state = 'active';
-                    else state = 'bench';
-                    TmPlayerRow.setState(rowEl, state);
-                }
-            };
-
-            updateItems(homeEls, homeStarterSet);
-            updateItems(awayEls, awayStarterSet);
 
             rebuildPosMap(homePosMap, 'home', playerSlot, allPlayersById);
             rebuildPosMap(awayPosMap, 'away', playerSlot, allPlayersById);
@@ -227,6 +213,6 @@ export const TmMatchLineup = {
         // Initial render at minute 0 (all starters on pitch)
         update(null);
 
-        return { el, update };
+        return { homePanel: { el: homePanel }, awayPanel: { el: awayPanel }, update };
     },
 };

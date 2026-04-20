@@ -296,25 +296,15 @@ export const TmReplayController = {
 
         const setMode = (newMode) => {
             if (replayState.mode === newMode) return;
-            clearTimeout(replayState.tickTimer);
-            clearTimeout(replayState.advanceTimer);
-            clearTimeout(replayState.clipRevealTimer);
-            replayState.tickTimer = null;
-            replayState.advanceTimer = null;
-            replayState.clipRevealTimer = null;
-            replayState.playing = false;
-            if (unity.isPlaying()) unity.sendPauseToggle();
             replayState.mode = newMode;
             replayState.playMinutes = newMode === 'key' ? keyPlayMinutes : allPlayMinutes;
-            replayState.playMinuteIndex = 0;
-            replayState.currentMinute = replayState.playMinutes[0] ?? 0;
-            replayState.seconds = 0;
-            replayState.currentActionIndex = -1;
-            replayState.currentActionLineIndex = -1;
-            replayState.committedActionIndex = -1;
-            replayState.committedClipIndex = -1;
+            // Keep the current minute playing; position index so the NEXT advance
+            // lands on the first minute > curMin in the new list.
+            const curMin = replayState.currentMinute;
+            let idx = replayState.playMinutes.findIndex(m => m > curMin);
+            if (idx === -1) idx = replayState.playMinutes.length;
+            replayState.playMinuteIndex = idx - 1;
             replayState.ended = replayState.playMinutes.length === 0;
-            clipMap = [];
             onTick?.(snapshot());
         };
 

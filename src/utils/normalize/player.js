@@ -56,6 +56,7 @@ export const normalizeTooltipPlayer = (playerData) => {
     TmUtils.applyPlayerPositions(player, playerTooltip.favposition);
     player.skills = TmLib.calcSkillDecimalsSimple(player);
     applyPlayerPositionRatings(player);
+    player.allPositionRatings = player.positions;
     player.isOwnPlayer = TmUtils.getOwnClubIds().includes(String(player.club_id));
     return player;
 };
