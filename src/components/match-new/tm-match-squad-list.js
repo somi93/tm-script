@@ -1,5 +1,6 @@
 import { POSITION_MAP, BENCH_SLOTS } from '../../constants/player.js';
 import { TmPlayerRow } from '../shared/tm-player-row.js';
+import { TmPosition }  from '../../lib/tm-position.js';
 
 'use strict';
 
@@ -45,7 +46,10 @@ export const TmMatchSquadList = {
         col.appendChild(divider);
 
         for (const p of subs) {
+            const num = (p.position || '').replace(/\D/g, '');
             const el = TmPlayerRow.build(p, { posKey: posKey(p), state: 'bench' });
+            const posWrap = el.querySelector('.tm-pr-pos');
+            if (posWrap && num) posWrap.innerHTML = TmPosition.chip([{ position: `SUB ${num}`, color: 'var(--tmu-text-muted)' }]);
             col.appendChild(el);
             playerEls.set(String(p.id), el);
         }

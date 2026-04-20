@@ -17,7 +17,9 @@
  */
 
 import { POSITION_MAP } from '../../constants/player.js';
-import { TmMatchField } from './tm-match-field.js';
+import { TmMatchField }     from './tm-match-field.js';
+import { TmMatchSquadList } from './tm-match-squad-list.js';
+import { TmPlayerRow }      from '../shared/tm-player-row.js';
 
 const STYLE_ID = 'mp-lineup-style';
 
@@ -49,7 +51,29 @@ function injectStyles() {
             flex: 0 0 32px;
         }
         /* ── Tactic footer below field ── */ /* removed */
-    
+
+        /* ── Squad list columns (lineups tab) ── */
+        .mp-lu-col {
+            flex: 1 1 0; min-width: 0;
+            display: flex; flex-direction: column;
+            overflow-y: auto; padding: 0 4px;
+        }
+
+        /* ── Lineups tab wrap ── */
+        .mp-lu-tab-wrap {
+            height: 100%;
+        }
+        .mp-lu-tab-wrap .mp-lu-tactics-col {
+            flex: 0 0 auto;
+            height: 100%;
+            width: auto;
+            aspect-ratio: 2 / 3;
+        }
+        .mp-lu-tab-wrap .mp-lu-tactics-col .tmtc-field {
+            height: 100%;
+            width: auto;
+            aspect-ratio: 2 / 3;
+        }
     `;
     document.head.appendChild(s);
 }
@@ -168,6 +192,15 @@ export const TmMatchLineup = {
         const awayPosMap = buildInitialPosMap(match.away.lineup);
         const awayField = TmMatchField.create(awayPosMap, match.away.lineup);
 
+        // ── Lineups-tab instances (separate DOM, shared posMap) ───────
+        const luHomeField = TmMatchField.create(homePosMap, match.home.lineup);
+        const luAwayField = TmMatchField.create(awayPosMap, match.away.lineup);
+        const luHomeList  = TmMatchSquadList.create('home', match.home.lineup);
+        const luAwayList  = TmMatchSquadList.create('away', match.away.lineup);
+
+        const starterHomePids = new Set(match.home.lineup.filter(p => POSITION_MAP[(p.position||'').toLowerCase()]).map(p => String(p.id)));
+        const starterAwayPids = new Set(match.away.lineup.filter(p => POSITION_MAP[(p.position||'').toLowerCase()]).map(p => String(p.id)));
+
         // ── Panels ────────────────────────────────────────────────────
         homePanel.append(homeField.el);
         awayPanel.append(awayField.el);
@@ -208,11 +241,28 @@ export const TmMatchLineup = {
             rebuildPosMap(awayPosMap, 'away', playerSlot, allPlayersById);
             homeField.refresh();
             awayField.refresh();
+            luHomeField.refresh();
+            luAwayField.refresh();
+
+            const applyStates = (playerEls, starterPids) => {
+                for (const [pid, el] of playerEls) {
+                    TmPlayerRow.setState(el, playerSlot.has(pid)
+                        ? (starterPids.has(pid) ? 'active' : 'sub-in')
+                        : (starterPids.has(pid) ? 'off'    : 'bench'));
+                }
+            };
+            applyStates(luHomeList.playerEls, starterHomePids);
+            applyStates(luAwayList.playerEls, starterAwayPids);
         }
 
         // Initial render at minute 0 (all starters on pitch)
         update(null);
 
-        return { homePanel: { el: homePanel }, awayPanel: { el: awayPanel }, update };
+        return {
+            homePanel: { el: homePanel }, awayPanel: { el: awayPanel },
+            luHomeListEl: luHomeList.el, luHomeFieldEl: luHomeField.el,
+            luAwayFieldEl: luAwayField.el, luAwayListEl: luAwayList.el,
+            update,
+        };
     },
 };

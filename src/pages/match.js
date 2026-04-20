@@ -302,6 +302,15 @@ const openPlayer = async (matchId) => {
         } else if (key === 'report') {
             reportInstance = TmMatchReportNew.create(match, ctrl.getState());
             tabContent.appendChild(reportInstance.el);
+        } else if (key === 'lineups') {
+            const wrap = document.createElement('div');
+            wrap.style.cssText = 'display:flex;gap:12px;width:100%;height:100%;padding:12px;box-sizing:border-box;';
+            wrap.className = 'mp-lu-tab-wrap';
+            wrap.appendChild(lineup.luHomeListEl);
+            wrap.appendChild(lineup.luHomeFieldEl);
+            wrap.appendChild(lineup.luAwayFieldEl);
+            wrap.appendChild(lineup.luAwayListEl);
+            tabContent.appendChild(wrap);
         }
         // other tabs: to be implemented
     };

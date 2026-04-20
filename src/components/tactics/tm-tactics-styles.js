@@ -118,7 +118,7 @@ export function injectTacticsStyles() {
             flex-direction: column;
             justify-content: space-evenly;
             flex: 0 0 auto;
-            height: calc(100dvh - 160px);
+            height: calc(100dvh - 180px);
             aspect-ratio: 2 / 3;
             background-color: rgb(19 19 19);
             background-image: ${pitchBg};

@@ -2,6 +2,7 @@ import { TmTable } from '../shared/tm-table.js';
 import { TmConst } from '../../lib/tm-constants.js';
 import { TmAlert } from '../shared/tm-alert.js';
 import { TmPlayerRow } from '../shared/tm-player-row.js';
+import { TmPosition } from '../../lib/tm-position.js';
 
 'use strict';
 
@@ -29,7 +30,7 @@ export function mountTacticsSquadList(container, ctx, fieldApi) {
     function sortedPlayers() {
         const fieldRows = players
             .filter(p => isFieldSlot(getPlayerSlot(p)))
-            .sort((a, b) => (TmConst.POSITION_MAP[getPlayerSlot(b)]?.ordering ?? 0) - (TmConst.POSITION_MAP[getPlayerSlot(a)]?.ordering ?? 0));
+            .sort((a, b) => (TmConst.POSITION_MAP[getPlayerSlot(a)?.toLowerCase()]?.ordering ?? 99) - (TmConst.POSITION_MAP[getPlayerSlot(b)?.toLowerCase()]?.ordering ?? 99));
 
         const benchRows = BENCH_SLOTS.map(role => {
             const p = getPlayerAtSlot(role);
@@ -52,6 +53,7 @@ export function mountTacticsSquadList(container, ctx, fieldApi) {
     const tblWrap = TmTable.table({
         items: sortedPlayers(),
         density: 'tight',
+        sortKey: null,
         rowAttrs: p => {
             if (p._isBenchPlaceholder && p._benchSlotFilled)
                 return { draggable: 'true', 'data-player-id': p.id, 'data-bench-role': p._benchRole };
@@ -69,11 +71,12 @@ export function mountTacticsSquadList(container, ctx, fieldApi) {
         },
         headers: [
             {
-                key: 'name', label: 'Player',
+                key: 'name', label: 'Player', sortable: false,
                 render: (_, p) => {
                     if (p._isBenchPlaceholder && !p._benchSlotFilled)
                         return '<span data-tpr-empty class="tmtc-pr-empty"><span style="color:var(--tmu-text-disabled);font-style:italic">drop player here</span></span>';
-                    return `<span data-tpr-pid="${String(p.id)}" data-tpr-state="${stateOf(p)}"></span>`;
+                    const benchAttr = p._benchRole ? ` data-tpr-bench="${p._benchRole}"` : '';
+                    return `<span data-tpr-pid="${String(p.id)}" data-tpr-state="${stateOf(p)}"${benchAttr}></span>`;
                 },
             },
         ],
@@ -82,11 +85,17 @@ export function mountTacticsSquadList(container, ctx, fieldApi) {
             table.querySelectorAll('tbody [data-tpr-pid]').forEach(placeholder => {
                 const pid = placeholder.dataset.tprPid;
                 const state = placeholder.dataset.tprState || 'active';
+                const benchRole = placeholder.dataset.tprBench || null;
                 const player = players_by_id[String(pid)];
                 if (!player) return;
                 const slot = getPlayerSlot(player);
                 const posKey = isFieldSlot(slot) ? slot : null;
                 const row = TmPlayerRow.build(player, { posKey, state });
+                if (benchRole) {
+                    const num = benchRole.replace('sub', '');
+                    const posWrap = row.querySelector('.tm-pr-pos');
+                    if (posWrap) posWrap.innerHTML = TmPosition.chip([{ position: `SUB ${num}`, color: 'var(--tmu-text-muted)' }]);
+                }
                 placeholder.parentNode.replaceChild(row, placeholder);
             });
         },
