@@ -7,7 +7,11 @@ import { TmMatchFeed } from '../components/match-new/tm-match-feed.js';
 import { TmMatchStats, deriveStats } from '../components/match-new/tm-match-stats.js';
 import { TmUnityPlayer } from '../components/match-new/tm-unity-player.js';
 import { TmReplayController } from '../components/match-new/tm-replay-controller.js';
-import { TmMatchLineup } from '../components/match-new/tm-match-lineup.js';
+import { TmMatchLineup }   from '../components/match-new/tm-match-lineup.js';
+import { TmTabs }          from '../components/shared/tm-tabs.js';
+import { TmMatchVenueNew } from '../components/match-new/tm-match-venue.js';
+import { TmMatchH2HNew }   from '../components/match-new/tm-match-h2h.js';
+import { TmMatchReportNew } from '../components/match-new/tm-match-report.js';
 import { MENTALITY_MAP_LONG } from '../constants/match.js';
 
 // ── Overlay shell styles ──────────────────────────────────────────────────────
@@ -31,6 +35,7 @@ const injectShellStyles = () => {
         }
         .mp-body { flex: 1; display: flex; flex-direction: row; overflow: hidden; min-height: 0; padding: 8px; gap: 8px; }
         .mp-center { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; padding: 0 16px; }
+        .mp-tab-content { flex: 1; overflow-y: auto; min-height: 0; padding: 16px; }
     `;
     document.head.appendChild(s);
 };
@@ -236,6 +241,9 @@ const openPlayer = async (matchId) => {
         prevH = h; prevA = a;
     };
 
+    let activeTab = 'details';
+    let reportInstance = null;
+
     const ctrl = TmReplayController.create({
         match, maximumMinute, schedule, unity,
         initialMode,
@@ -244,6 +252,7 @@ const openPlayer = async (matchId) => {
             lineup.update(replayState);
             checkGoal(replayState);
             checkEvents(replayState);
+            if (activeTab === 'report' && reportInstance) reportInstance.update(replayState);
         },
         onMinuteAdvanced: (replayState) => { unity.updateHUD(); header.update(match, replayState, maximumMinute); },
         onEnded: (replayState) => {
@@ -251,6 +260,7 @@ const openPlayer = async (matchId) => {
             lineup.update(replayState);
             checkGoal(replayState);
             checkEvents(replayState);
+            if (activeTab === 'report' && reportInstance) reportInstance.update(replayState);
         },
     });
 
@@ -276,8 +286,59 @@ const openPlayer = async (matchId) => {
     body.appendChild(center);
     body.appendChild(lineup.awayPanel.el);
 
+    const tabContent = document.createElement('div');
+    tabContent.className = 'mp-tab-content';
+    tabContent.style.display = 'none';
+
+    let renderedTabs = new Set();
+
+    const renderTab = (key) => {
+        if (renderedTabs.has(key)) return;
+        renderedTabs.add(key);
+        if (key === 'venue') {
+            tabContent.appendChild(TmMatchVenueNew.create(match));
+        } else if (key === 'h2h') {
+            tabContent.appendChild(TmMatchH2HNew.create(match));
+        } else if (key === 'report') {
+            reportInstance = TmMatchReportNew.create(match, ctrl.getState());
+            tabContent.appendChild(reportInstance.el);
+        }
+        // other tabs: to be implemented
+    };
+
     dialog.appendChild(header.el);
+
+    const tabs = TmTabs.tabs({
+        items: [
+            { key: 'details',    label: 'Details'    },
+            { key: 'lineups',    label: 'Lineups'    },
+            { key: 'statistics', label: 'Statistics' },
+            { key: 'report',     label: 'Report'     },
+            { key: 'h2h',        label: 'H2H'        },
+            { key: 'league',     label: 'League'     },
+            { key: 'venue',      label: 'Venue'      },
+        ],
+        active: 'details',
+        stretch: true,
+        onChange: (key) => {
+            activeTab = key;
+            if (key === 'details') {
+                body.style.display = '';
+                tabContent.style.display = 'none';
+            } else {
+                body.style.display = 'none';
+                tabContent.innerHTML = '';
+                reportInstance = null;
+                renderedTabs.clear();
+                renderTab(key);
+                tabContent.style.display = '';
+            }
+        },
+    });
+    dialog.appendChild(tabs);
+
     dialog.appendChild(body);
+    dialog.appendChild(tabContent);
     overlay.appendChild(dialog);
     document.body.appendChild(overlay);
     document.body.style.overflow = 'hidden';

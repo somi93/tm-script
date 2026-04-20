@@ -5611,7 +5611,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       const nameMap = {};
       ["home", "away"].forEach((side) => {
         Object.values((lineup == null ? void 0 : lineup[side]) || {}).forEach((p) => {
-          nameMap[String(p.player_id)] = p.name || "?";
+          nameMap[String(p.player_id)] = p.nameLast || p.name || "?";
         });
       });
       const resolveText = (lines) => (lines || []).map((l) => l.replace(/\[player=(\d+)\]/g, (_, pid) => nameMap[pid] || pid));
@@ -5856,6 +5856,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         player_id: Number(p.player_id),
         id: Number(p.player_id),
         name: p.name,
+        nameLast: p.nameLast,
         position: p.position,
         fp: p.fp,
         no: p.no,
@@ -12267,12 +12268,12 @@ order:initial
       });
       if (tooltip) {
         container.addEventListener("mouseover", (event) => {
-          const badge = event.target.closest(".form-badge[data-opp]");
-          if (!badge || !container.contains(badge)) return;
-          const oppId = badge.dataset.opp;
+          const badge2 = event.target.closest(".form-badge[data-opp]");
+          if (!badge2 || !container.contains(badge2)) return;
+          const oppId = badge2.dataset.opp;
           container.querySelectorAll("tr[data-club]").forEach((tr) => tr.classList.toggle("std-hover-opp", tr.dataset.club === oppId));
-          const venue = badge.dataset.venue;
-          tooltip.innerHTML = `<div class="sft-score">${badge.dataset.score} <span style="color:var(--tmu-text-panel-label)">(${venue})</span></div><div class="sft-opp">vs ${badge.dataset.oppName}</div>`;
+          const venue = badge2.dataset.venue;
+          tooltip.innerHTML = `<div class="sft-score">${badge2.dataset.score} <span style="color:var(--tmu-text-panel-label)">(${venue})</span></div><div class="sft-opp">vs ${badge2.dataset.oppName}</div>`;
           posTooltip(event);
           tooltip.style.display = "block";
         });
@@ -12280,8 +12281,8 @@ order:initial
           if (event.target.closest(".form-badge[data-opp]") && tooltip.style.display === "block") posTooltip(event);
         });
         container.addEventListener("mouseout", (event) => {
-          const badge = event.target.closest(".form-badge[data-opp]");
-          if (!badge || !container.contains(badge) || badge.contains(event.relatedTarget)) return;
+          const badge2 = event.target.closest(".form-badge[data-opp]");
+          if (!badge2 || !container.contains(badge2) || badge2.contains(event.relatedTarget)) return;
           container.querySelectorAll("tr[data-club].std-hover-opp").forEach((tr) => tr.classList.remove("std-hover-opp"));
           tooltip.style.display = "none";
         });
@@ -18640,7 +18641,7 @@ order:initial
   var renderHTML = (player2) => {
     const { getColor: getColor5 } = TmUtils;
     const { R5_THRESHOLDS: R5_THRESHOLDS4, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
-    const badge = (label, val, color) => TmUI.badge({ label, value: val, size: "sm", shape: "rounded", weight: "bold" }, "muted").replace('tmu-badge-tone-muted"', `tmu-badge-tone-muted" style="color:${color}"`);
+    const badge2 = (label, val, color) => TmUI.badge({ label, value: val, size: "sm", shape: "rounded", weight: "bold" }, "muted").replace('tmu-badge-tone-muted"', `tmu-badge-tone-muted" style="color:${color}"`);
     const prefPositions = (player2.positions || []).filter((p) => p.preferred);
     const posChip2 = TmPosition.chip(prefPositions);
     const r5Val = player2.r5 != null ? TmUtils.formatR5(player2.r5) : player2.r5Lo != null || player2.r5Hi != null ? (() => {
@@ -18657,8 +18658,8 @@ order:initial
     h += posChip2;
     h += `</div></div>`;
     h += `<div class="tmpt-header-right">`;
-    h += r5Val != null ? badge("R5", r5Val, r5Color3) : "";
-    h += player2.ti != null ? badge("TI", player2.ti.toFixed(1), getColor5(player2.ti, TI_THRESHOLDS2)) : "";
+    h += r5Val != null ? badge2("R5", r5Val, r5Color3) : "";
+    h += player2.ti != null ? badge2("TI", player2.ti.toFixed(1), getColor5(player2.ti, TI_THRESHOLDS2)) : "";
     h += `</div>`;
     h += "</div>";
     const fieldLeft = [0, 1, 2, 3, 4, 5, 6];
@@ -32884,6 +32885,537 @@ order:initial
     }
   };
 
+  // src/components/match-new/tm-match-venue.js
+  var VENUE_STYLE_ID = "mp-venue-style";
+  var ensureVenueStyles = () => {
+    if (document.getElementById(VENUE_STYLE_ID)) return;
+    const s6 = document.createElement("style");
+    s6.id = VENUE_STYLE_ID;
+    s6.textContent = `
+        .rnd-venue-wrap { max-width: 900px; margin: 0 auto; padding: 8px 0 16px; }
+        .rnd-venue-hero {
+            position: relative; border-radius: 8px; overflow: hidden;
+            background: linear-gradient(135deg, var(--tmu-surface-panel) 0%, var(--tmu-accent-fill) 40%, var(--tmu-success-fill) 100%);
+            margin-bottom: 16px; padding: 24px;
+            box-shadow: 0 6px 24px var(--tmu-surface-overlay);
+        }
+        .rnd-venue-hero::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: repeating-linear-gradient(90deg, transparent, transparent 48%, var(--tmu-border-contrast) 48%, var(--tmu-border-contrast) 52%);
+            pointer-events: none;
+        }
+        .rnd-venue-stadium-svg { display: block; margin: 0 auto 16px; opacity: 0.55; }
+        .rnd-venue-name {
+            text-align: center; font-size: var(--tmu-font-xl); font-weight: 800; color: var(--tmu-text-strong);
+            letter-spacing: 0.5px; margin-bottom: 4px; text-shadow: 0 2px 8px var(--tmu-surface-overlay);
+        }
+        .rnd-venue-city {
+            text-align: center; font-size: var(--tmu-font-sm); color: var(--tmu-text-panel-label); margin-bottom: 12px;
+            letter-spacing: 1px; text-transform: uppercase;
+        }
+        .rnd-venue-tournament { text-align: center; margin-bottom: 0; }
+        .rnd-venue-tournament span {
+            display: inline-block; background: var(--tmu-success-fill); padding: 3px 12px;
+            border-radius: 99px; font-size: var(--tmu-font-xs); color: var(--tmu-text-main); letter-spacing: 0.5px;
+        }
+        .rnd-venue-cards {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;
+        }
+        .rnd-venue-card {
+            background: linear-gradient(145deg, var(--tmu-surface-tab-hover), var(--tmu-surface-panel));
+            border-radius: 8px; padding: 14px; text-align: center; position: relative; overflow: hidden;
+        }
+        .rnd-venue-card::after {
+            content: ''; position: absolute; top: -20px; right: -20px;
+            width: 60px; height: 60px; border-radius: 50%; background: var(--tmu-success-fill-faint);
+        }
+        .rnd-venue-card-icon { font-size: var(--tmu-font-2xl); margin-bottom: 6px; }
+        .rnd-venue-card-value { font-size: var(--tmu-font-xl); font-weight: 800; color: var(--tmu-text-strong); margin-bottom: 0; }
+        .rnd-venue-card-label { font-size: var(--tmu-font-xs); color: var(--tmu-text-panel-label); text-transform: uppercase; letter-spacing: 0.5px; }
+        .rnd-venue-gauge-wrap {
+            background: linear-gradient(145deg, var(--tmu-surface-tab-hover), var(--tmu-surface-panel));
+            border-radius: 8px; padding: 16px; margin-bottom: 14px;
+        }
+        .rnd-venue-gauge-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
+        }
+        .rnd-venue-gauge-title { font-size: var(--tmu-font-sm); color: var(--tmu-text-panel-label); text-transform: uppercase; letter-spacing: 0.5px; }
+        .rnd-venue-gauge-value { font-size: var(--tmu-font-md); font-weight: 700; color: var(--tmu-text-strong); }
+        .rnd-venue-gauge-bar {
+            height: 10px; background: var(--tmu-surface-panel); border-radius: 4px; overflow: hidden;
+        }
+        .rnd-venue-gauge-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+        .rnd-venue-gauge-fill.attendance {
+            background: linear-gradient(90deg, var(--tmu-compare-home-grad-start), var(--tmu-compare-home-grad-end), var(--tmu-text-live));
+        }
+        .rnd-venue-weather {
+            background: linear-gradient(145deg, var(--tmu-surface-tab-hover), var(--tmu-surface-panel));
+            border-radius: 8px; padding: 16px; margin-bottom: 14px;
+            display: flex; align-items: center; gap: 16px;
+        }
+        .rnd-venue-weather-icon { font-size: 48px; line-height: 1; }
+        .rnd-venue-weather-info { flex: 1; }
+        .rnd-venue-weather-text { font-size: var(--tmu-font-lg); font-weight: 700; color: var(--tmu-text-strong); margin-bottom: 0; }
+        .rnd-venue-weather-sub { font-size: var(--tmu-font-sm); color: var(--tmu-text-panel-label); }
+        .rnd-venue-facilities {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px;
+        }
+        .rnd-venue-facility {
+            background: linear-gradient(145deg, var(--tmu-surface-tab-hover), var(--tmu-surface-panel));
+            border-radius: 8px; padding: 10px 8px; text-align: center; transition: background 0.2s;
+        }
+        .rnd-venue-facility.active { background: linear-gradient(145deg, var(--tmu-accent-fill), var(--tmu-success-fill)); }
+        .rnd-venue-facility-icon { font-size: var(--tmu-font-xl); margin-bottom: 4px; }
+        .rnd-venue-facility-label { font-size: var(--tmu-font-xs); color: var(--tmu-text-panel-label); text-transform: uppercase; letter-spacing: 0.3px; }
+        .rnd-venue-facility .rnd-venue-facility-status {
+            font-size: var(--tmu-font-xs); margin-top: 4px; color: var(--tmu-text-faint); font-weight: 600;
+        }
+        .rnd-venue-facility.active .rnd-venue-facility-status { color: var(--tmu-accent); }
+    `;
+    document.head.appendChild(s6);
+  };
+  var TmMatchVenueNew = {
+    create(match) {
+      var _a2;
+      ensureVenueStyles();
+      const venue = match.venue || {};
+      const fac = venue.facilities || {};
+      const weatherBase = (venue.weather || "").replace(/\d+/g, "");
+      const weatherMap = {
+        sunny: { icon: "\u2600\uFE0F", text: "Sunny", desc: "Clear skies" },
+        cloudy: { icon: "\u26C5", text: "Cloudy", desc: "Partly cloudy" },
+        rainy: { icon: "\u{1F327}\uFE0F", text: "Rain", desc: "Wet conditions" },
+        snow: { icon: "\u2744\uFE0F", text: "Snow", desc: "Snowy pitch" },
+        overcast: { icon: "\u2601\uFE0F", text: "Overcast", desc: "Heavy clouds" }
+      };
+      const w = weatherMap[weatherBase] || {
+        icon: "\u{1F324}\uFE0F",
+        text: weatherBase ? weatherBase.charAt(0).toUpperCase() + weatherBase.slice(1) : "\u2014",
+        desc: ""
+      };
+      const capacity = venue.capacity || 0;
+      const attendance = match.attendance || 0;
+      const attPct = capacity ? Math.round(attendance / capacity * 100) : 0;
+      const pitchPct = venue.pitchCondition || 0;
+      const stadiumSvg = `<svg class="rnd-venue-stadium-svg" width="220" height="80" viewBox="0 0 220 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="110" cy="65" rx="100" ry="12" fill="var(--tmu-success-fill)" stroke="var(--tmu-accent-fill)" stroke-width="1"/>
+            <path d="M25 65 L25 30 Q25 22 33 20 L55 16 Q60 15 60 20 L60 65" fill="var(--tmu-surface-panel)" stroke="var(--tmu-accent-fill)" stroke-width="0.8"/>
+            <path d="M60 65 L60 22 Q60 14 68 12 L102 6 Q110 5 110 12 L110 65" fill="var(--tmu-surface-card-soft)" stroke="var(--tmu-accent-fill)" stroke-width="0.8"/>
+            <path d="M110 65 L110 12 Q110 5 118 6 L152 12 Q160 14 160 22 L160 65" fill="var(--tmu-surface-card-soft)" stroke="var(--tmu-accent-fill)" stroke-width="0.8"/>
+            <path d="M160 65 L160 20 Q160 15 165 16 L187 20 Q195 22 195 30 L195 65" fill="var(--tmu-surface-panel)" stroke="var(--tmu-accent-fill)" stroke-width="0.8"/>
+            <rect x="70" y="50" width="80" height="15" rx="2" fill="var(--tmu-accent-fill)" stroke="var(--tmu-accent-fill)" stroke-width="0.6"/>
+            <line x1="110" y1="50" x2="110" y2="65" stroke="var(--tmu-accent-fill)" stroke-width="0.4"/>
+            <circle cx="110" cy="57" r="4" stroke="var(--tmu-accent-fill)" stroke-width="0.4" fill="none"/>
+            <rect x="72" y="53" width="12" height="9" rx="1" fill="none" stroke="var(--tmu-accent-fill)" stroke-width="0.4"/>
+            <rect x="136" y="53" width="12" height="9" rx="1" fill="none" stroke="var(--tmu-accent-fill)" stroke-width="0.4"/>
+            ${[35, 50, 65, 80, 140, 155, 170, 185].map((x) => `<rect x="${x - 1}" y="28" width="2" height="4" rx="0.5" fill="var(--tmu-success)" opacity="0.5"/>`).join("")}
+        </svg>`;
+      const facilities = [
+        { key: "sprinklers", icon: "\u{1F4A7}", label: "Sprinklers" },
+        { key: "draining", icon: "\u{1F6B0}", label: "Draining" },
+        { key: "pitchcover", icon: "\u{1F6E1}\uFE0F", label: "Pitch Cover" },
+        { key: "heating", icon: "\u{1F525}", label: "Heating" }
+      ];
+      const pitchColor = pitchPct >= 80 ? "var(--tmu-success)" : pitchPct >= 50 ? "var(--tmu-warning-soft)" : "var(--tmu-danger-strong)";
+      const el2 = document.createElement("div");
+      el2.className = "rnd-venue-wrap";
+      el2.innerHTML = `
+            <div class="rnd-venue-hero">
+                ${stadiumSvg}
+                <div class="rnd-venue-name">${venue.name || "\u2014"}</div>
+                <div class="rnd-venue-city">\u{1F4CD} ${venue.city || "\u2014"}</div>
+                ${((_a2 = match.competition) == null ? void 0 : _a2.name) ? `<div class="rnd-venue-tournament"><span>\u{1F3C6} ${match.competition.name}</span></div>` : ""}
+            </div>
+
+            <div class="rnd-venue-cards">
+                <div class="rnd-venue-card">
+                    <div class="rnd-venue-card-icon">\u{1F3DF}\uFE0F</div>
+                    <div class="rnd-venue-card-value">${capacity ? capacity.toLocaleString() : "\u2014"}</div>
+                    <div class="rnd-venue-card-label">Capacity</div>
+                </div>
+                <div class="rnd-venue-card">
+                    <div class="rnd-venue-card-icon">\u{1F465}</div>
+                    <div class="rnd-venue-card-value">${attendance ? attendance.toLocaleString() : "\u2014"}</div>
+                    <div class="rnd-venue-card-label">Attendance</div>
+                </div>
+            </div>
+
+            ${attendance && capacity ? `
+            <div class="rnd-venue-gauge-wrap">
+                <div class="rnd-venue-gauge-header">
+                    <span class="rnd-venue-gauge-title">Stadium Fill</span>
+                    <span class="rnd-venue-gauge-value">${attPct}%</span>
+                </div>
+                <div class="rnd-venue-gauge-bar"><div class="rnd-venue-gauge-fill attendance" style="width:${attPct}%"></div></div>
+            </div>` : ""}
+
+            <div class="rnd-venue-weather">
+                <div class="rnd-venue-weather-icon">${w.icon}</div>
+                <div class="rnd-venue-weather-info">
+                    <div class="rnd-venue-weather-text">${w.text}</div>
+                    <div class="rnd-venue-weather-sub">${w.desc}</div>
+                </div>
+            </div>
+
+            <div class="rnd-venue-gauge-wrap">
+                <div class="rnd-venue-gauge-header">
+                    <span class="rnd-venue-gauge-title">Pitch Condition</span>
+                    <span class="rnd-venue-gauge-value">${pitchPct}%</span>
+                </div>
+                <div class="rnd-venue-gauge-bar"><div class="rnd-venue-gauge-fill" style="width:${pitchPct}%;background:${pitchColor}"></div></div>
+            </div>
+
+            <div class="rnd-venue-facilities">
+                ${facilities.map((f) => `
+                <div class="rnd-venue-facility ${fac[f.key] ? "active" : ""}">
+                    <div class="rnd-venue-facility-icon">${f.icon}</div>
+                    <div class="rnd-venue-facility-label">${f.label}</div>
+                    <div class="rnd-venue-facility-status">${fac[f.key] ? "\u2713 Yes" : "\u2717 No"}</div>
+                </div>`).join("")}
+            </div>
+        `;
+      return el2;
+    }
+  };
+
+  // src/components/match-new/tm-match-h2h.js
+  var H2H_STYLE_ID = "mp-h2h-style";
+  var ensureH2HStyles = () => {
+    if (document.getElementById(H2H_STYLE_ID)) return;
+    const s6 = document.createElement("style");
+    s6.id = H2H_STYLE_ID;
+    s6.textContent = `
+        .rnd-h2h-wrap { max-width: 640px; margin: 0 auto; padding: 8px 0 16px; }
+        .rnd-h2h-summary {
+            display: flex; align-items: center; justify-content: center;
+            gap: 32px; padding: 10px 0 12px;
+            border-bottom: 1px solid var(--tmu-border-soft-alpha);
+            margin-bottom: 4px;
+        }
+        .rnd-h2h-sum-item { display: flex; flex-direction: column; align-items: center; }
+        .rnd-h2h-sum-num {
+            font-size: var(--tmu-font-xl); font-weight: 800; line-height: 1;
+        }
+        .rnd-h2h-sum-num.home { color: var(--tmu-compare-home-grad-end); }
+        .rnd-h2h-sum-num.draw { color: var(--tmu-text-muted); }
+        .rnd-h2h-sum-num.away { color: var(--tmu-compare-away-grad-end); }
+        .rnd-h2h-sum-lbl {
+            font-size: var(--tmu-font-2xs); color: var(--tmu-text-dim);
+            text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-top: 2px;
+        }
+        .rnd-h2h-sum-sep { color: var(--tmu-border-embedded); font-size: var(--tmu-font-xl); align-self: center; }
+        .rnd-h2h-goals-summary {
+            text-align: center; font-size: var(--tmu-font-xs); color: var(--tmu-text-dim);
+            padding: 4px 0 8px;
+        }
+        .rnd-h2h-goals-summary span { color: var(--tmu-text-panel-label); font-weight: 700; }
+        .rnd-h2h-matches { padding-top: 4px; }
+        .rnd-h2h-season {
+            font-size: var(--tmu-font-2xs); color: var(--tmu-text-faint); text-transform: uppercase;
+            letter-spacing: 1.5px; padding: 10px 0 4px; font-weight: 700;
+            border-bottom: 1px solid var(--tmu-border-soft-alpha);
+        }
+        .rnd-h2h-match {
+            position: relative; display: flex; align-items: center; gap: 0;
+            padding: 6px 8px; margin: 2px 0; border-radius: 6px;
+            font-size: var(--tmu-font-sm); cursor: pointer; transition: background 0.15s;
+        }
+        .rnd-h2h-match:hover { background: var(--tmu-border-contrast); }
+        .rnd-h2h-match.h2h-readonly { cursor: default; }
+        .rnd-h2h-match.h2h-win  { border-left: 3px solid var(--tmu-success); }
+        .rnd-h2h-match.h2h-loss { border-left: 3px solid var(--tmu-compare-away-grad-end); }
+        .rnd-h2h-match.h2h-draw { border-left: 3px solid var(--tmu-text-dim); }
+        .rnd-h2h-date {
+            color: var(--tmu-text-faint); font-size: var(--tmu-font-xs); width: 72px;
+            flex-shrink: 0; font-weight: 500;
+        }
+        .rnd-h2h-match .tmu-badge {
+            flex-shrink: 0; margin-right: 8px; width: 100px; justify-content: center;
+        }
+        .rnd-h2h-home {
+            margin-left: 16px; text-align: right; color: var(--tmu-text-main);
+            font-size: var(--tmu-font-sm); white-space: nowrap; overflow: hidden;
+            text-overflow: ellipsis; padding-right: 8px; flex: 1;
+        }
+        .rnd-h2h-score {
+            font-weight: 800; font-size: var(--tmu-font-sm); color: var(--tmu-text-strong);
+            white-space: nowrap; flex-shrink: 0; min-width: 40px; text-align: center;
+        }
+        .rnd-h2h-away {
+            text-align: left; color: var(--tmu-text-main);
+            font-size: var(--tmu-font-sm); white-space: nowrap; overflow: hidden;
+            text-overflow: ellipsis; padding-left: 8px; flex: 1;
+        }
+    `;
+    document.head.appendChild(s6);
+  };
+  var h2hTypeSortKey = (m) => {
+    if (m.division) return "League";
+    const mt = m.matchtype || "";
+    if (mt === "fl") return "Friendly League";
+    if (mt === "f" || mt === "fq") return "Friendly";
+    if (/^p\d$/.test(mt)) return "Cup";
+    if (["ueg", "ue1", "ue2", "clg", "cl1", "cl2"].includes(mt)) return "International Cup";
+    return "";
+  };
+  var TmMatchH2HNew = {
+    create(match) {
+      ensureH2HStyles();
+      const homeId = String(match.home.club.id);
+      const awayId = String(match.away.club.id);
+      const homeName = match.home.club.name || homeId;
+      const awayName = match.away.club.name || awayId;
+      const kickoff = match.kickoff || Math.floor(Date.now() / 1e3);
+      const el2 = document.createElement("div");
+      el2.className = "rnd-h2h-wrap";
+      el2.innerHTML = '<div style="padding:32px;text-align:center;color:var(--tmu-text-faint)">Loading H2H\u2026</div>';
+      TmMatchModel.fetchH2H(homeId, awayId, kickoff).then((data) => {
+        var _a2, _b, _c, _d, _e, _f;
+        if (!data) {
+          el2.innerHTML = '<div style="padding:32px;text-align:center;color:var(--tmu-text-faint)">No H2H data found.</div>';
+          return;
+        }
+        const allStats = data.all || {};
+        const hWins = ((_a2 = allStats[homeId]) == null ? void 0 : _a2.w) || 0;
+        const aWins = ((_b = allStats[awayId]) == null ? void 0 : _b.w) || 0;
+        const draws = ((_c = allStats[homeId]) == null ? void 0 : _c.d) || 0;
+        const hGoals = ((_d = allStats[homeId]) == null ? void 0 : _d.gf) || 0;
+        const aGoals = ((_e = allStats[awayId]) == null ? void 0 : _e.gf) || 0;
+        const clubNames = { [homeId]: homeName, [awayId]: awayName };
+        let html2 = `
+                <div class="rnd-h2h-summary">
+                    <div class="rnd-h2h-sum-item">
+                        <span class="rnd-h2h-sum-num home">${hWins}</span>
+                        <span class="rnd-h2h-sum-lbl">Home W</span>
+                    </div>
+                    <span class="rnd-h2h-sum-sep">\xB7</span>
+                    <div class="rnd-h2h-sum-item">
+                        <span class="rnd-h2h-sum-num draw">${draws}</span>
+                        <span class="rnd-h2h-sum-lbl">Draws</span>
+                    </div>
+                    <span class="rnd-h2h-sum-sep">\xB7</span>
+                    <div class="rnd-h2h-sum-item">
+                        <span class="rnd-h2h-sum-num away">${aWins}</span>
+                        <span class="rnd-h2h-sum-lbl">Away W</span>
+                    </div>
+                </div>`;
+        if (hGoals || aGoals) {
+          html2 += `<div class="rnd-h2h-goals-summary">Goals: <span>${hGoals}</span> \u2013 <span>${aGoals}</span></div>`;
+        }
+        html2 += '<div class="rnd-h2h-matches">';
+        if (data.matches) {
+          const currentSeason4 = (_f = window.SESSION) == null ? void 0 : _f.season;
+          const seasons2 = Object.keys(data.matches).sort((a, b) => Number(b) - Number(a));
+          seasons2.forEach((season) => {
+            html2 += `<div class="rnd-h2h-season">Season ${season}</div>`;
+            const isOldSeason = Number(season) !== currentSeason4;
+            data.matches[season].forEach((m) => {
+              html2 += TmFixtureMatchRow.render({
+                id: m.id,
+                hometeam: m.hometeam,
+                hometeam_name: clubNames[String(m.hometeam)] || String(m.hometeam),
+                awayteam: m.awayteam,
+                awayteam_name: clubNames[String(m.awayteam)] || String(m.awayteam),
+                result: m.result,
+                matchtype_sort: h2hTypeSortKey(m)
+              }, {
+                dateText: m.date || "",
+                showType: true,
+                myClubId: homeId,
+                season: String(season),
+                extraClass: isOldSeason ? "h2h-readonly" : ""
+              });
+            });
+          });
+        }
+        html2 += "</div>";
+        el2.innerHTML = html2;
+      }).catch(() => {
+        el2.innerHTML = '<div style="padding:32px;text-align:center;color:var(--tmu-danger)">Failed to load H2H data.</div>';
+      });
+      return el2;
+    }
+  };
+
+  // src/components/match-new/tm-match-report.js
+  var REPORT_STYLE_ID = "mp-report-style";
+  var ensureReportStyles = () => {
+    if (document.getElementById(REPORT_STYLE_ID)) return;
+    const s6 = document.createElement("style");
+    s6.id = REPORT_STYLE_ID;
+    s6.textContent = `
+        .rnd-report-wrap { max-width: 900px; margin: 0 auto; }
+
+        /* \u2500\u2500 Accordion rows \u2500\u2500 */
+        .rnd-acc { border-bottom: 1px solid var(--tmu-border-soft); }
+        .rnd-acc:last-child { border-bottom: none; }
+        .rnd-acc-head {
+            display: flex; align-items: center;
+            padding: 6px 0; min-height: 32px; cursor: pointer;
+            transition: background 0.15s;
+        }
+        .rnd-acc-head:hover { background: var(--tmu-border-contrast); }
+        .rnd-acc-goal { background: var(--tmu-success-fill-faint); }
+        .rnd-acc-home {
+            flex: 1; text-align: right; padding-right: 12px;
+            color: var(--tmu-text-strong); font-size: var(--tmu-font-sm);
+        }
+        .rnd-acc-min {
+            width: 44px; text-align: center; flex-shrink: 0;
+            color: var(--tmu-text-panel-label); font-weight: 700; font-size: var(--tmu-font-sm);
+            background: var(--tmu-accent-fill); border-radius: 3px;
+        }
+        .rnd-acc-away {
+            flex: 1; text-align: left; padding-left: 12px;
+            color: var(--tmu-text-strong); font-size: var(--tmu-font-sm);
+        }
+        .rnd-acc-body {
+            display: none; padding: 6px 12px 10px;
+            background: var(--tmu-surface-overlay-soft); border-radius: 0 0 4px 4px;
+        }
+        .rnd-acc.open .rnd-acc-body { display: block; }
+        .rnd-acc-chevron {
+            width: 14px; height: 14px; flex-shrink: 0;
+            fill: var(--tmu-text-dim); transition: transform 0.2s;
+            margin: 0 4px;
+        }
+        .rnd-acc.open .rnd-acc-chevron { transform: rotate(90deg); }
+
+        /* \u2500\u2500 Report text body \u2500\u2500 */
+        .rnd-report-text {
+            color: var(--tmu-text-main); font-size: var(--tmu-font-sm); line-height: 1.6;
+        }
+        .rnd-report-text .rnd-goal-text   { color: var(--tmu-text-live); font-weight: 700; }
+        .rnd-report-text .rnd-yellow-text  { color: var(--tmu-text-highlight); }
+        .rnd-report-text .rnd-red-text     { color: var(--tmu-danger); font-weight: 700; }
+        .rnd-report-text .rnd-sub-text     { color: var(--tmu-text-preview); }
+        .rnd-report-text .rnd-player-name  { color: var(--tmu-text-strong); font-weight: 600; }
+    `;
+    document.head.appendChild(s6);
+  };
+  var badge = (opts, tone) => TmBadge.badge({ size: "md", shape: "rounded", weight: "bold", ...opts }, tone);
+  var CHEVRON = '<svg class="rnd-acc-chevron" viewBox="0 0 24 24"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg>';
+  var buildPlayHtml = (play, min, match, nameMap) => {
+    const acts = play.clips.flatMap((c) => c.actions || []);
+    const isHome = String(play.team) === String(match.home.club.id);
+    let headerBadges = "";
+    let hasEvents = false;
+    let hasGoal = false;
+    const goalAct = acts.find((a) => a.action === "shot" && a.goal);
+    if (goalAct) {
+      hasEvents = true;
+      hasGoal = true;
+      const { h, a: as } = scoreAt(match, min, play.reportEventIndex);
+      const assistAct = acts.find((a) => a.action === "assist");
+      let b = `\u26BD ${nameMap[String(goalAct.by)] || "?"} (${h}-${as})`;
+      if (assistAct) {
+        b += ` <span style="font-size:var(--tmu-font-xs);color:var(--tmu-text-panel-label)">ast. ${nameMap[String(assistAct.by)] || "?"}</span>`;
+      }
+      headerBadges += badge({ slot: b }, "success");
+    }
+    const yellowAct = acts.find((a) => a.action === "yellow");
+    if (yellowAct) {
+      hasEvents = true;
+      headerBadges += badge({ icon: "\u{1F7E8}", label: nameMap[String(yellowAct.by)] || "?" }, "highlight");
+    }
+    const yellowRedAct = acts.find((a) => a.action === "yellowRed");
+    if (yellowRedAct) {
+      hasEvents = true;
+      headerBadges += badge({ icon: "\u{1F7E5}\u{1F7E8}", label: nameMap[String(yellowRedAct.by)] || "?" }, "danger");
+    }
+    const redAct = acts.find((a) => a.action === "red");
+    if (redAct) {
+      hasEvents = true;
+      headerBadges += badge({ icon: "\u{1F7E5}", label: nameMap[String(redAct.by)] || "?" }, "danger");
+    }
+    const injAct = acts.find((a) => a.action === "injury");
+    if (injAct) {
+      hasEvents = true;
+      headerBadges += badge({
+        icon: '<span style="color:var(--tmu-danger);font-weight:800">\u271A</span>',
+        label: nameMap[String(injAct.by)] || "?"
+      }, "warn");
+    }
+    const subIns = acts.filter((a) => a.action === "subIn");
+    const subOuts = acts.filter((a) => a.action === "subOut");
+    subIns.forEach((subIn, i) => {
+      hasEvents = true;
+      const subOut = subOuts[i];
+      const inName = nameMap[String(subIn.by)] || "?";
+      const outName = subOut ? nameMap[String(subOut.by)] || "?" : "?";
+      headerBadges += badge({ icon: "\u{1F504}", label: `\u2191${inName} \u2193${outName}` }, "info");
+    });
+    const lines = play.clips.flatMap(
+      (c) => (c.text || []).filter((l) => l && l.trim()).map(
+        (l) => l.replace(/\[goal\]/g, '<span class="rnd-goal-text">\u26BD </span>').replace(/\[yellow\]/g, '<span class="rnd-yellow-text">\u{1F7E8} </span>').replace(/\[red\]/g, '<span class="rnd-red-text">\u{1F7E5} </span>').replace(/\[sub\]/g, '<span class="rnd-sub-text">\u{1F504} </span>').replace(/\[assist\]/g, "")
+      )
+    );
+    const goalCls = hasGoal ? " rnd-acc-goal" : "";
+    const headerContent = hasEvents ? headerBadges : `<span style="color:var(--tmu-text-panel-label);font-size:var(--tmu-font-sm)">${lines[0] || ""}</span>`;
+    let html2 = `<div class="rnd-acc" data-acc="${min}-${play.reportEventIndex}">`;
+    html2 += `<div class="rnd-acc-head${goalCls}">`;
+    html2 += `<div class="rnd-acc-home">${isHome ? headerContent : ""}</div>`;
+    html2 += `<div class="rnd-acc-min">${min}'</div>`;
+    html2 += `<div class="rnd-acc-away">${!isHome ? headerContent : ""}</div>`;
+    html2 += CHEVRON;
+    html2 += "</div>";
+    html2 += `<div class="rnd-acc-body"><div class="rnd-report-text">${lines.join("<br>")}</div></div>`;
+    html2 += "</div>";
+    return html2;
+  };
+  var TmMatchReportNew = {
+    /**
+     * @param {object} match  — normalized match
+     * @param {object|null} state — replayState snapshot; null = show all
+     * @returns {{ el: HTMLElement, update(state): void }}
+     */
+    create(match, state5 = null) {
+      ensureReportStyles();
+      const nameMap = {};
+      [...match.home.lineup, ...match.away.lineup].forEach((p) => {
+        nameMap[String(p.id)] = p.name || "?";
+      });
+      const sortedMins = Object.keys(match.plays).map(Number).sort((a, b) => a - b);
+      const el2 = document.createElement("div");
+      el2.className = "rnd-report-wrap";
+      el2.addEventListener("click", (e) => {
+        var _a2;
+        const head = e.target.closest(".rnd-acc-head");
+        if (head) (_a2 = head.closest(".rnd-acc")) == null ? void 0 : _a2.classList.toggle("open");
+      });
+      let lastMin = -1;
+      let lastIdx = -1;
+      const appendRange = (toMin, toIdx) => {
+        sortedMins.forEach((min) => {
+          if (min < lastMin) return;
+          if (toMin !== Infinity && min > toMin) return;
+          (match.plays[String(min)] || []).forEach((play) => {
+            const ei = play.reportEventIndex;
+            if (min === lastMin && ei <= lastIdx) return;
+            if (toIdx !== Infinity && min === toMin && ei > toIdx) return;
+            const tmp = document.createElement("div");
+            tmp.innerHTML = buildPlayHtml(play, min, match, nameMap);
+            const node = tmp.firstChild;
+            if (node) el2.appendChild(node);
+          });
+        });
+        lastMin = toMin;
+        lastIdx = toIdx;
+      };
+      const initMin = !state5 || state5.ended ? Infinity : state5.currentMinute;
+      const initIdx = !state5 || state5.ended ? Infinity : state5.committedActionIndex;
+      appendRange(initMin, initIdx);
+      const update = (newState) => {
+        if (!newState) return;
+        const newMin = newState.ended ? Infinity : newState.currentMinute;
+        const newIdx = newState.ended ? Infinity : newState.committedActionIndex;
+        if (newMin === lastMin && newIdx === lastIdx) return;
+        appendRange(newMin, newIdx);
+      };
+      return { el: el2, update };
+    }
+  };
+
   // src/pages/match.js
   var SHELL_STYLE_ID = "mp-shell-style";
   var injectShellStyles = () => {
@@ -32903,6 +33435,7 @@ order:initial
         }
         .mp-body { flex: 1; display: flex; flex-direction: row; overflow: hidden; min-height: 0; padding: 8px; gap: 8px; }
         .mp-center { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; padding: 0 16px; }
+        .mp-tab-content { flex: 1; overflow-y: auto; min-height: 0; padding: 16px; }
     `;
     document.head.appendChild(s6);
   };
@@ -33096,6 +33629,8 @@ order:initial
       prevH = h;
       prevA = a;
     };
+    let activeTab3 = "details";
+    let reportInstance = null;
     const ctrl = TmReplayController.create({
       match,
       maximumMinute,
@@ -33108,6 +33643,7 @@ order:initial
         lineup.update(replayState);
         checkGoal(replayState);
         checkEvents(replayState);
+        if (activeTab3 === "report" && reportInstance) reportInstance.update(replayState);
       },
       onMinuteAdvanced: (replayState) => {
         unity.updateHUD();
@@ -33119,6 +33655,7 @@ order:initial
         lineup.update(replayState);
         checkGoal(replayState);
         checkEvents(replayState);
+        if (activeTab3 === "report" && reportInstance) reportInstance.update(replayState);
       }
     });
     injectShellStyles();
@@ -33136,8 +33673,53 @@ order:initial
     body.appendChild(lineup.homePanel.el);
     body.appendChild(center);
     body.appendChild(lineup.awayPanel.el);
+    const tabContent = document.createElement("div");
+    tabContent.className = "mp-tab-content";
+    tabContent.style.display = "none";
+    let renderedTabs = /* @__PURE__ */ new Set();
+    const renderTab = (key) => {
+      if (renderedTabs.has(key)) return;
+      renderedTabs.add(key);
+      if (key === "venue") {
+        tabContent.appendChild(TmMatchVenueNew.create(match));
+      } else if (key === "h2h") {
+        tabContent.appendChild(TmMatchH2HNew.create(match));
+      } else if (key === "report") {
+        reportInstance = TmMatchReportNew.create(match, ctrl.getState());
+        tabContent.appendChild(reportInstance.el);
+      }
+    };
     dialog.appendChild(header.el);
+    const tabs = TmTabs.tabs({
+      items: [
+        { key: "details", label: "Details" },
+        { key: "lineups", label: "Lineups" },
+        { key: "statistics", label: "Statistics" },
+        { key: "report", label: "Report" },
+        { key: "h2h", label: "H2H" },
+        { key: "league", label: "League" },
+        { key: "venue", label: "Venue" }
+      ],
+      active: "details",
+      stretch: true,
+      onChange: (key) => {
+        activeTab3 = key;
+        if (key === "details") {
+          body.style.display = "";
+          tabContent.style.display = "none";
+        } else {
+          body.style.display = "none";
+          tabContent.innerHTML = "";
+          reportInstance = null;
+          renderedTabs.clear();
+          renderTab(key);
+          tabContent.style.display = "";
+        }
+      }
+    });
+    dialog.appendChild(tabs);
     dialog.appendChild(body);
+    dialog.appendChild(tabContent);
     overlay.appendChild(dialog);
     document.body.appendChild(overlay);
     document.body.style.overflow = "hidden";
@@ -33909,20 +34491,20 @@ order:initial
           const team = document.createElement("a");
           team.className = `tmvu-home-nm-team tmvu-home-nm-team--${side}`;
           team.href = nameEl.getAttribute("href") || "#";
-          const badge = document.createElement("div");
-          badge.className = "tmvu-home-nm-badge";
+          const badge2 = document.createElement("div");
+          badge2.className = "tmvu-home-nm-badge";
           const img = document.createElement("img");
           img.src = logoEl.src;
           img.alt = "";
           img.className = "tmvu-home-nm-logo";
-          badge.appendChild(img);
+          badge2.appendChild(img);
           const copy = document.createElement("div");
           copy.className = "tmvu-home-nm-copy";
           const name = document.createElement("span");
           name.className = "tmvu-home-nm-name";
           name.textContent = clean5(nameEl.textContent);
           copy.appendChild(name);
-          team.appendChild(badge);
+          team.appendChild(badge2);
           team.appendChild(copy);
           return team;
         };
@@ -34199,10 +34781,10 @@ order:initial
           return;
         }
         if ((_c = node.classList) == null ? void 0 : _c.contains("b_team_icon")) {
-          const badge = document.createElement("span");
-          badge.className = "tmvu-home-cal-btag";
-          badge.textContent = "B";
-          title.appendChild(badge);
+          const badge2 = document.createElement("span");
+          badge2.className = "tmvu-home-cal-btag";
+          badge2.textContent = "B";
+          title.appendChild(badge2);
           return;
         }
         if ((_d = node.classList) == null ? void 0 : _d.contains("coin")) {
@@ -36700,7 +37282,7 @@ order:initial
         const periodEl = row.querySelector('span[style*="white-space"]');
         const priceEl = row.querySelector(".large strong");
         if (!value || !periodEl || !priceEl) return;
-        const badge = parseSaveBadge(row);
+        const badge2 = parseSaveBadge(row);
         const period = clean5(periodEl.textContent);
         const price = clean5(priceEl.textContent);
         const card = document.createElement("div");
@@ -36713,10 +37295,10 @@ order:initial
         priceDiv.textContent = price;
         card.appendChild(periodDiv);
         card.appendChild(priceDiv);
-        if (badge) {
+        if (badge2) {
           const badgeDiv = document.createElement("div");
           badgeDiv.className = "tmvu-buypro-product-badge";
-          badgeDiv.textContent = badge;
+          badgeDiv.textContent = badge2;
           card.appendChild(badgeDiv);
         }
         const btnWrap = document.createElement("div");
