@@ -179,7 +179,7 @@ const applyTooltipSkills = (player, tooltipSkills) => {
     return player;
 };
 
-const applyPlayerPositions = (player, favposition = '') => {
+const applyPlayerPositions = (player, favposition = '', allPositions = false) => {
     if (!Array.isArray(player?.positions)) return player;
 
     const preferredKeys = new Set(String(favposition || '')
@@ -188,7 +188,7 @@ const applyPlayerPositions = (player, favposition = '') => {
         .filter(Boolean));
 
     player.positions = player.positions
-        .filter(position => player.isGK ? position.key === 'gk' : position.key !== 'gk')
+        .filter(position => allPositions || (player.isGK ? position.key === 'gk' : position.key !== 'gk'))
         .map(position => ({
             ...position,
             preferred: preferredKeys.has(String(position.key || '').toLowerCase()),
@@ -274,5 +274,7 @@ const applySquadSkills = (player, postPlayer) => {
     return player;
 };
 
-export const TmUtils = { getColor, parseNum, ageToMonths, monthsToAge, classifyPosition, posLabel, fix2, formatR5, fmtCoins, ratingColor, r5Color, toggleSort, skillColor, skillEff, getMainContainer, getMainContainers, extractFaceUrl, parseSkillValue, skillValue, sortAgeKeys, safeGrowthSkills, applyTooltipSkills, applyPlayerPositions, applySquadSkills, getOwnClubIds };
+const escHtml = v => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+export const TmUtils = { getColor, parseNum, ageToMonths, monthsToAge, classifyPosition, posLabel, fix2, formatR5, fmtCoins, ratingColor, r5Color, toggleSort, skillColor, skillEff, getMainContainer, getMainContainers, extractFaceUrl, parseSkillValue, skillValue, sortAgeKeys, safeGrowthSkills, applyTooltipSkills, applyPlayerPositions, applySquadSkills, getOwnClubIds, escHtml };
 

@@ -128,5 +128,35 @@ export const TmPosition = {
             .map(([k, v]) => ` ${k}="${String(v).replace(/"/g, '&quot;')}"`).join('');
         return TmUI.positionChip(firstColor, inner, cls, attrStr);
     },
+
+    /**
+     * Mood penalty for placing a player in a given posKey.
+     * Returns 0-4 (0 = natural position, 4 = maximum unhappiness).
+     */
+    moodPenalty(player, posKey) {
+        const LINE_PEN = {
+            1: { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4 },
+            2: { 1: 1, 2: 0, 3: 1, 4: 2, 5: 3 },
+            3: { 1: 2, 2: 1, 3: 0, 4: 1, 5: 2 },
+            4: { 1: 3, 2: 2, 3: 1, 4: 0, 5: 1 },
+            5: { 1: 4, 2: 3, 3: 2, 4: 1, 5: 0 },
+        };
+        const placed = MAP[String(posKey || '').toLowerCase()];
+        if (!placed) return 0;
+        const favs = Array.isArray(player?.positions) ? player.positions.filter(p => p.preferred) : [];
+        if (!favs.length) return 0;
+        if (placed.row === 0) return favs.some(p => p.row === 0) ? 0 : 4;
+        if (favs.some(p => p.row === 0)) return 4;
+        const side = c => c === 0 ? 'L' : (c === 4 ? 'R' : 'C');
+        const ps = side(placed.col);
+        let best = 4;
+        for (const fav of favs) {
+            const fs = side(fav.col);
+            let pen = (fs !== ps) ? ((fs === 'C' || ps === 'C') ? 2 : 1) : 0;
+            pen += LINE_PEN[placed.row]?.[fav.row] ?? 4;
+            best = Math.min(best, Math.min(pen, 4));
+        }
+        return best;
+    },
 };
 

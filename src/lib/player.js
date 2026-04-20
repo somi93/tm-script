@@ -1,4 +1,4 @@
-import { POSITION_MAP } from '../constants/player.js';
+import { POSITION_MAP, BENCH_SLOTS } from '../constants/player.js';
 import { SKILL_DEFS } from '../constants/skills.js';
 import { Club } from './club.js';
 
@@ -20,18 +20,19 @@ export const Stat = {
     }
 }
 
-const createPositions = () => Object.entries(POSITION_MAP)
-    .filter(([, position]) => position.main)
-    .map(([key, position]) => ({
-        ...position,
-        key,
-        r5: null,
-        rec: null,
-        preferred: false,
-    }));
+const createPositions = (allPositions = false) => {
+    const entries = allPositions
+        ? Object.entries(POSITION_MAP)
+        : Object.entries(POSITION_MAP).filter(([, pos]) => pos.main);
+    const positions = entries.map(([key, pos]) => ({ ...pos, key, r5: null, rec: null, preferred: false }));
+    if (allPositions) {
+        for (const sub of BENCH_SLOTS) positions.push({ key: sub, playing: false });
+    }
+    return positions;
+};
 
 export const Player = {
-    create() {
+    create({ allPositions = false } = {}) {
         return {
             id: null,
             club_id: null,
@@ -54,7 +55,7 @@ export const Player = {
             ban: null,
             injury: null,
             faceUrl: null,
-            positions: createPositions(),
+            positions: createPositions(allPositions),
             skills: createSkills(),
             no: null,
             note: null,

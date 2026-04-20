@@ -3,11 +3,12 @@ import { TmSectionCard } from '../shared/tm-section-card.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmModal } from '../shared/tm-modal.js';
 import { TmButton } from '../shared/tm-button.js';
+import { TmUtils } from '../../lib/tm-utils.js';
 import { MENTALITY_MAP_LONG, STYLE_MAP } from '../../constants/match.js';
 
 'use strict';
 
-const escHtml = v => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const { escHtml } = TmUtils;
 
 const EVENT_LABELS     = { 1: 'Minute', 2: 'Injury', 3: 'Yellow Card', 4: 'Red Card', 5: 'Goal Scored' };
 const CONDITION_LABELS = { 1: 'Winning', 2: 'Draw', 3: 'Losing', 4: 'Any' };
@@ -346,7 +347,7 @@ function showOrderDialog(co, data, opts, onSaved) {
 
 export async function mountTacticsOrders(container, data, opts = {}) {
     const { reserves = 0, national = 0, miniGameId = 0 } = opts;
-    const players_by_id = data.players_by_id || {};
+    const players_by_id = Object.fromEntries((data.players || []).map(p => [String(p.id), p]));
 
     const refs = TmSectionCard.mount(container, {
         flush:      true,

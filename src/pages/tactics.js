@@ -33,8 +33,8 @@ function captureNativeSettings() {
     const getVal = (id) => parseInt(document.getElementById(id)?.value || '0', 10) || 0;
     return {
         mentality: getVal('mentality_select'),
-        style:     getVal('attacking_select'),
-        focus:     getVal('focus_side_select'),
+        style: getVal('attacking_select'),
+        focus: getVal('focus_side_select'),
     };
 }
 
@@ -48,7 +48,6 @@ export async function initTacticsPage(main) {
     mountedPath = window.location.pathname;
 
     const teamMode = getTacticsTeamMode(window.location.pathname);
-    const bTeamClubId = getBTeamClubId();
     const showReserves = hasReservesTeam();
     const activeTeamTab = teamMode === 'reserves' && showReserves ? 'reserves' : 'first-team';
 
@@ -58,12 +57,9 @@ export async function initTacticsPage(main) {
     }
 
     const reserves = teamMode === 'reserves' ? 1 : 0;
-    const clubId = teamMode === 'reserves'
-        ? bTeamClubId
-        : String(window.SESSION?.main_id || '');
 
-    const national    = Number(window.national    ?? 0);
-    const miniGameId  = Number(window.miniGameId  ?? 0);
+    const national = Number(window.national ?? 0);
+    const miniGameId = Number(window.miniGameId ?? 0);
 
     // Capture settings from native page BEFORE we clear content
     const initialSettings = captureNativeSettings();
@@ -80,28 +76,18 @@ export async function initTacticsPage(main) {
 
     host.innerHTML = TmUI.loading();
 
-    let rawData;
+    let tactics;
     try {
-        rawData = await TmTacticsModel.fetchTactics(reserves, national, miniGameId, { clubId });
+        tactics = await TmTacticsModel.fetchTactics(reserves, national, miniGameId, { initialSettings });
     } catch (err) {
         host.innerHTML = TmUI.error(err?.message || 'Failed to load tactics data.');
         return;
     }
 
-    if (!rawData) {
+    if (!tactics) {
         host.innerHTML = TmUI.error('No tactics data returned from server.');
         return;
     }
-
-    const data = {
-        players: rawData.players || {},
-        players_by_id: rawData.players_by_id || {},
-        formation:         rawData.formation         || {},
-        formation_by_pos:  rawData.formation_by_pos  || {},
-        formation_subs:    rawData.formation_subs    || {},
-        formation_assoc:   rawData.formation_assoc   || {},
-        positions:         rawData.positions         || [],
-    };
 
     const opts = { reserves, national, miniGameId };
 
@@ -112,10 +98,10 @@ export async function initTacticsPage(main) {
     mainGrid.className = 'tmtc-main-grid';
     host.appendChild(mainGrid);
 
-    const leftPanel  = document.createElement('div');
-    leftPanel.className  = 'tmtc-main-left';
-    const midPanel   = document.createElement('div');
-    midPanel.className   = 'tmtc-main-mid';
+    const leftPanel = document.createElement('div');
+    leftPanel.className = 'tmtc-main-left';
+    const midPanel = document.createElement('div');
+    midPanel.className = 'tmtc-main-mid';
     const statsPanel = document.createElement('div');
     statsPanel.className = 'tmtc-main-stats';
     const rightPanel = document.createElement('div');
@@ -148,12 +134,12 @@ export async function initTacticsPage(main) {
     TmUI.setActive?.(teamTabs, activeTeamTab);
     rightSwitch.appendChild(teamTabs);
 
-    const lineupApi = mountTacticsLineup(leftPanel, data, { ...opts, squadContainer: midPanel });
-    const panelApi  = mountTacticsPanel(statsPanel, data, initialSettings, opts, lineupApi);
-    mountTacticsOrders(ordersHost, data, opts);
+    const lineupApi = mountTacticsLineup(leftPanel, tactics, { ...opts, squadContainer: midPanel });
+    const panelApi  = mountTacticsPanel(statsPanel, tactics, opts, lineupApi);
+    mountTacticsOrders(ordersHost, tactics, opts);
 
     lineupApi.refresh();
-    panelApi.refreshStats();
+    panelApi.refreshStats?.();
 
     if (tacticsSyncListener) {
         window.removeEventListener('tm:player-synced', tacticsSyncListener);

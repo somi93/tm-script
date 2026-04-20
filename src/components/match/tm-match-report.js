@@ -5,14 +5,14 @@ const badgeHtml = (opts, tone = 'muted') => TmUI.badge({ size: 'md', shape: 'rou
 
 // ── Build HTML for a single report event accordion ───────────────────────
 const _buildEventHtml = (play, min, liveState) => {
-    if (!play || !play.segments) return '';
+    if (!play || !play.clips) return '';
 
-    const evtIdx = play.reportEvtIdx;
+    const evtIdx = play.reportEventIndex;
     const homeId = String(liveState.mData.teams.home.id);
     const isHome = String(play.team) === homeId;
     const isNeutral = !play.team || String(play.team) === '0';
 
-    // Actions for this specific play (same minute + reportEvtIdx)
+    // Actions for this specific play (same minute + reportEventIndex)
     const acts = (liveState.mData.actions || []).filter(a => a.min === min && a.evtIdx === evtIdx);
 
     // ── Header badges ─────────────────────────────────────────────────────
@@ -52,8 +52,8 @@ const _buildEventHtml = (play, min, liveState) => {
 
     // ── Body lines ────────────────────────────────────────────────────────
     const lines = [];
-    play.segments.forEach(seg => {
-        (seg.text || []).forEach(line => {
+    play.clips.forEach(clip => {
+        (clip.text || []).forEach(line => {
             if (!line || !line.trim()) return;
             line = line.replace(/\[goal\]/g, '<span class="rnd-goal-text">⚽ </span>');
             line = line.replace(/\[yellow\]/g, '<span class="rnd-yellow-text">🟨 </span>');
@@ -88,7 +88,7 @@ const _buildEventHtml = (play, min, liveState) => {
 export const TmMatchReport = {
     /**
      * Build HTML for a single report event accordion.
-     * @param {object} play  — normalized play with .segments, .team, .reportEvtIdx
+     * @param {object} play  — normalized play with .clips, .team, .reportEvtIdx
      * @param {number} min
      * @param {object} playerNames
      * @param {string} homeId

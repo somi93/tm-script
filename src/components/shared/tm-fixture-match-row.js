@@ -44,6 +44,7 @@ const injectStyles = () => {
         .tmvu-fixture-tv { position: absolute; left: var(--tmu-space-xs); top: 50%; transform: translateY(-50%); width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; color: var(--tmu-color-primary); pointer-events: none; }
         .tmvu-fixture-logo { width: 25px; height: 25px; flex-shrink: 0; }
         .tmvu-fixture-flag { width: 25px; height: 25px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; }
+        .tmvu-fixture-date { font-size: var(--tmu-font-xs); color: var(--tmu-text-faint); white-space: nowrap; flex-shrink: 0; min-width: 72px; }
         .tmvu-fixture-type-slot { width: 52px; flex-shrink: 0; display: flex; align-items: center; }
         .tmvu-fixture-type { font-size: 10px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; padding: 1px 5px; border-radius: 3px; flex-shrink: 0; opacity: 0.75; }
         .tmvu-fixture-type-league          { background: rgba(var(--tmu-color-primary-rgb,56,132,255),0.15); color: var(--tmu-color-primary); }
@@ -132,6 +133,7 @@ const render = (match, {
     showTvBadge = false,
     linkUpcoming = false,
     showType = false,
+    dateText = '',
 } = {}) => {
     injectStyles();
 
@@ -157,11 +159,13 @@ const render = (match, {
     const homeWinCls = winner === 'home' ? ' tmvu-fixture-team-winner' : winner === 'away' ? ' tmvu-fixture-team-loser' : '';
     const awayWinCls = winner === 'away' ? ' tmvu-fixture-team-winner' : winner === 'home' ? ' tmvu-fixture-team-loser' : '';
 
+    const dateBadge = dateText ? `<span class="tmvu-fixture-date">${escapeHtml(String(dateText))}</span>` : '';
     return `<div class="tmvu-fixture-row${extraClass ? ` ${extraClass}` : ''}"
             data-mid="${escapeHtml(matchId)}" data-season="${escapeHtml(season)}"
             data-href="${escapeHtml(scoreHref)}"
             data-home-id="${escapeHtml(homeId)}" data-away-id="${escapeHtml(awayId)}">
             ${tvBadge}
+            ${dateBadge}
             ${typeBadge}
             <div class="tmvu-fixture-team tmvu-fixture-team-home${isHomeMe ? ' tmvu-fixture-my-team' : ''}${homeWinCls}">
                 ${renderTeamContent({ name: normalized.homeName, href: normalized.homeHref, flagHtml: normalized.homeFlagHtml, id: homeId }, 'home')}

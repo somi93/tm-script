@@ -72,7 +72,7 @@ export const TmMatchUtils = {
                 if (play.outcome === 'goal') { d.g++; d.sh++; }
                 else if (play.outcome === 'shot') d.sh++;
                 else d.l++;
-                d.events.push({ min: eMin, evt: play, evtIdx: play.reportEvtIdx, result: play.outcome });
+                d.events.push({ min: eMin, evt: play, evtIdx: play.reportEventIndex, result: play.outcome });
             });
         }
 
@@ -396,11 +396,11 @@ export const TmMatchUtils = {
         playedMinutes.forEach(min => {
             const plays = mData.plays?.[String(min)] || [];
             const visibleEvents = plays.filter(play => {
-                const evtIdx = play.reportEvtIdx ?? null;
+                const evtIdx = play.reportEventIndex ?? null;
                 return this.isEventVisible(min, evtIdx, curMin, curEvtIdx, curLineIdx);
             });
             visibleEvents.forEach(ev => {
-                const evtIdx = ev.reportEvtIdx ?? null;
+                const evtIdx = ev.reportEventIndex ?? null;
                 const segRanges = this.getSegmentRanges(ev);
                 const visibleSegments = segRanges.filter(r =>
                     this.isEventVisible(min, evtIdx, curMin, curEvtIdx, curLineIdx, r.endLineIdx + 1)
@@ -432,7 +432,7 @@ export const TmMatchUtils = {
                             }
                         }
                         const home = teamId !== null && String(teamId) === String(liveState.mData.teams.home.id);
-                        liveState.mData.actions.push({ ...act, teamId, home, player: playerName, min, evtIdx: play.reportEvtIdx });
+                        liveState.mData.actions.push({ ...act, teamId, home, player: playerName, min, evtIdx: play.reportEventIndex });
                     });
                 });
             });

@@ -50,7 +50,7 @@ export const TmMatchUnityPlayer = {
 
         const countPlayLines = (play) => {
             if (!play) return 1;
-            return Math.max(1, play.segments.reduce((s, seg) => s + seg.text.filter(l => l.trim()).length, 0));
+            return Math.max(1, play.clips.reduce((s, clip) => s + clip.text.filter(l => l.trim()).length, 0));
         };
 
         const findPlay = (mData, min, reportEvtIdx) => {
@@ -67,10 +67,10 @@ export const TmMatchUnityPlayer = {
             plays.forEach((play, playIdx) => {
                 let flatIdx = 0;
                 if (playIdx === 0) {
-                    play.segments.forEach(seg => {
+                    play.clips.forEach(clip => {
                         const groupStart = queue.length;
                         let groupCount = 0;
-                        seg.text.forEach(line => {
+                        clip.text.forEach(line => {
                             if (!line || !line.trim()) return;
                             queue.push({ reportEvtIdx: play.reportEvtIdx, flatLineIdx: flatIdx });
                             flatIdx++;
@@ -79,8 +79,8 @@ export const TmMatchUnityPlayer = {
                         if (groupCount > 0) groups.push({ start: groupStart, count: groupCount });
                     });
                 } else {
-                    play.segments.forEach(seg => {
-                        seg.text.forEach(line => {
+                    play.clips.forEach(clip => {
+                        clip.text.forEach(line => {
                             if (!line || !line.trim()) return;
                             postQueue.push({ reportEvtIdx: play.reportEvtIdx, flatLineIdx: flatIdx });
                             flatIdx++;
@@ -154,8 +154,8 @@ export const TmMatchUnityPlayer = {
             for (const play of minPlays) {
                 if (play.reportEvtIdx > curEvtIdx) break;
                 let flatIdx = 0;
-                for (const seg of play.segments) {
-                    for (const line of seg.text) {
+                for (const clip of play.clips) {
+                    for (const line of clip.text) {
                         if (!line.trim()) { flatIdx++; continue; }
                         if (play.reportEvtIdx === curEvtIdx && flatIdx > curLineIdx) break;
                         allLines.push({ min: curMin, text: line });

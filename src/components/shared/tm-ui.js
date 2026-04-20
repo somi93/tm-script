@@ -17,6 +17,7 @@ import { TmModal }    from './tm-modal.js';
 import { TmProgress } from './tm-progress.js';
 import { ensureTmTheme } from './tm-theme.js';
 import { TmTabs }     from './tm-tabs.js';
+import { TmButtonGroup } from './tm-button-group.js';
 import { TmState }    from './tm-state.js';
 import { TmAlert }    from './tm-alert.js';
 
@@ -136,6 +137,7 @@ export const TmUI = {
     ...TmModal,
     ...TmProgress,
     ...TmTabs,
+    ...TmButtonGroup,
     ...TmState,
     ...TmAlert,
 };

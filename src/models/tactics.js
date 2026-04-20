@@ -2,6 +2,8 @@ import { TmTacticsService } from '../services/tactics.js';
 import { TmPlayerDB } from '../lib/tm-playerdb.js';
 import { normalizeTacticsPlayer, applyPlayerPositionRatings } from '../utils/normalize/player.js';
 
+const SPECIAL_KEYS = ['captain', 'corner', 'penalty', 'freekick'];
+
 const _enrichFromDb = async (player) => {
     const dbPlayer = await TmPlayerDB.get(player.id);
     player.records = dbPlayer?.records || {};
@@ -27,23 +29,33 @@ const _enrichFromDb = async (player) => {
 
 export const TmTacticsModel = {
 
-    async fetchTactics(reserves, national, miniGameId, { clubId = '' } = {}) {
+    async fetchTactics(reserves, national, miniGameId, { initialSettings = {} } = {}) {
         const raw = await TmTacticsService.fetchTacticsRaw(reserves, national, miniGameId);
         if (!raw) return null;
 
         const players = await Promise.all(
             (raw.players || []).map(p => _enrichFromDb(normalizeTacticsPlayer(p)))
         );
-        const players_by_id = Object.fromEntries(players.map(p => [String(p.id), p]));
 
+        const assoc = raw.formation_assoc || {};
+
+        players.forEach(player => {
+            const position = (player.positions || []).find(p => Number(assoc[p.key]) === player.id);
+            if (position) {
+                position.playing = true;
+            }
+        });
+
+        const specialRoles = {};
+        for (const role of SPECIAL_KEYS) {
+            specialRoles[role] = assoc[role] ? Number(assoc[role]) : null;
+        }
         return {
             players,
-            players_by_id,
-            formation:        raw.formation        || {},
-            formation_by_pos: raw.formation_by_pos || {},
-            formation_subs:   raw.formation_subs   || {},
-            formation_assoc:  raw.formation_assoc  || {},
-            positions:        raw.positions        || [],
+            specialRoles,
+            mentality: Number(initialSettings.mentality) || 4,
+            attacking: Number(initialSettings.style) || 1,
+            focus: Number(initialSettings.focus) || 1,
         };
     },
 };

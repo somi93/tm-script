@@ -1,8 +1,17 @@
 import { TmMatchService } from '../../services/match.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmMatchH2HTooltip } from './tm-match-h2h-tooltip.js';
+import { TmFixtureMatchRow } from '../shared/tm-fixture-match-row.js';
 
-const badgeHtml = (opts, tone = 'muted') => TmUI.badge({ size: 'xs', shape: 'rounded', weight: 'bold', uppercase: true, ...opts }, tone);
+const h2hTypeSortKey = (m) => {
+    if (m.division) return 'League';
+    const mt = m.matchtype || '';
+    if (mt === 'fl') return 'Friendly League';
+    if (mt === 'f' || mt === 'fq') return 'Friendly';
+    if (/^p\d$/.test(mt)) return 'Cup';
+    if (['ueg', 'ue1', 'ue2', 'clg', 'cl1', 'cl2'].includes(mt)) return 'International Cup';
+    return '';
+};
 
 export const TmMatchH2H = {
     render(body, mData) {
@@ -69,40 +78,23 @@ export const TmMatchH2H = {
 
                 seasons.forEach(season => {
                     html += `<div class="rnd-h2h-season">Season ${season}</div>`;
+                    const isOldSeason = Number(season) !== currentSeason;
                     data.matches[season].forEach(m => {
-                        const [hGoals, aGoals] = (m.result || '0-0').split('-').map(Number);
-                        const mHomeId = String(m.hometeam);
-                        const hName = clubNames[mHomeId] || m.hometeam;
-                        const aName = clubNames[String(m.awayteam)] || m.awayteam;
-                        const hWin = hGoals > aGoals;
-                        const aWin = aGoals > hGoals;
-                        const isDraw = hGoals === aGoals;
-                        // Determine result class from perspective of the "home" club in H2H
-                        let resultClass = 'h2h-draw';
-                        if (hWin && mHomeId === homeId || aWin && mHomeId !== homeId) resultClass = 'h2h-win';
-                        else if (!isDraw) resultClass = 'h2h-loss';
-                        let div = m.division ? `Division ${m.division}` : (m.matchtype || '');
-                        if (m.matchtype === "fl") {
-                            div = "Friendly league";
-                        }
-                        if (m.matchtype === "f") {
-                            div = "Quick match";
-                        } else if (["p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9"].includes(m.matchtype)) {
-                            div = "Cup";
-                        } else if (["ueg", "ue1", "ue2"].includes(m.matchtype)) {
-                            div = "Conference League";
-                        } else if (["clg", "cl1", "cl2"].includes(m.matchtype)) {
-                            div = "Champions League";
-                        }
-                        const isOldSeason = Number(season) !== currentSeason;
-                        html += `<div class="rnd-h2h-match ${resultClass}${isOldSeason ? ' h2h-readonly' : ''}" data-mid="${m.id}" data-season="${season}">`;
-                        html += `<div class="rnd-h2h-date">${m.date || ''}</div>`;
-                        if (div) html += badgeHtml({ label: div });
-                        html += `<div class="rnd-h2h-home${hWin ? ' winner' : ''}">${hName}</div>`;
-                        html += `<div class="rnd-h2h-result">${m.result}</div>`;
-                        html += `<div class="rnd-h2h-away${aWin ? ' winner' : ''}">${aName}</div>`;
-                        if (m.attendance_format) html += `<div class="rnd-h2h-att">ðŸŸ ${m.attendance_format}</div>`;
-                        html += `</div>`;
+                        html += TmFixtureMatchRow.render({
+                            id: m.id,
+                            hometeam: m.hometeam,
+                            hometeam_name: clubNames[String(m.hometeam)] || String(m.hometeam),
+                            awayteam: m.awayteam,
+                            awayteam_name: clubNames[String(m.awayteam)] || String(m.awayteam),
+                            result: m.result,
+                            matchtype_sort: h2hTypeSortKey(m),
+                        }, {
+                            dateText: m.date || '',
+                            showType: true,
+                            myClubId: homeId,
+                            season: String(season),
+                            extraClass: isOldSeason ? 'h2h-readonly' : '',
+                        });
                     });
                 });
             }
@@ -128,20 +120,20 @@ export const TmMatchH2H = {
                 }, 100);
             };
 
-            body.on('mouseenter', '.rnd-h2h-match', function () {
+            body.on('mouseenter', '.tmvu-fixture-row', function () {
                 const el = this;
                 const mid = $(el).data('mid');
                 const season = $(el).data('season');
                 clearTimeout(tooltipTimer);
                 tooltipTimer = setTimeout(() => showTooltip(el, mid, season), 300);
             });
-            body.on('mouseleave', '.rnd-h2h-match', function () {
+            body.on('mouseleave', '.tmvu-fixture-row', function () {
                 clearTimeout(tooltipTimer);
                 hideTooltip();
             });
 
-            // Click on match â†’ open in new tab (current season only)
-            body.on('click', '.rnd-h2h-match', function () {
+            // Click on match -> open in new tab (current season only)
+            body.on('click', '.tmvu-fixture-row', function () {
                 if ($(this).hasClass('h2h-readonly')) return;
                 const mid = $(this).data('mid');
                 if (mid) window.open('/matches/' + mid, '_blank');

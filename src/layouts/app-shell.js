@@ -817,4 +817,5 @@ export function initAppShellLayout() {
 
     pmController.refreshCount();
     initCurrentPage();
+
 }

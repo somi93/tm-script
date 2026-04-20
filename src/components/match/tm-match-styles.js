@@ -132,7 +132,6 @@ const inject = () => {
                 position: relative; border-radius: var(--tmu-space-md); overflow: hidden;
                 background: linear-gradient(135deg, var(--tmu-surface-panel) 0%, var(--tmu-accent-fill) 40%, var(--tmu-success-fill) 100%);
                 margin-bottom: var(--tmu-space-xl); padding: var(--tmu-space-xxl);
-                border: 1px solid var(--tmu-border-embedded);
                 box-shadow: 0 6px 24px var(--tmu-surface-overlay);
             }
             .rnd-venue-hero::before {
@@ -155,14 +154,13 @@ const inject = () => {
             .rnd-venue-tournament span {
                 display: inline-block; background: var(--tmu-success-fill); padding: var(--tmu-space-xs) var(--tmu-space-md);
                 border-radius: var(--tmu-space-xl); font-size: var(--tmu-font-xs); color: var(--tmu-text-main); letter-spacing: 0.5px;
-                border: 1px solid var(--tmu-border-success);
             }
             .rnd-venue-cards {
                 display: grid; grid-template-columns: 1fr 1fr; gap: var(--tmu-space-md); margin-bottom: var(--tmu-space-lg);
             }
             .rnd-venue-card {
                 background: linear-gradient(145deg, var(--tmu-surface-tab-hover), var(--tmu-surface-panel));
-                border: 1px solid var(--tmu-border-embedded); border-radius: var(--tmu-space-md); padding: var(--tmu-space-lg);
+                border-radius: var(--tmu-space-md); padding: var(--tmu-space-lg);
                 text-align: center; position: relative; overflow: hidden;
             }
             .rnd-venue-card::after {
@@ -177,7 +175,7 @@ const inject = () => {
             .rnd-venue-card-label { font-size: var(--tmu-font-xs); color: var(--tmu-text-panel-label); text-transform: uppercase; letter-spacing: 0.5px; }
             .rnd-venue-gauge-wrap {
                 background: linear-gradient(145deg, var(--tmu-surface-tab-hover), var(--tmu-surface-panel));
-                border: 1px solid var(--tmu-border-embedded); border-radius: var(--tmu-space-md); padding: var(--tmu-space-xl);
+                border-radius: var(--tmu-space-md); padding: var(--tmu-space-xl);
                 margin-bottom: var(--tmu-space-lg);
             }
             .rnd-venue-gauge-header {
@@ -198,7 +196,7 @@ const inject = () => {
             }
             .rnd-venue-weather {
                 background: linear-gradient(145deg, var(--tmu-surface-tab-hover), var(--tmu-surface-panel));
-                border: 1px solid var(--tmu-border-embedded); border-radius: var(--tmu-space-md); padding: var(--tmu-space-xl);
+                border-radius: var(--tmu-space-md); padding: var(--tmu-space-xl);
                 margin-bottom: var(--tmu-space-lg); display: flex; align-items: center; gap: var(--tmu-space-xl);
             }
             .rnd-venue-weather-icon { font-size: 48px; line-height: 1; }
@@ -210,10 +208,10 @@ const inject = () => {
             }
             .rnd-venue-facility {
                 background: linear-gradient(145deg, var(--tmu-surface-tab-hover), var(--tmu-surface-panel));
-                border: 1px solid var(--tmu-border-embedded); border-radius: var(--tmu-space-md); padding: var(--tmu-space-md) var(--tmu-space-sm);
-                text-align: center; transition: border-color 0.2s;
+                border-radius: var(--tmu-space-md); padding: var(--tmu-space-md) var(--tmu-space-sm);
+                text-align: center; transition: background 0.2s;
             }
-            .rnd-venue-facility.active { border-color: var(--tmu-success); background: linear-gradient(145deg, var(--tmu-accent-fill), var(--tmu-success-fill)); }
+            .rnd-venue-facility.active { background: linear-gradient(145deg, var(--tmu-accent-fill), var(--tmu-success-fill)); }
             .rnd-venue-facility-icon { font-size: var(--tmu-font-xl); margin-bottom: var(--tmu-space-xs); }
             .rnd-venue-facility-label { font-size: var(--tmu-font-xs); color: var(--tmu-text-panel-label); text-transform: uppercase; letter-spacing: 0.3px; }
             .rnd-venue-facility .rnd-venue-facility-status {

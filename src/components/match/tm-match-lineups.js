@@ -117,7 +117,7 @@ export const TmMatchLineups = {
                 h += `<div class="rnd-lu-player rnd-lu-clickable" data-pid="${pid}">`;
                 h += `<span class="rnd-lu-pos">${TmPosition.chip([origPos(p)])}</span>`;
                 h += `<span class="rnd-lu-name ml-3">${p.name}`;
-                if (!!p.captain) h += ` <span class="rnd-lu-captain" title="Captain">C</span>`;
+                if (!!p.captain) h += ` <span class="rnd-lu-captain" title="Captain">©</span>`;
                 if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">?</span>`;
                 h += `</span>`;
                 if (evts) h += `<span class="rnd-lu-events">${evts}</span>`;

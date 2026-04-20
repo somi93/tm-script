@@ -1646,34 +1646,35 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
     FIELD_ZONES: () => FIELD_ZONES,
     MIN_WAGE_FOR_TI: () => MIN_WAGE_FOR_TI,
     POSITION_MAP: () => POSITION_MAP,
+    POSKEY_TO_ZONE: () => POSKEY_TO_ZONE,
     SPECIAL_SLOTS: () => SPECIAL_SLOTS,
     WAGE_RATE: () => WAGE_RATE
   });
   var POSITION_MAP = {
-    gk: { id: 9, position: "GK", main: true, row: 0, col: 2, ordering: 0, color: "var(--tmu-success-strong)" },
-    dl: { id: 1, position: "DL", main: true, row: 1, col: 0, ordering: 2, color: "var(--tmu-info-dark)" },
-    dcl: { id: 0, position: "DCL", main: false, row: 1, col: 1, ordering: 1, color: "var(--tmu-info-dark)" },
-    dc: { id: 0, position: "DC", main: true, row: 1, col: 2, ordering: 1, color: "var(--tmu-info-dark)" },
-    dcr: { id: 0, position: "DCR", main: false, row: 1, col: 3, ordering: 1, color: "var(--tmu-info-dark)" },
-    dr: { id: 1, position: "DR", main: true, row: 1, col: 4, ordering: 2, color: "var(--tmu-info-dark)" },
-    dml: { id: 3, position: "DML", main: true, row: 2, col: 0, ordering: 4, color: "var(--tmu-warning)" },
-    dmcl: { id: 2, position: "DMCL", main: false, row: 2, col: 1, ordering: 3, color: "var(--tmu-warning)" },
-    dmc: { id: 2, position: "DMC", main: true, row: 2, col: 2, ordering: 3, color: "var(--tmu-warning)" },
-    dmcr: { id: 2, position: "DMCR", main: false, row: 2, col: 3, ordering: 3, color: "var(--tmu-warning)" },
-    dmr: { id: 3, position: "DMR", main: true, row: 2, col: 4, ordering: 4, color: "var(--tmu-warning)" },
-    ml: { id: 5, position: "ML", main: true, row: 3, col: 0, ordering: 6, color: "var(--tmu-warning)" },
-    mcl: { id: 4, position: "MCL", main: false, row: 3, col: 1, ordering: 5, color: "var(--tmu-warning)" },
-    mc: { id: 4, position: "MC", main: true, row: 3, col: 2, ordering: 5, color: "var(--tmu-warning)" },
-    mcr: { id: 4, position: "MCR", main: false, row: 3, col: 3, ordering: 5, color: "var(--tmu-warning)" },
-    mr: { id: 5, position: "MR", main: true, row: 3, col: 4, ordering: 6, color: "var(--tmu-warning)" },
-    oml: { id: 7, position: "OML", main: true, row: 4, col: 0, ordering: 7, color: "var(--tmu-warning-soft)" },
-    omcl: { id: 6, position: "OMCL", main: false, row: 4, col: 1, ordering: 8, color: "var(--tmu-warning-soft)" },
-    omc: { id: 6, position: "OMC", main: true, row: 4, col: 2, ordering: 8, color: "var(--tmu-warning-soft)" },
-    omcr: { id: 6, position: "OMCR", main: false, row: 4, col: 3, ordering: 8, color: "var(--tmu-warning-soft)" },
-    omr: { id: 7, position: "OMR", main: true, row: 4, col: 4, ordering: 7, color: "var(--tmu-warning-soft)" },
-    fcl: { id: 8, position: "FCL", main: false, row: 5, col: 1, ordering: 9, color: "var(--tmu-danger-deep)" },
-    fc: { id: 8, position: "FC", main: true, row: 5, col: 2, ordering: 9, color: "var(--tmu-danger-deep)" },
-    fcr: { id: 8, position: "FCR", main: false, row: 5, col: 3, ordering: 9, color: "var(--tmu-danger-deep)" }
+    gk: { id: 9, position: "GK", main: true, row: 0, col: 2, ordering: 0, section: "gk", color: "var(--tmu-success-strong)" },
+    dl: { id: 1, position: "DL", main: true, row: 1, col: 0, ordering: 2, section: "def", color: "var(--tmu-info-dark)" },
+    dcl: { id: 0, position: "DCL", main: false, row: 1, col: 1, ordering: 1, section: "def", color: "var(--tmu-info-dark)" },
+    dc: { id: 0, position: "DC", main: true, row: 1, col: 2, ordering: 1, section: "def", color: "var(--tmu-info-dark)" },
+    dcr: { id: 0, position: "DCR", main: false, row: 1, col: 3, ordering: 1, section: "def", color: "var(--tmu-info-dark)" },
+    dr: { id: 1, position: "DR", main: true, row: 1, col: 4, ordering: 2, section: "def", color: "var(--tmu-info-dark)" },
+    dml: { id: 3, position: "DML", main: true, row: 2, col: 0, ordering: 4, section: "wing", color: "var(--tmu-warning)" },
+    dmcl: { id: 2, position: "DMCL", main: false, row: 2, col: 1, ordering: 3, section: "mid", color: "var(--tmu-warning)" },
+    dmc: { id: 2, position: "DMC", main: true, row: 2, col: 2, ordering: 3, section: "mid", color: "var(--tmu-warning)" },
+    dmcr: { id: 2, position: "DMCR", main: false, row: 2, col: 3, ordering: 3, section: "mid", color: "var(--tmu-warning)" },
+    dmr: { id: 3, position: "DMR", main: true, row: 2, col: 4, ordering: 4, section: "wing", color: "var(--tmu-warning)" },
+    ml: { id: 5, position: "ML", main: true, row: 3, col: 0, ordering: 6, section: "wing", color: "var(--tmu-warning)" },
+    mcl: { id: 4, position: "MCL", main: false, row: 3, col: 1, ordering: 5, section: "mid", color: "var(--tmu-warning)" },
+    mc: { id: 4, position: "MC", main: true, row: 3, col: 2, ordering: 5, section: "mid", color: "var(--tmu-warning)" },
+    mcr: { id: 4, position: "MCR", main: false, row: 3, col: 3, ordering: 5, section: "mid", color: "var(--tmu-warning)" },
+    mr: { id: 5, position: "MR", main: true, row: 3, col: 4, ordering: 6, section: "wing", color: "var(--tmu-warning)" },
+    oml: { id: 7, position: "OML", main: true, row: 4, col: 0, ordering: 7, section: "wing", color: "var(--tmu-warning-soft)" },
+    omcl: { id: 6, position: "OMCL", main: false, row: 4, col: 1, ordering: 8, section: "mid", color: "var(--tmu-warning-soft)" },
+    omc: { id: 6, position: "OMC", main: true, row: 4, col: 2, ordering: 8, section: "mid", color: "var(--tmu-warning-soft)" },
+    omcr: { id: 6, position: "OMCR", main: false, row: 4, col: 3, ordering: 8, section: "mid", color: "var(--tmu-warning-soft)" },
+    omr: { id: 7, position: "OMR", main: true, row: 4, col: 4, ordering: 7, section: "wing", color: "var(--tmu-warning-soft)" },
+    fcl: { id: 8, position: "FCL", main: false, row: 5, col: 1, ordering: 9, section: "fwd", color: "var(--tmu-danger-deep)" },
+    fc: { id: 8, position: "FC", main: true, row: 5, col: 2, ordering: 9, section: "fwd", color: "var(--tmu-danger-deep)" },
+    fcr: { id: 8, position: "FCR", main: false, row: 5, col: 3, ordering: 9, section: "fwd", color: "var(--tmu-danger-deep)" }
   };
   var FIELD_ZONES = [
     { key: "fwd", row: 5, cols: [null, "fcl", "fc", "fcr", null] },
@@ -1683,6 +1684,9 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
     { key: "def", row: 1, cols: ["dl", "dcl", "dc", "dcr", "dr"] },
     { key: "gk", row: 0, cols: [null, null, "gk", null, null] }
   ];
+  var POSKEY_TO_ZONE = Object.fromEntries(
+    FIELD_ZONES.flatMap((z) => z.cols.filter(Boolean).map((pk) => [pk, z.key]))
+  );
   var BENCH_SLOTS = ["sub1", "sub2", "sub3", "sub4", "sub5"];
   var SPECIAL_SLOTS = ["captain", "corner", "penalty", "freekick"];
   var BENCH_LABELS = {
@@ -1692,7 +1696,7 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
     sub4: "Wing",
     sub5: "FWD",
     captain: "Captain",
-    corner: "Corner",
+    corner: "Corners",
     penalty: "Penalty",
     freekick: "Free Kick"
   };
@@ -2195,6 +2199,36 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
       const inner = items.map((it) => `<span style="color:${it.color}">${it.label}</span>`).join('<span style="color:var(--tmu-text-faint)">, </span>');
       const attrStr = Object.entries(attrs).map(([k, v]) => ` ${k}="${String(v).replace(/"/g, "&quot;")}"`).join("");
       return TmUI.positionChip(firstColor, inner, cls, attrStr);
+    },
+    /**
+     * Mood penalty for placing a player in a given posKey.
+     * Returns 0-4 (0 = natural position, 4 = maximum unhappiness).
+     */
+    moodPenalty(player2, posKey2) {
+      var _a2, _b;
+      const LINE_PEN = {
+        1: { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4 },
+        2: { 1: 1, 2: 0, 3: 1, 4: 2, 5: 3 },
+        3: { 1: 2, 2: 1, 3: 0, 4: 1, 5: 2 },
+        4: { 1: 3, 2: 2, 3: 1, 4: 0, 5: 1 },
+        5: { 1: 4, 2: 3, 3: 2, 4: 1, 5: 0 }
+      };
+      const placed = MAP[String(posKey2 || "").toLowerCase()];
+      if (!placed) return 0;
+      const favs = Array.isArray(player2 == null ? void 0 : player2.positions) ? player2.positions.filter((p) => p.preferred) : [];
+      if (!favs.length) return 0;
+      if (placed.row === 0) return favs.some((p) => p.row === 0) ? 0 : 4;
+      if (favs.some((p) => p.row === 0)) return 4;
+      const side = (c) => c === 0 ? "L" : c === 4 ? "R" : "C";
+      const ps = side(placed.col);
+      let best = 4;
+      for (const fav of favs) {
+        const fs = side(fav.col);
+        let pen = fs !== ps ? fs === "C" || ps === "C" ? 2 : 1 : 0;
+        pen += (_b = (_a2 = LINE_PEN[placed.row]) == null ? void 0 : _a2[fav.row]) != null ? _b : 4;
+        best = Math.min(best, Math.min(pen, 4));
+      }
+      return best;
     }
   };
 
@@ -2319,10 +2353,10 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
     }).filter((skill) => skill.value != null);
     return player2;
   };
-  var applyPlayerPositions = (player2, favposition = "") => {
+  var applyPlayerPositions = (player2, favposition = "", allPositions = false) => {
     if (!Array.isArray(player2 == null ? void 0 : player2.positions)) return player2;
     const preferredKeys = new Set(String(favposition || "").split(",").map((value) => value.trim().toLowerCase().replace(/\s+/g, "")).filter(Boolean));
-    player2.positions = player2.positions.filter((position) => player2.isGK ? position.key === "gk" : position.key !== "gk").map((position) => ({
+    player2.positions = player2.positions.filter((position) => allPositions || (player2.isGK ? position.key === "gk" : position.key !== "gk")).map((position) => ({
       ...position,
       preferred: preferredKeys.has(String(position.key || "").toLowerCase())
     }));
@@ -2429,7 +2463,8 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
     }).filter((skill) => skill.value != null && skill.value !== 0);
     return player2;
   };
-  var TmUtils = { getColor, parseNum, ageToMonths, monthsToAge, classifyPosition, posLabel, fix2, formatR5, fmtCoins, ratingColor, r5Color, toggleSort, skillColor, skillEff, getMainContainer, getMainContainers, extractFaceUrl, parseSkillValue, skillValue, sortAgeKeys, safeGrowthSkills, applyTooltipSkills, applyPlayerPositions, applySquadSkills, getOwnClubIds };
+  var escHtml = (v) => String(v != null ? v : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  var TmUtils = { getColor, parseNum, ageToMonths, monthsToAge, classifyPosition, posLabel, fix2, formatR5, fmtCoins, ratingColor, r5Color, toggleSort, skillColor, skillEff, getMainContainer, getMainContainers, extractFaceUrl, parseSkillValue, skillValue, sortAgeKeys, safeGrowthSkills, applyTooltipSkills, applyPlayerPositions, applySquadSkills, getOwnClubIds, escHtml };
 
   // src/components/shared/tm-skill.js
   var TmSkill = {
@@ -3274,8 +3309,73 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     setActive
   };
 
+  // src/components/shared/tm-button-group.js
+  var STYLE_ID5 = "tmu-button-group-style";
+  var injectStyles = (target = document.head) => {
+    var _a2;
+    if (!target) return;
+    const existing = target === document.head ? document.getElementById(STYLE_ID5) : (_a2 = target.querySelector) == null ? void 0 : _a2.call(target, `#${STYLE_ID5}`);
+    if (existing) return;
+    injectTmButtonCss(target);
+    const s6 = document.createElement("style");
+    s6.id = STYLE_ID5;
+    s6.textContent = `
+        .tmu-btn-group {
+            display: inline-flex;
+        }
+        .tmu-btn-group .tmu-btn {
+            border-radius: 0;
+            border-right-width: 0;
+        }
+        .tmu-btn-group .tmu-btn:first-child { border-radius: 4px 0 0 4px; }
+        .tmu-btn-group .tmu-btn:last-child  { border-radius: 0 4px 4px 0; border-right-width: 1px; }
+        .tmu-btn-group .tmu-btn:only-child  { border-radius: 4px; border-right-width: 1px; }
+    `;
+    target.appendChild(s6);
+  };
+  var TmButtonGroup = {
+    /**
+     * Creates a segmented button group where one button is active at a time.
+     *
+     * @param {object}   opts
+     * @param {Array}    opts.items    — [{ key, label, title? }]
+     * @param {string}   opts.active   — initially active key
+     * @param {string}  [opts.size]    — 'xs'|'sm'|'md'|'lg'|'xl' (default: 'sm')
+     * @param {string}  [opts.cls]     — extra classes on the wrapper
+     * @param {Function} opts.onChange — (key) => void
+     * @returns {{ el: HTMLDivElement, setActive(key): void }}
+     */
+    buttonGroup({ items, active, size = "sm", cls = "", onChange } = {}) {
+      injectStyles();
+      const wrap = document.createElement("div");
+      wrap.className = ["tmu-btn-group", cls].filter(Boolean).join(" ");
+      const buttons = /* @__PURE__ */ new Map();
+      const setActive2 = (key) => {
+        buttons.forEach((btn4, k) => {
+          btn4.classList.toggle("tmu-btn-active", k === key);
+        });
+      };
+      items.forEach(({ key, label, title }) => {
+        const btn4 = TmButton.button({
+          label,
+          title,
+          variant: "primary",
+          size,
+          active: key === active,
+          onClick: () => {
+            setActive2(key);
+            onChange == null ? void 0 : onChange(key);
+          }
+        });
+        buttons.set(key, btn4);
+        wrap.appendChild(btn4);
+      });
+      return { el: wrap, setActive: setActive2 };
+    }
+  };
+
   // src/components/shared/tm-alert.js
-  var STYLE_ID5 = "tmu-alert-style";
+  var STYLE_ID6 = "tmu-alert-style";
   var HOST_ID = "tmu-alert-host";
   var CLOSE_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
   var CSS = `
@@ -3325,9 +3425,9 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
 }
 `;
   function ensureHost() {
-    if (!document.getElementById(STYLE_ID5)) {
+    if (!document.getElementById(STYLE_ID6)) {
       const style = document.createElement("style");
-      style.id = STYLE_ID5;
+      style.id = STYLE_ID6;
       style.textContent = CSS;
       document.head.appendChild(style);
     }
@@ -3374,7 +3474,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
 
   // src/components/shared/tm-ui.js
   ensureTmTheme();
-  var STYLE_ID6 = "tmu-ui-style";
+  var STYLE_ID7 = "tmu-ui-style";
   var TMU_UI_CSS = `
 /* -- Spinner -- */
 .tmu-spinner { display: inline-block; border-radius: 50%; border-style: solid; border-color: var(--tmu-spinner); border-top-color: transparent; animation: tmu-spin 0.6s linear infinite; vertical-align: middle; }
@@ -3454,12 +3554,12 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   function injectTmUiCss(target = document.head) {
     if (!target) return;
     if (target === document.head) {
-      if (document.getElementById(STYLE_ID6)) return;
-    } else if (target.querySelector && target.querySelector(`#${STYLE_ID6}`)) {
+      if (document.getElementById(STYLE_ID7)) return;
+    } else if (target.querySelector && target.querySelector(`#${STYLE_ID7}`)) {
       return;
     }
     const style = document.createElement("style");
-    style.id = STYLE_ID6;
+    style.id = STYLE_ID7;
     style.textContent = TMU_UI_CSS;
     target.appendChild(style);
   }
@@ -3483,6 +3583,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     ...TmModal,
     ...TmProgress,
     ...TmTabs,
+    ...TmButtonGroup,
     ...TmState,
     ...TmAlert
   };
@@ -3496,13 +3597,13 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     console.warn(`[TmApi] ${context}`, err);
   };
   var _post = (url, data) => new Promise((resolve) => {
-    const $3 = window.jQuery;
-    if (!$3) {
+    const $ = window.jQuery;
+    if (!$) {
       resolve(null);
       return;
     }
     const isFeedDebugRequest = /top_user_info\.ajax\.php|feed_get\.ajax\.php/i.test(String(url || ""));
-    $3.post(url, data).done((res) => {
+    $.post(url, data).done((res) => {
       if (isFeedDebugRequest) {
       }
       try {
@@ -3528,12 +3629,12 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     });
   });
   var _get = (url) => new Promise((resolve) => {
-    const $3 = window.jQuery;
-    if (!$3) {
+    const $ = window.jQuery;
+    if (!$) {
       resolve(null);
       return;
     }
-    $3.get(url).done((res) => {
+    $.get(url).done((res) => {
       try {
         resolve(typeof res === "object" ? res : JSON.parse(res));
       } catch (e) {
@@ -3546,12 +3647,12 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     });
   });
   var _getHtml = (url) => new Promise((resolve) => {
-    const $3 = window.jQuery;
-    if (!$3) {
+    const $ = window.jQuery;
+    if (!$) {
       resolve(null);
       return;
     }
-    $3.ajax({ url, type: "GET", dataType: "html" }).done((res) => resolve(res || null)).fail(() => resolve(null));
+    $.ajax({ url, type: "GET", dataType: "html" }).done((res) => resolve(res || null)).fail(() => resolve(null));
   });
   var _inflight = /* @__PURE__ */ new Map();
   var _dedup = (key, promiseFn) => {
@@ -3913,7 +4014,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
             d.sh++;
           } else if (play.outcome === "shot") d.sh++;
           else d.l++;
-          d.events.push({ min: eMin, evt: play, evtIdx: play.reportEvtIdx, result: play.outcome });
+          d.events.push({ min: eMin, evt: play, evtIdx: play.reportEventIndex, result: play.outcome });
         });
       }
       return {
@@ -4224,12 +4325,12 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         const plays = ((_a2 = mData.plays) == null ? void 0 : _a2[String(min)]) || [];
         const visibleEvents = plays.filter((play) => {
           var _a3;
-          const evtIdx = (_a3 = play.reportEvtIdx) != null ? _a3 : null;
+          const evtIdx = (_a3 = play.reportEventIndex) != null ? _a3 : null;
           return this.isEventVisible(min, evtIdx, curMin, curEvtIdx, curLineIdx);
         });
         visibleEvents.forEach((ev) => {
           var _a3;
-          const evtIdx = (_a3 = ev.reportEvtIdx) != null ? _a3 : null;
+          const evtIdx = (_a3 = ev.reportEventIndex) != null ? _a3 : null;
           const segRanges = this.getSegmentRanges(ev);
           const visibleSegments = segRanges.filter(
             (r) => this.isEventVisible(min, evtIdx, curMin, curEvtIdx, curLineIdx, r.endLineIdx + 1)
@@ -4262,7 +4363,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
                 }
               }
               const home = teamId !== null && String(teamId) === String(liveState.mData.teams.home.id);
-              liveState.mData.actions.push({ ...act, teamId, home, player: playerName, min, evtIdx: play.reportEvtIdx });
+              liveState.mData.actions.push({ ...act, teamId, home, player: playerName, min, evtIdx: play.reportEventIndex });
             });
           });
         });
@@ -4280,7 +4381,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       const buildTeam = (side) => {
         var _a2, _b, _c, _d, _e, _f;
         const teamData = mData.teams[side];
-        const avg2 = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+        const avg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
         const lineup = this.buildActiveLineup(liveState, side).map((player2) => this.getPlayerStats(liveState, player2)).sort((a, b) => {
           var _a3, _b2, _c2, _d2;
           const aIsSub = /^sub\d+$/.test(a.position);
@@ -4314,15 +4415,15 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
           goalsAgainst: goals.filter((g) => String(g.teamId) !== String(teamData.id)).length,
           lineup,
           stats,
-          avgAge: avg2(onPitch.map((p) => {
+          avgAge: avg(onPitch.map((p) => {
             const years = Number(p.age);
             const months = Number(p.month);
             if (!Number.isFinite(years) || years <= 0) return null;
             return Number.isFinite(months) && months >= 0 ? years + months / 12 : years;
           })),
-          avgRtn: avg2(onPitch.map((p) => p.routine)),
-          avgR5: avg2(onPitch.map((p) => p.r5)),
-          subsR5: avg2(onBench.map((p) => p.r5)),
+          avgRtn: avg(onPitch.map((p) => p.routine)),
+          avgR5: avg(onPitch.map((p) => p.r5)),
+          subsR5: avg(onBench.map((p) => p.r5)),
           formation: "4-4-2",
           // TODO: derive from lineup positions
           form: teamData.form || [],
@@ -4348,8 +4449,8 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
      */
     faceUrl(p, colorHex, w = 96) {
       const u = p && p.udseende2 || {};
-      const clr3 = String(colorHex).replace("#", "");
-      return `https://trophymanager.com/pics/player_pic2.php?face=${u.face || 1}&nose=${u.nose || 1}&eyes=${u.eyes || 1}&ears=${u.ears || 1}&mouth=${u.mouth || 1}&brows=${u.brows || 1}&hcolor=${u.hair_color || 1}&scolor=${u.skin_color || 1}&hair=${u.hair || 1}&age=${p && p.age || 25}&rgb=${clr3}&w=${w}`;
+      const clr = String(colorHex).replace("#", "");
+      return `https://trophymanager.com/pics/player_pic2.php?face=${u.face || 1}&nose=${u.nose || 1}&eyes=${u.eyes || 1}&ears=${u.ears || 1}&mouth=${u.mouth || 1}&brows=${u.brows || 1}&hcolor=${u.hair_color || 1}&scolor=${u.skin_color || 1}&hair=${u.hair || 1}&age=${p && p.age || 25}&rgb=${clr}&w=${w}`;
     }
   };
 
@@ -4537,8 +4638,8 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       const playerMatchData = {};
       ourLineup.forEach((player2) => {
         const position = getDisplayPosition(player2);
-        const isBench = /^sub\d+$/i.test(position || "");
-        if (isBench && !player2.minsPlayed) return;
+        const isBench2 = /^sub\d+$/i.test(position || "");
+        if (isBench2 && !player2.minsPlayed) return;
         const pid = String(player2.player_id || player2.id);
         playerMatchData[pid] = {
           name: player2.name || player2.nameLast || pid,
@@ -4848,15 +4949,16 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     ...skill,
     value: null
   }));
-  var createPositions = () => Object.entries(POSITION_MAP).filter(([, position]) => position.main).map(([key, position]) => ({
-    ...position,
-    key,
-    r5: null,
-    rec: null,
-    preferred: false
-  }));
+  var createPositions = (allPositions = false) => {
+    const entries = allPositions ? Object.entries(POSITION_MAP) : Object.entries(POSITION_MAP).filter(([, pos]) => pos.main);
+    const positions = entries.map(([key, pos]) => ({ ...pos, key, r5: null, rec: null, preferred: false }));
+    if (allPositions) {
+      for (const sub of BENCH_SLOTS) positions.push({ key: sub, playing: false });
+    }
+    return positions;
+  };
   var Player = {
-    create() {
+    create({ allPositions = false } = {}) {
       return {
         id: null,
         club_id: null,
@@ -4879,7 +4981,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         ban: null,
         injury: null,
         faceUrl: null,
-        positions: createPositions(),
+        positions: createPositions(allPositions),
         skills: createSkills(),
         no: null,
         note: null,
@@ -4931,7 +5033,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         ...opts
       };
     };
-    const parseRows2 = (table2) => !table2 ? [] : Array.from(table2.querySelectorAll("tr")).map(parseRow).filter(Boolean);
+    const parseRows2 = (table) => !table ? [] : Array.from(table.querySelectorAll("tr")).map(parseRow).filter(Boolean);
     const bought = parseRows2(boughtTable);
     const sold = parseRows2(soldTable);
     let totalBought = 0, totalSold = 0, balance = 0;
@@ -4995,8 +5097,8 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   var applyPlayerPositionRatings = (player2) => {
     player2.positions = player2.positions.map((position) => ({
       ...position,
-      r5: TmLib.calculatePlayerR5(position, player2),
-      rec: TmLib.calculatePlayerREC(position, player2)
+      r5: position.id != null ? TmLib.calculatePlayerR5(position, player2) : null,
+      rec: position.id != null ? TmLib.calculatePlayerREC(position, player2) : null
     }));
     const preferredPositions = player2.positions.filter((position) => position.preferred);
     const positionsForRatings = preferredPositions.length ? preferredPositions : player2.positions;
@@ -5054,9 +5156,8 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     return banned ? "r1" : "0";
   };
   var normalizeTacticsPlayer = (p) => {
-    const player2 = Player.create();
+    const player2 = Player.create({ allPositions: true });
     player2.id = Number(p.player_id);
-    player2.player_id = player2.id;
     player2.club_id = Number(p.club_id);
     player2.club.id = String(p.club_id);
     player2.club.name = p.club_name || "";
@@ -5079,7 +5180,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     player2.rec_sort = p.rec_sort;
     player2.faceUrl = TmUtils.extractFaceUrl(p.appearance, null);
     TmUtils.applyTooltipSkills(player2, p.skills);
-    TmUtils.applyPlayerPositions(player2, p.favposition);
+    TmUtils.applyPlayerPositions(player2, p.favposition, true);
     player2.skills = TmLib.calcSkillDecimalsSimple(player2);
     applyPlayerPositionRatings(player2);
     player2.allPositionRatings = player2.positions;
@@ -5518,7 +5619,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       for (const min of sortedMins) {
         const evts = report[String(min)] || [];
         const plays = [];
-        evts.forEach((evt, reportEvtIdx) => {
+        evts.forEach((evt, reportEventIndex) => {
           var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
           const gPrefix = evt.type ? evt.type.replace(/[0-9]+.*/, "") : "";
           const vids = (_a2 = evt.chance) == null ? void 0 : _a2.video;
@@ -5526,7 +5627,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
           const evtHasShot = !!evt.shot;
           const evtShotOnTarget = ((_b = evt.shot) == null ? void 0 : _b.target) === "on";
           const outcome = evt.goal ? "goal" : evt.shot ? "shot" : "lost";
-          const segments = [];
+          const clips = [];
           for (let vi = 0; vi < vids.length; vi++) {
             const v = vids[vi];
             const clip = v.video;
@@ -5623,13 +5724,13 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
             } else if (/^injury/.test(clip) && evt.injury) {
               actions.push({ action: "injury", by: evt.injury });
             }
-            segments.push({ clip, text, actions });
+            clips.push({ video: clip, text, actions });
           }
-          if (evt.set_piece && segments.length > 0)
-            segments[segments.length - 1].actions.push({ action: "setpiece", by: evt.set_piece, style: gPrefix });
-          if (evt.mentality_change && segments.length > 0)
-            segments[segments.length - 1].actions.push({ action: "mentality_change", team: String(evt.mentality_change.team), mentality: Number(evt.mentality_change.mentality) });
-          plays.push({ team: evt.club, style: gPrefix, outcome, segments, reportEvtIdx, severity: evt.severity });
+          if (evt.set_piece && clips.length > 0)
+            clips[clips.length - 1].actions.push({ action: "setpiece", by: evt.set_piece, style: gPrefix });
+          if (evt.mentality_change && clips.length > 0)
+            clips[clips.length - 1].actions.push({ action: "mentality_change", team: String(evt.mentality_change.team), mentality: Number(evt.mentality_change.mentality) });
+          plays.push({ team: evt.club, style: gPrefix, outcome, clips, reportEventIndex, severity: evt.severity });
         });
         if (plays.length) result[String(min)] = plays;
       }
@@ -5845,6 +5946,35 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       const compressed = this.compressMatch(raw);
       db.set(matchId, compressed);
       return this.normalizeMatchData(compressed, options);
+    },
+    /**
+     * Build a per-minute text schedule from match.plays.
+     * Used by the replay loop to know at which second each commentary line appears.
+     *
+     * @param {object} plays  — match.plays from buildNormalizedPlays
+     * @param {number} lineInterval  — seconds between consecutive lines (default 3)
+     * @returns {{ schedule: object, eventMins: number[] }}
+     */
+    buildSchedule(plays, lineInterval = 3) {
+      const schedule = {};
+      for (const [minStr, minPlays] of Object.entries(plays)) {
+        let seconds = 0;
+        const entries = [];
+        for (const action of minPlays) {
+          const lineCount = Math.max(
+            1,
+            action.clips.reduce((s6, clip) => s6 + clip.text.filter((l) => l.trim()).length, 0)
+          );
+          for (let actionLineIndex = 0; actionLineIndex < lineCount; actionLineIndex++) {
+            entries.push({ actionIndex: action.reportEventIndex, lineIndex: actionLineIndex, seconds });
+            seconds += lineInterval;
+          }
+        }
+        if (entries.length) {
+          schedule[Number(minStr)] = entries;
+        }
+      }
+      return { schedule };
     }
   };
 
@@ -6335,6 +6465,22 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   };
 
   // src/services/tactics.js
+  var _a;
+  var CLUB_COUNTRY = String(((_a = window.SESSION) == null ? void 0 : _a.country) || "").trim().toLowerCase();
+  var isForeigner = (p) => !!CLUB_COUNTRY && String((p == null ? void 0 : p.country) || "").trim().toLowerCase() !== CLUB_COUNTRY;
+  var isUnavailable = (p) => (p == null ? void 0 : p.ban) && String(p.ban).startsWith("r") || (p == null ? void 0 : p.injury) && p.injury !== "0" && Number(p.injury) !== 0;
+  function encodeNested(obj, prefix = "") {
+    const parts = [];
+    for (const [key, val] of Object.entries(obj)) {
+      const k = prefix ? `${prefix}[${key}]` : key;
+      if (val !== null && val !== void 0 && typeof val === "object") {
+        parts.push(encodeNested(val, k));
+      } else if (val !== null && val !== void 0) {
+        parts.push(`${encodeURIComponent(k)}=${encodeURIComponent(val)}`);
+      }
+    }
+    return parts.join("&");
+  }
   var TmTacticsService = {
     fetchTacticsRaw(reserves, national, miniGameId) {
       return _dedup(
@@ -6342,8 +6488,23 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         () => _post("/ajax/tactics_get.ajax.php", { reserves, national, miniGameId })
       );
     },
-    async fetchTactics(reserves, national, miniGameId, { clubId: clubId2 = "" } = {}) {
-      return this.fetchTacticsRaw(reserves, national, miniGameId, { clubId: clubId2 });
+    postLineupSave(assoc, changedPlayers, reserves, national, miniGameId) {
+      return fetch("/ajax/tactics_post.ajax.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" },
+        body: encodeNested({ on_field: assoc, players: changedPlayers, reserves, national, miniGameId })
+      });
+    },
+    saveSettingValue(saveKey, value, reserves, national, miniGameId) {
+      var _a2, _b, _c;
+      const clubId2 = String(((_a2 = window.SESSION) == null ? void 0 : _a2.id) || ((_b = window.SESSION) == null ? void 0 : _b.main_id) || ((_c = window.SESSION) == null ? void 0 : _c.club_id) || "");
+      const body = { save: saveKey, value: String(value), reserves, national, club_id: clubId2 };
+      if (saveKey !== "focus") body.miniGameId = miniGameId;
+      return fetch("/ajax/tactics_post.ajax.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" },
+        body: new URLSearchParams(body).toString()
+      });
     }
   };
 
@@ -6611,7 +6772,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   };
 
   // src/components/shared/tm-app-shell-pm.js
-  var STYLE_ID7 = "tmvu-shell-pm-styles";
+  var STYLE_ID8 = "tmvu-shell-pm-styles";
   function cleanText2(value) {
     return String(value || "").replace(/\s+/g, " ").trim();
   }
@@ -6619,10 +6780,10 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     return String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
   var buttonHtml3 = (opts) => TmUI.button(opts).outerHTML;
-  function injectStyles() {
-    if (document.getElementById(STYLE_ID7)) return;
+  function injectStyles2() {
+    if (document.getElementById(STYLE_ID8)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID7;
+    style.id = STYLE_ID8;
     style.textContent = `
         .tmvu-pm-wrap,
         .tmvu-feed-wrap {
@@ -7964,7 +8125,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     };
     return {
       bind() {
-        injectStyles();
+        injectStyles2();
         bindPmMenu(pmState);
         bindFeedMenu(feedState);
         setPmCount(initialCount);
@@ -8118,11 +8279,11 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   };
 
   // src/components/shared/tm-side-menu.js
-  var STYLE_ID8 = "tmvu-side-menu-style";
-  function injectStyles2() {
-    if (document.getElementById(STYLE_ID8)) return;
+  var STYLE_ID9 = "tmvu-side-menu-style";
+  function injectStyles3() {
+    if (document.getElementById(STYLE_ID9)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID8;
+    style.id = STYLE_ID9;
     style.textContent = `
         .tmvu-side-menu {
             flex: 0 0 184px;
@@ -8208,7 +8369,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   }
   function mount(mainContainer, { id, className = "", items = [], currentHref = "" } = {}) {
     if (!mainContainer || !items.length || id && document.getElementById(id)) return null;
-    injectStyles2();
+    injectStyles3();
     const nav = document.createElement("aside");
     if (id) nav.id = id;
     nav.className = `tmvu-side-menu ${className}`.trim();
@@ -8266,14 +8427,14 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   };
 
   // src/components/player/card/tm-player-photo.js
-  var STYLE_ID9 = "tmvu-player-photo-style";
+  var STYLE_ID10 = "tmvu-player-photo-style";
   function escapeHtml5(value) {
     return String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
-  function injectStyles3() {
-    if (document.getElementById(STYLE_ID9)) return;
+  function injectStyles4() {
+    if (document.getElementById(STYLE_ID10)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID9;
+    style.id = STYLE_ID10;
     style.textContent = `
         .tmvu-player-photo {
             width: var(--tmvu-player-photo-size, 112px);
@@ -8302,14 +8463,14 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     return srcMatch ? srcMatch[1] : raw;
   }
   function html({ imageHtml = "", src = "", alt = "", size = 112, className = "" } = {}) {
-    injectStyles3();
+    injectStyles4();
     const resolvedSrc = src || extractImageSrc(imageHtml);
     return `<div class="tmvu-player-photo${className ? ` ${className}` : ""}" style="--tmvu-player-photo-size:${Number(size) || 112}px;">${resolvedSrc ? `<img src="${escapeHtml5(resolvedSrc)}" alt="${escapeHtml5(alt || "Player")}">` : ""}</div>`;
   }
   var TmPlayerPhoto = { html, extractImageSrc };
 
   // src/components/bids/tm-bids-dialog.js
-  var STYLE_ID10 = "tmvu-bids-dialog-style";
+  var STYLE_ID11 = "tmvu-bids-dialog-style";
   var DIALOG_ID = "tmvu-bids-dialog-overlay";
   var CLOSE_ICON = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
   var activeBidDialog = null;
@@ -8345,10 +8506,10 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     if (minutes > 0) return `${minutes}m ${seconds}s`;
     return `${seconds}s`;
   }
-  function injectStyles4() {
-    if (document.getElementById(STYLE_ID10)) return;
+  function injectStyles5() {
+    if (document.getElementById(STYLE_ID11)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID10;
+    style.id = STYLE_ID11;
     style.textContent = `
         body.tmvu-bids-dialog-open { overflow: hidden; }
         .tmvu-bids-overlay { position: fixed; inset: 0; z-index: 200100; display: flex; align-items: center; justify-content: center; padding: 24px; background: rgba(2,7,10,.82); backdrop-filter: blur(4px); }
@@ -8534,7 +8695,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   function openBidDialog(player2, opts = {}) {
     const sessionId = getOwnClubId2();
     if (!(player2 == null ? void 0 : player2.id) || !sessionId) return;
-    injectStyles4();
+    injectStyles5();
     closeBidDialog();
     const overlay = document.createElement("div");
     overlay.className = "tmvu-bids-overlay";
@@ -8694,7 +8855,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     const tiLabel = opts.tiLabel || "TI";
     const nameDecorator = typeof opts.nameDecorator === "function" ? opts.nameDecorator : null;
     const gc2 = TmUtils.getColor;
-    const { R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2 } = TmConst;
+    const { R5_THRESHOLDS: R5_THRESHOLDS4, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS3 } = TmConst;
     const AGE_THRESHOLDS2 = TmConst.AGE_THRESHOLDS;
     const cols = [
       posBarCol(),
@@ -8751,7 +8912,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         key: "r5",
         label: "R5",
         align: "r",
-        render: (_, p) => p.r5 != null ? `<span class="tmu-tabular" style="color:${gc2(p.r5, R5_THRESHOLDS5)};font-weight:700">${p.r5}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
+        render: (_, p) => p.r5 != null ? `<span class="tmu-tabular" style="color:${gc2(p.r5, R5_THRESHOLDS4)};font-weight:700">${p.r5}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
       },
       {
         key: "rec",
@@ -8774,7 +8935,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       key: "routine",
       label: "RTN",
       align: "r",
-      render: (_, p) => p.routine != null ? `<span class="tmu-tabular" style="color:${gc2(p.routine, RTN_THRESHOLDS2)}">${(p.routine || 0).toFixed(1)}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
+      render: (_, p) => p.routine != null ? `<span class="tmu-tabular" style="color:${gc2(p.routine, RTN_THRESHOLDS3)}">${(p.routine || 0).toFixed(1)}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
     });
     if (showTimeleft) cols.push({
       key: "timeleft",
@@ -8867,7 +9028,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   };
 
   // src/components/shared/tm-page-layout.js
-  var STYLE_ID11 = "tmu-page-layout-style";
+  var STYLE_ID12 = "tmu-page-layout-style";
   var TMU_PAGE_LAYOUT_CSS = `
 .tmu-page-layout-2col,
 .tmu-page-layout-3rail{
@@ -8942,30 +9103,30 @@ order:initial
   function injectTmPageLayoutStyles(target = document.head) {
     if (!target) return;
     if (target === document.head) {
-      if (document.getElementById(STYLE_ID11)) return;
-    } else if (target.querySelector && target.querySelector(`#${STYLE_ID11}`)) {
+      if (document.getElementById(STYLE_ID12)) return;
+    } else if (target.querySelector && target.querySelector(`#${STYLE_ID12}`)) {
       return;
     }
     const style = document.createElement("style");
-    style.id = STYLE_ID11;
+    style.id = STYLE_ID12;
     style.textContent = TMU_PAGE_LAYOUT_CSS;
     target.appendChild(style);
   }
   injectTmPageLayoutStyles();
 
   // src/pages/bids.js
-  var STYLE_ID12 = "tmvu-bids-style";
+  var STYLE_ID13 = "tmvu-bids-style";
   function cleanText4(value) {
     return String(value || "").replace(/\s+/g, " ").trim();
   }
   function escapeHtml7(value) {
     return String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
-  function injectStyles5() {
-    if (document.getElementById(STYLE_ID12)) return;
+  function injectStyles6() {
+    if (document.getElementById(STYLE_ID13)) return;
     injectTmPageLayoutStyles();
     const style = document.createElement("style");
-    style.id = STYLE_ID12;
+    style.id = STYLE_ID13;
     style.textContent = `
         .tmvu-bids-page { --tmu-page-sidebar-width: 240px; }
         .tmvu-bids-main { min-width: 0; }
@@ -9012,7 +9173,7 @@ order:initial
   async function initBidsPage(mountedMain5) {
     var _a2, _b;
     if (!mountedMain5) return;
-    injectStyles5();
+    injectStyles6();
     const menuItems = parseMenuItems();
     const loading = document.createElement("section");
     loading.innerHTML = TmUI.loading("Loading bids...", true);
@@ -9222,11 +9383,11 @@ order:initial
   };
 
   // src/components/shared/tm-page-hero.js
-  var STYLE_ID13 = "tmu-page-hero-style";
-  var injectStyles6 = () => {
-    if (document.getElementById(STYLE_ID13)) return;
+  var STYLE_ID14 = "tmu-page-hero-style";
+  var injectStyles7 = () => {
+    if (document.getElementById(STYLE_ID14)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID13;
+    style.id = STYLE_ID14;
     style.textContent = `
         .tmu-page-hero {
             grid-template-columns: 1fr auto;
@@ -9255,7 +9416,7 @@ order:initial
   };
   var TmPageHero = {
     mount(container, opts = {}) {
-      injectStyles6();
+      injectStyles7();
       return TmHeroCard.mount(container, {
         ...opts,
         heroClass: ["tmu-page-hero", opts.heroClass].filter(Boolean).join(" "),
@@ -9265,7 +9426,7 @@ order:initial
   };
 
   // src/pages/finances-maintenance.js
-  var STYLE_ID14 = "tmvu-fin-maintenance-style";
+  var STYLE_ID15 = "tmvu-fin-maintenance-style";
   var cleanText5 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml8 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var metricHtml = (opts) => TmUI.metric(opts);
@@ -9298,11 +9459,11 @@ order:initial
     if (/scouts/i.test(label)) return "\u{1F9ED}";
     return "\u2022";
   };
-  var injectStyles7 = () => {
-    if (document.getElementById(STYLE_ID14)) return;
+  var injectStyles8 = () => {
+    if (document.getElementById(STYLE_ID15)) return;
     injectTmPageLayoutStyles();
     const style = document.createElement("style");
-    style.id = STYLE_ID14;
+    style.id = STYLE_ID15;
     style.textContent = `
             .tmvu-fin-maint-main,
             .tmvu-fin-maint-side {
@@ -9422,9 +9583,9 @@ order:initial
   };
   var normalizeFacilityName = (value) => cleanText5(value).toLowerCase();
   var getFacilityMaxLevel = (name) => FACILITY_MAX_LEVELS[normalizeFacilityName(name)] || 10;
-  var parseRows = (table2, type) => {
-    if (!table2) return [];
-    return Array.from(table2.querySelectorAll("tr")).slice(1).map((row) => {
+  var parseRows = (table, type) => {
+    if (!table) return [];
+    return Array.from(table.querySelectorAll("tr")).slice(1).map((row) => {
       var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j;
       const cells = row.querySelectorAll("th, td");
       if (!cells.length) return null;
@@ -9468,11 +9629,11 @@ order:initial
       const title = cleanText5(h3.textContent).toLowerCase();
       let next = h3.nextElementSibling;
       while (next && next.tagName !== "DIV") next = next.nextElementSibling;
-      const table2 = next == null ? void 0 : next.querySelector("table");
-      if (!table2) return;
-      if (title === "stadium") sections.stadium = parseRows(table2, "stadium");
-      else if (title === "maintenance") sections.maintenance = parseRows(table2, "maintenance");
-      else if (title === "total") sections.totals = parseRows(table2, "totals");
+      const table = next == null ? void 0 : next.querySelector("table");
+      if (!table) return;
+      if (title === "stadium") sections.stadium = parseRows(table, "stadium");
+      else if (title === "maintenance") sections.maintenance = parseRows(table, "maintenance");
+      else if (title === "total") sections.totals = parseRows(table, "totals");
     });
     return {
       title: cleanText5(((_a2 = sourceRoot3.querySelector(".column2_a .box_head h2")) == null ? void 0 : _a2.textContent) || "Finances"),
@@ -9580,7 +9741,7 @@ order:initial
     return wrap;
   };
   var render = (main2, sourceRoot3) => {
-    injectStyles7();
+    injectStyles8();
     const data = parseData(sourceRoot3);
     if (!data.stadium.length && !data.maintenance.length && !data.totals.length) return;
     const summary = summarize(data);
@@ -9611,7 +9772,7 @@ order:initial
   }
 
   // src/pages/finances.js
-  var STYLE_ID15 = "tmvu-finances-style";
+  var STYLE_ID16 = "tmvu-finances-style";
   var cleanText6 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml9 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var metricHtml2 = (opts) => TmUI.metric(opts);
@@ -9641,11 +9802,11 @@ order:initial
     if (/scouts/i.test(label)) return "\u{1F9ED}";
     return "\u2022";
   };
-  var injectStyles8 = () => {
-    if (document.getElementById(STYLE_ID15)) return;
+  var injectStyles9 = () => {
+    if (document.getElementById(STYLE_ID16)) return;
     injectTmPageLayoutStyles();
     const style = document.createElement("style");
-    style.id = STYLE_ID15;
+    style.id = STYLE_ID16;
     style.textContent = `
             .tmvu-fin-main,
             .tmvu-fin-side {
@@ -9769,10 +9930,10 @@ order:initial
       isSelected: node.classList.contains("selected")
     }];
   });
-  var parseStatement = (table2) => {
+  var parseStatement = (table) => {
     var _a2, _b, _c;
-    if (!table2) return null;
-    const rows = Array.from(table2.querySelectorAll("tr")).slice(1).map((row) => {
+    if (!table) return null;
+    const rows = Array.from(table.querySelectorAll("tr")).slice(1).map((row) => {
       var _a3, _b2, _c2;
       const cells = row.querySelectorAll("th, td");
       if (cells.length < 3) return null;
@@ -9790,7 +9951,7 @@ order:initial
         isTotal: /\btotal\b/i.test(label) || row.classList.contains("bold")
       };
     }).filter(Boolean);
-    const headerCells = table2.querySelectorAll("tr:first-child th");
+    const headerCells = table.querySelectorAll("tr:first-child th");
     return {
       columns: [
         cleanText6(((_a2 = headerCells[0]) == null ? void 0 : _a2.textContent) || ""),
@@ -9858,7 +10019,7 @@ order:initial
   };
   var renderStatementTable = (statement) => {
     if (!statement) return TmUI.notice("No financial statement data available.", { variant: "footnote" });
-    const table2 = TmTable.table({
+    const table = TmTable.table({
       cls: " tmvu-fin-table",
       items: statement.rows,
       headers: [
@@ -9912,7 +10073,7 @@ order:initial
     });
     return `
             <div class="tmvu-fin-table-wrap">
-                ${table2.outerHTML}
+                ${table.outerHTML}
             </div>
         `;
   };
@@ -9951,7 +10112,7 @@ order:initial
   };
   var render2 = (main2, sourceRoot3) => {
     var _a2, _b, _c, _d;
-    injectStyles8();
+    injectStyles9();
     const overview = parseOverview(sourceRoot3);
     if (!overview.week && !overview.season) return;
     main2.classList.add("tmvu-fin-page", "tmu-page-layout-3rail", "tmu-page-density-regular");
@@ -9983,7 +10144,7 @@ order:initial
   }
 
   // src/pages/finances-wages.js
-  var STYLE_ID16 = "tmvu-fin-wages-style";
+  var STYLE_ID17 = "tmvu-fin-wages-style";
   var cleanText7 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml10 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var metricHtml3 = (opts) => TmUI.metric(opts);
@@ -9998,11 +10159,11 @@ order:initial
     if (/scouts/i.test(label)) return "\u{1F9ED}";
     return "\u2022";
   };
-  var injectStyles9 = () => {
-    if (document.getElementById(STYLE_ID16)) return;
+  var injectStyles10 = () => {
+    if (document.getElementById(STYLE_ID17)) return;
     injectTmPageLayoutStyles();
     const style = document.createElement("style");
-    style.id = STYLE_ID16;
+    style.id = STYLE_ID17;
     style.textContent = `
             .tmvu-fin-wages-main,
             .tmvu-fin-wages-side {
@@ -10127,9 +10288,9 @@ order:initial
     if (!anchor) return "";
     return cleanText7(anchor.getAttribute("player_link")) || (((_a2 = cleanText7(anchor.getAttribute("href")).match(/\/players\/(\d+)\//)) == null ? void 0 : _a2[1]) || "");
   };
-  var parseWageRows = (table2, kind) => {
-    if (!table2) return [];
-    return Array.from(table2.querySelectorAll("tr")).slice(1).map((row) => {
+  var parseWageRows = (table, kind) => {
+    if (!table) return [];
+    return Array.from(table.querySelectorAll("tr")).slice(1).map((row) => {
       var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
       const cells = row.querySelectorAll("th, td");
       if (!cells.length) return null;
@@ -10228,7 +10389,7 @@ order:initial
     const periodLabel = getPeriodLabel2(payPeriod);
     const bodyRows = items.filter((row) => !row.isTotal);
     const totalRow = items.find((row) => row.isTotal) || null;
-    const table2 = TmTable.table({
+    const table = TmTable.table({
       cls: " tmvu-fin-wages-table",
       items: bodyRows,
       headers: [
@@ -10265,7 +10426,7 @@ order:initial
     });
     return `
             <div class="tmvu-fin-wages-table-wrap">
-                ${table2.outerHTML}
+                ${table.outerHTML}
             </div>
         `;
   };
@@ -10312,7 +10473,7 @@ order:initial
     return wrap;
   };
   var render3 = (main2, sourceRoot3) => {
-    injectStyles9();
+    injectStyles10();
     const tabsData = parseTabData(sourceRoot3);
     if (!tabsData.players.rows.length && !tabsData.staff.rows.length) return;
     const playersSummary = summarizeRows(tabsData.players.rows);
@@ -10347,11 +10508,11 @@ order:initial
   }
 
   // src/components/shared/tm-match-tooltip.js
-  var STYLE_ID17 = "tmvu-match-tooltip-style";
+  var STYLE_ID18 = "tmvu-match-tooltip-style";
   var ensureStyles = () => {
-    if (document.getElementById(STYLE_ID17)) return;
+    if (document.getElementById(STYLE_ID18)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID17;
+    style.id = STYLE_ID18;
     style.textContent = `
         .rnd-h2h-tooltip {
             position: absolute; z-index: 100;
@@ -10564,7 +10725,7 @@ order:initial
     hideTimer: null
   };
   var currentSeason = () => typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
-  var injectStyles10 = () => {
+  var injectStyles11 = () => {
     TmMatchTooltip.ensureStyles();
   };
   var buildLegacyTooltipContent = (data) => TmMatchTooltip.buildLegacyTooltipContent(data);
@@ -10577,7 +10738,7 @@ order:initial
     }
   };
   var show = (el2, matchId, season) => {
-    injectStyles10();
+    injectStyles11();
     clearTimeout(state.hideTimer);
     removeTooltip();
     state.anchor = el2;
@@ -10658,7 +10819,7 @@ order:initial
     });
   };
   var bind = (rows, { season } = {}) => {
-    injectStyles10();
+    injectStyles11();
     const resolvedSeason = season != null ? season : currentSeason();
     const containers = /* @__PURE__ */ new Set();
     rows.forEach((row) => {
@@ -10671,7 +10832,7 @@ order:initial
     containers.forEach(bindContainer);
   };
   var TmMatchHoverCard = {
-    injectStyles: injectStyles10,
+    injectStyles: injectStyles11,
     bind
   };
 
@@ -10785,12 +10946,12 @@ order:initial
   // src/components/shared/tm-match-row.js
   var { R5_THRESHOLDS: R5_THRESHOLDS2 } = TmConst;
   var getColor2 = TmUtils.getColor;
-  var STYLE_ID18 = "tmvu-match-row-style";
+  var STYLE_ID19 = "tmvu-match-row-style";
   var escapeHtml11 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  var injectStyles11 = () => {
-    if (document.getElementById(STYLE_ID18)) return;
+  var injectStyles12 = () => {
+    if (document.getElementById(STYLE_ID19)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID18;
+    style.id = STYLE_ID19;
     style.textContent = `
         .tmvu-match-list {
             display: flex;
@@ -10949,7 +11110,7 @@ order:initial
     index = 0,
     showLogos = true
   } = {}) => {
-    injectStyles11();
+    injectStyles12();
     const scoreClass = isPlayed ? "tmvu-match-score" : "tmvu-match-score tmvu-match-score-upcoming";
     const safeScore = escapeHtml11(scoreText || "\u2014");
     const scoreHtml = scoreHref ? `<a class="${scoreClass}" href="${scoreHref}">${safeScore}</a>` : `<span class="${scoreClass}">${safeScore}</span>`;
@@ -10993,7 +11154,7 @@ order:initial
     });
   };
   var enhance = (scope, { season } = {}) => {
-    injectStyles11();
+    injectStyles12();
     bindScopeNavigation(scope);
     const rows = Array.from(scope.querySelectorAll(".tmvu-match-row[data-mid]")).filter((row) => row.dataset.mid);
     rows.forEach((row) => {
@@ -11013,7 +11174,7 @@ order:initial
   };
 
   // src/components/shared/tm-fixture-round-cards.js
-  var STYLE_ID19 = "tmvu-round-navigator-style";
+  var STYLE_ID20 = "tmvu-round-navigator-style";
   var htmlOf3 = (node) => node ? node.outerHTML : "";
   var navButtonHtml = ({ action = "", title = "", disabled = false, path }) => {
     const button = TmUI.button({
@@ -11026,10 +11187,10 @@ order:initial
     });
     return htmlOf3(button);
   };
-  function injectStyles12() {
-    if (document.getElementById(STYLE_ID19)) return;
+  function injectStyles13() {
+    if (document.getElementById(STYLE_ID20)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID19;
+    style.id = STYLE_ID20;
     style.textContent = `
        
         .tmvu-round-panel {
@@ -11143,7 +11304,7 @@ order:initial
   }
   function mount3(container, { fixtures, season = null, highlightClubId = "", titlePrefix = "Round", upcomingLabel = "\u2014", initialIndex, onRoundChange } = {}) {
     if (!container) return null;
-    injectStyles12();
+    injectStyles13();
     const rounds = buildRounds(fixtures);
     const currentIndex = Number.isInteger(initialIndex) ? Math.max(0, Math.min(initialIndex, Math.max(0, rounds.length - 1))) : getCurrentIndex(rounds);
     const state5 = {
@@ -11186,12 +11347,12 @@ order:initial
   var TmFixtureRoundCards = { mount: mount3 };
 
   // src/components/shared/tm-fixture-match-row.js
-  var STYLE_ID20 = "tmvu-fixture-match-row-style";
+  var STYLE_ID21 = "tmvu-fixture-match-row-style";
   var escapeHtml12 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  var injectStyles13 = () => {
-    if (document.getElementById(STYLE_ID20)) return;
+  var injectStyles14 = () => {
+    if (document.getElementById(STYLE_ID21)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID20;
+    style.id = STYLE_ID21;
     style.textContent = `
         .tmvu-fixture-row {
             position: relative;
@@ -11225,6 +11386,7 @@ order:initial
         .tmvu-fixture-tv { position: absolute; left: var(--tmu-space-xs); top: 50%; transform: translateY(-50%); width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; color: var(--tmu-color-primary); pointer-events: none; }
         .tmvu-fixture-logo { width: 25px; height: 25px; flex-shrink: 0; }
         .tmvu-fixture-flag { width: 25px; height: 25px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; }
+        .tmvu-fixture-date { font-size: var(--tmu-font-xs); color: var(--tmu-text-faint); white-space: nowrap; flex-shrink: 0; min-width: 72px; }
         .tmvu-fixture-type-slot { width: 52px; flex-shrink: 0; display: flex; align-items: center; }
         .tmvu-fixture-type { font-size: 10px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; padding: 1px 5px; border-radius: 3px; flex-shrink: 0; opacity: 0.75; }
         .tmvu-fixture-type-league          { background: rgba(var(--tmu-color-primary-rgb,56,132,255),0.15); color: var(--tmu-color-primary); }
@@ -11293,8 +11455,8 @@ order:initial
   };
   var renderTeamContent = (team, side) => {
     const nameHtml = team.href ? `<a href="${team.href}" class="tmvu-fixture-team-name">${escapeHtml12(team.name)}</a>` : `<span class="tmvu-fixture-team-name">${escapeHtml12(team.name)}</span>`;
-    const badgeHtml7 = team.flagHtml ? `<span class="tmvu-fixture-flag">${team.flagHtml}</span>` : team.id ? `<img class="tmvu-fixture-logo" src="/pics/club_logos/${escapeHtml12(team.id)}_25.png" onerror="this.style.visibility='hidden'" alt="">` : "";
-    return side === "home" ? `${nameHtml}${badgeHtml7}` : `${badgeHtml7}${nameHtml}`;
+    const badgeHtml3 = team.flagHtml ? `<span class="tmvu-fixture-flag">${team.flagHtml}</span>` : team.id ? `<img class="tmvu-fixture-logo" src="/pics/club_logos/${escapeHtml12(team.id)}_25.png" onerror="this.style.visibility='hidden'" alt="">` : "";
+    return side === "home" ? `${nameHtml}${badgeHtml3}` : `${badgeHtml3}${nameHtml}`;
   };
   var render5 = (match, {
     index = 0,
@@ -11303,9 +11465,10 @@ order:initial
     extraClass = "",
     showTvBadge = false,
     linkUpcoming = false,
-    showType = false
+    showType = false,
+    dateText = ""
   } = {}) => {
-    injectStyles13();
+    injectStyles14();
     const normalized = normalizeMatch(match);
     const matchId = String(normalized.matchId || "");
     const homeId = normalized.homeId;
@@ -11320,11 +11483,13 @@ order:initial
     const typeBadge = showType ? `<span class="tmvu-fixture-type-slot">${normalized.typeMeta ? `<span class="tmvu-fixture-type tmvu-fixture-type-${normalized.typeMeta.key}" title="${normalized.typeMeta.fullName}">${normalized.typeMeta.label}</span>` : ""}</span>` : "";
     const homeWinCls = winner === "home" ? " tmvu-fixture-team-winner" : winner === "away" ? " tmvu-fixture-team-loser" : "";
     const awayWinCls = winner === "away" ? " tmvu-fixture-team-winner" : winner === "home" ? " tmvu-fixture-team-loser" : "";
+    const dateBadge = dateText ? `<span class="tmvu-fixture-date">${escapeHtml12(String(dateText))}</span>` : "";
     return `<div class="tmvu-fixture-row${extraClass ? ` ${extraClass}` : ""}"
             data-mid="${escapeHtml12(matchId)}" data-season="${escapeHtml12(season)}"
             data-href="${escapeHtml12(scoreHref)}"
             data-home-id="${escapeHtml12(homeId)}" data-away-id="${escapeHtml12(awayId)}">
             ${tvBadge}
+            ${dateBadge}
             ${typeBadge}
             <div class="tmvu-fixture-team tmvu-fixture-team-home${isHomeMe ? " tmvu-fixture-my-team" : ""}${homeWinCls}">
                 ${renderTeamContent({ name: normalized.homeName, href: normalized.homeHref, flagHtml: normalized.homeFlagHtml, id: homeId }, "home")}
@@ -11340,11 +11505,11 @@ order:initial
   };
 
   // src/components/shared/tm-fixtures-list.js
-  var STYLE_ID21 = "tmvu-fixtures-list-style";
-  var injectStyles14 = () => {
-    if (document.getElementById(STYLE_ID21)) return;
+  var STYLE_ID22 = "tmvu-fixtures-list-style";
+  var injectStyles15 = () => {
+    if (document.getElementById(STYLE_ID22)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID21;
+    style.id = STYLE_ID22;
     style.textContent = `
         .tmvu-fix-list { display: flex; flex-direction: column; }
         .tmvu-fix-date-header {
@@ -11375,7 +11540,7 @@ order:initial
     }));
   };
   var render6 = (groups, { myClubId = null, season = "", showTvBadge = false, linkUpcoming = false, extraRowClass = "", showType = false } = {}) => {
-    injectStyles14();
+    injectStyles15();
     if (!(groups == null ? void 0 : groups.length)) return "";
     let i = 0;
     return '<div class="tmvu-fix-list">' + groups.map(({ label, sub, matches }) => {
@@ -11612,16 +11777,16 @@ order:initial
     return !["#", "club", "gp", "w", "d", "l", "gf", "ga", "pts", "p", "goals"].includes(firstLabel);
   }
   var TmStandingsParser = {
-    parseNativeTable(table2, { highlightedClubId = "" } = {}) {
-      return Array.from((table2 == null ? void 0 : table2.querySelectorAll("tr")) || []).map((row, index) => {
+    parseNativeTable(table, { highlightedClubId = "" } = {}) {
+      return Array.from((table == null ? void 0 : table.querySelectorAll("tr")) || []).map((row, index) => {
         if (row.querySelector("th")) return null;
         return parseStandingsRow(row, { highlightedClubId, rankFallback: index + 1 });
       }).filter(Boolean);
     },
-    parseNativeGroupedTable(table2, { highlightedClubId = "" } = {}) {
+    parseNativeGroupedTable(table, { highlightedClubId = "" } = {}) {
       const groups = [];
       let currentGroup = null;
-      Array.from((table2 == null ? void 0 : table2.querySelectorAll("tr")) || []).forEach((row) => {
+      Array.from((table == null ? void 0 : table.querySelectorAll("tr")) || []).forEach((row) => {
         var _a2;
         if (isGroupTitleRow(row)) {
           if (currentGroup == null ? void 0 : currentGroup.rows.length) groups.push(currentGroup);
@@ -11643,13 +11808,13 @@ order:initial
   };
 
   // src/components/shared/tm-standings-table.js
-  var STYLE_ID22 = "tmvu-standings-table-style";
+  var STYLE_ID23 = "tmvu-standings-table-style";
   var htmlOf4 = (node) => node ? node.outerHTML : "";
   var buttonHtml4 = (opts) => htmlOf4(TmButton.button(opts));
-  function injectStyles15() {
-    if (document.getElementById(STYLE_ID22)) return;
+  function injectStyles16() {
+    if (document.getElementById(STYLE_ID23)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID22;
+    style.id = STYLE_ID23;
     style.textContent = `
         .tmvu-standings-wrap {
             overflow: hidden;
@@ -11777,7 +11942,7 @@ order:initial
     return String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
   function buildHtml({ rows = [], liveZoneMap = {}, isFiltered = false, showForm = false, formHtml = () => "", canOlder = false, canNewer = false, promotionCount = 1, nameLabel = "Club" } = {}) {
-    injectStyles15();
+    injectStyles16();
     const headerForm = showForm ? `${buttonHtml4({ id: "std-form-older", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>', color: "secondary", size: "xs", disabled: !canOlder, attrs: { style: "margin-right:var(--tmu-space-xs)" } })}Form${buttonHtml4({ id: "std-form-newer", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>', color: "secondary", size: "xs", disabled: !canNewer, attrs: { style: "margin-left:var(--tmu-space-xs)" } })}` : "";
     const headers = [
       { key: "rank", label: "#", sortable: false, thCls: "tsa-rank", cls: "tsa-rank", width: "36px", render: (_value, row) => {
@@ -11828,7 +11993,7 @@ order:initial
         render: (_value, row) => formHtml(row.form || [], row.playedCount || 0)
       });
     }
-    const table2 = TmTable.table({
+    const table = TmTable.table({
       cls: " tsa-table",
       items: rows,
       headers,
@@ -11850,10 +12015,10 @@ order:initial
         return { "data-club": escapeHtml13((_a2 = row.clubId) != null ? _a2 : "") };
       }
     });
-    return table2.outerHTML;
+    return table.outerHTML;
   }
   function buildGroupedHtml({ groups = [], promotionCount = 1, ...opts } = {}) {
-    injectStyles15();
+    injectStyles16();
     const validGroups = groups.filter((group) => Array.isArray(group == null ? void 0 : group.rows) && group.rows.length);
     if (!validGroups.length) return "";
     return `
@@ -11867,14 +12032,14 @@ order:initial
         </div>
     `;
   }
-  var TmStandingsTable = { injectStyles: injectStyles15, buildHtml, buildGroupedHtml };
+  var TmStandingsTable = { injectStyles: injectStyles16, buildHtml, buildGroupedHtml };
 
   // src/components/shared/tm-standings-panel.js
-  var STYLE_ID23 = "tmu-standings-panel-style";
-  function injectStyles16() {
-    if (document.getElementById(STYLE_ID23)) return;
+  var STYLE_ID24 = "tmu-standings-panel-style";
+  function injectStyles17() {
+    if (document.getElementById(STYLE_ID24)) return;
     const s6 = document.createElement("style");
-    s6.id = STYLE_ID23;
+    s6.id = STYLE_ID24;
     s6.textContent = `
         .tmu-standings-panel { overflow: hidden; background: var(--tmu-surface-dark-soft); }
         .tsa-std-controls {
@@ -11995,7 +12160,7 @@ order:initial
      * @returns {{ update(partial), setFormData(formMap, playedCountMap) }}
      */
     mount(container, opts = {}) {
-      injectStyles16();
+      injectStyles17();
       TmStandingsTable.injectStyles();
       container.classList.add("tmu-standings-panel");
       const paginated = !!(opts.onFormOlder || opts.onFormNewer);
@@ -12328,7 +12493,7 @@ order:initial
   var CURRENT_SEASON = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
   var main = null;
   var sourceRoot = null;
-  var STYLE_ID24 = "tmvu-friendly-league-style";
+  var STYLE_ID25 = "tmvu-friendly-league-style";
   var LEAGUE_ID = "";
   var ACTIVE_TAB = "overview";
   var LEAGUE_FIXTURES_PROMISE = null;
@@ -12453,10 +12618,10 @@ order:initial
   };
   var parseFriendlyLeagueHistoryStandings = (html2) => {
     const doc = new DOMParser().parseFromString(html2, "text/html");
-    const table2 = doc.querySelector(".column2_a table.border_bottom, .column2_a .box_body table");
-    if (!table2) return [];
+    const table = doc.querySelector(".column2_a table.border_bottom, .column2_a .box_body table");
+    if (!table) return [];
     const myClubId = typeof SESSION !== "undefined" && SESSION.main_id ? String(SESSION.main_id) : null;
-    return Array.from(table2.querySelectorAll("tbody tr")).map((tr) => {
+    return Array.from(table.querySelectorAll("tbody tr")).map((tr) => {
       var _a2, _b, _c, _d, _e, _f, _g;
       const cells = Array.from(tr.querySelectorAll("td"));
       const clubLink = tr.querySelector("a[club_link]");
@@ -12525,11 +12690,11 @@ order:initial
     });
     return groups;
   };
-  var injectStyles17 = () => {
-    if (document.getElementById(STYLE_ID24)) return;
+  var injectStyles18 = () => {
+    if (document.getElementById(STYLE_ID25)) return;
     injectTmPageLayoutStyles();
     const style = document.createElement("style");
-    style.id = STYLE_ID24;
+    style.id = STYLE_ID25;
     style.textContent = `
             .tmvu-fl-page {
                 display: grid !important;
@@ -12697,7 +12862,7 @@ order:initial
       standingsRows
     };
   };
-  var parseStandingsRows = (table2) => TmStandingsParser.parseNativeTable(table2);
+  var parseStandingsRows = (table) => TmStandingsParser.parseNativeTable(table);
   var parseChat = () => {
     var _a2;
     const chatBox = sourceRoot.querySelector("#forum_box");
@@ -12973,7 +13138,7 @@ order:initial
   };
   var render7 = () => {
     var _a2;
-    injectStyles17();
+    injectStyles18();
     TmMatchHoverCard.injectStyles();
     const overview = parseOverview2();
     if (!overview) return;
@@ -13108,12 +13273,12 @@ order:initial
   };
 
   // src/components/club/tm-club-fixtures-styles.js
-  var STYLE_ID25 = "tmvu-club-fixtures-style";
+  var STYLE_ID26 = "tmvu-club-fixtures-style";
   var TmClubFixturesStyles = {
     inject() {
-      if (document.getElementById(STYLE_ID25)) return;
+      if (document.getElementById(STYLE_ID26)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID25;
+      style.id = STYLE_ID26;
       style.textContent = `
             .tmcf-wrap {
                 display: flex;
@@ -13166,12 +13331,12 @@ order:initial
   };
 
   // src/components/shared/tm-countdown-block.js
-  var STYLE_ID26 = "tmu-countdown-block-style";
+  var STYLE_ID27 = "tmu-countdown-block-style";
   var esc = (v) => String(v || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  var injectStyles18 = () => {
-    if (document.getElementById(STYLE_ID26)) return;
+  var injectStyles19 = () => {
+    if (document.getElementById(STYLE_ID27)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID26;
+    style.id = STYLE_ID27;
     style.textContent = `
         .tmvu-cdb-wrap {
             position: relative;
@@ -13276,7 +13441,7 @@ order:initial
   };
   var TmCountdownBlock = {
     mount(container, { title = "", getDisplayText = null, actions = [] } = {}) {
-      injectStyles18();
+      injectStyles19();
       const wrap = document.createElement("div");
       wrap.className = "tmvu-cdb-wrap";
       wrap.innerHTML = `
@@ -13344,7 +13509,7 @@ order:initial
   var sourceRoot2 = null;
   var mountedMain = null;
   var mountedPath = "";
-  var STYLE_ID27 = "tmvu-quickmatch-style";
+  var STYLE_ID28 = "tmvu-quickmatch-style";
   var QUICKMATCH_HOME_RE = /^\/quickmatch\/?$/i;
   var QUICKMATCH_STANDINGS_RE = /^\/quickmatch\/complete-standings(?:\/[^/]+)?\/?$/i;
   var QUICKMATCH_LATEST_RE = /^\/quickmatch\/latest-matches\/?$/i;
@@ -13461,18 +13626,18 @@ order:initial
   var findStandingsTableCandidate = (root2) => {
     const tables = Array.from((root2 == null ? void 0 : root2.querySelectorAll(".column2_a table, .column2 table, table")) || []);
     let best = null;
-    tables.forEach((table2) => {
-      const rows = Array.from(table2.querySelectorAll("tr"));
+    tables.forEach((table) => {
+      const rows = Array.from(table.querySelectorAll("tr"));
       if (!rows.length) return;
-      const clubLinks = table2.querySelectorAll('a[href*="/club/"]').length;
-      const statsLinks = table2.querySelectorAll('a[href*="/statistics/club/"]').length;
+      const clubLinks = table.querySelectorAll('a[href*="/club/"]').length;
+      const statsLinks = table.querySelectorAll('a[href*="/statistics/club/"]').length;
       const headerRow = rows.find((row) => row.querySelectorAll("th").length) || rows[0] || null;
       const headerTexts = Array.from((headerRow == null ? void 0 : headerRow.querySelectorAll("th, td")) || []).map((cell) => cleanText10(cell.textContent));
       const headerScore = headerTexts.filter(isStandingsHeaderText).length;
       const dataRows = rows.filter((row) => row.querySelectorAll("td").length >= 4 && row.querySelector('a[href*="/club/"]')).length;
       const score = clubLinks * 4 + statsLinks * 3 + headerScore * 2 + dataRows;
       if (!best || score > best.score) {
-        best = { table: table2, score };
+        best = { table, score };
       }
     });
     return (best == null ? void 0 : best.table) || null;
@@ -13483,10 +13648,10 @@ order:initial
     boxes.forEach((box) => {
       var _a2;
       const title = cleanText10(((_a2 = box.querySelector(".box_sub_header .large, .box_head h2, h2")) == null ? void 0 : _a2.textContent) || "");
-      const table2 = findStandingsTableCandidate(box);
-      const clubLinks = (table2 == null ? void 0 : table2.querySelectorAll('a[href*="/club/"]').length) || 0;
+      const table = findStandingsTableCandidate(box);
+      const clubLinks = (table == null ? void 0 : table.querySelectorAll('a[href*="/club/"]').length) || 0;
       const score = (/standings/i.test(title) ? 10 : 0) + clubLinks;
-      if (!table2) return;
+      if (!table) return;
       if (!best || score > best.score) {
         best = { box, score };
       }
@@ -13500,16 +13665,16 @@ order:initial
   var parseCompleteStandingsData = () => {
     var _a2;
     const contentBox = findStandingsContentBox();
-    const table2 = findStandingsTableCandidate(contentBox);
-    if (!contentBox || !table2) return null;
-    const allRows = Array.from(table2.querySelectorAll("tr"));
-    const headerRow = table2.querySelector("thead tr") || allRows.find((row) => row.querySelectorAll("th").length) || allRows.find((row) => {
+    const table = findStandingsTableCandidate(contentBox);
+    if (!contentBox || !table) return null;
+    const allRows = Array.from(table.querySelectorAll("tr"));
+    const headerRow = table.querySelector("thead tr") || allRows.find((row) => row.querySelectorAll("th").length) || allRows.find((row) => {
       const texts = Array.from(row.querySelectorAll("td")).map((cell) => cleanText10(cell.textContent));
       return texts.filter(isStandingsHeaderText).length >= 2;
     }) || allRows[0] || null;
     const headerCells = Array.from((headerRow == null ? void 0 : headerRow.querySelectorAll("th, td")) || []);
     const headerLabels = headerCells.map((cell) => cleanText10(cell.textContent).toLowerCase());
-    const bodyRows = (table2.tBodies.length ? Array.from(table2.tBodies[0].rows) : Array.from(table2.rows)).filter((row) => row !== headerRow && row.querySelectorAll("td").length >= 4 && row.querySelector('a[href*="/club/"]'));
+    const bodyRows = (table.tBodies.length ? Array.from(table.tBodies[0].rows) : Array.from(table.rows)).filter((row) => row !== headerRow && row.querySelectorAll("td").length >= 4 && row.querySelector('a[href*="/club/"]'));
     const findColumnIndex = (patterns, fallback) => {
       const foundIndex = headerLabels.findIndex((label) => patterns.some((pattern) => pattern.test(label)));
       return foundIndex >= 0 ? foundIndex : fallback;
@@ -13631,11 +13796,11 @@ order:initial
     });
     return byMonth;
   };
-  var injectStyles19 = () => {
-    if (document.getElementById(STYLE_ID27)) return;
+  var injectStyles20 = () => {
+    if (document.getElementById(STYLE_ID28)) return;
     injectTmPageLayoutStyles();
     const style = document.createElement("style");
-    style.id = STYLE_ID27;
+    style.id = STYLE_ID28;
     style.textContent = `
             .tmvu-qm-note-actions {
                 display: flex;
@@ -14486,7 +14651,7 @@ order:initial
     mountedPath = window.location.pathname;
     sourceRoot2 = nativeMain;
     initState();
-    injectStyles19();
+    injectStyles20();
     stopQueuePolling();
     stopQueueTick();
     main2.classList.add("tmvu-qm-page", "tmu-page-layout-2col", "tmu-page-density-regular");
@@ -14520,7 +14685,7 @@ order:initial
   }
 
   // src/components/shared/tm-stars.js
-  var STYLE_ID28 = "tmu-stars-style";
+  var STYLE_ID29 = "tmu-stars-style";
   var STAR_CSS = `
 .tmu-stars{line-height:1}
 .tmu-star-full{color:var(--tmu-warning)}
@@ -14531,15 +14696,15 @@ order:initial
 .tmu-star-green-empty{color:var(--tmu-success)}
 .tmu-star-split{background:linear-gradient(90deg,var(--tmu-warning) 50%,var(--tmu-success) 50%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 `;
-  function injectStyles20(target = document.head) {
+  function injectStyles21(target = document.head) {
     if (!target) return;
     if (target === document.head) {
-      if (document.getElementById(STYLE_ID28)) return;
-    } else if (target.querySelector && target.querySelector(`#${STYLE_ID28}`)) {
+      if (document.getElementById(STYLE_ID29)) return;
+    } else if (target.querySelector && target.querySelector(`#${STYLE_ID29}`)) {
       return;
     }
     const style = document.createElement("style");
-    style.id = STYLE_ID28;
+    style.id = STYLE_ID29;
     style.textContent = STAR_CSS;
     target.appendChild(style);
   }
@@ -14552,7 +14717,7 @@ order:initial
     return `<span class="tmu-stars${cls ? ` ${cls}` : ""}">${html2}</span>`;
   }
   function recommendation(value, cls = "") {
-    injectStyles20();
+    injectStyles21();
     const score = clamp(toNumber(value), 0, 5);
     if (!Number.isFinite(score)) return "";
     const fullStars = Math.floor(score);
@@ -14565,7 +14730,7 @@ order:initial
     return wrapStars(html2, cls);
   }
   function green(value, cls = "") {
-    injectStyles20();
+    injectStyles21();
     const score = clamp(toNumber(value), 0, 5);
     if (!Number.isFinite(score)) return "";
     const fullStars = Math.floor(score);
@@ -14578,7 +14743,7 @@ order:initial
     return wrapStars(html2, cls);
   }
   function combined(current, potential, cls = "") {
-    injectStyles20();
+    injectStyles21();
     const currentValue = clamp(toNumber(current), 0, 5);
     let potentialValue = clamp(toNumber(potential), 0, 5);
     if (!Number.isFinite(currentValue)) return "";
@@ -14593,8 +14758,8 @@ order:initial
     }
     return wrapStars(html2, cls);
   }
-  injectStyles20();
-  var TmStars = { injectStyles: injectStyles20, recommendation, green, combined };
+  injectStyles21();
+  var TmStars = { injectStyles: injectStyles21, recommendation, green, combined };
 
   // src/components/player/scout/tm-best-estimate.js
   var THEME_COLORS = {
@@ -14961,7 +15126,7 @@ order:initial
   var TmBestEstimate = { render: render8 };
 
   // src/components/shared/tm-scout-report-cards.js
-  var STYLE_ID29 = "tm-scout-report-cards-style";
+  var STYLE_ID30 = "tm-scout-report-cards-style";
   var SPECIALTIES2 = ["None", "Strength", "Stamina", "Pace", "Marking", "Tackling", "Workrate", "Positioning", "Passing", "Crossing", "Technique", "Heading", "Finishing", "Longshots", "Set Pieces"];
   var THEME_COLORS2 = {
     success: "var(--tmu-success)",
@@ -14973,10 +15138,10 @@ order:initial
     danger: "var(--tmu-danger)",
     info: "var(--tmu-info-alt)"
   };
-  function injectStyles21() {
-    if (document.getElementById(STYLE_ID29)) return;
+  function injectStyles22() {
+    if (document.getElementById(STYLE_ID30)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID29;
+    style.id = STYLE_ID30;
     style.textContent = `
         .tmsc-stars { font-size: var(--tmu-font-xl); letter-spacing: 2px; line-height: 1; }
         .tmsc-star-full { color: var(--tmu-warning); }
@@ -15094,7 +15259,7 @@ order:initial
   };
   function cardHtml(report) {
     var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s2, _t, _u, _v, _w, _x;
-    injectStyles21();
+    injectStyles22();
     const isYD = ((_a2 = report == null ? void 0 : report.scout) == null ? void 0 : _a2.id) === "0" || !((_b = report == null ? void 0 : report.scout) == null ? void 0 : _b.id);
     const devGroup = (_c = report.development) != null ? _c : [];
     const potEntry = devGroup.find((d) => d.key === "potential");
@@ -15173,7 +15338,7 @@ order:initial
         </div>`;
   }
   function listHtml({ reports = [], error = "", emptyText = "No scout reports available" } = {}) {
-    injectStyles21();
+    injectStyles22();
     let html2 = "";
     if (error) {
       const msg = error === "multi_scout" ? "This scout is already on a mission" : error === "multi_bid" ? "Scout already scouting this player" : error;
@@ -15188,7 +15353,7 @@ order:initial
     return html2;
   }
   function bestEstimateHtml({ scoutData = {}, player: player2 = null, title = "Best Estimate", icon = "\u2605" } = {}) {
-    injectStyles21();
+    injectStyles22();
     if (!player2 || !Array.isArray(player2.skills)) return "";
     if (!scoutData || !Array.isArray(scoutData.reports) || !scoutData.reports.length) return "";
     const container = document.createElement("div");
@@ -15201,7 +15366,7 @@ order:initial
   };
 
   // src/pages/scouts.js
-  var STYLE_ID30 = "tmvu-scouts-style";
+  var STYLE_ID31 = "tmvu-scouts-style";
   var mainColumn2 = null;
   var cleanText11 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
@@ -15353,11 +15518,11 @@ order:initial
     }));
     return enriched;
   };
-  var injectStyles22 = () => {
-    if (document.getElementById(STYLE_ID30)) return;
+  var injectStyles23 = () => {
+    if (document.getElementById(STYLE_ID31)) return;
     injectTmPageLayoutStyles();
     const style = document.createElement("style");
-    style.id = STYLE_ID30;
+    style.id = STYLE_ID31;
     style.textContent = `
             .tmvu-scouts-hero {
                 display: block;
@@ -15629,7 +15794,7 @@ order:initial
     bindActions(scouts);
   };
   var boot = async (main2, sourceRoot3) => {
-    injectStyles22();
+    injectStyles23();
     const scouts = parseScoutsFromDom(sourceRoot3);
     const response = await TmScoutsService.fetchReports();
     const reports = response && Object.keys(response).length ? normalizeReports(response, scouts) : parseFallbackReports(sourceRoot3);
@@ -15645,7 +15810,7 @@ order:initial
   }
 
   // src/pages/scouts-hire.js
-  var STYLE_ID31 = "tmvu-scouts-hire-style";
+  var STYLE_ID32 = "tmvu-scouts-hire-style";
   var cleanText12 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml17 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var buttonHtml5 = (opts) => TmUI.button(opts).outerHTML;
@@ -15740,11 +15905,11 @@ order:initial
             <div class="tmvu-scouts-hire-meta">${escapeHtml17(item.age)} yrs \u2022 Wage ${escapeHtml17(item.wageLabel)} \u2022 Fee ${escapeHtml17(item.signOnFeeLabel)}</div>
         </div>
     `;
-  var injectStyles23 = () => {
-    if (document.getElementById(STYLE_ID31)) return;
+  var injectStyles24 = () => {
+    if (document.getElementById(STYLE_ID32)) return;
     injectTmPageLayoutStyles();
     const style = document.createElement("style");
-    style.id = STYLE_ID31;
+    style.id = STYLE_ID32;
     style.textContent = `
             .tmvu-scouts-hire-page {
                 --tmu-page-rail-width: 320px;
@@ -15841,7 +16006,7 @@ order:initial
       bodyClass: "tmvu-scouts-hire-table-body"
     });
     const candidatesById = new Map(candidates.map((item) => [String(item.id), item]));
-    const table2 = TmTable.table({
+    const table = TmTable.table({
       cls: "tmvu-scouts-hire-table",
       items: candidates,
       sortKey: "overall",
@@ -15880,7 +16045,7 @@ order:initial
         }
       ]
     });
-    table2.addEventListener("click", (event) => {
+    table.addEventListener("click", (event) => {
       const trigger = event.target.closest("[data-scout-hire]");
       if (!trigger) return;
       const candidate = candidatesById.get(cleanText12(trigger.getAttribute("data-scout-hire")));
@@ -15892,11 +16057,11 @@ order:initial
       }
       if (candidate.hireHref) window.location.href = candidate.hireHref;
     });
-    refs.body.appendChild(table2);
+    refs.body.appendChild(table);
     return host.firstElementChild || host;
   };
   var render9 = (main2, sourceRoot3) => {
-    injectStyles23();
+    injectStyles24();
     const candidates = parseCandidates(sourceRoot3);
     if (!candidates.length) return;
     main2.classList.add("tmvu-scouts-hire-page", "tmu-page-layout-2col", "tmu-page-density-regular");
@@ -15925,7 +16090,7 @@ order:initial
   }
 
   // src/pages/sponsors.js
-  var STYLE_ID32 = "tmvu-sponsors-style";
+  var STYLE_ID33 = "tmvu-sponsors-style";
   var refreshTimer = 0;
   var sponsorObserver = null;
   var cleanText13 = (value) => String(value || "").replace(/\s+/g, " ").trim();
@@ -15949,11 +16114,11 @@ order:initial
     if (/scouts/i.test(label)) return "\u{1F9ED}";
     return "\u2022";
   };
-  var injectStyles24 = () => {
-    if (document.getElementById(STYLE_ID32)) return;
+  var injectStyles25 = () => {
+    if (document.getElementById(STYLE_ID33)) return;
     injectTmPageLayoutStyles();
     const style = document.createElement("style");
-    style.id = STYLE_ID32;
+    style.id = STYLE_ID33;
     style.textContent = `
             .tmvu-sponsors-note {
                 color: var(--tmu-text-muted);
@@ -16622,7 +16787,7 @@ order:initial
     });
   };
   var render10 = (main2, sourceRoot3) => {
-    injectStyles24();
+    injectStyles25();
     main2.classList.add("tmvu-sponsors-page", "tmu-page-layout-2col", "tmu-page-density-regular");
     main2.replaceChildren();
     TmSideMenu.mount(main2, {
@@ -17076,12 +17241,12 @@ order:initial
   // src/components/shared/tm-training-dots.js
   var TRN_LABELS = TRAINING_CUSTOM.map((g) => g.label);
   var DOT_COLORS = ["var(--tmu-text-dim)", "var(--tmu-danger)", "var(--tmu-warning-soft)", "var(--tmu-warning)", "var(--tmu-accent)", "var(--tmu-success-strong)"];
-  var STYLE_ID33 = "tm-trn-dots-style";
+  var STYLE_ID34 = "tm-trn-dots-style";
   var injectCSS = () => {
     if (typeof document === "undefined") return;
-    if (document.getElementById(STYLE_ID33)) return;
+    if (document.getElementById(STYLE_ID34)) return;
     const s6 = document.createElement("style");
-    s6.id = STYLE_ID33;
+    s6.id = STYLE_ID34;
     s6.textContent = `
         .tm-trn-dots { display: inline-flex; gap: 2px; align-items: center; }
         .tm-trn-dot {
@@ -17114,7 +17279,7 @@ order:initial
   var PlayerTrainingDots = { render: render11, injectCSS };
 
   // src/pages/training.js
-  var STYLE_ID34 = "tmvu-training-style";
+  var STYLE_ID35 = "tmvu-training-style";
   var mainColumn3 = null;
   var renderScheduled = false;
   var mountedMain2 = null;
@@ -17140,11 +17305,11 @@ order:initial
     var _a2;
     return cleanText14((_a2 = window.SESSION) == null ? void 0 : _a2.b_team);
   };
-  var injectStyles25 = () => {
-    if (document.getElementById(STYLE_ID34)) return;
+  var injectStyles26 = () => {
+    if (document.getElementById(STYLE_ID35)) return;
     injectTmPageLayoutStyles();
     const style = document.createElement("style");
-    style.id = STYLE_ID34;
+    style.id = STYLE_ID35;
     style.textContent = `
         .tmvu-tr-copy {
             color: var(--tmu-text-main);
@@ -17588,7 +17753,7 @@ order:initial
     if (!main2 || !main2.isConnected) return;
     if (mountedMain2 === main2 && (mainColumn3 == null ? void 0 : mainColumn3.isConnected)) return;
     mountedMain2 = main2;
-    injectStyles25();
+    injectStyles26();
     main2.classList.add("tmvu-training-page", "tmu-page-density-regular");
     main2.replaceChildren();
     const appHost = document.createElement("section");
@@ -17611,7 +17776,7 @@ order:initial
   }
 
   // src/pages/youth-development.js
-  var STYLE_ID35 = "tmvu-youth-development-style";
+  var STYLE_ID36 = "tmvu-youth-development-style";
   var mountedMain3 = null;
   var mainColumn4 = null;
   var SKILL_LABELS2 = {
@@ -17658,11 +17823,11 @@ order:initial
     }
     return ((_b = colors[colors.length - 1]) == null ? void 0 : _b.color) || "var(--tmu-text-muted)";
   };
-  var injectStyles26 = () => {
-    if (document.getElementById(STYLE_ID35)) return;
+  var injectStyles27 = () => {
+    if (document.getElementById(STYLE_ID36)) return;
     injectTmPageLayoutStyles();
     const style = document.createElement("style");
-    style.id = STYLE_ID35;
+    style.id = STYLE_ID36;
     style.textContent = `
             .tmvu-yd-page {
             }
@@ -18392,7 +18557,7 @@ order:initial
       players: syncHireAvailability(decoratePlayers((initialData == null ? void 0 : initialData.players) || [], { revealed: true }), Number(initialData == null ? void 0 : initialData.squad_size) || 0)
     };
     const menuItems = parseMenu9(sourceRoot3);
-    injectStyles26();
+    injectStyles27();
     main2.classList.add("tmvu-yd-page", "tmu-page-layout-2col", "tmu-page-density-compact");
     main2.innerHTML = `
             <section class="tmvu-yd-main tmu-page-section-stack"></section>
@@ -18473,8 +18638,8 @@ order:initial
   styleEl.textContent = CSS3;
   document.head.appendChild(styleEl);
   var renderHTML = (player2) => {
-    const { getColor: getColor6 } = TmUtils;
-    const { R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
+    const { getColor: getColor5 } = TmUtils;
+    const { R5_THRESHOLDS: R5_THRESHOLDS4, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
     const badge = (label, val, color) => TmUI.badge({ label, value: val, size: "sm", shape: "rounded", weight: "bold" }, "muted").replace('tmu-badge-tone-muted"', `tmu-badge-tone-muted" style="color:${color}"`);
     const prefPositions = (player2.positions || []).filter((p) => p.preferred);
     const posChip2 = TmPosition.chip(prefPositions);
@@ -18483,7 +18648,7 @@ order:initial
       const hiStr = TmUtils.formatR5(player2.r5Hi, "");
       return player2.r5Lo != null && loStr !== hiStr ? `${loStr}\u2013${hiStr}` : hiStr;
     })() : null;
-    const r5Color3 = player2.r5 != null ? getColor6(player2.r5, R5_THRESHOLDS5) : player2.r5Hi != null ? getColor6(player2.r5Hi, R5_THRESHOLDS5) : "var(--tmu-text-dim)";
+    const r5Color3 = player2.r5 != null ? getColor5(player2.r5, R5_THRESHOLDS4) : player2.r5Hi != null ? getColor5(player2.r5Hi, R5_THRESHOLDS4) : "var(--tmu-text-dim)";
     let h = '<div class="tmpt-header">';
     h += `<div class="tmpt-header-left">`;
     h += `<div class="tmpt-name">${player2.name}</div>`;
@@ -18493,7 +18658,7 @@ order:initial
     h += `</div></div>`;
     h += `<div class="tmpt-header-right">`;
     h += r5Val != null ? badge("R5", r5Val, r5Color3) : "";
-    h += player2.ti != null ? badge("TI", player2.ti.toFixed(1), getColor6(player2.ti, TI_THRESHOLDS2)) : "";
+    h += player2.ti != null ? badge("TI", player2.ti.toFixed(1), getColor5(player2.ti, TI_THRESHOLDS2)) : "";
     h += `</div>`;
     h += "</div>";
     const fieldLeft = [0, 1, 2, 3, 4, 5, 6];
@@ -18519,7 +18684,7 @@ order:initial
     h += '<div class="tmpt-skills">' + renderCol(leftIdx) + renderCol(rightIdx) + "</div>";
     const stats = player2.footerStats || [
       player2.asi != null ? { val: player2.asi.toLocaleString(), lbl: "ASI", color: "var(--tmu-text-strong)" } : null,
-      player2.rec != null ? { val: Number(player2.rec), lbl: "REC", color: getColor6(Number(player2.rec), REC_THRESHOLDS2) } : null,
+      player2.rec != null ? { val: Number(player2.rec), lbl: "REC", color: getColor5(Number(player2.rec), REC_THRESHOLDS2) } : null,
       player2.routine != null ? { val: player2.routine.toFixed(1), lbl: "Routine", color: "var(--tmu-success)" } : null
     ].filter(Boolean);
     if (stats.length)
@@ -18731,13 +18896,13 @@ order:initial
     if (count === 1) return [safeTotal];
     const sign = safeTotal < 0 ? -1 : 1;
     const magnitude = Math.abs(safeTotal);
-    const avg2 = magnitude / count;
-    const liveRaw = Number.isFinite(Number(liveTI)) ? Math.round(Number(liveTI)) : sign * avg2;
+    const avg = magnitude / count;
+    const liveRaw = Number.isFinite(Number(liveTI)) ? Math.round(Number(liveTI)) : sign * avg;
     const live = Math.abs(liveRaw);
-    const slope = Math.min(0.75, Math.abs(live - avg2) / Math.max(1, avg2 || 1));
+    const slope = Math.min(0.75, Math.abs(live - avg) / Math.max(1, avg || 1));
     const rawWeights = Array.from({ length: count }, (_, index) => {
       const progress = count === 1 ? 1 : index / (count - 1);
-      const directional = live >= avg2 ? progress : 1 - progress;
+      const directional = live >= avg ? progress : 1 - progress;
       return 1 + directional * slope;
     });
     const rawTotal = rawWeights.reduce((sum, weight) => sum + weight, 0) || 1;
@@ -19966,7 +20131,7 @@ order:initial
   }
 
   // src/components/shared/tm-summary-strip.js
-  var STYLE_ID36 = "tm-summary-strip-style";
+  var STYLE_ID37 = "tm-summary-strip-style";
   var CSS_TEXT2 = `
 .tmu-summary-strip{
     display:flex;
@@ -20023,12 +20188,12 @@ order:initial
   function ensureStyle2(target) {
     if (!target) return;
     if (target === document.head) {
-      if (document.getElementById(STYLE_ID36)) return;
-    } else if (target.querySelector && target.querySelector(`#${STYLE_ID36}`)) {
+      if (document.getElementById(STYLE_ID37)) return;
+    } else if (target.querySelector && target.querySelector(`#${STYLE_ID37}`)) {
       return;
     }
     const style = document.createElement("style");
-    style.id = STYLE_ID36;
+    style.id = STYLE_ID37;
     style.textContent = CSS_TEXT2;
     target.appendChild(style);
   }
@@ -20067,15 +20232,15 @@ order:initial
   };
 
   // src/components/shared/tm-player-status-icons.js
-  var STYLE_ID37 = "tmu-pstatus-style";
+  var STYLE_ID38 = "tmu-pstatus-style";
   var CSS4 = `
 .tmu-psi{display:inline-flex;align-items:center;gap:3px;vertical-align:middle;margin-left:4px}
 .tmu-psi-icon{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;vertical-align:middle}
 `;
   function ensureCSS() {
-    if (document.getElementById(STYLE_ID37)) return;
+    if (document.getElementById(STYLE_ID38)) return;
     const s6 = document.createElement("style");
-    s6.id = STYLE_ID37;
+    s6.id = STYLE_ID38;
     s6.textContent = CSS4;
     document.head.appendChild(s6);
   }
@@ -20159,8 +20324,8 @@ order:initial
 
   // src/components/squad/tm-squad-table.js
   var buildSummary2 = (players) => {
-    const { getColor: getColor6 } = TmUtils;
-    const { AGE_THRESHOLDS: AGE_THRESHOLDS2, REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS5, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
+    const { getColor: getColor5 } = TmUtils;
+    const { AGE_THRESHOLDS: AGE_THRESHOLDS2, REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS4, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
     const n = players.length;
     if (!n) return "";
     const avgR5 = players.reduce((s6, p) => s6 + Number(p.r5), 0) / n;
@@ -20171,10 +20336,10 @@ order:initial
     const avgTI = tiPlayers.length ? tiPlayers.reduce((s6, p) => s6 + p.ti, 0) / tiPlayers.length : 0;
     return TmSummaryStrip.render([
       { label: "Players", value: String(n) },
-      { label: "Avg R5", value: avgR5.toFixed(2), valueStyle: `color:${getColor6(avgR5, R5_THRESHOLDS5)}` },
-      { label: "Avg REC", value: avgRec.toFixed(2), valueStyle: `color:${getColor6(avgRec, REC_THRESHOLDS2)}` },
-      ...tiPlayers.length ? [{ label: "Avg TI", value: avgTI.toFixed(1), valueStyle: `color:${getColor6(avgTI, TI_THRESHOLDS2)}` }] : [],
-      { label: "Avg Age", value: avgAge.toFixed(1), valueStyle: `color:${getColor6(avgAge, AGE_THRESHOLDS2)}` },
+      { label: "Avg R5", value: avgR5.toFixed(2), valueStyle: `color:${getColor5(avgR5, R5_THRESHOLDS4)}` },
+      { label: "Avg REC", value: avgRec.toFixed(2), valueStyle: `color:${getColor5(avgRec, REC_THRESHOLDS2)}` },
+      ...tiPlayers.length ? [{ label: "Avg TI", value: avgTI.toFixed(1), valueStyle: `color:${getColor5(avgTI, TI_THRESHOLDS2)}` }] : [],
+      { label: "Avg Age", value: avgAge.toFixed(1), valueStyle: `color:${getColor5(avgAge, AGE_THRESHOLDS2)}` },
       { label: "Avg ASI", value: Math.round(avgASI).toLocaleString(), valueStyle: "color:var(--tmu-text-strong)" }
     ], { cls: "tmsq-summary", variant: "boxed", valueFirst: true });
   };
@@ -20289,11 +20454,11 @@ order:initial
   var TmSquadTable = { render: render12 };
 
   // src/components/club/tm-club-side-menu.js
-  var STYLE_ID38 = "tmvu-club-side-menu-style";
-  function injectStyles27() {
-    if (document.getElementById(STYLE_ID38)) return;
+  var STYLE_ID39 = "tmvu-club-side-menu-style";
+  function injectStyles28() {
+    if (document.getElementById(STYLE_ID39)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID38;
+    style.id = STYLE_ID39;
     style.textContent = `
         .tmvu-main.tmvu-club-layout {
             display: flex !important;
@@ -20329,7 +20494,7 @@ order:initial
     document.head.appendChild(style);
   }
   function mount4(mainContainer, { id = "tmvu-club-nav", items = [], currentHref = "" } = {}) {
-    injectStyles27();
+    injectStyles28();
     return TmSideMenu.mount(mainContainer, { id, items, currentHref });
   }
   var TmClubSideMenu = { mount: mount4 };
@@ -20614,10 +20779,10 @@ order:initial
   function parseLeagueHtml(html2) {
     const doc = document.createElement("div");
     doc.innerHTML = html2;
-    const table2 = doc.querySelector("table.zebra.sortable");
+    const table = doc.querySelector("table.zebra.sortable");
     const rows = [];
-    if (!table2) return rows;
-    Array.from(table2.querySelectorAll("tr")).forEach(function(tr) {
+    if (!table) return rows;
+    Array.from(table.querySelectorAll("tr")).forEach(function(tr) {
       var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
       const tds = Array.from(tr.querySelectorAll("td"));
       if (!tds.length) return;
@@ -22033,7 +22198,7 @@ order:initial
   }
 
   // src/components/shared/tm-native-feed.js
-  var STYLE_ID39 = "tmvu-native-feed-style";
+  var STYLE_ID40 = "tmvu-native-feed-style";
   var buttonHtml6 = ({ cls = "", attrs = {}, shape = "full", size = "sm", color = "secondary", ...opts } = {}) => TmUI.button({
     cls,
     attrs,
@@ -22042,10 +22207,10 @@ order:initial
     color,
     ...opts
   }).outerHTML;
-  function injectStyles28() {
-    if (document.getElementById(STYLE_ID39)) return;
+  function injectStyles29() {
+    if (document.getElementById(STYLE_ID40)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID39;
+    style.id = STYLE_ID40;
     style.textContent = `
         .tmvu-native-feed-box {
             background: var(--tmu-surface-input-dark-focus) !important;
@@ -22613,7 +22778,7 @@ order:initial
   function mountStandaloneFeed(container, feedRoot, { title = "Feed" } = {}) {
     var _a2;
     if (!container || !feedRoot) return { observer: null, feedRoot: null, shell: null };
-    injectStyles28();
+    injectStyles29();
     const shell = document.createElement("section");
     shell.className = "tmvu-native-feed-box";
     shell.innerHTML = `
@@ -22626,18 +22791,18 @@ order:initial
     return { observer, feedRoot, shell };
   }
   var TmNativeFeed = {
-    injectStyles: injectStyles28,
+    injectStyles: injectStyles29,
     sanitizeFeedRoot,
     installFeedSanitizer,
     mountStandaloneFeed
   };
 
   // src/components/club/tm-club-overview.js
-  var STYLE_ID40 = "tmvu-club-overview-style";
-  function injectStyles29() {
-    if (document.getElementById(STYLE_ID40)) return;
+  var STYLE_ID41 = "tmvu-club-overview-style";
+  function injectStyles30() {
+    if (document.getElementById(STYLE_ID41)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID40;
+    style.id = STYLE_ID41;
     style.textContent = `
         .tmvu-main.tmvu-club-layout {
             align-items: flex-start;
@@ -22982,9 +23147,9 @@ order:initial
   function normalizeFoundedText(text) {
     return cleanText17(text).replace(/^Founded\s+Founded/i, "Founded").replace(/^Founded(\d)/i, "Founded $1");
   }
-  function parsePlayers(table2) {
-    if (!table2) return [];
-    return Array.from(table2.querySelectorAll("tr")).map((row) => {
+  function parsePlayers(table) {
+    if (!table) return [];
+    return Array.from(table.querySelectorAll("tr")).map((row) => {
       const cells = row.querySelectorAll("td");
       const playerLink = row.querySelector('a[player_link], a[href*="/players/"]');
       if (!playerLink || cells.length < 4) return null;
@@ -23076,7 +23241,7 @@ order:initial
   }
   function buildPlayersTableHtml(players) {
     if (!players.length) return "";
-    const table2 = TmTable.table({
+    const table = TmTable.table({
       cls: " tmco-players-table",
       items: players,
       headers: [],
@@ -23091,7 +23256,7 @@ order:initial
     });
     return `
         <div class="tmco-players-table-wrap">
-            ${table2.outerHTML}
+            ${table.outerHTML}
         </div>
     `;
   }
@@ -23170,7 +23335,7 @@ order:initial
   var TmClubOverview = {
     mount({ mainColumn: mainColumn5, secondaryColumn }) {
       if (!mainColumn5) return;
-      injectStyles29();
+      injectStyles30();
       TmNativeFeed.injectStyles();
       console.log("Mounting club overview with columns:", { mainColumn: mainColumn5, secondaryColumn });
       const nativeMain = document.querySelector(".column2_a");
@@ -23210,8 +23375,8 @@ order:initial
     const layout = initClubLayout({ main: main2, currentPath: normalizeClubHref(window.location.pathname) });
     if (!(layout == null ? void 0 : layout.mainColumn)) return;
     const container = layout.mainColumn;
-    const htmlOf7 = (node) => (node == null ? void 0 : node.outerHTML) || "";
-    const buttonHtml14 = (opts) => htmlOf7(TmUI.button(opts));
+    const htmlOf6 = (node) => (node == null ? void 0 : node.outerHTML) || "";
+    const buttonHtml12 = (opts) => htmlOf6(TmUI.button(opts));
     const MATCH_TYPE_KEYS = {
       "League": "league",
       "Friendly": "friendly",
@@ -23309,7 +23474,7 @@ order:initial
         ["cup", "Cup"],
         ["international_cup", "International Cup"]
       ];
-      return buttons.filter(([key]) => counts[key] > 0).map(([key, label]) => buttonHtml14({
+      return buttons.filter(([key]) => counts[key] > 0).map(([key, label]) => buttonHtml12({
         label: `${label} (${counts[key]})`,
         color: "primary",
         active: activeFilter === key,
@@ -24427,7 +24592,7 @@ order:initial
       title.className = "tsa-match-list-title";
       title.textContent = `Matches (${matches.length})`;
       wrap.appendChild(title);
-      const table2 = TmTable.table({
+      const table = TmTable.table({
         cls: " tsa-ml-table",
         items: sorted,
         headers: [
@@ -24486,7 +24651,7 @@ order:initial
           }
         ]
       });
-      wrap.appendChild(table2);
+      wrap.appendChild(table);
       return wrap;
     }
   };
@@ -25054,7 +25219,7 @@ order:initial
   var TmTransferSidebar = {
     build() {
       const { SKILL_KEYS_OUT: SKILL_KEYS_OUT2, SKILL_KEYS_GK: SKILL_KEYS_GK2, SKILL_LABELS: SKILL_LABELS3 } = TmConst;
-      const buttonHtml14 = (opts) => TmUI.button(opts).outerHTML;
+      const buttonHtml12 = (opts) => TmUI.button(opts).outerHTML;
       const checkboxFieldHtml = (opts) => TmUI.checkboxField(opts).outerHTML;
       const inputHtml4 = (opts) => TmUI.input({ type: "number", size: "full", density: "regular", grow: true, ...opts }).outerHTML;
       const skillSelectOpts = (withNone = true) => {
@@ -25136,21 +25301,21 @@ order:initial
           </div>
       </div>
       <div class="tms-primary-actions">
-        ${buttonHtml14({ id: "tms-search-btn", label: "\u{1F50D} Search 100", color: "primary", block: true })}
-        ${buttonHtml14({ id: "tms-findall-btn", label: "\u2B07\uFE0F Find All", color: "secondary", size: "sm", block: true })}
+        ${buttonHtml12({ id: "tms-search-btn", label: "\u{1F50D} Search 100", color: "primary", block: true })}
+        ${buttonHtml12({ id: "tms-findall-btn", label: "\u2B07\uFE0F Find All", color: "secondary", size: "sm", block: true })}
       </div>
       <div class="tms-sb-section" style="margin-top:var(--tmu-space-sm)">
         <div class="tms-sb-head">Saved Filters</div>
         <div class="tms-sb-body">
           <select id="tms-saved-filters-sel" class="tms-sel" style="width:100%;margin-bottom:var(--tmu-space-sm)"><option value="">\u2014 no saved filters \u2014</option></select>
           <div class="tms-filter-actions">
-            <div class="tms-filter-action-cell">${buttonHtml14({ id: "tms-filter-load-btn", label: "\u{1F4C2} Load", color: "secondary", size: "xs", block: true })}</div>
-            <div class="tms-filter-action-cell tms-filter-action-cell-wide">${buttonHtml14({ id: "tms-filter-save-btn", label: "\u{1F4BE} Save Current", color: "secondary", size: "xs", block: true })}</div>
-            <div class="tms-filter-action-cell">${buttonHtml14({ id: "tms-filter-del-btn", icon: "\u{1F5D1}", color: "danger", size: "xs", block: true })}</div>
+            <div class="tms-filter-action-cell">${buttonHtml12({ id: "tms-filter-load-btn", label: "\u{1F4C2} Load", color: "secondary", size: "xs", block: true })}</div>
+            <div class="tms-filter-action-cell tms-filter-action-cell-wide">${buttonHtml12({ id: "tms-filter-save-btn", label: "\u{1F4BE} Save Current", color: "secondary", size: "xs", block: true })}</div>
+            <div class="tms-filter-action-cell">${buttonHtml12({ id: "tms-filter-del-btn", icon: "\u{1F5D1}", color: "danger", size: "xs", block: true })}</div>
           </div>
         </div>
       </div>
-      <div class="tms-more-toggle-wrap">${buttonHtml14({
+      <div class="tms-more-toggle-wrap">${buttonHtml12({
         id: "tms-more-toggle",
         color: "secondary",
         size: "xs",
@@ -25593,27 +25758,27 @@ order:initial
     if (val == null || val === "") return '<span class="tms-muted tmu-text-faint">\u2014</span>';
     const num = parseFloat(val);
     const disp = Number.isInteger(num) ? String(num) : num.toFixed(2);
-    const clr3 = getColor4(num, REC_THRESHOLDS2);
-    return `<span class="tms-rec tmu-tabular" style="border-color:${clr3}44;color:${clr3}">${disp}</span>`;
+    const clr = getColor4(num, REC_THRESHOLDS2);
+    return `<span class="tms-rec tmu-tabular" style="border-color:${clr}44;color:${clr}">${disp}</span>`;
   }
   function tiHtml(ti) {
     const { TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
     if (ti === null || ti === void 0) return '<span class="tms-muted tmu-text-faint">\u2014</span>';
-    const clr3 = getColor4(ti, TI_THRESHOLDS2);
-    return `<span class="tms-strong-val tmu-tabular" style="color:${clr3}">${ti.toFixed(1)}</span>`;
+    const clr = getColor4(ti, TI_THRESHOLDS2);
+    return `<span class="tms-strong-val tmu-tabular" style="color:${clr}">${ti.toFixed(1)}</span>`;
   }
   function fmtR5(r5) {
-    const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
+    const { R5_THRESHOLDS: R5_THRESHOLDS4 } = TmConst;
     if (r5 == null) return '<span class="tms-tip-pending">\u2026</span>';
-    const clr3 = getColor4(r5, R5_THRESHOLDS5);
-    return `<span class="tms-strong-val tmu-tabular" style="color:${clr3}">${TmUtils.formatR5(r5)}</span>`;
+    const clr = getColor4(r5, R5_THRESHOLDS4);
+    return `<span class="tms-strong-val tmu-tabular" style="color:${clr}">${TmUtils.formatR5(r5)}</span>`;
   }
   function fmtR5Range(lo, hi) {
-    const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
+    const { R5_THRESHOLDS: R5_THRESHOLDS4 } = TmConst;
     if (lo == null || hi == null) return '<span class="tms-tip-pending">\u2026</span>';
     const loFixed = TmUtils.formatR5(lo), hiFixed = TmUtils.formatR5(hi);
-    const clrLo = getColor4(lo, R5_THRESHOLDS5);
-    const clrHi = getColor4(hi, R5_THRESHOLDS5);
+    const clrLo = getColor4(lo, R5_THRESHOLDS4);
+    const clrHi = getColor4(hi, R5_THRESHOLDS4);
     if (loFixed === hiFixed)
       return `<span class="tms-range-wrap tmu-tabular"><span class="tms-strong-val tmu-tabular" style="color:${clrHi}">${hiFixed}</span></span>`;
     return `<span class="tms-range-wrap tmu-tabular"><span class="tms-range-val tmu-tabular" style="color:${clrLo}">${loFixed}</span><span class="tms-range-sep">\u2013</span><span class="tms-range-val tmu-tabular" style="color:${clrHi}">${hiFixed}</span></span>`;
@@ -26433,11 +26598,11 @@ order:initial
   };
   var parseHistoryStandings = (html2) => {
     const doc = new DOMParser().parseFromString(html2, "text/html");
-    const table2 = doc.querySelector("table.border_bottom");
-    if (!table2) return [];
+    const table = doc.querySelector("table.border_bottom");
+    if (!table) return [];
     const myClubId = typeof SESSION !== "undefined" && SESSION.main_id ? String(SESSION.main_id) : null;
     const rows = [];
-    table2.querySelectorAll("tr").forEach((tr) => {
+    table.querySelectorAll("tr").forEach((tr) => {
       var _a2, _b, _c, _d, _e, _f, _g;
       const tds = Array.from(tr.querySelectorAll("td"));
       let a = null;
@@ -27135,8 +27300,8 @@ order:initial
   }).outerHTML;
   var fetchClubsForSeason = (season, onDone) => {
     const s6 = window.TmLeagueCtx;
-    const currentSeason5 = typeof SESSION !== "undefined" ? SESSION.season : null;
-    if (!season || season === currentSeason5) {
+    const currentSeason4 = typeof SESSION !== "undefined" ? SESSION.season : null;
+    if (!season || season === currentSeason4) {
       onDone(s6.standingsRows || []);
       return;
     }
@@ -27415,24 +27580,24 @@ order:initial
             <span class="totr-round-label">${currentRound.text || "\u2014"}</span>
             ${TmButton.button({ id: "totr-next", cls: "text-lg px-3 py-0", label: "\u2192", color: "secondary", size: "xs", type: "button", disabled: !canNext }).outerHTML}
         </div>`;
-    const lw2 = 0.4, clr3 = "rgba(255,255,255,0.22)", clr22 = "rgba(255,255,255,0.3)";
-    const pitchSVG2 = `<svg class="totr-pitch-lines" viewBox="0 0 100 110" preserveAspectRatio="none">
-            <rect x="0" y="0" width="100" height="110" fill="none" stroke="${clr3}" stroke-width="0.5"/>
-            <line x1="0" y1="55" x2="100" y2="55" stroke="${clr3}" stroke-width="${lw2}"/>
-            <circle cx="50" cy="55" r="9.5" fill="none" stroke="${clr3}" stroke-width="${lw2}"/>
-            <circle cx="50" cy="55" r="1.2" fill="${clr22}"/>
-            <rect x="20.5" y="0" width="59" height="17.5" fill="none" stroke="${clr3}" stroke-width="${lw2}"/>
-            <rect x="36.5" y="0" width="27" height="6" fill="none" stroke="${clr3}" stroke-width="${lw2}"/>
-            <circle cx="50" cy="11.7" r="1.2" fill="${clr22}"/>
-            <path d="M 40 17.5 A 9.5 9.5 0 0 0 60 17.5" fill="none" stroke="${clr3}" stroke-width="${lw2}"/>
-            <rect x="20.5" y="92.5" width="59" height="17.5" fill="none" stroke="${clr3}" stroke-width="${lw2}"/>
-            <rect x="36.5" y="104" width="27" height="6" fill="none" stroke="${clr3}" stroke-width="${lw2}"/>
-            <circle cx="50" cy="98.3" r="1.2" fill="${clr22}"/>
-            <path d="M 40 92.5 A 9.5 9.5 0 0 1 60 92.5" fill="none" stroke="${clr3}" stroke-width="${lw2}"/>
-            <path d="M 0 1.5 A 1.5 1.5 0 0 1 1.5 0" fill="none" stroke="${clr3}" stroke-width="${lw2}"/>
-            <path d="M 98.5 0 A 1.5 1.5 0 0 1 100 1.5" fill="none" stroke="${clr3}" stroke-width="${lw2}"/>
-            <path d="M 0 108.5 A 1.5 1.5 0 0 0 1.5 110" fill="none" stroke="${clr3}" stroke-width="${lw2}"/>
-            <path d="M 98.5 110 A 1.5 1.5 0 0 0 100 108.5" fill="none" stroke="${clr3}" stroke-width="${lw2}"/>
+    const lw = 0.4, clr = "rgba(255,255,255,0.22)", clr2 = "rgba(255,255,255,0.3)";
+    const pitchSVG = `<svg class="totr-pitch-lines" viewBox="0 0 100 110" preserveAspectRatio="none">
+            <rect x="0" y="0" width="100" height="110" fill="none" stroke="${clr}" stroke-width="0.5"/>
+            <line x1="0" y1="55" x2="100" y2="55" stroke="${clr}" stroke-width="${lw}"/>
+            <circle cx="50" cy="55" r="9.5" fill="none" stroke="${clr}" stroke-width="${lw}"/>
+            <circle cx="50" cy="55" r="1.2" fill="${clr2}"/>
+            <rect x="20.5" y="0" width="59" height="17.5" fill="none" stroke="${clr}" stroke-width="${lw}"/>
+            <rect x="36.5" y="0" width="27" height="6" fill="none" stroke="${clr}" stroke-width="${lw}"/>
+            <circle cx="50" cy="11.7" r="1.2" fill="${clr2}"/>
+            <path d="M 40 17.5 A 9.5 9.5 0 0 0 60 17.5" fill="none" stroke="${clr}" stroke-width="${lw}"/>
+            <rect x="20.5" y="92.5" width="59" height="17.5" fill="none" stroke="${clr}" stroke-width="${lw}"/>
+            <rect x="36.5" y="104" width="27" height="6" fill="none" stroke="${clr}" stroke-width="${lw}"/>
+            <circle cx="50" cy="98.3" r="1.2" fill="${clr2}"/>
+            <path d="M 40 92.5 A 9.5 9.5 0 0 1 60 92.5" fill="none" stroke="${clr}" stroke-width="${lw}"/>
+            <path d="M 0 1.5 A 1.5 1.5 0 0 1 1.5 0" fill="none" stroke="${clr}" stroke-width="${lw}"/>
+            <path d="M 98.5 0 A 1.5 1.5 0 0 1 100 1.5" fill="none" stroke="${clr}" stroke-width="${lw}"/>
+            <path d="M 0 108.5 A 1.5 1.5 0 0 0 1.5 110" fill="none" stroke="${clr}" stroke-width="${lw}"/>
+            <path d="M 98.5 110 A 1.5 1.5 0 0 0 100 108.5" fill="none" stroke="${clr}" stroke-width="${lw}"/>
         </svg>`;
     const lineRowMap = { forwards: 2, midfield: 5, defense: 8 };
     const spreadCols = (n) => {
@@ -27471,7 +27636,7 @@ order:initial
       const colPct = (gkCols[i] - 1) * 20 + 10;
       gkOverlay += `<div class="totr-gk-cell" style="left:${colPct}%"><div class="totr-gk-info"><a href="${p.playerHref}" class="totr-pitch-label">${p.name.split(" ").slice(-1)[0]}</a><div class="totr-pitch-rating" style="color:${ratingColor2}">${p.rating.toFixed(1)}</div>` + (p.clubName ? `<a href="/club/${p.clubId}/" class="totr-pitch-club">${p.clubName}</a>` : "") + goalsHtml + `</div><div class="totr-gk-face"><img src="${p.photo}" alt="" onerror="this.style.opacity=0"></div></div>`;
     });
-    container.innerHTML = navHtml + `<div class="totr-pitch">${pitchSVG2}<div class="totr-pitch-grid">${gridHTML}</div>` + (gkOverlay ? `<div class="totr-gk-row">${gkOverlay}</div>` : "") + `</div>`;
+    container.innerHTML = navHtml + `<div class="totr-pitch">${pitchSVG}<div class="totr-pitch-grid">${gridHTML}</div>` + (gkOverlay ? `<div class="totr-gk-row">${gkOverlay}</div>` : "") + `</div>`;
     container.onclick = (event) => {
       if (event.target.closest("#totr-prev")) {
         if (currentIdx > 0) fetchAndRenderTOTR(data.rounds[currentIdx - 1].value);
@@ -27557,7 +27722,7 @@ order:initial
     }
     const leagueAnchor = document.querySelector('a[league_link][href*="/league/"].normal.large, a[league_link][href*="/league/"]');
     ctx.setPanelLeague(lCountry, lDivision, lGroup, (leagueAnchor == null ? void 0 : leagueAnchor.textContent.trim()) || null);
-    const currentSeason5 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
+    const currentSeason4 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const panel = document.createElement("div");
     panel.id = "tsa-standings-panel";
     panel.className = "tmu-flat-panel";
@@ -27574,7 +27739,7 @@ order:initial
                         <span id="tsa-panel-league-name" class="tsa-panel-league-name">${ctx.panelLeagueName || "League"}</span>
                         ${lDivision ? `<span class="tsa-season-label">(${lDivision}.${lGroup})</span>` : ""}    
                     </div>
-                    ${currentSeason5 ? `<div class="tsa-ssnpick" id="tsa-ssnpick"></div>` : ""}
+                    ${currentSeason4 ? `<div class="tsa-ssnpick" id="tsa-ssnpick"></div>` : ""}
                 </div>
                 ${changeLeagueBtn}
             </div>
@@ -27623,9 +27788,9 @@ order:initial
     }));
     const col2 = document.querySelector(".tmvu-league-main");
     if (col2) col2.insertBefore(panel, col2.firstChild);
-    if (currentSeason5) {
+    if (currentSeason4) {
       const navigate = (s6) => {
-        if (s6 === currentSeason5) {
+        if (s6 === currentSeason4) {
           ctx.resetToLive();
           TmLeagueStandings.buildStandingsFromDOM();
           TmLeagueStandings.renderLeagueTable();
@@ -27646,8 +27811,8 @@ order:initial
         }
       };
       TmSeasonBar.mount(panel.querySelector("#tsa-ssnpick"), {
-        max: currentSeason5,
-        current: currentSeason5,
+        max: currentSeason4,
+        current: currentSeason4,
         label: false,
         cls: "",
         onChange: (id) => navigate(Number(id))
@@ -27664,8 +27829,8 @@ order:initial
   ];
   var renderSkillTable = () => {
     const s6 = window.TmLeagueCtx;
-    const { skillData, skillSortCol, skillSortAsc, REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS5, AGE_THRESHOLDS: AGE_THRESHOLDS2, getColor: getColor6 } = s6;
-    const thresholds = { REC: REC_THRESHOLDS2, R5: R5_THRESHOLDS5, Age: AGE_THRESHOLDS2 };
+    const { skillData, skillSortCol, skillSortAsc, REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS4, AGE_THRESHOLDS: AGE_THRESHOLDS2, getColor: getColor5 } = s6;
+    const thresholds = { REC: REC_THRESHOLDS2, R5: R5_THRESHOLDS4, Age: AGE_THRESHOLDS2 };
     const decimals = { REC: 2, R5: 2, Age: 1 };
     const arrow = (key) => key === skillSortCol ? skillSortAsc ? " \u25B2" : " \u25BC" : "";
     const headerHtml = `
@@ -27678,7 +27843,7 @@ order:initial
             <div class="tsa-skill-row">
                 <span class="tsa-skill-rank">${i + 1}</span>
                 <span class="tsa-skill-club">${row.name}</span>
-                ${STAT_COLS.map((c) => `<span class="tsa-skill-val" style="color:${getColor6(row[c.key], thresholds[c.key])};font-weight:700">${row[c.key].toFixed(decimals[c.key])}</span>`).join("")}
+                ${STAT_COLS.map((c) => `<span class="tsa-skill-val" style="color:${getColor5(row[c.key], thresholds[c.key])};font-weight:700">${row[c.key].toFixed(decimals[c.key])}</span>`).join("")}
             </div>`).join("");
     const container = document.getElementById("tsa-content");
     if (!container) return;
@@ -27735,13 +27900,13 @@ order:initial
   var roundMatchCache = /* @__PURE__ */ new Map();
   var buildRounds2 = (fixtures) => {
     const s6 = window.TmLeagueCtx;
-    const currentSeason5 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
+    const currentSeason4 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const highlightClubId = typeof SESSION !== "undefined" && SESSION.main_id ? String(SESSION.main_id) : "";
     const roundPanel = document.getElementById("rnd-panel");
     if (roundPanel) {
       TmFixtureRoundCards.mount(roundPanel, {
         fixtures,
-        season: currentSeason5,
+        season: currentSeason4,
         highlightClubId,
         titlePrefix: "Round",
         onRoundChange: ({ rounds, currentIndex }) => {
@@ -28351,7 +28516,7 @@ order:initial
   }));
 
   // src/components/shared/tm-social-feed.js
-  var STYLE_ID41 = "tmvu-social-feed-style";
+  var STYLE_ID42 = "tmvu-social-feed-style";
   var clean3 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml25 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var buttonHtml10 = ({ cls = "", attrs = {}, shape = "full", size = "sm", color = "secondary", ...opts } = {}) => TmUI.button({
@@ -28362,10 +28527,10 @@ order:initial
     color,
     ...opts
   }).outerHTML;
-  var injectStyles30 = () => {
-    if (document.getElementById(STYLE_ID41)) return;
+  var injectStyles31 = () => {
+    if (document.getElementById(STYLE_ID42)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID41;
+    style.id = STYLE_ID42;
     style.textContent = [
       ".tmvu-social-feed-source.tmvu-social-feed-source--hidden>:not([data-tmvu-social-feed-mount]){display:none!important}",
       ".tmvu-home-feed{display:flex;flex-direction:column;gap:var(--tmu-space-lg)}",
@@ -28881,7 +29046,7 @@ order:initial
     loadingCopy = "Loading feed...",
     onLoadMore = null
   } = {}) => {
-    injectStyles30();
+    injectStyles31();
     let hostMount = mount8;
     const renderer = createFeedRenderer({
       getMount: () => hostMount,
@@ -28913,7 +29078,7 @@ order:initial
     emptyCopy = "No feed posts loaded.",
     loadingCopy = "Loading feed..."
   } = {}) => {
-    injectStyles30();
+    injectStyles31();
     const apiFeedState = {
       topPosts: [],
       lastPost: "",
@@ -29001,9 +29166,9 @@ order:initial
     const STORAGE_KEY = "TM_LEAGUE_LINEUP_NUM_ROUNDS";
     const SKILL_NAMES_FIELD = TmConst.SKILL_DEFS_OUT.map((d) => d.label || d.key);
     const SKILL_NAMES_GK2 = TmConst.SKILL_DEFS_GK.map((d) => d.label || d.key);
-    const { REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS5, AGE_THRESHOLDS: AGE_THRESHOLDS2 } = TmConst;
-    const htmlOf7 = (node) => (node == null ? void 0 : node.outerHTML) || "";
-    const inputHtml4 = (opts) => htmlOf7(TmUI.input({ tone: "overlay", density: "regular", ...opts }));
+    const { REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS4, AGE_THRESHOLDS: AGE_THRESHOLDS2 } = TmConst;
+    const htmlOf6 = (node) => (node == null ? void 0 : node.outerHTML) || "";
+    const inputHtml4 = (opts) => htmlOf6(TmUI.input({ tone: "overlay", density: "regular", ...opts }));
     const appendHtml = (parent, html2) => {
       if (!parent) return null;
       const template = document.createElement("template");
@@ -29365,7 +29530,7 @@ order:initial
       SKILL_NAMES_FIELD,
       SKILL_NAMES_GK: SKILL_NAMES_GK2,
       REC_THRESHOLDS: REC_THRESHOLDS2,
-      R5_THRESHOLDS: R5_THRESHOLDS5,
+      R5_THRESHOLDS: R5_THRESHOLDS4,
       AGE_THRESHOLDS: AGE_THRESHOLDS2,
       // ── Coordinated state transitions ─────────────────────────────────────────────────────
       // Use these instead of direct property writes when multiple fields must change together.
@@ -29515,7 +29680,7 @@ order:initial
       }
       renderLeagueFeed();
     };
-    const injectStyles39 = () => TmLeagueStyles.inject();
+    const injectStyles45 = () => TmLeagueStyles.inject();
     const cleanupPage = () => {
       if (leaguePollInterval) {
         clearInterval(leaguePollInterval);
@@ -29557,7 +29722,7 @@ order:initial
       }
       if (leagueBootstrapped || !hasLeagueRoots()) return;
       ({ leagueCountry, leagueDivision, leagueGroup } = getLeagueRouteParams(path));
-      injectStyles39();
+      injectStyles45();
       primeLeaguePanelContext();
       prepareLeagueLayout();
       initLeagueFeed();
@@ -29627,4891 +29792,3265 @@ order:initial
     initForCurrentPage();
   }
 
-  // src/components/match/tm-match-analysis-tactic.js
-  var TmMatchAnalysisTactic = {
-    row({ icon, label, value }) {
-      return `<div class="rnd-an-tactic-item"><span class="t-icon">${icon}</span><span class="t-label">${label}</span><span class="t-val">${value}</span></div>`;
-    }
-  };
-
-  // src/components/match/tm-match-analysis-profile.js
-  var valueStyleAttr = (color) => color ? ` style="color:${color}"` : "";
-  var TmMatchAnalysisProfile = {
-    card({ icon, label, homeValue, awayValue, homeColor = "", awayColor = "" }) {
-      return `<div class="rnd-an-profile-card"><span class="rnd-an-profile-icon">${icon}</span><div class="rnd-an-profile-info"><div class="rnd-an-profile-label">${label}</div><div class="rnd-an-profile-vals"><span class="rnd-an-profile-val home"${valueStyleAttr(homeColor)}>${homeValue}</span><span class="rnd-an-profile-vs">vs</span><span class="rnd-an-profile-val away"${valueStyleAttr(awayColor)}>${awayValue}</span></div></div></div>`;
-    }
-  };
-
-  // src/components/match/tm-match-analysis.js
-  var { R5_THRESHOLDS: R5_THRESHOLDS4 } = TmConst;
-  var getColor5 = TmUtils.getColor;
-  var avg = (values) => {
-    const nums = values.map((v) => Number(v)).filter((v) => Number.isFinite(v));
-    return nums.length ? nums.reduce((sum, value) => sum + value, 0) / nums.length : 0;
-  };
-  var playerAgeYears = (player2) => {
-    const years = Number(player2 == null ? void 0 : player2.age);
-    const months = Number(player2 == null ? void 0 : player2.month);
-    if (!Number.isFinite(years) || years <= 0) return null;
-    return Number.isFinite(months) && months >= 0 ? years + months / 12 : years;
-  };
-  var posKey = (player2) => String((player2 == null ? void 0 : player2.position) || (player2 == null ? void 0 : player2.originalPosition) || (player2 == null ? void 0 : player2.fp) || "").split(",")[0].toLowerCase().replace(/[^a-z]/g, "");
-  var isBenchPos = (player2) => /^sub\d+$/.test(String((player2 == null ? void 0 : player2.position) || ""));
-  var classifyLine = (player2) => {
-    const key = posKey(player2);
-    if (!key) return "MID";
-    if (key === "gk") return "GK";
-    if (key.startsWith("f")) return "ATT";
-    if (key.startsWith("m") || key.startsWith("om") || key.startsWith("am") || key.startsWith("dm") || key.includes("mc") || key.includes("ml") || key.includes("mr")) return "MID";
-    if (key.startsWith("d")) return "DEF";
-    return "MID";
-  };
-  var normalizeForm = (form) => {
-    let dots = [];
-    if (Array.isArray(form)) {
-      dots = form.map((item) => String((item == null ? void 0 : item.result) || item || "").toLowerCase()).filter((result) => result === "w" || result === "d" || result === "l").slice(0, 5);
-    } else if (Array.isArray(form == null ? void 0 : form.dots)) {
-      dots = form.dots.map((item) => String(item || "").toLowerCase()).filter((result) => result === "w" || result === "d" || result === "l").slice(0, 5);
-    }
-    const pts = Number.isFinite(Number(form == null ? void 0 : form.pts)) ? Number(form.pts) : dots.reduce((sum, item) => sum + (item === "w" ? 3 : item === "d" ? 1 : 0), 0);
-    return { dots, pts };
-  };
-  var enrichTeam = (mData, side, team) => {
-    var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r;
-    const lineupSource = Array.isArray(team == null ? void 0 : team.lineup) ? team.lineup : Object.values(((_a2 = mData == null ? void 0 : mData.lineup) == null ? void 0 : _a2[side]) || {});
-    const lineup = lineupSource.filter(Boolean);
-    const starting = Array.isArray(team == null ? void 0 : team.starting) && team.starting.length ? team.starting : lineup.filter((player2) => !isBenchPos(player2));
-    const bench = lineup.filter((player2) => isBenchPos(player2));
-    const form = normalizeForm(team == null ? void 0 : team.form);
-    const computedAvgAge = avg(starting.map(playerAgeYears));
-    const linePlayers = {
-      GK: starting.filter((player2) => classifyLine(player2) === "GK"),
-      DEF: starting.filter((player2) => classifyLine(player2) === "DEF"),
-      MID: starting.filter((player2) => classifyLine(player2) === "MID"),
-      ATT: starting.filter((player2) => classifyLine(player2) === "ATT")
-    };
-    return {
-      ...team,
-      id: (team == null ? void 0 : team.id) || ((_c = (_b = mData == null ? void 0 : mData.club) == null ? void 0 : _b[side]) == null ? void 0 : _c.id) || ((_e = (_d = mData == null ? void 0 : mData.teams) == null ? void 0 : _d[side]) == null ? void 0 : _e.id),
-      name: (team == null ? void 0 : team.name) || (team == null ? void 0 : team.club_name) || ((_g = (_f = mData == null ? void 0 : mData.club) == null ? void 0 : _f[side]) == null ? void 0 : _g.club_name) || ((_i = (_h = mData == null ? void 0 : mData.teams) == null ? void 0 : _h[side]) == null ? void 0 : _i.club_name) || ((_k = (_j = mData == null ? void 0 : mData.teams) == null ? void 0 : _j[side]) == null ? void 0 : _k.name) || side,
-      color: (team == null ? void 0 : team.color) || ((_m = (_l = mData == null ? void 0 : mData.teams) == null ? void 0 : _l[side]) == null ? void 0 : _m.color) || (side === "home" ? "var(--tmu-success)" : "var(--tmu-info)"),
-      lineup,
-      starting,
-      form,
-      avgAge: computedAvgAge || (Number.isFinite(Number(team == null ? void 0 : team.avgAge)) && Number(team.avgAge) >= 15 && Number(team.avgAge) <= 50 ? Number(team.avgAge) : 0),
-      avgRtn: Number.isFinite(Number(team == null ? void 0 : team.avgRtn)) ? Number(team.avgRtn) : avg(starting.map((player2) => player2.routine)),
-      avgR5: Number.isFinite(Number(team == null ? void 0 : team.avgR5)) ? Number(team.avgR5) : avg(starting.map((player2) => player2.r5)),
-      subsR5: Number.isFinite(Number(team == null ? void 0 : team.subsR5)) ? Number(team.subsR5) : avg(bench.map((player2) => player2.r5)),
-      formation: (team == null ? void 0 : team.formation) || ((_o = (_n = mData == null ? void 0 : mData.match_data) == null ? void 0 : _n.formation) == null ? void 0 : _o[side]) || "4-4-2",
-      mentalityLabel: (team == null ? void 0 : team.mentalityLabel) || ((_p = TmConst.MENTALITY_MAP_LONG) == null ? void 0 : _p[team == null ? void 0 : team.mentality]) || "?",
-      attackingStyleLabel: (team == null ? void 0 : team.attackingStyleLabel) || ((_q = TmConst.STYLE_MAP) == null ? void 0 : _q[team == null ? void 0 : team.attackingStyle]) || "?",
-      focusSideLabel: (team == null ? void 0 : team.focusSideLabel) || ((_r = TmConst.FOCUS_MAP) == null ? void 0 : _r[team == null ? void 0 : team.focusSide]) || "?",
-      GK: Number.isFinite(Number(team == null ? void 0 : team.GK)) ? Number(team.GK) : avg(linePlayers.GK.map((player2) => player2.r5)),
-      DEF: Number.isFinite(Number(team == null ? void 0 : team.DEF)) ? Number(team.DEF) : avg(linePlayers.DEF.map((player2) => player2.r5)),
-      MID: Number.isFinite(Number(team == null ? void 0 : team.MID)) ? Number(team.MID) : avg(linePlayers.MID.map((player2) => player2.r5)),
-      ATT: Number.isFinite(Number(team == null ? void 0 : team.ATT)) ? Number(team.ATT) : avg(linePlayers.ATT.map((player2) => player2.r5))
-    };
-  };
-  var TmMatchAnalysis = {
-    render(body, mData, teams) {
-      var _a2, _b;
-      const md = mData.match_data;
-      const safeTeams = {
-        home: enrichTeam(mData, "home", (teams == null ? void 0 : teams.home) || {}),
-        away: enrichTeam(mData, "away", (teams == null ? void 0 : teams.away) || {})
-      };
-      const lines = ["GK", "DEF", "MID", "ATT", "ALL"];
-      let html2 = '<div class="rnd-analysis-wrap">';
-      html2 += '<div class="rnd-an-section">';
-      html2 += '<div class="rnd-an-section-head"><span class="an-icon">\u{1F4CA}</span> Form Guide</div>';
-      html2 += '<div class="rnd-an-form-row">';
-      html2 += '<div class="rnd-an-form-side home">';
-      html2 += `<span class="rnd-an-form-label">${safeTeams.home.name.length > 12 ? safeTeams.home.name.substring(0, 12) + "\u2026" : safeTeams.home.name}</span>`;
-      html2 += '<div class="rnd-an-form-dots">';
-      safeTeams.home.form.dots.forEach((r) => {
-        html2 += `<div class="rnd-an-form-dot ${r}">${r.toUpperCase()}</div>`;
-      });
-      html2 += `</div><span class="rnd-an-form-pts">${safeTeams.home.form.pts}</span>`;
-      html2 += "</div>";
-      html2 += '<div class="rnd-an-form-side away">';
-      html2 += `<span class="rnd-an-form-label">${safeTeams.away.name.length > 12 ? safeTeams.away.name.substring(0, 12) + "\u2026" : safeTeams.away.name}</span>`;
-      html2 += '<div class="rnd-an-form-dots">';
-      safeTeams.away.form.dots.forEach((r) => {
-        html2 += `<div class="rnd-an-form-dot ${r}">${r.toUpperCase()}</div>`;
-      });
-      html2 += `</div><span class="rnd-an-form-pts">${safeTeams.away.form.pts}</span>`;
-      html2 += "</div>";
-      html2 += "</div>";
-      const totalFormPts = safeTeams.home.form.pts + safeTeams.away.form.pts || 1;
-      html2 += '<div class="rnd-an-form-bar-wrap"><div class="rnd-an-form-bar">';
-      html2 += `<div class="rnd-an-form-seg home" style="width:${Math.round(safeTeams.home.form.pts / totalFormPts * 100)}%"></div>`;
-      html2 += `<div class="rnd-an-form-seg away" style="width:${Math.round(safeTeams.away.form.pts / totalFormPts * 100)}%"></div>`;
-      html2 += "</div></div>";
-      html2 += "</div>";
-      html2 += '<div class="rnd-an-section">';
-      html2 += '<div class="rnd-an-section-head"><span class="an-icon">\u{1F4AA}</span> Squad Strength (R5)</div>';
-      const lineLabels = { GK: "Keeper", DEF: "Defence", MID: "Midfield", ATT: "Attack", ALL: "Overall" };
-      lines.forEach((line) => {
-        const hR5 = line === "ALL" ? safeTeams.home.avgR5 : safeTeams.home[line];
-        const aR5 = line === "ALL" ? safeTeams.away.avgR5 : safeTeams.away[line];
-        const maxR5 = Math.max(hR5, aR5, 1);
-        const hPct = Math.round(hR5 / maxR5 * 100);
-        const aPct = Math.round(aR5 / maxR5 * 100);
-        const hLead = hR5 > aR5 ? " leading" : "";
-        const aLead = aR5 > hR5 ? " leading" : "";
-        const isOverall = line === "ALL";
-        html2 += `<div class="rnd-an-strength-row"${isOverall ? ' style="padding:var(--tmu-space-sm) var(--tmu-space-xl);border-top:1px solid var(--tmu-border-soft-alpha)"' : ""}>`;
-        html2 += `<span class="rnd-an-str-val home${hLead}" style="color:${getColor5(hR5, R5_THRESHOLDS4)}">${TmUtils.formatR5(hR5)}</span>`;
-        html2 += `<div class="rnd-an-str-bar"><div class="rnd-an-str-fill home" style="width:${hPct}%"></div></div>`;
-        html2 += `<span class="rnd-an-str-label">${isOverall ? "\u2B50 " : ""}${lineLabels[line]}</span>`;
-        html2 += `<div class="rnd-an-str-bar"><div class="rnd-an-str-fill away" style="width:${aPct}%"></div></div>`;
-        html2 += `<span class="rnd-an-str-val away${aLead}" style="color:${getColor5(aR5, R5_THRESHOLDS4)}">${TmUtils.formatR5(aR5)}</span>`;
-        html2 += "</div>";
-      });
-      html2 += "</div>";
-      html2 += '<div class="rnd-an-section">';
-      html2 += '<div class="rnd-an-section-head"><span class="an-icon">\u{1F31F}</span> Key Players</div>';
-      html2 += '<div class="rnd-an-keys">';
-      const faceUrl = (p, clrHex) => TmMatchUtils.faceUrl(p, clrHex, 72);
-      const renderTopPlayers = (team, side) => {
-        const clr3 = team.color.replace("#", "");
-        const top5 = team.lineup.filter((p) => !p.isSub).sort((a, b) => (Number(b.r5) || 0) - (Number(a.r5) || 0)).slice(0, 5);
-        html2 += `<div class="rnd-an-keys-side${side === "away" ? " away" : ""}">`;
-        top5.forEach((p, i) => {
-          const url = faceUrl(p, clr3);
-          html2 += `<div class="rnd-an-key-player">`;
-          html2 += `<span class="rnd-an-key-rank">${i + 1}</span>`;
-          if (url) html2 += `<div class="rnd-an-key-face" style="border-color:${team.color}"><img src="${url}" onerror="this.style.display='none'"></div>`;
-          html2 += `<div class="rnd-an-key-info">
-                    <div class="rnd-an-key-name">${p.name}</div>
-                    <div class="rnd-an-key-meta">
-                        ${p.fp} \xB7 ${p.age}y \xB7 Rtn ${p.routine}
-                    </div>
-                </div>
-                <span class="rnd-an-key-r5" style="color:${getColor5(p.r5, R5_THRESHOLDS4)}">
-                ${TmUtils.formatR5(p.r5)}
-                </span>
-                </div>`;
-        });
-        html2 += "</div>";
-      };
-      renderTopPlayers(safeTeams.home, "home");
-      renderTopPlayers(safeTeams.away, "away");
-      html2 += "</div></div>";
-      html2 += '<div class="rnd-an-section">';
-      html2 += '<div class="rnd-an-section-head"><span class="an-icon">\u{1F4CB}</span> Squad Profile</div>';
-      html2 += '<div class="rnd-an-profile-grid">';
-      const profileCards = [
-        {
-          icon: "\u{1F382}",
-          label: "Avg Age",
-          homeValue: safeTeams.home.avgAge.toFixed(1),
-          awayValue: safeTeams.away.avgAge.toFixed(1)
+  // src/lib/match.js
+  var createCompetition = () => ({
+    name: null,
+    // "Super Liga Srbije"
+    type: null,
+    // "league" | "cup" | "friendly" | "friendly_league"
+    //   | "international_cup" | "ntq"
+    typeRaw: null,
+    // raw API code: "l", "fl", "f", "fq", "p1"–"p9",
+    //   "ueg", "ue1", "ue2", "clg", "cl1", "cl2", "ntq"
+    division: null
+    // 1, 2, 3 … (for league matches)
+  });
+  var createVenue = () => ({
+    name: null,
+    // "Renzo Barbera"
+    city: null,
+    capacity: null,
+    weather: null,
+    // "sunny3", "cloudy2", "rainy1", "snow1", "overcast1"
+    pitchCondition: null,
+    // 0–100
+    facilities: {
+      sprinklers: null,
+      // 0 | 1
+      draining: null,
+      pitchcover: null,
+      heating: null
+    },
+    picture: null
+    // stadium art variant (integer)
+  });
+  var createTactics = () => ({
+    mentality: null,
+    // 1 (Very Defensive) → 7 (Very Attacking)
+    style: null,
+    // "1" Balanced / "2" Direct / "3" Wings /
+    //   "4" Short Passing / "5" Long Balls / "6" Through Balls
+    focus: null,
+    // "1" Balanced / "2" Left / "3" Central / "4" Right
+    formation: null
+    // "4-4-2" (derived from lineup positions or match_data)
+  });
+  var createRatings = () => ({
+    avg: null,
+    // average R5 of the starting XI (= avgR5)
+    subs: null,
+    // average R5 of bench players
+    GK: null,
+    // average R5 of goalkeeper line
+    DEF: null,
+    // average R5 of defensive line
+    MID: null,
+    // average R5 of midfield line
+    ATT: null,
+    // average R5 of attacking line
+    avgAge: null,
+    avgRoutine: null
+  });
+  var createSide = () => ({
+    club: { ...Club },
+    // id, name, nick, country, division, stadium, …
+    color: null,
+    // resolved primary kit color "#3884ff"
+    captain: null,
+    // player id (Number) of the armband holder
+    playerIds: null,
+    // Set<string> — computed once from lineup on load
+    tactics: createTactics(),
+    lineup: [],
+    // Player.create() objects + match context fields
+    // ── Derived (populated by deriveMatchData / generateTeamData) ──────
+    goals: null,
+    goalsAgainst: null,
+    stats: null,
+    // { shots, shotsOnTarget, saves, passes,
+    //   passesCompleted, crosses, fouls,
+    //   yellowCards, redCards, advanced }
+    ratings: createRatings()
+  });
+  var Match = {
+    create() {
+      return {
+        // ── Identity ─────────────────────────────────────────────────
+        id: null,
+        // match id (number or string)
+        season: null,
+        // season number
+        // ── When ─────────────────────────────────────────────────────
+        date: null,
+        // "YYYY-MM-DD"
+        kickoff: null,
+        // Unix timestamp of scheduled kick-off
+        kickoffTime: null,
+        // "17:00" time of day
+        // ── What competition ──────────────────────────────────────────
+        competition: createCompetition(),
+        // ── Where ─────────────────────────────────────────────────────
+        venue: createVenue(),
+        // ── Who ───────────────────────────────────────────────────────
+        home: createSide(),
+        away: createSide(),
+        // ── Outcome ───────────────────────────────────────────────────
+        result: {
+          home: null,
+          // goals scored by home (null = not played yet)
+          away: null,
+          halftime: { home: null, away: null }
         },
-        {
-          icon: "\u{1F4C8}",
-          label: "Avg Routine",
-          homeValue: safeTeams.home.avgRtn.toFixed(1),
-          awayValue: safeTeams.away.avgRtn.toFixed(1)
+        possession: { home: null, away: null },
+        // % at full time
+        attendance: null,
+        // ── Lifecycle status ──────────────────────────────────────────
+        // Explicit — no more inferring from 4 different fields.
+        status: null,
+        // 'future' | 'live' | 'ended'
+        // liveMin: elapsed real-world minutes since kickoff when status='live'.
+        // Negative when status='future' (|liveMin| = minutes until kickoff).
+        liveMin: null,
+        // ── Duration (populated from API, meaningful when ended) ──────
+        duration: {
+          regular: null,
+          // 90 (or last minute of regulation)
+          total: null,
+          // 94 (including all stoppage time)
+          extra: null
+          // 4 (added minutes)
         },
-        {
-          icon: "\u2B50",
-          label: "Starting XI R5",
-          homeValue: TmUtils.formatR5(safeTeams.home.avgR5),
-          awayValue: TmUtils.formatR5(safeTeams.away.avgR5),
-          homeColor: getColor5(safeTeams.home.avgR5, R5_THRESHOLDS4),
-          awayColor: getColor5(safeTeams.away.avgR5, R5_THRESHOLDS4)
+        // ── Play engine (immutable after normalizeMatchData) ───────
+        // report: raw minute-keyed API events.
+        //         normalizeReport() promotes each event's parameters array
+        //         to direct properties on the event object (e.g. evt.goal,
+        //         evt.yellow, evt.sub) so consumers never touch .parameters.
+        // plays:  one Play per attacking chance sequence, built by
+        //         buildNormalizedPlays() from the normalized report.
+        //         Shape: { [min: string]: Play[] }
+        //         Play = { min, team, style, outcome, segments,
+        //                  reportEventIndex, severity }
+        //         Segment = { clips: Clip[], actions: GameAction[],
+        //                     text: string[] }
+        //         These two objects never change after normalization.
+        report: {},
+        plays: {},
+        // ── Broadcast state (rebuilt by deriveMatchData each replay step) ──
+        // visiblePlays: time-gate of plays — same shape as plays, contains
+        //               only the plays at or before the current cursor.
+        //               { [min: string]: Play[] }
+        visiblePlays: {},
+        // events: indexed action log — extracted from the segment.actions of
+        //         all visiblePlays.  Rebuilt from visiblePlays each step.
+        //
+        //         Instead of a generic flat array that every consumer has
+        //         to re-filter, the structure pre-indexes by the categories
+        //         actually needed at broadcast time:
+        //
+        //   log          — full chronological list of GameActions (source of truth)
+        //                  GameAction = { action, by, player, teamId, home,
+        //                                min, evtIdx, …type-specific fields }
+        //   score        — current goals.  Maintained as log grows — O(1) read.
+        //   mentality    — last recorded mentality for each side — O(1) read.
+        //   goals        — subset of log where action='shot' && goal.
+        //                  Used for: timeline, goal notifications, scoreline.
+        //   cards        — subset of log where action ∈ {yellow,yellowRed,red}.
+        //                  Used for: discipline board, player icon overlays.
+        //   subs         — subset of log where action ∈ {subIn,subOut}.
+        //                  Used for: active lineup reconstruction (much smaller
+        //                  than scanning the full log).
+        events: {
+          log: [],
+          score: { home: 0, away: 0 },
+          mentality: { home: null, away: null },
+          goals: [],
+          cards: [],
+          subs: []
         },
-        {
-          icon: "\u{1FA91}",
-          label: "Bench Avg R5",
-          homeValue: TmUtils.formatR5(safeTeams.home.subsR5),
-          awayValue: TmUtils.formatR5(safeTeams.away.subsR5),
-          homeColor: getColor5(safeTeams.home.subsR5, R5_THRESHOLDS4),
-          awayColor: getColor5(safeTeams.away.subsR5, R5_THRESHOLDS4)
-        }
-      ];
-      html2 += profileCards.map((card) => TmMatchAnalysisProfile.card(card)).join("");
-      html2 += "</div></div>";
-      html2 += '<div class="rnd-an-section">';
-      html2 += '<div class="rnd-an-section-head"><span class="an-icon">\u2694\uFE0F</span> Tactical Matchup</div>';
-      html2 += '<div class="rnd-an-tactics">';
-      const generateTactics = (team, side) => {
-        const formation = team.formation;
-        const ment = team.mentalityLabel || team.mentality;
-        const style = team.attackingStyleLabel || team.attackingStyle;
-        const focus = team.focusSideLabel || team.focusSide;
-        const tacticRows = [
-          { icon: "\u{1F4D0}", label: "Formation", value: formation },
-          { icon: "\u2694\uFE0F", label: "Mentality", value: ment },
-          { icon: "\u{1F3AF}", label: "Style", value: style },
-          { icon: "\u25CE", label: "Focus", value: focus }
-        ];
-        html2 += `<div class="rnd-an-tactic-side${side === "away" ? " away" : ""}">`;
-        html2 += `<div class="rnd-an-tactic-team">${team.name}</div>`;
-        html2 += tacticRows.map((row) => TmMatchAnalysisTactic.row(row)).join("");
-        html2 += "</div>";
+        // ── Enrichment state ──────────────────────────────────────────
+        // profilesReady: false until the tm:match-profiles-ready event fires
+        // and lineup players receive their full skill / r5 / asi data.
+        // Until then every player has base identity fields only.
+        profilesReady: false
       };
-      generateTactics(safeTeams.home, "home");
-      generateTactics(safeTeams.away, "away");
-      html2 += "</div></div>";
-      const hOut = ((_a2 = md.lineup_out) == null ? void 0 : _a2.home) ? Object.values(md.lineup_out.home) : [];
-      const aOut = ((_b = md.lineup_out) == null ? void 0 : _b.away) ? Object.values(md.lineup_out.away) : [];
-      if (hOut.length || aOut.length) {
-        html2 += '<div class="rnd-an-section">';
-        html2 += '<div class="rnd-an-section-head"><span class="an-icon">\u{1F6AB}</span> Unavailable</div>';
-        html2 += '<div class="rnd-an-unavail">';
-        html2 += '<div class="rnd-an-unavail-side">';
-        if (hOut.length) hOut.forEach((p) => {
-          html2 += `<div class="rnd-an-unavail-player">\u2715 ${p.name}</div>`;
-        });
-        else html2 += '<div class="rnd-an-unavail-none">Full squad available</div>';
-        html2 += "</div>";
-        html2 += '<div class="rnd-an-unavail-side away">';
-        if (aOut.length) aOut.forEach((p) => {
-          html2 += `<div class="rnd-an-unavail-player">\u2715 ${p.name}</div>`;
-        });
-        else html2 += '<div class="rnd-an-unavail-none">Full squad available</div>';
-        html2 += "</div>";
-        html2 += "</div></div>";
-      }
-      html2 += '<div class="rnd-an-section">';
-      html2 += '<div class="rnd-an-section-head"><span class="an-icon">\u{1F52E}</span> Match Prediction</div>';
-      html2 += '<div class="rnd-an-prediction">';
-      const hR5Score = safeTeams.home.avgR5;
-      const aR5Score = safeTeams.away.avgR5;
-      const hFormScore = safeTeams.home.form.dots.length ? safeTeams.home.form.pts / (safeTeams.home.form.dots.length * 3) : 0.5;
-      const aFormScore = safeTeams.away.form.dots.length ? safeTeams.away.form.pts / (safeTeams.away.form.dots.length * 3) : 0.5;
-      const homeAdv = TmConst.GAMEPLAY.HOME_ADVANTAGE;
-      const r5Weight = 0.7;
-      const formWeight = 0.15;
-      const haWeight = 0.15;
-      const r5Norm = (v) => Math.max(0, Math.min(1, (v - 40) / 80));
-      const hStrength = r5Norm(hR5Score) * r5Weight + hFormScore * formWeight + (0.5 + homeAdv) * haWeight;
-      const aStrength = r5Norm(aR5Score) * r5Weight + aFormScore * formWeight + (0.5 - homeAdv) * haWeight;
-      const diff = hStrength - aStrength;
-      const drawBase = 0.24;
-      const drawProb = Math.max(0.08, drawBase - Math.abs(diff) * 0.6);
-      const remaining = 1 - drawProb;
-      const sigmoid = (x) => 1 / (1 + Math.exp(-x * 12));
-      const hWinRaw = sigmoid(diff);
-      let hWin = Math.round(hWinRaw * remaining * 100);
-      let draw = Math.round(drawProb * 100);
-      let aWin = 100 - hWin - draw;
-      if (aWin < 0) {
-        aWin = 0;
-        hWin = 100 - draw;
-      }
-      html2 += '<div class="rnd-an-pred-teams">';
-      html2 += '<div class="rnd-an-pred-side">';
-      html2 += `<img class="rnd-an-pred-logo" src="/pics/club_logos/${safeTeams.home.id}_140.png" onerror="this.style.display='none'">`;
-      html2 += `<div class="rnd-an-pred-name">${safeTeams.home.name}</div>`;
-      html2 += `<div class="rnd-an-pred-pct home">${hWin}%</div>`;
-      html2 += '<div class="rnd-an-pred-label">Win</div>';
-      html2 += "</div>";
-      html2 += '<div class="rnd-an-pred-draw">';
-      html2 += `<div class="rnd-an-pred-pct draw">${draw}%</div>`;
-      html2 += '<div class="rnd-an-pred-label">Draw</div>';
-      html2 += "</div>";
-      html2 += '<div class="rnd-an-pred-side">';
-      html2 += `<img class="rnd-an-pred-logo" src="/pics/club_logos/${safeTeams.away.id}_140.png" onerror="this.style.display='none'">`;
-      html2 += `<div class="rnd-an-pred-name">${safeTeams.away.name}</div>`;
-      html2 += `<div class="rnd-an-pred-pct away">${aWin}%</div>`;
-      html2 += '<div class="rnd-an-pred-label">Win</div>';
-      html2 += "</div>";
-      html2 += "</div>";
-      html2 += '<div class="rnd-an-pred-bar-wrap">';
-      html2 += `<div class="rnd-an-pred-seg home" style="width:${hWin}%"></div>`;
-      html2 += `<div class="rnd-an-pred-seg draw" style="width:${draw}%"></div>`;
-      html2 += `<div class="rnd-an-pred-seg away" style="width:${aWin}%"></div>`;
-      html2 += "</div>";
-      html2 += "</div></div>";
-      html2 += "</div>";
-      body.html(html2);
     }
   };
+  var exampleMatch = Match.create();
+  Object.assign(exampleMatch, {
+    id: "12345678",
+    season: 26,
+    date: "2026-03-13",
+    kickoff: 1773356400,
+    kickoffTime: "17:00",
+    competition: { name: "Super Liga Srbije", type: "league", typeRaw: "l", division: 1 },
+    venue: {
+      name: "Renzo Barbera",
+      city: "Beograd",
+      capacity: 64e3,
+      weather: "sunny3",
+      pitchCondition: 72,
+      facilities: { sprinklers: 1, draining: 0, pitchcover: 1, heating: 0 },
+      picture: 9
+    },
+    result: { home: 2, away: 1, halftime: { home: 1, away: 0 } },
+    possession: { home: 55, away: 45 },
+    attendance: 42500,
+    status: "ended",
+    liveMin: null,
+    duration: { regular: 90, total: 94, extra: 4 },
+    // At full time, events holds the complete broadcast-state snapshot:
+    events: {
+      log: [],
+      // populated with all GameAction objects by deriveMatchData
+      score: { home: 2, away: 1 },
+      mentality: { home: 5, away: 4 },
+      goals: [],
+      // two home goal actions + one away goal action
+      cards: [],
+      // yellow/red card actions
+      subs: []
+      // sub actions (used for active lineup reconstruction)
+    }
+  });
+  Object.assign(exampleMatch.home, {
+    club: { id: "1001", name: "FK Partizan", nick: "PAR", country: "Serbia", division: 1, group: "1", manager_name: "Marko Kova\u010D", fanclub: 18e3, stadium: "Renzo Barbera" },
+    color: "#3884ff",
+    captain: 137172448,
+    playerIds: /* @__PURE__ */ new Set(),
+    // populated with player id strings during normalization
+    tactics: { mentality: 5, style: "3", focus: "2", formation: "4-3-3" },
+    lineup: [],
+    // Player.create() + { position, fp, captain, rec, rating, mom, … }
+    goals: 2,
+    goalsAgainst: 1,
+    stats: { shots: 14, shotsOnTarget: 6, saves: 3, passes: 412, passesCompleted: 327, crosses: 18, fouls: 11, yellowCards: 2, redCards: 0, advanced: {} },
+    ratings: { avg: 6.82, subs: 6.45, GK: 7.1, DEF: 6.9, MID: 6.8, ATT: 6.7, avgAge: 25.3, avgRoutine: 58.4 }
+  });
+  Object.assign(exampleMatch.away, {
+    club: { id: "1002", name: "FK Vojvodina", nick: "VOJ", country: "Serbia", division: 1, group: "1", manager_name: "Nikola Petrovi\u0107", fanclub: 9500, stadium: "Kara\u0111or\u0111e stadion" },
+    color: "#e63030",
+    captain: 139575032,
+    playerIds: /* @__PURE__ */ new Set(),
+    tactics: { mentality: 3, style: "2", focus: "1", formation: "4-4-2" },
+    lineup: [],
+    goals: 1,
+    goalsAgainst: 2,
+    stats: { shots: 8, shotsOnTarget: 3, saves: 5, passes: 298, passesCompleted: 210, crosses: 9, fouls: 14, yellowCards: 3, redCards: 0, advanced: {} },
+    ratings: { avg: 6.51, subs: 6.1, GK: 6.8, DEF: 6.5, MID: 6.4, ATT: 6.6, avgAge: 27, avgRoutine: 55.1 }
+  });
 
-  // src/components/match/tm-match-details.js
-  var TmMatchDetails = {
-    render(body, liveState) {
-      const mData = liveState.mData;
-      const IMPORTANT_ACTIONS = /* @__PURE__ */ new Set(["shot", "yellow", "yellowRed", "red", "subIn", "injury"]);
-      const icons = { shot: "\u26BD", yellow: "\u{1F7E8}", yellowRed: "\u{1F7E5}\u{1F7E8}", red: "\u{1F7E5}", injury: "\u271A" };
-      const allActions = (mData.actions || []).filter((a) => IMPORTANT_ACTIONS.has(a.action) && (a.action !== "shot" || a.goal));
-      let html2 = '<div style="max-width:900px;margin:0 auto"><div class="rnd-timeline">';
-      allActions.forEach((act) => {
-        var _a2;
-        let cell;
-        if (act.action === "subIn") {
-          const subIns = allActions.filter((a) => a.action === "subIn" && a.min === act.min && a.home === act.home);
-          const subOuts = (mData.actions || []).filter((a) => a.action === "subOut" && a.min === act.min && a.home === act.home);
-          const subOut = subOuts[subIns.indexOf(act)];
-          cell = `<span style="color:var(--tmu-success-strong)">\u2191 ${act.player}</span> <span style="color:var(--tmu-warning-soft)">\u2193 ${(_a2 = subOut == null ? void 0 : subOut.player) != null ? _a2 : "?"}</span>`;
-        } else if (act.action === "shot") {
-          const assistAct = (mData.actions || []).find((a) => a.action === "assist" && a.min === act.min && a.evtIdx === act.evtIdx);
-          cell = `${act.player} \u26BD${(assistAct == null ? void 0 : assistAct.player) ? ` <span style="color:var(--tmu-text-disabled)">(${assistAct.player})</span>` : ""}`;
-        } else {
-          cell = `${act.player} ${icons[act.action] || ""}`;
-        }
-        html2 += `<div class="rnd-tl-row">`;
-        html2 += `<div class="rnd-tl-home">${act.home ? cell : ""}</div>`;
-        html2 += `<div class="rnd-tl-min">${act.min}'</div>`;
-        html2 += `<div class="rnd-tl-away">${!act.home ? cell : ""}</div>`;
-        html2 += `</div>`;
-      });
-      html2 += "</div></div>";
-      body.html(html2);
-    }
+  // src/utils/normalize/match.js
+  var resolveCompetitionType = (typeRaw) => {
+    if (!typeRaw) return null;
+    if (typeRaw === "l") return "league";
+    if (typeRaw === "fl") return "friendly_league";
+    if (typeRaw === "f" || typeRaw === "fq") return "friendly";
+    if (/^p\d+$/.test(typeRaw)) return "cup";
+    if (typeRaw === "ntq") return "ntq";
+    if (/^(ue|cl)\w*$/.test(typeRaw)) return "international_cup";
+    return null;
   };
-
-  // src/components/match/tm-match-accordion.js
-  var $2 = window.jQuery;
-  var TmMatchAccordion = {
-    bindToggles(target, { selector = ".rnd-acc-head", namespace = "rndacc", stopPropagation = false } = {}) {
-      const root2 = (target == null ? void 0 : target.jquery) ? target : $2(target);
-      if (!root2 || !root2.length) return;
-      const eventName = namespace ? `click.${namespace}` : "click";
-      if (namespace) root2.off(eventName, selector);
-      root2.on(eventName, selector, function(e) {
-        if (stopPropagation) e.stopPropagation();
-        $2(this).closest(".rnd-acc").toggleClass("open");
-      });
-    }
-  };
-
-  // src/components/match/tm-match-report.js
-  var badgeHtml3 = (opts, tone = "muted") => TmUI.badge({ size: "md", shape: "rounded", weight: "bold", ...opts }, tone);
-  var _buildEventHtml = (play, min, liveState) => {
-    if (!play || !play.segments) return "";
-    const evtIdx = play.reportEvtIdx;
-    const homeId = String(liveState.mData.teams.home.id);
-    const isHome = String(play.team) === homeId;
-    const isNeutral = !play.team || String(play.team) === "0";
-    const acts = (liveState.mData.actions || []).filter((a) => a.min === min && a.evtIdx === evtIdx);
-    let headerBadges = "";
-    let hasEvents = false;
-    let hasGoal = false;
-    const goalAct = acts.find((a) => a.action === "shot" && a.goal);
-    if (goalAct) {
-      hasEvents = true;
-      hasGoal = true;
-      const score = goalAct.score ? goalAct.score.join("-") : "";
-      const assistAct = acts.find((a) => a.action === "assist");
-      let b = `\u26BD ${goalAct.player}`;
-      if (score) b += ` (${score})`;
-      if (assistAct == null ? void 0 : assistAct.player) b += ` <span style="font-size:var(--tmu-font-xs);color:var(--tmu-text-panel-label)">ast. ${assistAct.player}</span>`;
-      headerBadges += badgeHtml3({ slot: b }, "success");
-    }
-    const yellowAct = acts.find((a) => a.action === "yellow");
-    if (yellowAct) {
-      hasEvents = true;
-      headerBadges += badgeHtml3({ icon: "\u{1F7E8}", label: yellowAct.player }, "highlight");
-    }
-    const yellowRedAct = acts.find((a) => a.action === "yellowRed");
-    if (yellowRedAct) {
-      hasEvents = true;
-      headerBadges += badgeHtml3({ icon: "\u{1F7E5}\u{1F7E8}", label: yellowRedAct.player }, "danger");
-    }
-    const redAct = acts.find((a) => a.action === "red");
-    if (redAct) {
-      hasEvents = true;
-      headerBadges += badgeHtml3({ icon: "\u{1F7E5}", label: redAct.player }, "danger");
-    }
-    const injAct = acts.find((a) => a.action === "injury");
-    if (injAct) {
-      hasEvents = true;
-      headerBadges += badgeHtml3({ icon: '<span style="color:var(--tmu-danger);font-weight:800">\u271A</span>', label: injAct.player }, "warn");
-    }
-    const subInActs = acts.filter((a) => a.action === "subIn");
-    const subOutActs = acts.filter((a) => a.action === "subOut");
-    subInActs.forEach((subIn, i) => {
-      var _a2;
-      hasEvents = true;
-      const subOut = subOutActs[i];
-      headerBadges += badgeHtml3({ icon: "\u{1F504}", label: `\u2191${subIn.player} \u2193${(_a2 = subOut == null ? void 0 : subOut.player) != null ? _a2 : "?"}` }, "info");
-    });
-    const lines = [];
-    play.segments.forEach((seg) => {
-      (seg.text || []).forEach((line) => {
-        if (!line || !line.trim()) return;
-        line = line.replace(/\[goal\]/g, '<span class="rnd-goal-text">\u26BD </span>');
-        line = line.replace(/\[yellow\]/g, '<span class="rnd-yellow-text">\u{1F7E8} </span>');
-        line = line.replace(/\[red\]/g, '<span class="rnd-red-text">\u{1F7E5} </span>');
-        line = line.replace(/\[sub\]/g, '<span class="rnd-sub-text">\u{1F504} </span>');
-        line = line.replace(/\[assist\]/g, "");
-        lines.push(line);
-      });
-    });
-    const goalCls = hasGoal ? " rnd-acc-goal" : "";
-    const chevron = '<svg class="rnd-acc-chevron" viewBox="0 0 24 24"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg>';
-    let headerContent = headerBadges;
-    if (!hasEvents) {
-      const preview = lines.length ? lines[0] : "";
-      headerContent = `<span style="color:var(--tmu-text-panel-label);font-size:var(--tmu-font-sm)">${preview}</span>`;
-    }
-    const totalLines = lines.length || 1;
-    let html2 = `<div class="rnd-acc" data-acc="${min}-${evtIdx}" data-line-count="${totalLines}">`;
-    html2 += `<div class="rnd-acc-head${goalCls}">`;
-    html2 += `<div class="rnd-acc-home">${isHome ? headerContent : ""}</div>`;
-    html2 += `<div class="rnd-acc-min">${min}'</div>`;
-    html2 += `<div class="rnd-acc-away">${!isHome && !isNeutral ? headerContent : isNeutral ? headerContent : ""}</div>`;
-    html2 += chevron;
-    html2 += `</div>`;
-    html2 += `<div class="rnd-acc-body"><div class="rnd-report-text">${lines.join("<br>")}</div></div>`;
-    html2 += `</div>`;
-    return html2;
-  };
-  var TmMatchReport = {
-    /**
-     * Build HTML for a single report event accordion.
-     * @param {object} play  — normalized play with .segments, .team, .reportEvtIdx
-     * @param {number} min
-     * @param {object} playerNames
-     * @param {string} homeId
-     * @returns {string}
-     */
-    buildEventHtml: _buildEventHtml,
-    /**
-     * Full render of the Report tab.
-     * Reads visiblePlays from mData (already computed by deriveMatchData).
-     * @param {jQuery} body
-     * @param {object} mData
-     */
-    render(body, liveState) {
-      const visiblePlays = liveState.mData.visiblePlays || {};
-      let html2 = '<div style="max-width:900px;margin:0 auto"><div id="rnd-report-timeline" class="rnd-timeline">';
-      Object.keys(visiblePlays).map(Number).sort((a, b) => a - b).forEach((min) => {
-        (visiblePlays[String(min)] || []).forEach((play) => {
-          html2 += _buildEventHtml(play, min, liveState);
-        });
-      });
-      html2 += "</div></div>";
-      body.html(html2);
-      TmMatchAccordion.bindToggles(body);
-    }
-  };
-
-  // src/components/match/tm-match-header.js
-  var { MENTALITY_MAP: MENTALITY_MAP3, STYLE_MAP_SHORT: STYLE_MAP_SHORT2, FOCUS_MAP: FOCUS_MAP2 } = TmConst;
-  var badgeHtml4 = (opts, tone = "muted") => TmUI.badge({ size: "xs", shape: "rounded", weight: "bold", ...opts }, tone);
-  var buildChips = (mData, side) => {
-    const md = mData.match_data;
-    let c = "";
-    const ment = MENTALITY_MAP3[mData.teams[side].mentality] || "?";
-    c += badgeHtml4({
-      attrs: { id: `rnd-chip-ment-${side}` },
-      slot: `<span class="tmu-badge-icon">\u2694</span><span class="tmu-badge-value">${ment}</span>`
-    });
-    const style = mData.teams[side].attackingStyle ? STYLE_MAP_SHORT2[mData.teams[side].attackingStyle] || mData.teams[side].attackingStyle : "?";
-    c += badgeHtml4({
-      slot: `<span class="tmu-badge-icon">\u{1F3AF}</span><span class="tmu-badge-value">${style}</span>`
-    });
-    const focus = mData.teams[side].focusSide ? FOCUS_MAP2[mData.teams[side].focusSide] || mData.teams[side].focusSide : "?";
-    c += badgeHtml4({
-      slot: `<span class="tmu-badge-icon">\u25CE</span><span class="tmu-badge-value">${focus}</span>`
-    });
-    c += badgeHtml4({
-      attrs: { id: `rnd-chip-r5-${side}` },
-      slot: '<span class="tmu-badge-label">R5</span><span class="tmu-badge-value">\xB7\xB7\xB7</span>'
-    });
-    return c;
-  };
-  var buildDatetime = (md) => {
+  var normalizeRawMatchClub = (rawClub) => ({
+    id: rawClub.id || null,
+    name: rawClub.club_name || null,
+    nick: rawClub.club_nick || null,
+    country: rawClub.country || null,
+    division: rawClub.division ? Number(rawClub.division) : null,
+    group: rawClub.group || null,
+    manager_name: rawClub.manager_name || null,
+    fanclub: rawClub.fanclub || null,
+    stadium: rawClub.stadium || null,
+    city: rawClub.city || null
+  });
+  var applyMatchContext = (player2, p, captainId) => {
     var _a2;
-    const ko = ((_a2 = md.venue) == null ? void 0 : _a2.kickoff_readable) || "";
-    const d = ko ? new Date(ko.replace(" ", "T")).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" }) : "";
-    const t = md.match_time_of_day || "";
-    return (d || "") + (t ? " \xB7 " + t : "");
+    player2.position = p.position || null;
+    player2.captain = Number(p.player_id) === captainId;
+    player2.rating = typeof p.rating === "number" && p.rating > 0 ? p.rating : null;
+    player2.mom = (_a2 = p.mom) != null ? _a2 : 0;
+    player2.grouped = [];
+    player2.perMinute = [];
+    player2.minsPlayed = null;
+    return player2;
   };
-  var htmlOf6 = (node) => node ? node.outerHTML : "";
-  var buttonHtml11 = (opts) => TmUI.button(opts).outerHTML;
-  var buildTabs = (matchIsFuture, isLeague) => {
-    const items = matchIsFuture ? [
-      { key: "lineups", label: "Expected Lineups" },
-      { key: "analysis", label: "Analysis" },
-      { key: "venue", label: "Venue" },
-      { key: "h2h", label: "H2H" }
-    ] : [
-      { key: "details", label: "Details" },
-      { key: "statistics", label: "Statistics" },
-      { key: "report", label: "Report" },
-      { key: "lineups", label: "Lineups" },
-      { key: "analysis", label: "Analysis" },
-      ...isLeague ? [{ key: "league", label: "League" }] : [],
-      { key: "venue", label: "Venue" },
-      { key: "h2h", label: "H2H" }
-    ];
-    return htmlOf6(TmUI.tabs({
-      items,
-      active: "lineups",
-      color: "primary",
-      stretch: true,
-      cls: "rnd-tabs"
-    }));
+  var normalizeRawMatch = (raw, playersById = /* @__PURE__ */ new Map()) => {
+    var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s2, _t, _u, _v;
+    const match = Match.create();
+    const md = raw.match_data || {};
+    const venue = md.venue || {};
+    match.id = (_b = (_a2 = raw.match_id) != null ? _a2 : raw.id) != null ? _b : null;
+    match.season = (_c = raw.season) != null ? _c : null;
+    const readable = venue.kickoff_readable || "";
+    match.date = readable.split(" ")[0] || null;
+    match.kickoff = venue.kickoff ? Number(venue.kickoff) : null;
+    match.kickoffTime = md.match_time_of_day || null;
+    const typeRaw = venue.matchtype || null;
+    match.competition.name = venue.tournament || null;
+    match.competition.typeRaw = typeRaw;
+    match.competition.type = resolveCompetitionType(typeRaw);
+    const homeDivision = (_e = (_d = raw.club) == null ? void 0 : _d.home) == null ? void 0 : _e.division;
+    match.competition.division = homeDivision ? Number(homeDivision) : null;
+    match.venue.name = venue.name || null;
+    match.venue.city = venue.city || null;
+    match.venue.capacity = venue.capacity ? Number(venue.capacity) : null;
+    match.venue.weather = venue.weather || null;
+    match.venue.pitchCondition = venue.pitch_condition ? Number(venue.pitch_condition) : null;
+    match.venue.facilities.sprinklers = (_f = venue.sprinklers) != null ? _f : null;
+    match.venue.facilities.draining = (_g = venue.draining) != null ? _g : null;
+    match.venue.facilities.pitchcover = (_h = venue.pitchcover) != null ? _h : null;
+    match.venue.facilities.heating = (_i = venue.heating) != null ? _i : null;
+    match.venue.picture = (_j = venue.picture) != null ? _j : null;
+    match.duration.regular = md.regular_last_min ? Number(md.regular_last_min) : null;
+    match.duration.total = md.last_min ? Number(md.last_min) : null;
+    match.duration.extra = md.extra_time ? Number(md.extra_time) : null;
+    match.possession.home = (_l = (_k = md.possession) == null ? void 0 : _k.home) != null ? _l : null;
+    match.possession.away = (_n = (_m = md.possession) == null ? void 0 : _m.away) != null ? _n : null;
+    match.attendance = md.attendance ? Number(md.attendance) : null;
+    const htRaw = (_o = md.halftime) == null ? void 0 : _o.chance;
+    if (htRaw) {
+      const htText = Array.isArray(htRaw.text) ? htRaw.text[0] : htRaw.text;
+      const htLine = Array.isArray(htText) ? htText[0] : htText;
+      const htMatch = typeof htLine === "string" ? htLine.match(/(\d+)-(\d+)\.$/) : null;
+      if (htMatch) {
+        match.result.halftime.home = Number(htMatch[1]);
+        match.result.halftime.away = Number(htMatch[2]);
+      }
+    }
+    const rawLiveMin = md.live_min;
+    if (typeof rawLiveMin === "number" && rawLiveMin < 0) {
+      match.status = "future";
+      match.liveMin = rawLiveMin;
+    } else if (typeof rawLiveMin === "number" && rawLiveMin > 0) {
+      match.status = "live";
+      match.liveMin = rawLiveMin;
+    } else {
+      const kickoffTs = Number(venue.kickoff);
+      const now = Math.floor(Date.now() / 1e3);
+      match.status = kickoffTs && kickoffTs > now ? "future" : "ended";
+      match.liveMin = null;
+    }
+    for (const side of ["home", "away"]) {
+      const rawClub = ((_p = raw.club) == null ? void 0 : _p[side]) || {};
+      const rawLineup = ((_q = raw.lineup) == null ? void 0 : _q[side]) || {};
+      const captainId = Number(((_r = md.captain) == null ? void 0 : _r[side]) || 0);
+      const color = "#" + (((_s2 = rawClub.colors) == null ? void 0 : _s2.club_color1) || (side === "home" ? "4a9030" : "5b9bff"));
+      match[side].club = normalizeRawMatchClub(rawClub);
+      match[side].color = color;
+      match[side].captain = captainId || null;
+      match[side].tactics.mentality = ((_t = md.mentality) == null ? void 0 : _t[side]) != null ? Number(md.mentality[side]) : null;
+      match[side].tactics.style = ((_u = md.attacking_style) == null ? void 0 : _u[side]) || null;
+      match[side].tactics.focus = ((_v = md.focus_side) == null ? void 0 : _v[side]) || null;
+      match[side].lineup = Object.values(rawLineup).map((p) => {
+        const pid = Number(p.player_id);
+        const player2 = playersById.get(pid);
+        if (!player2) return null;
+        return applyMatchContext(player2, p, captainId);
+      }).filter(Boolean);
+      match[side].playerIds = new Set(Object.keys(rawLineup));
+    }
+    match.report = raw.report || {};
+    match.plays = {};
+    return match;
+  };
+
+  // src/models/match.js
+  var TmMatchModel = {
+    /**
+     * Fetch and normalize a match.
+     * Returns a canonical Match object (lib/match.js shape).
+     * Derived fields (goals, stats, ratings, visiblePlays, actions) are
+     * populated by calling TmMatchUtils.deriveMatchData(liveState) afterwards.
+     *
+     * @param {string|number} matchId
+     * @param {{ dbSync?: boolean }} [options]
+     * @returns {Promise<object|null>}
+     */
+    async fetchMatch(matchId, options = {}) {
+      return TmMatchService.fetchMatch(matchId, options);
+    },
+    /**
+     * Fetch match data without triggering the async player-profile enrichment.
+     * Use when only static match facts are needed (stats page, history, etc.).
+     *
+     * @param {string|number} matchId
+     * @returns {Promise<object|null>}
+     */
+    async fetchMatchLite(matchId) {
+      return TmMatchService.fetchMatchLite(matchId);
+    },
+    /**
+     * Fetch a match and process it through the stats pipeline.
+     *
+     * @param {object} matchInfo
+     * @param {string|number} clubId
+     * @param {{ dbSync?: boolean }} [options]
+     * @returns {Promise<object|null>}
+     */
+    async fetchMatchForStats(matchInfo, clubId2, options = {}) {
+      return TmMatchService.fetchMatchForStats(matchInfo, clubId2, options);
+    },
+    /**
+     * Fetch the head-to-head history between two clubs.
+     *
+     * @param {string|number} homeId
+     * @param {string|number} awayId
+     * @param {number} kickoffTs  Unix timestamp of the reference match kickoff
+     * @returns {Promise<object|null>}
+     */
+    fetchH2H(homeId, awayId, kickoffTs) {
+      return TmMatchService.fetchMatchH2H(homeId, awayId, kickoffTs);
+    },
+    /**
+     * Fetch the match tooltip (past season results) from the tooltip endpoint.
+     *
+     * @param {string|number} matchId
+     * @param {string|number} season
+     * @returns {Promise<object|null>}
+     */
+    fetchTooltip(matchId, season) {
+      return TmMatchService.fetchMatchTooltip(matchId, season);
+    },
+    /**
+     * Build a canonical Match object directly from a known raw payload.
+     * Useful in tests, offline tools, or when a raw response is already in hand.
+     *
+     * @param {object} raw  match.ajax.php response
+     * @returns {object}    Match.create() with static fields populated
+     */
+    fromRaw(raw) {
+      return normalizeRawMatch(raw);
+    },
+    /**
+     * Strip unnecessary display / cache fields from a raw match response.
+     * See TmMatchService.compressMatch for the full list of removed fields.
+     *
+     * @param {object} raw
+     * @returns {object}  compressed raw (still raw shape, not a Match object)
+     */
+    compress(raw) {
+      return TmMatchService.compressMatch(raw);
+    },
+    /**
+     * Fetch, normalize and synchronously enrich a match with full player profiles.
+     * Unlike fetchMatch (which enriches async/fire-and-forget), this awaits all
+     * tooltip fetches before returning — needed by the match player overlay so
+     * positions/skills are available on first render.
+     *
+     * @param {string|number} matchId
+     * @returns {Promise<object|null>}  normalized match with plays built
+     */
+    async fetchMatchWithProfiles(matchId) {
+      var _a2, _b;
+      const raw = await _get(`/ajax/match.ajax.php?id=${matchId}`);
+      if (!raw) return null;
+      const allRawPlayers = [
+        ...Object.values(((_a2 = raw.lineup) == null ? void 0 : _a2.home) || {}),
+        ...Object.values(((_b = raw.lineup) == null ? void 0 : _b.away) || {})
+      ];
+      const results = await Promise.allSettled(
+        allRawPlayers.map((p) => TmPlayerModel.fetchPlayerTooltip(Number(p.player_id)))
+      );
+      const playersById = /* @__PURE__ */ new Map();
+      results.forEach((r) => {
+        if (r.status === "fulfilled" && r.value)
+          playersById.set(r.value.id, r.value);
+      });
+      const match = normalizeRawMatch(raw, playersById);
+      TmMatchService.normalizeReport(match.report);
+      match.plays = TmMatchService.buildNormalizedPlays(match.report, raw.lineup || {});
+      return match;
+    }
+  };
+
+  // src/components/match-new/tm-match-header.js
+  var STYLE_ID43 = "mp-header-style";
+  var injectStyles32 = () => {
+    if (document.getElementById(STYLE_ID43)) return;
+    const s6 = document.createElement("style");
+    s6.id = STYLE_ID43;
+    s6.textContent = `
+        .mp-head {
+            flex-shrink: 0; padding: 12px 48px 8px; position: relative;
+            background: linear-gradient(180deg, var(--tmu-surface-card-soft) 0%, var(--tmu-surface-panel) 100%);
+            border-bottom: 1px solid var(--tmu-border-soft);
+        }
+        .mp-head-row {
+            display: flex; align-items: center; justify-content: center; gap: 16px;
+        }
+        .mp-team {
+            flex: 1; font-size: 15px; font-weight: 700;
+            color: var(--tmu-text-strong); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .mp-team.home { text-align: right; }
+        .mp-team.away { text-align: left; }
+        .mp-score-block {
+            display: flex; flex-direction: column; align-items: center; flex-shrink: 0; min-width: 100px;
+        }
+        .mp-score {
+            font-size: 28px; font-weight: 800; color: var(--tmu-text-inverse);
+            letter-spacing: 4px; line-height: 1;
+            text-shadow: 0 0 20px var(--tmu-success-fill-hover);
+        }
+        .mp-minute {
+            font-size: 11px; font-weight: 700; color: var(--tmu-accent);
+            margin-top: 2px; letter-spacing: 0.5px;
+            animation: mp-pulse 1.2s ease-in-out infinite;
+        }
+        .mp-minute.ended { animation: none; color: var(--tmu-text-panel-label); }
+        @keyframes mp-pulse { 0%,100%{opacity:1} 50%{opacity:.45} }
+
+        .mp-controls {
+            display: flex; align-items: center; gap: 8px; margin-top: 8px; justify-content: center;
+        }
+        .mp-progress {
+            flex: 1; max-width: 400px; height: 4px;
+            background: var(--tmu-accent-fill); border-radius: 2px; overflow: hidden;
+        }
+        .mp-progress-fill {
+            height: 100%; width: 0; border-radius: 2px;
+            background: linear-gradient(90deg, var(--tmu-compare-home-grad-start), var(--tmu-accent));
+            transition: width 0.5s ease;
+        }
+        .mp-btn-close { position: absolute; top: 8px; right: 12px; }
+    `;
+    document.head.appendChild(s6);
+  };
+  var scoreAt = (match, currentMinute, committedActionIndex = 999) => {
+    let h = 0, a = 0;
+    for (const [minStr, evts] of Object.entries(match.report)) {
+      const min = Number(minStr);
+      if (min > currentMinute) continue;
+      evts.forEach((evt, idx) => {
+        var _a2;
+        if (min === currentMinute && idx > committedActionIndex) return;
+        if (!evt.goal) return;
+        const pid = String(evt.goal.player);
+        if ((_a2 = match.home.playerIds) == null ? void 0 : _a2.has(pid)) h++;
+        else a++;
+      });
+    }
+    return { h, a };
   };
   var TmMatchHeader = {
     /**
-     * Build the full dialog overlay element.
-     * @param {object} mData        — full match data object
-     * @param {boolean} matchIsFuture
-     * @param {boolean} matchIsLive
-     * @returns {jQuery} overlay element (not yet appended to DOM)
+     * @param {{ homeName, awayName, onToggle, onSkip, onClose, onModeChange }} opts
+     * @returns {{ el, update(match, replayState, maximumMinute) }}
      */
-    build(mData, matchIsFuture, matchIsLive) {
-      var _a2;
-      const md = mData.match_data;
-      const homeClub = mData.club.home.club_name;
-      const awayClub = mData.club.away.club_name;
-      const homeLogoId = mData.club.home.id;
-      const awayLogoId = mData.club.away.id;
-      const isLeague = ((_a2 = md.venue) == null ? void 0 : _a2.matchtype) === "l";
-      const liveControls = matchIsFuture ? "" : `
-                <div class="rnd-live-progress"><div class="rnd-live-progress-fill" id="rnd-live-progress-head" style="width:0%"></div></div>
-                <div class="rnd-live-filter-group">
-                  ${buttonHtml11({ label: "All", color: "secondary", size: "xs", cls: "rnd-live-filter-btn", attrs: { "data-filter": "all" } })}
-                  ${buttonHtml11({ label: "Key", color: "secondary", size: "xs", cls: `rnd-live-filter-btn${matchIsLive ? "" : " active"}`, attrs: { "data-filter": "key" } })}
-                  ${matchIsLive ? buttonHtml11({ slot: '<span class="rnd-live-filter-dot"></span><span>Live</span>', color: "secondary", size: "xs", cls: "rnd-live-filter-btn live-btn active", attrs: { "data-filter": "live" } }) : ""}
-                </div>
-                ${buttonHtml11({ id: "rnd-live-play-head", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>', title: "Play / Pause", color: "secondary", size: "xs", cls: "rnd-live-btn" })}
-                ${buttonHtml11({ id: "rnd-live-skip-head", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 4 15 12 5 20 5 4"/><rect x="17" y="4" width="2" height="16" rx="1" fill="currentColor"/></svg>', title: "Skip to end", color: "secondary", size: "xs", cls: "rnd-live-btn" })}`;
-      return $(`
-                <div class="rnd-overlay" id="rnd-overlay">
-                    <div class="rnd-dialog">
-                        <div class="rnd-dlg-head">
-                            ${buttonHtml11({ id: "rnd-dlg-close", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>', color: "secondary", size: "sm", shape: "full", cls: "rnd-dlg-close" })}
-                            <div class="rnd-dlg-head-content">
-                              <div class="rnd-dlg-head-row">
-                                <div class="rnd-dlg-team-group home">
-                                  <div class="rnd-dlg-team-info">
-                                    <span class="rnd-dlg-team">${homeClub}</span>
-                                    <div class="rnd-dlg-chips">${buildChips(mData, "home")}</div>
-                                  </div>
-                                  <img class="rnd-dlg-logo" src="/pics/club_logos/${homeLogoId}_140.png" onerror="this.style.display='none'">
-                                </div>
-                                <div class="rnd-dlg-score-block">
-                                  <span class="rnd-dlg-score">0 - 0</span>
-                                  <div class="rnd-dlg-datetime">${buildDatetime(md)}</div>
-                                </div>
-                                <div class="rnd-dlg-team-group away">
-                                  <img class="rnd-dlg-logo" src="/pics/club_logos/${awayLogoId}_140.png" onerror="this.style.display='none'">
-                                  <div class="rnd-dlg-team-info">
-                                    <span class="rnd-dlg-team">${awayClub}</span>
-                                    <div class="rnd-dlg-chips">${buildChips(mData, "away")}</div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="rnd-dlg-head-time">
-                                <span class="rnd-live-min" id="rnd-live-min-head">${matchIsFuture ? "\u23F3" : "0:00"}</span>
-                                ${liveControls}
-                              </div>
-                            </div>
-                        </div>
-                        ${buildTabs(matchIsFuture, isLeague)}
-                        <div class="rnd-dlg-body" id="rnd-dlg-body"></div>
-                    </div>
-                </div>
-            `);
-    }
-  };
-
-  // src/components/match/tm-match-h2h-tooltip.js
-  var dataCache = /* @__PURE__ */ new Map();
-  var requestCache = /* @__PURE__ */ new Map();
-  var cacheKeyFor = (matchId, rich) => `${rich ? "rich" : "legacy"}:${matchId}`;
-  var currentSeason4 = () => typeof SESSION !== "undefined" && SESSION.season ? String(SESSION.season) : null;
-  var resolveLegacySeason = (anchorEl) => {
-    var _a2, _b, _c, _d;
-    return ((_a2 = anchorEl == null ? void 0 : anchorEl.dataset) == null ? void 0 : _a2.season) || ((_d = (_c = (_b = anchorEl == null ? void 0 : anchorEl.closest) == null ? void 0 : _b.call(anchorEl, "[data-season]")) == null ? void 0 : _c.dataset) == null ? void 0 : _d.season) || currentSeason4();
-  };
-  var fetchTooltipData = (matchId, rich, anchorEl) => {
-    const key = cacheKeyFor(matchId, rich);
-    if (dataCache.has(key)) return Promise.resolve(dataCache.get(key));
-    if (requestCache.has(key)) return requestCache.get(key);
-    const request = (rich ? TmMatchService.fetchMatchCached(matchId, { dbSync: false }).then((data) => {
-      if (!data) return null;
-      data._rich = true;
-      return data;
-    }) : (() => {
-      const season = resolveLegacySeason(anchorEl);
-      if (!season) return Promise.resolve(null);
-      return TmMatchService.fetchMatchTooltip(matchId, season);
-    })()).then((data) => {
-      if (data) dataCache.set(key, data);
-      requestCache.delete(key);
-      return data;
-    }).catch((error) => {
-      requestCache.delete(key);
-      throw error;
-    });
-    requestCache.set(key, request);
-    return request;
-  };
-  var TmMatchH2HTooltip = {
-    show(anchorEl, matchId, rich = false) {
-      if (!anchorEl || !matchId) return null;
-      TmMatchTooltip.ensureStyles();
-      const tooltipEl = document.createElement("div");
-      tooltipEl.className = "rnd-h2h-tooltip";
-      tooltipEl.dataset.matchId = String(matchId);
-      anchorEl.appendChild(tooltipEl);
-      const render16 = (html2) => {
-        if (!tooltipEl.isConnected || tooltipEl.dataset.matchId !== String(matchId)) return;
-        tooltipEl.innerHTML = html2;
-      };
-      render16(TmUI.loading("Loading\u2026", true));
-      requestAnimationFrame(() => tooltipEl.classList.add("visible"));
-      fetchTooltipData(matchId, !!rich, anchorEl).then((data) => {
-        if (!data) {
-          render16(TmUI.error("Failed", true));
-          return;
-        }
-        render16(data._rich ? TmMatchTooltip.buildRichTooltip(data) : TmMatchTooltip.buildLegacyTooltipContent(data));
-      }).catch(() => render16(TmUI.error("Failed", true)));
-      return tooltipEl;
-    }
-  };
-
-  // src/components/match/tm-match-h2h.js
-  var badgeHtml5 = (opts, tone = "muted") => TmUI.badge({ size: "xs", shape: "rounded", weight: "bold", uppercase: true, ...opts }, tone);
-  var TmMatchH2H = {
-    render(body, mData) {
-      body.html(TmUI.loading("Loading H2H\xE2\u20AC\xA6"));
-      const homeId = String(mData.club.home.id);
-      const awayId = String(mData.club.away.id);
-      const homeName = mData.club.home.club_name;
-      const awayName = mData.club.away.club_name;
-      const homeLogo = mData.club.home.logo || `/pics/club_logos/${homeId}_140.png`;
-      const awayLogo = mData.club.away.logo || `/pics/club_logos/${awayId}_140.png`;
-      const kickoff = mData.match_data.venue.kickoff || Math.floor(Date.now() / 1e3);
-      TmMatchService.fetchMatchH2H(homeId, awayId, kickoff).then((data) => {
-        var _a2, _b, _c, _d, _e;
-        if (!data) return;
-        const allStats = data.all || {};
-        const hWins = ((_a2 = allStats[homeId]) == null ? void 0 : _a2.w) || 0;
-        const aWins = ((_b = allStats[awayId]) == null ? void 0 : _b.w) || 0;
-        const draws = ((_c = allStats[homeId]) == null ? void 0 : _c.d) || 0;
-        const hGoalsTotal = ((_d = allStats[homeId]) == null ? void 0 : _d.gf) || 0;
-        const aGoalsTotal = ((_e = allStats[awayId]) == null ? void 0 : _e.gf) || 0;
-        let html2 = '<div class="rnd-h2h-wrap">';
-        html2 += `<div class="rnd-h2h-record">
-                <div class="rnd-h2h-record-side">
-                    <img class="rnd-h2h-record-logo" src="${homeLogo}" onerror="this.style.display='none'">
-                    <span class="rnd-h2h-record-name">${homeName}</span>
-                </div>
-                <div class="rnd-h2h-record-stat">
-                    <span class="rnd-h2h-record-num home">${hWins}</span>
-                    <span class="rnd-h2h-record-label">Wins</span>
-                </div>
-                <div class="rnd-h2h-record-stat">
-                    <span class="rnd-h2h-record-num draw">${draws}</span>
-                    <span class="rnd-h2h-record-label">Draws</span>
-                </div>
-                <div class="rnd-h2h-record-stat">
-                    <span class="rnd-h2h-record-num away">${aWins}</span>
-                    <span class="rnd-h2h-record-label">Wins</span>
-                </div>
-                <div class="rnd-h2h-record-side away">
-                    <img class="rnd-h2h-record-logo" src="${awayLogo}" onerror="this.style.display='none'">
-                    <span class="rnd-h2h-record-name">${awayName}</span>
-                </div>
-            </div>`;
-        if (hGoalsTotal || aGoalsTotal) {
-          html2 += `<div class="rnd-h2h-goals-summary">Goals: <span>${hGoalsTotal}</span> \xE2\u20AC\u201C <span>${aGoalsTotal}</span></div>`;
-        }
-        html2 += '<div class="rnd-h2h-matches">';
-        if (data.matches) {
-          const seasons2 = Object.keys(data.matches).sort((a, b) => Number(b) - Number(a));
-          const currentSeason5 = SESSION == null ? void 0 : SESSION.season;
-          const clubNames = {};
-          clubNames[homeId] = homeName;
-          clubNames[awayId] = awayName;
-          seasons2.forEach((season) => {
-            html2 += `<div class="rnd-h2h-season">Season ${season}</div>`;
-            data.matches[season].forEach((m) => {
-              const [hGoals, aGoals] = (m.result || "0-0").split("-").map(Number);
-              const mHomeId = String(m.hometeam);
-              const hName = clubNames[mHomeId] || m.hometeam;
-              const aName = clubNames[String(m.awayteam)] || m.awayteam;
-              const hWin = hGoals > aGoals;
-              const aWin = aGoals > hGoals;
-              const isDraw = hGoals === aGoals;
-              let resultClass = "h2h-draw";
-              if (hWin && mHomeId === homeId || aWin && mHomeId !== homeId) resultClass = "h2h-win";
-              else if (!isDraw) resultClass = "h2h-loss";
-              let div = m.division ? `Division ${m.division}` : m.matchtype || "";
-              if (m.matchtype === "fl") {
-                div = "Friendly league";
-              }
-              if (m.matchtype === "f") {
-                div = "Quick match";
-              } else if (["p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9"].includes(m.matchtype)) {
-                div = "Cup";
-              } else if (["ueg", "ue1", "ue2"].includes(m.matchtype)) {
-                div = "Conference League";
-              } else if (["clg", "cl1", "cl2"].includes(m.matchtype)) {
-                div = "Champions League";
-              }
-              const isOldSeason = Number(season) !== currentSeason5;
-              html2 += `<div class="rnd-h2h-match ${resultClass}${isOldSeason ? " h2h-readonly" : ""}" data-mid="${m.id}" data-season="${season}">`;
-              html2 += `<div class="rnd-h2h-date">${m.date || ""}</div>`;
-              if (div) html2 += badgeHtml5({ label: div });
-              html2 += `<div class="rnd-h2h-home${hWin ? " winner" : ""}">${hName}</div>`;
-              html2 += `<div class="rnd-h2h-result">${m.result}</div>`;
-              html2 += `<div class="rnd-h2h-away${aWin ? " winner" : ""}">${aName}</div>`;
-              if (m.attendance_format) html2 += `<div class="rnd-h2h-att">\xF0\u0178\x8F\u0178 ${m.attendance_format}</div>`;
-              html2 += `</div>`;
-            });
-          });
-        }
-        html2 += "</div></div>";
-        body.html(html2);
-        let tooltipEl = null;
-        let tooltipTimer = null;
-        let tooltipHideTimer = null;
-        const currentSeasonNum = (SESSION == null ? void 0 : SESSION.season) || 0;
-        const showTooltip = (el2, mid, season) => {
-          clearTimeout(tooltipHideTimer);
-          if (tooltipEl) tooltipEl.remove();
-          tooltipEl = $(TmMatchH2HTooltip.show(el2, mid, Number(season) === currentSeasonNum));
-        };
-        const hideTooltip = () => {
-          tooltipHideTimer = setTimeout(() => {
-            if (tooltipEl) {
-              tooltipEl.remove();
-              tooltipEl = null;
-            }
-          }, 100);
-        };
-        body.on("mouseenter", ".rnd-h2h-match", function() {
-          const el2 = this;
-          const mid = $(el2).data("mid");
-          const season = $(el2).data("season");
-          clearTimeout(tooltipTimer);
-          tooltipTimer = setTimeout(() => showTooltip(el2, mid, season), 300);
-        });
-        body.on("mouseleave", ".rnd-h2h-match", function() {
-          clearTimeout(tooltipTimer);
-          hideTooltip();
-        });
-        body.on("click", ".rnd-h2h-match", function() {
-          if ($(this).hasClass("h2h-readonly")) return;
-          const mid = $(this).data("mid");
-          if (mid) window.open("/matches/" + mid, "_blank");
-        });
-      }).catch((error) => {
-        console.log("Failed to fetch H2H data", error);
-        body.html(TmUI.error("Failed to load H2H data"));
+    create({ homeName, awayName, initialMode = "all", onToggle, onSkip, onClose, onModeChange }) {
+      injectStyles32();
+      const el2 = document.createElement("div");
+      el2.className = "mp-head";
+      const closeBtn = TmButton.button({
+        label: "\u2715",
+        variant: "secondary",
+        size: "xs",
+        cls: "mp-btn-close",
+        onClick: () => onClose == null ? void 0 : onClose()
       });
-    }
-  };
-
-  // src/components/match/tm-match-comparison-row.js
-  var toNumber2 = (value) => {
-    const numeric = Number(value);
-    return Number.isFinite(numeric) ? numeric : 0;
-  };
-  var joinClassNames = (...classNames) => classNames.filter(Boolean).join(" ");
-  var buildBar = ({ leftNumber, rightNumber, barClass, leftSegmentClass, rightSegmentClass }) => {
-    const left = toNumber2(leftNumber);
-    const right = toNumber2(rightNumber);
-    const total = left + right;
-    const leftPct = total === 0 ? 50 : Math.round(left / total * 100);
-    const rightPct = 100 - leftPct;
-    return `<div class="${barClass}"><div class="${leftSegmentClass}" style="width:${leftPct}%"></div><div class="${rightSegmentClass}" style="width:${rightPct}%"></div></div>`;
-  };
-  var leadClasses = (leftNumber, rightNumber, leftLeadClass, rightLeadClass) => {
-    const left = toNumber2(leftNumber);
-    const right = toNumber2(rightNumber);
-    return {
-      left: left > right ? leftLeadClass : "",
-      right: right > left ? rightLeadClass : ""
-    };
-  };
-  var TmMatchComparisonRow = {
-    stacked({
-      label,
-      leftValue,
-      rightValue,
-      leftNumber = leftValue,
-      rightNumber = rightValue,
-      rowClass,
-      headerClass,
-      leftValueClass,
-      rightValueClass,
-      labelClass,
-      barClass,
-      leftSegmentClass,
-      rightSegmentClass,
-      leftLeadClass = "",
-      rightLeadClass = ""
-    }) {
-      const lead = leadClasses(leftNumber, rightNumber, leftLeadClass, rightLeadClass);
-      return `<div class="${rowClass}"><div class="${headerClass}"><span class="${joinClassNames(leftValueClass, lead.left)}">${leftValue}</span><span class="${labelClass}">${label}</span><span class="${joinClassNames(rightValueClass, lead.right)}">${rightValue}</span></div>${buildBar({ leftNumber, rightNumber, barClass, leftSegmentClass, rightSegmentClass })}</div>`;
-    },
-    mirrored({
-      label,
-      leftValue,
-      rightValue,
-      leftNumber = leftValue,
-      rightNumber = rightValue,
-      rowClass,
-      leftValueClass,
-      rightValueClass,
-      labelClass,
-      barClass,
-      leftSegmentClass,
-      rightSegmentClass,
-      leftLeadClass = "",
-      rightLeadClass = ""
-    }) {
-      const lead = leadClasses(leftNumber, rightNumber, leftLeadClass, rightLeadClass);
-      const bar = buildBar({ leftNumber, rightNumber, barClass, leftSegmentClass, rightSegmentClass });
-      return `<div class="${rowClass}"><span class="${joinClassNames(leftValueClass, lead.left)}">${leftValue}</span>${bar}<span class="${labelClass}">${label}</span>${bar}<span class="${joinClassNames(rightValueClass, lead.right)}">${rightValue}</span></div>`;
-    }
-  };
-
-  // src/components/match/tm-match-league.js
-  var minuteBadgeHtml = (label) => TmUI.badge({ icon: "\u23F1", label, size: "md", shape: "full", weight: "bold" }, "live");
-  var leagueTabCache = null;
-  var ensureLeagueCache = (country, division, group) => {
-    if (!leagueTabCache || leagueTabCache.country !== country || leagueTabCache.division !== division || leagueTabCache.group !== group) {
-      leagueTabCache = {
-        country,
-        division,
-        group,
-        fixtures: null,
-        fixturesPromise: null,
-        matchDataById: {},
-        matchPromisesById: {},
-        failedMatchIds: {}
-      };
-    }
-    return leagueTabCache;
-  };
-  var cloneMatchData = (mData) => TmMatchUtils.cloneMatchData(mData);
-  var buildPositionArrow = (diff) => {
-    if (diff > 0) return `<span class="pos-arrow pos-up">\u25B2${diff}</span>`;
-    if (diff < 0) return `<span class="pos-arrow pos-down">\u25BC${Math.abs(diff)}</span>`;
-    return '<span class="pos-arrow pos-same">\u2013</span>';
-  };
-  var createStandingsTable = ({ rows = [], preRoundRank = {}, homeId = "", awayId = "" } = {}) => {
-    const totalTeams = rows.length;
-    return TmTable.table({
-      cls: " rnd-league-tbl",
-      items: rows,
-      headers: [
-        {
-          key: "pos",
-          label: "#",
-          sortable: false,
-          cls: "pos-num",
-          render: (_value, row, index) => {
-            const pos = index + 1;
-            const prevPos = preRoundRank[row.id] || pos;
-            return `${pos} ${buildPositionArrow(prevPos - pos)}`;
-          }
-        },
-        {
-          key: "name",
-          label: "Club",
-          sortable: false,
-          cls: "l",
-          render: (_value, row) => `<div class="club-cell"><img class="club-logo" src="/pics/club_logos/${row.id}_25.png" onerror="this.style.display='none'"><span class="club-name">${row.name}</span></div>`
-        },
-        { key: "p", label: "P", sortable: false },
-        { key: "w", label: "W", sortable: false, cls: "w-col" },
-        { key: "d", label: "D", sortable: false },
-        { key: "l", label: "L", sortable: false, cls: "l-col" },
-        { key: "gf", label: "GF", sortable: false },
-        { key: "ga", label: "GA", sortable: false },
-        {
-          key: "gd",
-          label: "GD",
-          sortable: false,
-          render: (value) => `<span class="${value > 0 ? "gd-pos" : value < 0 ? "gd-neg" : ""}">${value > 0 ? "+" : ""}${value}</span>`
-        },
-        { key: "pts", label: "Pts", sortable: false, cls: "pts" }
-      ],
-      rowCls: (row, index) => {
-        const pos = index + 1;
-        const isHighlight = row.id === homeId || row.id === awayId;
-        let zoneCls = "";
-        if (pos > totalTeams - 4) zoneCls = " zone-relegation";
-        else if (pos >= 11 && pos <= 14) zoneCls = " zone-playoff";
-        return `${isHighlight ? "rnd-league-hl" : ""}${zoneCls}`;
-      }
-    });
-  };
-  var parseFixtureScore = (result) => {
-    const match = String(result || "").match(/(\d+)\s*-\s*(\d+)/);
-    if (!match) return null;
-    return [Number(match[1]), Number(match[2])];
-  };
-  var buildMatchSnapshot = (mData, fallbackMin = null) => {
-    var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s2;
-    const safeMatchData = cloneMatchData(mData);
-    const liveMin = Number((_a2 = safeMatchData == null ? void 0 : safeMatchData.match_data) == null ? void 0 : _a2.live_min);
-    const snapshotMin = Number.isFinite(fallbackMin) && fallbackMin > 0 ? fallbackMin : Number.isFinite(liveMin) && liveMin > 0 ? liveMin : TmMatchUtils.getMatchEndMin(safeMatchData);
-    const liveState = {
-      mData: safeMatchData,
-      min: snapshotMin,
-      sec: 0,
-      curEvtIdx: 999,
-      curLineIdx: 999,
-      ended: snapshotMin >= TmMatchUtils.getMatchEndMin(safeMatchData)
-    };
-    liveState.mData = TmMatchUtils.deriveMatchData(liveState);
-    const homeTeam = ((_b = liveState.mData.teams) == null ? void 0 : _b.home) || {};
-    const awayTeam = ((_c = liveState.mData.teams) == null ? void 0 : _c.away) || {};
-    const actions = liveState.mData.actions || [];
-    const eventRank = { "\u26BD": 1, "\u{1F7E8}": 2, "\u{1F7E5}": 3 };
-    const events = actions.filter((action) => action.action === "shot" && action.goal || action.action === "yellow" || action.action === "yellowRed" || action.action === "red").map((action) => {
-      let icon = "";
-      if (action.action === "shot" && action.goal) icon = "\u26BD";
-      else if (action.action === "yellow") icon = "\u{1F7E8}";
-      else icon = "\u{1F7E5}";
-      return {
-        side: action.home ? "home" : "away",
-        icon,
-        name: action.player || "?",
-        min: action.min
-      };
-    }).sort((a, b) => a.min - b.min || (eventRank[a.icon] || 9) - (eventRank[b.icon] || 9) || a.name.localeCompare(b.name));
-    return {
-      homeGoals: homeTeam.goals || 0,
-      awayGoals: awayTeam.goals || 0,
-      homeId: String(homeTeam.id || ((_e = (_d = safeMatchData.club) == null ? void 0 : _d.home) == null ? void 0 : _e.id) || ""),
-      awayId: String(awayTeam.id || ((_g = (_f = safeMatchData.club) == null ? void 0 : _f.away) == null ? void 0 : _g.id) || ""),
-      live_min: Number.isFinite(liveMin) ? liveMin : snapshotMin,
-      homeShots: ((_h = homeTeam.stats) == null ? void 0 : _h.shots) || 0,
-      awayShots: ((_i = awayTeam.stats) == null ? void 0 : _i.shots) || 0,
-      homeSoT: ((_j = homeTeam.stats) == null ? void 0 : _j.shotsOnTarget) || 0,
-      awaySoT: ((_k = awayTeam.stats) == null ? void 0 : _k.shotsOnTarget) || 0,
-      homeYC: ((_l = homeTeam.stats) == null ? void 0 : _l.yellowCards) || 0,
-      awayYC: ((_m = awayTeam.stats) == null ? void 0 : _m.yellowCards) || 0,
-      homeRC: ((_n = homeTeam.stats) == null ? void 0 : _n.redCards) || 0,
-      awayRC: ((_o = awayTeam.stats) == null ? void 0 : _o.redCards) || 0,
-      homeName: ((_q = (_p = safeMatchData.club) == null ? void 0 : _p.home) == null ? void 0 : _q.club_name) || homeTeam.name || "",
-      awayName: ((_s2 = (_r = safeMatchData.club) == null ? void 0 : _r.away) == null ? void 0 : _s2.club_name) || awayTeam.name || "",
-      events
-    };
-  };
-  var TmMatchLeague = {
-    render(body, liveState) {
-      var _a2;
-      const syncedRoundMin = Number.isFinite(Number(liveState.min)) && Number(liveState.min) > 0 && Number(liveState.min) < 999 ? Number(liveState.min) : null;
-      const homeId = String(liveState.mData.club.home.id);
-      const awayId = String(liveState.mData.club.away.id);
-      const country = liveState.mData.club.home.country || ((_a2 = liveState.mData.match_data) == null ? void 0 : _a2.chatroom) || "";
-      const division = liveState.mData.club.home.division || "1";
-      const group = liveState.mData.club.home.group || "1";
-      if (!country) {
-        body.html(TmUI.error("Cannot determine league info"));
-        return;
-      }
-      const cache = ensureLeagueCache(country, division, group);
-      const buildLeagueView = (fixtures) => {
-        var _a3, _b;
-        const koReadable = ((_b = (_a3 = liveState.mData.match_data) == null ? void 0 : _a3.venue) == null ? void 0 : _b.kickoff_readable) || "";
-        const matchDate = koReadable.split(" ")[0];
-        const allMatches = [];
-        const clubNamesMap = {};
-        Object.values(fixtures).forEach((month) => {
-          if (month == null ? void 0 : month.matches) {
-            month.matches.forEach((m) => {
-              allMatches.push(m);
-              if (m.hometeam_name) clubNamesMap[String(m.hometeam)] = m.hometeam_name;
-              if (m.awayteam_name) clubNamesMap[String(m.awayteam)] = m.awayteam_name;
-            });
-          }
-        });
-        const byDate = {};
-        allMatches.forEach((m) => {
-          (byDate[m.date] = byDate[m.date] || []).push(m);
-        });
-        const sortedDates = Object.keys(byDate).sort((a, b) => new Date(a) - new Date(b));
-        let currentRoundDate = null;
-        let currentRoundNum = 0;
-        for (let i = 0; i < sortedDates.length; i++) {
-          if (sortedDates[i] === matchDate) {
-            currentRoundDate = sortedDates[i];
-            currentRoundNum = i + 1;
-            break;
-          }
-        }
-        if (!currentRoundDate) {
-          body.html(TmUI.error("Could not find current round"));
-          return;
-        }
-        const currentRoundMatches = byDate[currentRoundDate];
-        const standings = {};
-        const initClub = (id, name) => {
-          if (!standings[id]) standings[id] = { p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0, name: name || id };
-        };
-        for (const date of sortedDates) {
-          if (date >= currentRoundDate) break;
-          byDate[date].forEach((m) => {
-            if (!m.result) return;
-            const parsedScore = parseFixtureScore(m.result);
-            if (!parsedScore) return;
-            const [hg, ag] = parsedScore;
-            const hId = String(m.hometeam);
-            const aId = String(m.awayteam);
-            initClub(hId, clubNamesMap[hId] || hId);
-            initClub(aId, clubNamesMap[aId] || aId);
-            standings[hId].p++;
-            standings[aId].p++;
-            standings[hId].gf += hg;
-            standings[hId].ga += ag;
-            standings[aId].gf += ag;
-            standings[aId].ga += hg;
-            if (hg > ag) {
-              standings[hId].w++;
-              standings[hId].pts += 3;
-              standings[aId].l++;
-            } else if (hg < ag) {
-              standings[aId].w++;
-              standings[aId].pts += 3;
-              standings[hId].l++;
-            } else {
-              standings[hId].d++;
-              standings[aId].d++;
-              standings[hId].pts++;
-              standings[aId].pts++;
-            }
-          });
-        }
-        currentRoundMatches.forEach((m) => {
-          initClub(String(m.hometeam), clubNamesMap[String(m.hometeam)] || String(m.hometeam));
-          initClub(String(m.awayteam), clubNamesMap[String(m.awayteam)] || String(m.awayteam));
-        });
-        const preRoundRank = {};
-        const preRoundSorted = Object.entries(standings).map(([id, s6]) => ({ id, pts: s6.pts, gd: s6.gf - s6.ga, gf: s6.gf })).sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
-        preRoundSorted.forEach((s6, i) => {
-          preRoundRank[s6.id] = i + 1;
-        });
-        const finalize = () => {
-          const liveScores = {};
-          currentRoundMatches.forEach((m) => {
-            const mid = String(m.id);
-            const md = cache.matchDataById[mid];
-            if (md) {
-              liveScores[mid] = buildMatchSnapshot(md, syncedRoundMin);
-              return;
-            }
-            if (m.result) {
-              const parsedScore = parseFixtureScore(m.result);
-              if (parsedScore) {
-                const [hg, ag] = parsedScore;
-                liveScores[mid] = {
-                  homeGoals: hg,
-                  awayGoals: ag,
-                  homeId: String(m.hometeam),
-                  awayId: String(m.awayteam),
-                  events: [],
-                  live_min: 0,
-                  homeShots: 0,
-                  awayShots: 0,
-                  homeSoT: 0,
-                  awaySoT: 0,
-                  homeYC: 0,
-                  awayYC: 0,
-                  homeRC: 0,
-                  awayRC: 0,
-                  homeName: clubNamesMap[String(m.hometeam)] || "",
-                  awayName: clubNamesMap[String(m.awayteam)] || ""
-                };
-              }
-            }
-          });
-          Object.values(liveScores).forEach((ls) => {
-            const hId = ls.homeId;
-            const aId = ls.awayId;
-            initClub(hId, clubNamesMap[hId] || hId);
-            initClub(aId, clubNamesMap[aId] || aId);
-            const hg = ls.homeGoals;
-            const ag = ls.awayGoals;
-            standings[hId].p++;
-            standings[aId].p++;
-            standings[hId].gf += hg;
-            standings[hId].ga += ag;
-            standings[aId].gf += ag;
-            standings[aId].ga += hg;
-            if (hg > ag) {
-              standings[hId].w++;
-              standings[hId].pts += 3;
-              standings[aId].l++;
-            } else if (hg < ag) {
-              standings[aId].w++;
-              standings[aId].pts += 3;
-              standings[hId].l++;
-            } else {
-              standings[hId].d++;
-              standings[aId].d++;
-              standings[hId].pts++;
-              standings[aId].pts++;
-            }
-          });
-          const sorted = Object.entries(standings).map(([id, s6]) => ({ id, ...s6, gd: s6.gf - s6.ga })).sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
-          const liveMinDisplay = liveState.min > 0 && liveState.min < 999 ? Math.floor(liveState.min) + "'" : null;
-          const groupEvents = (events) => {
-            const map = /* @__PURE__ */ new Map();
-            events.forEach((ev) => {
-              const key = ev.icon + "|" + ev.name;
-              if (!map.has(key)) map.set(key, { icon: ev.icon, name: ev.name, mins: [] });
-              map.get(key).mins.push(ev.min);
-            });
-            return Array.from(map.values());
-          };
-          let html2 = '<div class="rnd-league-wrap">';
-          html2 += '<div class="rnd-league-header">';
-          html2 += `<span class="rnd-league-title">Round ${currentRoundNum}</span>`;
-          if (liveMinDisplay) {
-            html2 += minuteBadgeHtml(liveMinDisplay);
-          }
-          html2 += "</div>";
-          html2 += '<div class="rnd-league-columns">';
-          html2 += '<div class="rnd-league-col-matches">';
-          html2 += '<div class="rnd-league-col-title">Matches</div>';
-          currentRoundMatches.forEach((m, mi) => {
-            const mid = String(m.id);
-            const hId = String(m.hometeam);
-            const aId = String(m.awayteam);
-            const hName = clubNamesMap[hId] || hId;
-            const aName = clubNamesMap[aId] || aId;
-            const isCurrent = hId === homeId && aId === awayId || hId === awayId && aId === homeId;
-            const ls = liveScores[mid];
-            let hGoals = "\u2013", aGoals = "\u2013";
-            let isLive = false;
-            if (ls) {
-              hGoals = ls.homeGoals;
-              aGoals = ls.awayGoals;
-              isLive = ls.live_min > 0;
-            } else if (m.result) {
-              const parsedScore = parseFixtureScore(m.result);
-              if (parsedScore) {
-                hGoals = parsedScore[0];
-                aGoals = parsedScore[1];
-              }
-            }
-            html2 += `<div class="rnd-league-match${isCurrent ? " rnd-league-current" : ""}${isLive ? " live" : ""}" data-mid="${mid}">`;
-            const hRC = ls ? ls.homeRC : 0;
-            const aRC = ls ? ls.awayRC : 0;
-            html2 += `<span class="rnd-league-home">${hName}${hRC ? " \u{1F7E5}" : ""}</span>`;
-            html2 += `<img class="rnd-league-logo" src="/pics/club_logos/${hId}_25.png" onerror="this.style.visibility='hidden'">`;
-            html2 += '<span class="rnd-league-score-block">';
-            html2 += `<span class="rnd-league-score-num">${hGoals}</span>`;
-            html2 += '<span class="rnd-league-score-sep">\u2013</span>';
-            html2 += `<span class="rnd-league-score-num">${aGoals}</span>`;
-            html2 += "</span>";
-            html2 += `<img class="rnd-league-logo" src="/pics/club_logos/${aId}_25.png" onerror="this.style.visibility='hidden'">`;
-            html2 += `<span class="rnd-league-away">${aRC ? "\u{1F7E5} " : ""}${aName}</span>`;
-            html2 += "</div>";
-          });
-          html2 += "</div>";
-          html2 += '<div class="rnd-league-col-standings">';
-          html2 += '<div class="rnd-league-col-title">Standings</div>';
-          html2 += '<div id="rnd-league-standings-table"></div>';
-          html2 += '<div class="rnd-league-legend">';
-          html2 += '<span class="legend-item"><span class="legend-dot legend-rel"></span>Relegation</span>';
-          html2 += '<span class="legend-item"><span class="legend-dot legend-po"></span>Playoff</span>';
-          html2 += "</div>";
-          html2 += "</div>";
-          html2 += "</div>";
-          html2 += "</div>";
-          body.html(html2);
-          const standingsHost = body[0].querySelector("#rnd-league-standings-table");
-          if (standingsHost) {
-            standingsHost.appendChild(createStandingsTable({ rows: sorted, preRoundRank, homeId, awayId }));
-          }
-          body.off(".rndleague");
-          const $tooltip = $('<div class="rnd-league-tooltip"></div>').appendTo(body);
-          body.on("mouseenter.rndleague", ".rnd-league-match", function() {
-            const mid = $(this).data("mid");
-            const ls = liveScores[String(mid)];
-            if (!ls) return;
-            const hN = ls.homeName || clubNamesMap[ls.homeId] || ls.homeId;
-            const aN = ls.awayName || clubNamesMap[ls.awayId] || ls.awayId;
-            let t = '<div class="rnd-league-tt-head">';
-            t += `<img class="rnd-league-tt-logo" src="/pics/club_logos/${ls.homeId}_25.png" onerror="this.style.display='none'">`;
-            t += `<span class="rnd-league-tt-team">${hN}</span>`;
-            t += '<span class="rnd-league-tt-score">';
-            t += `<span class="rnd-league-tt-score-num">${ls.homeGoals}</span>`;
-            t += '<span class="rnd-league-tt-score-sep">\u2013</span>';
-            t += `<span class="rnd-league-tt-score-num">${ls.awayGoals}</span>`;
-            t += "</span>";
-            t += `<span class="rnd-league-tt-team">${aN}</span>`;
-            t += `<img class="rnd-league-tt-logo" src="/pics/club_logos/${ls.awayId}_25.png" onerror="this.style.display='none'">`;
-            t += "</div>";
-            t += '<div class="rnd-league-tt-stats">';
-            const statRows = [
-              ["Shots", ls.homeShots, ls.awayShots],
-              ["On Target", ls.homeSoT, ls.awaySoT],
-              ["Yellow", ls.homeYC, ls.awayYC],
-              ["Red", ls.homeRC, ls.awayRC]
-            ];
-            t += statRows.map(([label, leftValue, rightValue]) => TmMatchComparisonRow.mirrored({
-              label,
-              leftValue,
-              rightValue,
-              rowClass: "rnd-league-tt-stat-row",
-              leftValueClass: "rnd-league-tt-val home",
-              rightValueClass: "rnd-league-tt-val away",
-              labelClass: "rnd-league-tt-label",
-              barClass: "rnd-league-tt-bar",
-              leftSegmentClass: "rnd-league-tt-seg home",
-              rightSegmentClass: "rnd-league-tt-seg away",
-              leftLeadClass: "leading",
-              rightLeadClass: "leading"
-            })).join("");
-            t += "</div>";
-            if (ls.events.length) {
-              t += '<div class="rnd-league-tt-events">';
-              const homeEvts = groupEvents(ls.events.filter((e) => e.side === "home"));
-              const awayEvts = groupEvents(ls.events.filter((e) => e.side === "away"));
-              const maxLen = Math.max(homeEvts.length, awayEvts.length);
-              for (let ei = 0; ei < maxLen; ei++) {
-                const he = homeEvts[ei];
-                const ae = awayEvts[ei];
-                t += '<div class="rnd-league-tt-evt-row">';
-                t += `<span class="tt-evt-home">${he ? `${he.name} ${he.icon} <span class="evt-min">${he.mins.map((m) => m + "'").join(" ")}</span>` : ""}</span>`;
-                t += `<span class="tt-evt-away">${ae ? `${ae.icon} ${ae.name} <span class="evt-min">${ae.mins.map((m) => m + "'").join(" ")}</span>` : ""}</span>`;
-                t += "</div>";
-              }
-              t += "</div>";
-            }
-            $tooltip.html(t);
-            const rect = this.getBoundingClientRect();
-            const bodyRect = body[0].getBoundingClientRect();
-            $tooltip.css({
-              top: rect.bottom - bodyRect.top + 6,
-              left: Math.max(4, rect.left - bodyRect.left + rect.width / 2 - 160)
-            }).addClass("visible");
-          }).on("mouseleave.rndleague", ".rnd-league-match", function() {
-            $tooltip.removeClass("visible");
-          });
-        };
-        const missingMatchIds = currentRoundMatches.map((m) => String(m.id)).filter((mid) => !cache.matchDataById[mid] && !cache.failedMatchIds[mid]);
-        if (missingMatchIds.length === 0) {
-          finalize();
-          return;
-        }
-        const fetchPromises = missingMatchIds.map((mid) => {
-          if (!cache.matchPromisesById[mid]) {
-            cache.matchPromisesById[mid] = TmMatchService.fetchMatch(mid).then((md) => {
-              if (md) {
-                cache.matchDataById[mid] = md;
-              } else {
-                cache.failedMatchIds[mid] = true;
-              }
-            }).catch(() => {
-              cache.failedMatchIds[mid] = true;
-            }).finally(() => {
-              delete cache.matchPromisesById[mid];
-            });
-          }
-          return cache.matchPromisesById[mid];
-        });
-        if (!body.find(".rnd-league-wrap").length) {
-          body.html(TmUI.loading("Loading league data..."));
-        }
-        Promise.all(fetchPromises).finally(finalize);
-      };
-      if (cache.fixtures) {
-        buildLeagueView(cache.fixtures);
-        return;
-      }
-      body.html(TmUI.loading("Loading league data..."));
-      if (!cache.fixturesPromise) {
-        cache.fixturesPromise = TMLeagueService.fetchLeagueFixtures("league", { var1: country, var2: division, var3: group }).then((fixtures) => {
-          if (!fixtures) throw new Error("No league fixtures");
-          cache.fixtures = fixtures;
-          return fixtures;
-        }).finally(() => {
-          cache.fixturesPromise = null;
-        });
-      }
-      cache.fixturesPromise.then((fixtures) => buildLeagueView(fixtures)).catch(() => {
-        body.html(TmUI.error("Failed to load league data"));
-      });
-    }
-  };
-
-  // src/components/match/tm-match-player-dialog.js
-  var buttonHtml12 = (opts) => TmUI.button(opts).outerHTML;
-  var badgeHtml6 = (opts, tone = "muted") => TmUI.badge({ size: "sm", shape: "full", weight: "bold", ...opts }, tone);
-  var metricHtml8 = (opts) => TmUI.metric(opts);
-  var buildPlayerStatsCompact = (statsArray, isGK) => {
-    const st = {
-      passesCompleted: 0,
-      passesFailed: 0,
-      crossesCompleted: 0,
-      crossesFailed: 0,
-      shots: 0,
-      shotsOnTarget: 0,
-      shotsOffTarget: 0,
-      shotsFoot: 0,
-      shotsOnTargetFoot: 0,
-      goalsFoot: 0,
-      shotsHead: 0,
-      shotsOnTargetHead: 0,
-      goalsHead: 0,
-      saves: 0,
-      goals: 0,
-      assists: 0,
-      keyPasses: 0,
-      duelsWon: 0,
-      duelsLost: 0,
-      interceptions: 0,
-      tackles: 0,
-      headerClearances: 0,
-      tackleFails: 0,
-      fouls: 0,
-      yellowCards: 0,
-      redCards: 0
-    };
-    for (const e of statsArray || []) {
-      if (e.shot) {
-        st.shots++;
-        if (e.onTarget) st.shotsOnTarget++;
-        else st.shotsOffTarget++;
-        if (e.head) {
-          st.shotsHead++;
-          if (e.goal) st.goalsHead++;
-        }
-        if (e.foot) {
-          st.shotsFoot++;
-          if (e.goal) st.goalsFoot++;
-        }
-        if (e.goal) st.goals++;
-      }
-      if (e.assist) st.assists++;
-      if (e.keyPass) st.keyPasses++;
-      if (e.pass) {
-        e.success ? st.passesCompleted++ : st.passesFailed++;
-      }
-      if (e.cross) {
-        e.success ? st.crossesCompleted++ : st.crossesFailed++;
-      }
-      if (e.save) st.saves++;
-      if (e.foul) st.fouls++;
-      if (e.duelWon) st.duelsWon++;
-      if (e.duelLost) st.duelsLost++;
-      if (e.tackle) st.tackles++;
-      if (e.interception) st.interceptions++;
-      if (e.headerClear) st.headerClearances++;
-      if (e.tackleFail) st.tackleFails++;
-      if (e.yellow || e.yellowRed) st.yellowCards++;
-      if (e.red || e.yellowRed) st.redCards++;
-    }
-    const totalPass = st.passesCompleted + st.passesFailed;
-    const totalCross = st.crossesCompleted + st.crossesFailed;
-    const passAcc = totalPass > 0 ? Math.round(st.passesCompleted / totalPass * 100) : 0;
-    const crossAcc = totalCross > 0 ? Math.round(st.crossesCompleted / totalCross * 100) : 0;
-    const cell = (icon, val, lbl, mod = "") => `<div class="rnd-pls-cell${mod ? " " + mod : ""}"><span class="rnd-pls-icon">${icon}</span><span class="rnd-pls-val">${val}</span><span class="rnd-pls-lbl">${lbl}</span></div>`;
-    let html2 = '<div class="rnd-plr-body-section"><div class="rnd-plr-section-title"><span class="sec-icon">\u{1F4CB}</span> Match Snapshot</div><div class="rnd-pls-wrap">';
-    html2 += '<div class="rnd-pls-row">';
-    if (isGK) {
-      html2 += cell("\u{1F9E4}", st.saves, "Saves", st.saves > 0 ? "hi-green" : "");
-      html2 += cell("\u26BD", st.goals, "Conceded", st.goals > 0 ? "hi-red" : "");
-      html2 += cell("\u{1F3AF}", st.shots, "Shots");
-    } else {
-      html2 += cell("\u26BD", st.goals, "Goals", st.goals > 0 ? "hi-gold" : "");
-      html2 += cell("\u{1F3AF}", st.shots, "Shots");
-      html2 += cell("\u2705", st.shotsOnTarget, "On Target", st.shotsOnTarget > 0 ? "hi-green" : "");
-      html2 += cell("\u{1F45F}", st.assists, "Assists", st.assists > 0 ? "hi-gold" : "");
-      html2 += cell("\u{1F511}", st.keyPasses, "Key Pass", st.keyPasses > 0 ? "hi-green" : "");
-    }
-    html2 += "</div>";
-    html2 += '<div class="rnd-pls-row">';
-    html2 += cell("\u{1F4E8}", `${st.passesCompleted}/${totalPass}`, `Pass ${passAcc}%`, passAcc >= 70 ? "hi-green" : totalPass > 0 ? "hi-red" : "");
-    html2 += cell("\u2197\uFE0F", `${st.crossesCompleted}/${totalCross}`, `Cross ${crossAcc}%`, crossAcc >= 50 ? "hi-green" : totalCross > 0 ? "hi-red" : "");
-    html2 += cell("\u{1F441}\uFE0F", st.interceptions, "INT", st.interceptions > 0 ? "hi-green" : "");
-    html2 += cell("\u{1F9B5}", st.tackles, "TKL", st.tackles > 0 ? "hi-green" : "");
-    html2 += cell("\u{1F44A}", `${st.duelsWon}/${st.duelsWon + st.duelsLost}`, "Duels", st.duelsWon > st.duelsLost ? "hi-green" : st.duelsLost > st.duelsWon ? "hi-red" : "");
-    html2 += "</div>";
-    html2 += '<div class="rnd-pls-row">';
-    html2 += cell("\u{1F5E3}\uFE0F", st.headerClearances, "HC", st.headerClearances > 0 ? "hi-green" : "");
-    html2 += cell("\u274C", st.tackleFails, "TF", st.tackleFails > 0 ? "hi-red" : "");
-    html2 += cell("\u26A0\uFE0F", st.fouls, "Fouls", st.fouls > 0 ? "hi-red" : "");
-    html2 += cell("\u{1F7E8}", st.yellowCards, "Yellow", st.yellowCards > 0 ? "hi-red" : "");
-    html2 += cell("\u{1F7E5}", st.redCards, "Red", st.redCards > 0 ? "hi-red" : "");
-    html2 += "</div>";
-    html2 += "</div></div>";
-    return html2;
-  };
-  var showPlayerDialog = (player2, liveState) => {
-    $(".rnd-plr-overlay").remove();
-    const mData = liveState == null ? void 0 : liveState.mData;
-    const matchFuture = mData ? TmMatchUtils.isMatchFuture(mData) : false;
-    const matchEnded = !matchFuture && (liveState == null ? void 0 : liveState.ended) === true;
-    const pid = String(player2.player_id || player2.id);
-    const playerUrl = `https://trophymanager.com/players/${pid}/#/page/history/`;
-    const isSub = /^sub\d+$/.test(player2.position);
-    const rawPos = isSub ? (player2.fp || "").split(",")[0] : player2.position;
-    const isGK = (player2.position || player2.fp || "").toLowerCase().split(",")[0] === "gk";
-    const { statsArray = [], minsPlayed = 0 } = player2;
-    const displayName = player2.name || player2.nameLast || "";
-    const metaBadges = [
-      badgeHtml6({ icon: "\u{1F455}", label: `#${player2.no}` }),
-      TmPosition.chip([rawPos])
-    ];
-    if (player2.age) metaBadges.push(badgeHtml6({ icon: "\u{1F382}", label: String(player2.age) }));
-    if (matchEnded) metaBadges.push(badgeHtml6({ icon: "\u23F1\uFE0F", label: `${minsPlayed}'` }));
-    if (isSub) metaBadges.push(badgeHtml6({ icon: "\u2194\uFE0F", label: "Sub" }));
-    const statPills = [];
-    if (matchEnded && player2.rating) {
-      statPills.push({ label: "Rating", value: Number(player2.rating).toFixed(2), color: TmUtils.ratingColor(player2.rating) });
-    }
-    if (player2.r5 != null) {
-      statPills.push({ label: "R5", value: Number(player2.r5).toFixed(2), color: TmUtils.r5Color(player2.r5) });
-    }
-    let html2 = `<div class="rnd-plr-overlay">
-        <div class="rnd-plr-dialog" style="position:relative">
-            ${buttonHtml12({ icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>', color: "secondary", size: "sm", shape: "full", cls: "rnd-plr-close" })}
-            <div class="rnd-plr-header">
-                <div class="rnd-plr-face"><img src="${player2.faceUrl}" alt="${player2.no}"></div>
-                <div class="rnd-plr-header-main">
-                    <div class="rnd-plr-info">
-                    <div class="rnd-plr-name-row">
-                        <a class="rnd-plr-name" href="${playerUrl}" target="_blank">${displayName}</a>
-                        <a class="rnd-plr-link" href="${playerUrl}" target="_blank" title="Open player profile">&#x1F517;</a>
-                    </div>
-                    <div class="rnd-plr-badges">${metaBadges.join("")}</div>
-                    </div>
-                    ${statPills.length ? `<div class="rnd-plr-kpis">${statPills.map((s6) => metricHtml8({ label: s6.label, value: s6.value, tone: "panel", size: "xl", align: "center", labelPosition: "bottom", cls: "rnd-plr-kpi-metric", attrs: { style: "min-width:72px" }, valueAttrs: { style: `color:${s6.color}` } })).join("")}</div>` : ""}
-                </div>`;
-    html2 += "</div>";
-    html2 += '<div class="rnd-plr-body">';
-    if (!matchFuture && statsArray.length) {
-      html2 += buildPlayerStatsCompact(statsArray, isGK);
-    }
-    html2 += "</div></div></div>";
-    const $overlay = $(html2).appendTo("body");
-    $overlay.find(".rnd-plr-close").on("click", () => $overlay.remove());
-    $overlay.on("click", (e) => {
-      if ($(e.target).hasClass("rnd-plr-overlay")) $overlay.remove();
-    });
-  };
-
-  // src/components/match/tm-match-lineups.js
-  var homePosMap = {
-    gk: [3, 1],
-    dl: [1, 2],
-    dcl: [2, 2],
-    dc: [3, 2],
-    dcr: [4, 2],
-    dr: [5, 2],
-    dml: [1, 3],
-    dmcl: [2, 3],
-    dmc: [3, 3],
-    dmcr: [4, 3],
-    dmr: [5, 3],
-    ml: [1, 4],
-    mcl: [2, 4],
-    mc: [3, 4],
-    mcr: [4, 4],
-    mr: [5, 4],
-    oml: [1, 5],
-    omcl: [2, 5],
-    omc: [3, 5],
-    omcr: [4, 5],
-    omr: [5, 5],
-    fcl: [2, 6],
-    fc: [3, 6],
-    fcr: [4, 6]
-  };
-  var awayPosMap = {
-    gk: [3, 12],
-    dl: [5, 11],
-    dcl: [4, 11],
-    dc: [3, 11],
-    dcr: [2, 11],
-    dr: [1, 11],
-    dml: [5, 10],
-    dmcl: [4, 10],
-    dmc: [3, 10],
-    dmcr: [2, 10],
-    dmr: [1, 10],
-    ml: [5, 9],
-    mcl: [4, 9],
-    mc: [3, 9],
-    mcr: [2, 9],
-    mr: [1, 9],
-    oml: [5, 8],
-    omcl: [4, 8],
-    omc: [3, 8],
-    omcr: [2, 8],
-    omr: [1, 8],
-    fcl: [4, 7],
-    fc: [3, 7],
-    fcr: [2, 7]
-  };
-  var mentalityMap = TmConst.MENTALITY_MAP_LONG;
-  var styleMap = TmConst.STYLE_MAP;
-  var focusMap = TmConst.FOCUS_MAP;
-  var focusIcons = { Balanced: "??", Left: "??", Central: "??", Right: "??" };
-  var lw = 0.4;
-  var clr = "var(--tmu-border-soft-alpha-mid)";
-  var clr2 = "var(--tmu-border-soft-alpha-strong)";
-  var pitchSVG = `<svg class="rnd-pitch-lines" viewBox="0 0 150 100" preserveAspectRatio="xMidYMid meet">
-            <!-- outer boundary -->
-            <rect x="0" y="0" width="150" height="100" fill="none" stroke="${clr}" stroke-width="0.5"/>
-            <!-- halfway line -->
-            <line x1="75" y1="0" x2="75" y2="100" stroke="${clr}" stroke-width="${lw}"/>
-            <!-- center circle & spot -->
-            <circle cx="75" cy="50" r="13" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-            <circle cx="75" cy="50" r="1.2" fill="${clr2}"/>
-            <!-- LEFT penalty area (24 deep, 60 wide centered) -->
-            <rect x="0" y="20" width="24" height="60" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-            <!-- LEFT goal area (8 deep, 28 wide centered) -->
-            <rect x="0" y="36" width="8" height="28" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-            <!-- LEFT penalty spot -->
-            <circle cx="16" cy="50" r="1.2" fill="${clr2}"/>
-            <!-- LEFT penalty arc (D) -->
-            <path d="M 24 39.75 A 13 13 0 0 1 24 60.25" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-            <!-- RIGHT penalty area -->
-            <rect x="126" y="20" width="24" height="60" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-            <!-- RIGHT goal area -->
-            <rect x="142" y="36" width="8" height="28" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-            <!-- RIGHT penalty spot -->
-            <circle cx="134" cy="50" r="1.2" fill="${clr2}"/>
-            <!-- RIGHT penalty arc (D) -->
-            <path d="M 126 39.75 A 13 13 0 0 0 126 60.25" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-            <!-- corner arcs -->
-            <path d="M 0 1.5 A 1.5 1.5 0 0 1 1.5 0" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-            <path d="M 0 98.5 A 1.5 1.5 0 0 0 1.5 100" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-            <path d="M 148.5 0 A 1.5 1.5 0 0 1 150 1.5" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-            <path d="M 150 98.5 A 1.5 1.5 0 0 0 148.5 100" fill="none" stroke="${clr}" stroke-width="${lw}"/>
-        </svg>`;
-  var TmMatchLineups = {
-    render(body, liveState, sharedOpts) {
-      console.log("[RND] Rendering lineups tab, liveState:", liveState);
-      const { saveUnityCanvas, moveUnityCanvas, updateMatchStats, updateMatchFeed } = sharedOpts;
-      const unityState = sharedOpts.getUnityState ? sharedOpts.getUnityState() : null;
-      const { mData } = liveState || {};
-      const matchFuture = TmMatchUtils.isMatchFuture(mData);
-      const matchEnded = !matchFuture && (!liveState || liveState.ended);
-      const homeColor = mData.teams.home.color;
-      const awayColor = mData.teams.away.color;
-      const allPlayers2 = [...mData.teams.home.lineup || [], ...mData.teams.away.lineup || []];
-      const pEvents = Object.fromEntries(allPlayers2.map((player2) => [String(player2.id), player2]));
-      const eventIcons = (pid) => {
-        var _a2;
-        const result = pEvents[String(pid)];
-        if (!((_a2 = result == null ? void 0 : result.grouped) == null ? void 0 : _a2.length)) return "";
-        return result.grouped.filter((col) => col.lineupIcon).map((col) => {
-          const prefix = !col.lineupBool && col.count > 1 ? col.count + "\uFFFD" : "";
-          const icon = col.iconStyle ? `<span style="${col.iconStyle}">${col.icon}</span>` : col.icon || col.abbr;
-          return prefix + icon;
-        }).join("");
-      };
-      const ratingColor2 = TmUtils.ratingColor;
-      const r5Color3 = TmUtils.r5Color;
-      const origPos = (p) => p.originalPosition || p.position;
-      const posOrder = (pos) => {
-        var _a2, _b;
-        const key = String(pos || "").toLowerCase().replace(/[^a-z]/g, "");
-        return (_b = (_a2 = TmConst.POSITION_MAP[key]) == null ? void 0 : _a2.ordering) != null ? _b : 99;
-      };
-      const renderList = (team) => {
-        const starters = (team.lineup || []).filter((p) => !/^sub/.test(origPos(p))).sort((a, b) => posOrder(origPos(a)) - posOrder(origPos(b)));
-        const subs = (team.lineup || []).filter((p) => /^sub/.test(origPos(p))).sort((a, b) => {
-          const aNum = parseInt(origPos(a).replace(/^sub/, "")) || 99;
-          const bNum = parseInt(origPos(b).replace(/^sub/, "")) || 99;
-          return aNum - bNum;
-        });
-        let h = "";
-        starters.forEach((p) => {
-          const pid = String(p.id);
-          const evts = eventIcons(p.id);
-          const isMom = matchEnded && Number(p.mom) === 1;
-          h += `<div class="rnd-lu-player rnd-lu-clickable" data-pid="${pid}">`;
-          h += `<span class="rnd-lu-pos">${TmPosition.chip([origPos(p)])}</span>`;
-          h += `<span class="rnd-lu-name ml-3">${p.name}`;
-          if (!!p.captain) h += ` <span class="rnd-lu-captain" title="Captain">C</span>`;
-          if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">?</span>`;
-          h += `</span>`;
-          if (evts) h += `<span class="rnd-lu-events">${evts}</span>`;
-          if (matchEnded) {
-            const rFmt = p.rating ? Number(p.rating).toFixed(2) : "-";
-            h += `<span class="rnd-lu-rating" style="color:${ratingColor2(p.rating)}">${rFmt}</span>`;
-          }
-          const r5Badge = p.r5 !== null && p.r5 !== void 0 ? TmUtils.formatR5(p.r5) : "\u2014";
-          const r5Style = p.r5 !== null && p.r5 !== void 0 ? ` style="background:${r5Color3(p.r5)}"` : "";
-          h += `<span class="rnd-lu-r5" data-pid="${p.id}"${r5Style}>${r5Badge}</span>`;
-          h += `</div>`;
-        });
-        h += `<div class="rnd-lu-sub-header">Substitutes</div>`;
-        subs.forEach((p) => {
-          const pid = String(p.id);
-          const evts = eventIcons(p.id);
-          const isMom = matchEnded && Number(p.mom) === 1;
-          const subPosStr = (p.fp || "").split(",")[0].toUpperCase() || "?";
-          const isGkSub = subPosStr === "GK";
-          h += `<div class="rnd-lu-player${mData.profilesReady ? " rnd-lu-clickable" : ""}" data-pid="${pid}">`;
-          h += `<span class="rnd-lu-pos">${TmPosition.chip([(p.fp || "").split(",")[0]])}</span>`;
-          h += `<span class="rnd-lu-name ml-3"${isGkSub ? ' style="color:var(--tmu-text-disabled)"' : ""}>${p.name}`;
-          if (isMom) h += ` <span class="rnd-lu-mom" title="Man of the Match">?</span>`;
-          h += `</span>`;
-          if (evts) h += `<span class="rnd-lu-events">${evts}</span>`;
-          if (matchEnded) {
-            const rFmtS = p.rating ? Number(p.rating).toFixed(2) : "-";
-            h += `<span class="rnd-lu-rating" style="color:${ratingColor2(p.rating)}">${rFmtS}</span>`;
-          }
-          const r5Badge = p.r5 !== null && p.r5 !== void 0 ? TmUtils.formatR5(p.r5) : "\u2014";
-          const r5Style = p.r5 !== null && p.r5 !== void 0 ? ` style="background:${r5Color3(p.r5)}"` : "";
-          h += `<span class="rnd-lu-r5" data-pid="${p.id}"${r5Style}>${r5Badge}</span>`;
-          h += `</div>`;
-        });
-        return h;
-      };
-      const faceNode = (p, clubColor) => `<div class="rnd-pitch-face" style="border:2.5px solid ${clubColor}"><img src="${p.faceUrl}" alt="${p.no}"></div>`;
-      const cellMap = {};
-      const cellPidMap = {};
-      const placeNode = (pid, posMap, color) => {
-        const p = pEvents[pid];
-        if (!p) return;
-        const posKey2 = matchEnded ? origPos(p) : p.position;
-        const pos = posMap[posKey2];
-        if (!pos) return;
-        const [row, col] = pos;
-        const key = `${row}-${col}`;
-        const evts = eventIcons(p.id);
-        const rFmt = matchEnded && p.rating ? Number(p.rating).toFixed(1) : "";
-        const isCaptain = !!p.captain;
-        const isMom = matchEnded && Number(p.mom) === 1;
-        cellPidMap[key] = pid;
-        let h = faceNode(p, color);
-        if (isCaptain) h += `<div class="rnd-pitch-captain">C</div>`;
-        if (isMom) h += `<div class="rnd-pitch-mom">?</div>`;
-        h += `<div class="rnd-pitch-info">`;
-        h += `<div class="rnd-pitch-label">${p.nameLast || p.name}</div>`;
-        if (rFmt) h += `<div class="rnd-pitch-rating" style="color:${ratingColor2(p.rating)}">${rFmt}</div>`;
-        if (evts) h += `<div class="rnd-pitch-events">${evts}</div>`;
-        h += `</div>`;
-        cellMap[key] = h;
-      };
-      (mData.teams.home.lineup || []).forEach((player2) => {
-        placeNode(String(player2.id), homePosMap, homeColor);
-      });
-      (mData.teams.away.lineup || []).forEach((player2) => {
-        placeNode(String(player2.id), awayPosMap, awayColor);
-      });
-      let gridHTML = "";
-      for (let r = 1; r <= 5; r++) {
-        for (let c = 1; c <= 12; c++) {
-          const key = `${r}-${c}`;
-          const pidAttr = cellPidMap[key] ? ` data-pid="${cellPidMap[key]}"` : "";
-          gridHTML += `<div class="rnd-pitch-cell"${pidAttr}>${cellMap[key] || ""}</div>`;
-        }
-      }
-      let html2 = "";
-      const md = mData.match_data;
-      const buildTactics = (side) => {
-        const future = TmMatchUtils.isMatchFuture(mData);
-        const team = mData.teams[side];
-        let t = '<div class="rnd-tactics-section"><div class="rnd-tactics-grid">';
-        t += `<div class="rnd-tactic-row r5-row" data-avg-r5="${side}">
-                <span class="rnd-tactic-icon">?</span>
-                <span class="rnd-tactic-label">Avg R5</span>
-                <div class="rnd-tactic-meter"><div class="rnd-r5-side-meter-fill ${side}" style="width:0%"></div></div>
-                <span class="rnd-r5-side-val" style="font-size:var(--tmu-font-xs);font-weight:800;color:var(--tmu-text-strong);min-width:36px;text-align:right">\uFFFD\uFFFD\uFFFD</span>
-            </div>`;
-        {
-          const lvl = team.mentality;
-          const val = team.mentalityLabel || mentalityMap[lvl] || lvl;
-          t += `<div class="rnd-tactic-row">
-                    <span class="rnd-tactic-icon">??</span>
-                    <span class="rnd-tactic-label">Mentality</span>
-                    <div class="rnd-tactic-meter"><div class="rnd-tactic-meter-fill ${side}" style="width:${Math.round(lvl / 7 * 100)}%"></div></div>
-                    <span class="rnd-tactic-value">${val}</span>
-                </div>`;
-        }
-        if (team.attackingStyle) {
-          const sVal = team.attackingStyleLabel || styleMap[team.attackingStyle] || team.attackingStyle;
-          t += `<div class="rnd-tactic-row">
-                    <span class="rnd-tactic-icon">??</span>
-                    <span class="rnd-tactic-label">Style</span>
-                    <span class="rnd-tactic-value-pill ${side}">${sVal}</span>
-                </div>`;
-        }
-        if (team.focusSide) {
-          const fVal = team.focusSideLabel || focusMap[team.focusSide] || team.focusSide;
-          const fIcon = focusIcons[fVal] || "??";
-          t += `<div class="rnd-tactic-row">
-                    <span class="rnd-tactic-icon">?</span>
-                    <span class="rnd-tactic-label">Focus</span>
-                    <span class="rnd-tactic-value-pill ${side}">${fIcon} ${fVal}</span>
-                </div>`;
-        }
-        if (future && md.lineup_out && md.lineup_out[side]) {
-          const outPlayers = Object.values(md.lineup_out[side]);
-          if (outPlayers.length) {
-            t += `<div class="rnd-tactic-row" style="margin-top:var(--tmu-space-sm);border-top:1px solid var(--tmu-border-soft-alpha);padding-top:var(--tmu-space-sm)">
-                        <span class="rnd-tactic-icon">??</span>
-                        <span class="rnd-tactic-label" style="color:var(--tmu-warning-soft)">Unavailable</span>
-                    </div>`;
-            outPlayers.forEach((op) => {
-              t += `<div class="rnd-tactic-row">
-                            <span class="rnd-tactic-icon" style="font-size:var(--tmu-font-xs);color:var(--tmu-warning-soft)">?</span>
-                            <span class="rnd-tactic-value" style="color:var(--tmu-warning-soft);font-size:var(--tmu-font-xs)">${op.name}</span>
-                        </div>`;
-            });
-          }
-        }
-        t += "</div></div>";
-        return t;
-      };
-      const isLive = liveState && !liveState.ended;
-      const existingWrap = body.find(".rnd-lu-wrap");
-      if (isLive && existingWrap.length) {
-        let wrapHtml = "";
-        wrapHtml += `<div class="rnd-lu-list">${renderList(mData.teams.home)}${buildTactics("home")}</div>`;
-        wrapHtml += `<div class="rnd-pitch-wrap">
-              <div class="rnd-pitch">${pitchSVG}<div class="rnd-pitch-grid">${gridHTML}</div></div>
-            </div>`;
-        wrapHtml += `<div class="rnd-lu-list">${renderList(mData.teams.away)}${buildTactics("away")}</div>`;
-        existingWrap.html(wrapHtml);
-      } else {
-        saveUnityCanvas();
-        if (isLive) {
-          html2 += '<div class="rnd-lu-outer">';
-        }
-        if (isLive) {
-          const noUnityClass = !unityState || !unityState.available ? " rnd-no-unity" : "";
-          html2 += `<div class="rnd-unity-row${noUnityClass}">`;
-          html2 += '<div class="rnd-unity-feed" id="rnd-unity-feed"></div>';
-          html2 += '<div id="rnd-unity-viewport" class="rnd-unity-viewport" style="display:none;flex:1 1 auto;"></div>';
-          html2 += '<div class="rnd-unity-stats" id="rnd-unity-stats"></div>';
-          html2 += "</div>";
-        }
-        html2 += '<div class="rnd-lu-wrap">';
-        html2 += `<div class="rnd-lu-list">${renderList(mData.teams.home)}${buildTactics("home")}</div>`;
-        html2 += `<div class="rnd-pitch-wrap">
-              <div class="rnd-pitch">${pitchSVG}<div class="rnd-pitch-grid">${gridHTML}</div></div>
-            </div>`;
-        html2 += `<div class="rnd-lu-list">${renderList(mData.teams.away)}${buildTactics("away")}</div>`;
-        html2 += "</div>";
-        if (isLive) html2 += "</div>";
-        body.html(html2);
-        body.on("click", ".rnd-lu-clickable", function() {
-          const clickedPid = $(this).data("pid");
-          if (!clickedPid) return;
-          const players = [...mData.teams.home.lineup, ...mData.teams.away.lineup];
-          const player2 = players.find((p) => p.id === Number(clickedPid));
-          if (!player2) return;
-          showPlayerDialog(player2, liveState);
-        });
-        let pitchTooltipTimer = null;
-        const removePitchTooltip = () => {
-          clearTimeout(pitchTooltipTimer);
-          TmPlayerTooltip.hide();
-        };
-        body.on("mouseenter", ".rnd-pitch-cell[data-pid], .rnd-lu-player[data-pid]", function(e) {
-          const pid = String($(this).data("pid"));
-          removePitchTooltip();
-          const player2 = pEvents[pid];
-          if (!(player2 == null ? void 0 : player2.skills)) return;
-          pitchTooltipTimer = setTimeout(() => {
-            TmPlayerTooltip.show(this, player2);
-          }, 80);
-        });
-        body.on("mouseleave", ".rnd-pitch-cell[data-pid], .rnd-lu-player[data-pid]", removePitchTooltip);
-        if (unityState.available) {
-          setTimeout(() => {
-            const vp = document.getElementById("rnd-unity-viewport");
-            if (vp) {
-              moveUnityCanvas();
-              vp.style.display = "block";
-            }
-            updateMatchFeed == null ? void 0 : updateMatchFeed();
-            updateMatchStats == null ? void 0 : updateMatchStats();
-          }, 100);
-        } else if (isLive) {
-          updateMatchFeed == null ? void 0 : updateMatchFeed();
-          updateMatchStats == null ? void 0 : updateMatchStats();
-        }
-      }
-      const fillAvg = (side, avg2) => {
-        if (avg2 === null || avg2 === void 0) return;
-        const pct = Math.min(100, Math.max(0, Math.round((avg2 - 40) / (120 - 40) * 100)));
-        const card = body.find(`[data-avg-r5="${side}"]`);
-        card.find(".rnd-r5-side-meter-fill").css("width", pct + "%");
-        card.find(".rnd-r5-side-val").text(avg2.toFixed(2)).css("color", r5Color3(avg2));
-      };
-      fillAvg("home", mData.teams.home.avgR5);
-      fillAvg("away", mData.teams.away.avgR5);
-      const headerR5 = (side, avg2) => {
-        if (avg2 === null || avg2 === void 0) return;
-        $(`#rnd-chip-r5-${side} .tmu-badge-value`).text(avg2.toFixed(2));
-      };
-      headerR5("home", mData.teams.home.avgR5);
-      headerR5("away", mData.teams.away.avgR5);
-    }
-  };
-
-  // src/components/match/tm-match-player-stats-table.js
-  var playerCellHtml = (player2) => `${TmPosition.chip([player2.displayPosition || ""])}<span class="rnd-mps-name${player2.isKeeper ? " ml-2 mr-1" : ""}">${player2.name}</span>${player2.subOut ? '<span class="rnd-mps-sub-flag out" title="Subbed out">\u2193</span>' : player2.subIn ? '<span class="rnd-mps-sub-flag in" title="Subbed in">\u2191</span>' : ""}`;
-  var ratingHtml = (rating) => `<span style="color:${rating ? TmUtils.ratingColor(rating) : "var(--tmu-text-faint)"}">${rating ? rating.toFixed(2) : "-"}</span>`;
-  var table = ({ title, players, headers, tableClass = "rnd-mps-table", onRowClick }) => {
-    const table2 = TmTable.table({
-      cls: tableClass,
-      headers,
-      items: players,
-      rowCls: () => "rnd-mps-row",
-      onRowClick
-    });
-    const theadLabel = table2.querySelector("thead th");
-    if (theadLabel) theadLabel.textContent = title;
-    return table2;
-  };
-  var TmMatchPlayerStatsTable = {
-    outfield(players, onRowClick) {
-      return table({
-        title: "Player",
-        players,
-        onRowClick,
-        headers: [
-          { key: "name", label: "Player", align: "l", sortable: false, cls: "rnd-mps-name-cell", render: (_, player2) => playerCellHtml(player2) },
-          { key: "minutes", label: "Min", align: "c", sortable: false },
-          { key: "shots", label: "Sh", align: "c", sortable: false },
-          { key: "shotsOnTarget", label: "SoT", align: "c", sortable: false },
-          { key: "goals", label: "G", align: "c", sortable: false },
-          { key: "passSummary", label: "Pass", align: "c", sortable: false, render: (_, player2) => `${player2.passesCompleted || 0}/${player2.totalPasses || 0}` },
-          { key: "assists", label: "A", align: "c", sortable: false },
-          { key: "interceptions", label: "INT", align: "c", sortable: false },
-          { key: "tackleFails", label: "TF", align: "c", sortable: false },
-          { key: "rating", label: "RTG", align: "c", sortable: false, render: (rating) => ratingHtml(rating) }
-        ]
-      });
-    },
-    keepers(players, onRowClick) {
-      return table({
-        title: "Goalkeeper",
-        players: players.map((player2) => ({ ...player2, isKeeper: true })),
-        tableClass: "rnd-mps-table rnd-mps-table-gk",
-        onRowClick,
-        headers: [
-          { key: "name", label: "Goalkeeper", align: "l", sortable: false, cls: "rnd-mps-name-cell", render: (_, player2) => playerCellHtml(player2) },
-          { key: "minutes", label: "Min", align: "c", sortable: false },
-          { key: "saves", label: "Saves", align: "c", sortable: false },
-          { key: "goals", label: "Conc", align: "c", sortable: false },
-          { key: "passSummary", label: "Pass", align: "c", sortable: false, render: (_, player2) => `${player2.passesCompleted || 0}/${player2.totalPasses || 0}` },
-          { key: "assists", label: "A", align: "c", sortable: false },
-          { key: "rating", label: "RTG", align: "c", sortable: false, render: (rating) => ratingHtml(rating) }
-        ]
-      });
-    }
-  };
-
-  // src/components/match/tm-match-statistics.js
-  var _barRow = (label, hVal, aVal, highlight = false) => {
-    return TmUI.compareStat({
-      label,
-      leftValue: String(hVal),
-      rightValue: String(aVal),
-      leftTone: "home",
-      rightTone: "away",
-      size: "md",
-      highlight,
-      cls: highlight ? "rnd-stat-highlight" : ""
-    });
-  };
-  var _buildTeamHeader = (homeClub, awayClub, homeId, awayId) => {
-    const homeLogo = `/pics/club_logos/${homeId}_140.png`;
-    const awayLogo = `/pics/club_logos/${awayId}_140.png`;
-    let h = '<div class="rnd-stats-team-header">';
-    h += `<div class="rnd-stats-team-side home"><img class="rnd-stats-team-logo" src="${homeLogo}" onerror="this.style.display='none'"><span class="rnd-stats-team-name">${homeClub}</span></div>`;
-    h += '<span class="rnd-stats-vs">vs</span>';
-    h += `<div class="rnd-stats-team-side away"><img class="rnd-stats-team-logo" src="${awayLogo}" onerror="this.style.display='none'"><span class="rnd-stats-team-name">${awayClub}</span></div>`;
-    h += "</div>";
-    return h;
-  };
-  var _buildStatBars = (hStats, aStats, md, matchEnded) => {
-    var _a2, _b, _c, _d;
-    let h = "";
-    if (md.possession && matchEnded) {
-      h += _barRow("Possession", md.possession.home + "%", md.possession.away + "%", true);
-    }
-    h += '<div class="rnd-stat-divider"></div>';
-    h += _barRow("Shots", hStats.shots, aStats.shots);
-    h += _barRow("On Target", hStats.shotsOnTarget, aStats.shotsOnTarget);
-    h += '<div class="rnd-stat-divider"></div>';
-    h += _barRow("Yellow Cards", hStats.yellowCards, aStats.yellowCards);
-    h += _barRow("Red Cards", hStats.redCards, aStats.redCards);
-    const hPen = ((_b = (_a2 = hStats.advanced) == null ? void 0 : _a2.Penalties) == null ? void 0 : _b.a) || 0;
-    const aPen = ((_d = (_c = aStats.advanced) == null ? void 0 : _c.Penalties) == null ? void 0 : _d.a) || 0;
-    if (hPen || aPen) {
-      h += '<div class="rnd-stat-divider"></div>';
-      h += _barRow("Penalties", hPen, aPen);
-    }
-    return h;
-  };
-  var _buildAdvTable = (teamName, adv, sideClass, liveState) => {
-    const { STYLE_ORDER: STYLE_ORDER5 } = TmConst;
-    const wrap = document.createElement("div");
-    const label = document.createElement("div");
-    label.className = "rnd-adv-team-label";
-    label.style.color = sideClass === "home" ? "var(--tmu-success)" : "var(--tmu-info)";
-    label.textContent = teamName;
-    wrap.appendChild(label);
-    let totA = 0;
-    let totL = 0;
-    let totSh = 0;
-    let totG = 0;
-    const rows = STYLE_ORDER5.map((style) => {
-      const data = adv[style] || { a: 0, sh: 0, l: 0, g: 0, events: [] };
-      totA += data.a;
-      totL += data.l;
-      totSh += data.sh;
-      totG += data.g;
-      return { style, ...data };
-    });
-    const cls = (value, type) => value === 0 ? "adv-zero" : type;
-    const table2 = TmTable.table({
-      cls: " rnd-adv-table",
-      items: rows,
-      headers: [
-        { key: "style", label: "Style", sortable: false },
-        { key: "a", label: "Att", sortable: false },
-        { key: "sh", label: "Reached", sortable: false, title: "Attacks that reached a shot" },
-        { key: "l", label: "Lost", sortable: false, title: "Possession lost before shot" },
-        { key: "g", label: "Goal", sortable: false },
-        { key: "reachedPct", label: "Reached%", sortable: false, title: "Attacks through to shot / Total" },
-        { key: "convPct", label: "Conv%", sortable: false, title: "Goals / Total attacks" }
-      ],
-      renderRowsHtml: (sortedRows) => {
-        let html2 = "";
-        sortedRows.forEach((row) => {
-          const pct = row.a ? Math.round(row.g / row.a * 100) + "%" : "-";
-          const reachedPct = row.a ? Math.round(row.sh / row.a * 100) + "%" : "-";
-          const rowId = `adv-${sideClass}-${row.style.replace(/\s/g, "-")}`;
-          const hasEvents = row.events.length > 0;
-          html2 += `<tr class="rnd-adv-row${hasEvents ? "" : " rnd-adv-total"}"${hasEvents ? ` data-adv-target="${rowId}"` : ""}>`;
-          html2 += `<td>${row.style}${hasEvents ? ' <span class="adv-arrow">&#9654;</span>' : ""}</td>`;
-          html2 += `<td class="${cls(row.a, "")}">${row.a}</td>`;
-          html2 += `<td class="${cls(row.sh, "adv-shot")}">${row.sh}</td>`;
-          html2 += `<td class="${cls(row.l, "adv-lost")}">${row.l}</td>`;
-          html2 += `<td class="${cls(row.g, "adv-goal")}">${row.g}</td>`;
-          html2 += `<td class="${cls(row.sh, "")}">${reachedPct}</td>`;
-          html2 += `<td class="${cls(row.a ? row.g : 0, "")}">${pct}</td>`;
-          html2 += "</tr>";
-          if (hasEvents) {
-            html2 += `<tr class="rnd-adv-events" id="${rowId}"><td colspan="7"><div class="rnd-adv-evt-list">`;
-            row.events.forEach((event) => {
-              html2 += `<div class="rnd-adv-evt"><span class="adv-result-tag ${event.result}">${event.result}</span>${TmMatchReport.buildEventHtml(event.evt, event.min, liveState)}</div>`;
-            });
-            html2 += "</div></td></tr>";
-          }
-        });
-        const totPct = totA ? Math.round(totG / totA * 100) + "%" : "-";
-        const totReachedPct = totA ? Math.round(totSh / totA * 100) + "%" : "-";
-        html2 += `<tr class="rnd-adv-row rnd-adv-total"><td>Total</td><td>${totA}</td><td>${totSh}</td><td>${totL}</td><td>${totG}</td><td>${totReachedPct}</td><td>${totPct}</td></tr>`;
-        return html2;
-      }
-    });
-    wrap.appendChild(table2);
-    return wrap;
-  };
-  var _injectAttackingStyles = (bodyEl, homeAdv, awayAdv, homeClub, awayClub, liveState) => {
-    const host = bodyEl.querySelector("#rnd-adv-styles");
-    if (!host) return;
-    const section = document.createElement("div");
-    section.className = "rnd-adv-section";
-    section.innerHTML = '<div class="rnd-adv-title">Attacking Styles</div>';
-    section.appendChild(_buildAdvTable(homeClub, homeAdv, "home", liveState));
-    section.appendChild(_buildAdvTable(awayClub, awayAdv, "away", liveState));
-    host.appendChild(section);
-  };
-  var _toTablePlayer = (p) => {
-    const statsMap = Object.fromEntries((p.grouped || []).map((c) => [c.key, c.count]));
-    const totalPasses = (statsMap.passesCompleted || 0) + (statsMap.passesFailed || 0);
-    const originalPosition = p.originalPosition || p.position || "";
-    const currentPosition = p.position || "";
-    const subIn = !!statsMap.subIn;
-    const subOut = !!statsMap.subOut;
-    let displayPosition = currentPosition;
-    if (subOut && originalPosition && !/^sub\d+$/.test(originalPosition)) {
-      displayPosition = originalPosition;
-    } else if (subIn) {
-      displayPosition = !/^sub\d+$/.test(currentPosition) ? currentPosition : (p.fp || "").split(",")[0] || originalPosition || currentPosition;
-    } else if (/^sub\d+$/.test(currentPosition) && !/^sub\d+$/.test(originalPosition)) {
-      displayPosition = originalPosition;
-    }
-    return {
-      pid: String(p.id || p.player_id),
-      name: p.nameLast || p.name || String(p.id || p.player_id),
-      position: p.position || "",
-      displayPosition,
-      isGK: displayPosition === "gk" || p.position === "gk",
-      matches: 1,
-      minutes: p.minsPlayed || 0,
-      rating: p.rating ? Number(p.rating) : 0,
-      subIn,
-      subOut,
-      totalPasses,
-      ...Object.fromEntries(TmConst.PLAYER_STAT_COLS.map((c) => [c.key, statsMap[c.key] || 0]))
-    };
-  };
-  var _posOrder = (pos) => {
-    var _a2, _b, _c;
-    const key = String(pos || "").toLowerCase().replace(/[^a-z]/g, "");
-    return (_c = (_b = (_a2 = TmConst.POSITION_MAP) == null ? void 0 : _a2[key]) == null ? void 0 : _b.ordering) != null ? _c : 99;
-  };
-  var _injectPlayerStats = (homeTeam, awayTeam, bodyEl, liveState) => {
-    const allPlayers2 = [...homeTeam.lineup, ...awayTeam.lineup];
-    const openPlayerDialog = (tablePlayer) => {
-      const player2 = allPlayers2.find((item) => Number(item.id) === Number(tablePlayer.pid));
-      if (player2) showPlayerDialog(player2, liveState);
-    };
-    const buildTeamBlock = (team, sideClass, containerId) => {
-      const container = bodyEl.querySelector(`#${containerId}`);
-      if (!container) return;
-      const label = document.createElement("div");
-      label.className = "rnd-adv-team-label";
-      label.style.color = sideClass === "home" ? "var(--tmu-success)" : "var(--tmu-info)";
-      label.textContent = team.name;
-      container.appendChild(label);
-      const activePlayers = (team.lineup || []).filter((p) => !/^sub\d+$/.test(p.position) || p.minsPlayed > 0);
-      const all = activePlayers.map(_toTablePlayer).sort((a, b) => _posOrder(a.displayPosition) - _posOrder(b.displayPosition) || (b.minutes || 0) - (a.minutes || 0) || a.name.localeCompare(b.name));
-      const outfield = all.filter((p) => !p.isGK);
-      const keepers = all.filter((p) => p.isGK);
-      const wrap = document.createElement("div");
-      wrap.className = "rnd-mps-wrap";
-      if (outfield.length) wrap.appendChild(TmMatchPlayerStatsTable.outfield(outfield, openPlayerDialog));
-      if (keepers.length) wrap.appendChild(TmMatchPlayerStatsTable.keepers(keepers, openPlayerDialog));
-      container.appendChild(wrap);
-    };
-    buildTeamBlock(homeTeam, "home", "rnd-plr-home");
-    buildTeamBlock(awayTeam, "away", "rnd-plr-away");
-  };
-  var TmMatchStatistics = {
-    render(body, liveState) {
-      const mData = liveState.mData;
-      const home = mData.teams.home;
-      const away = mData.teams.away;
-      const md = mData.match_data;
-      const homeId = String(home.id);
-      const awayId = String(away.id);
-      const matchEnded = liveState.ended;
-      let html2 = '<div class="rnd-stats-wrap">';
-      html2 += _buildTeamHeader(home.name, away.name, homeId, awayId);
-      html2 += _buildStatBars(home.stats, away.stats, md, matchEnded);
-      html2 += '<div id="rnd-adv-styles"></div>';
-      html2 += '<div class="rnd-adv-section"><div class="rnd-adv-title">Player Statistics</div><div id="rnd-plr-home"></div><div id="rnd-plr-away"></div></div>';
-      html2 += "</div>";
-      body.html(html2);
-      _injectAttackingStyles(body[0], home.stats.advanced, away.stats.advanced, home.name, away.name, liveState);
-      _injectPlayerStats(home, away, body[0], liveState);
-      body.find(".rnd-adv-row[data-adv-target]").on("click", function() {
-        const targetId = $(this).data("adv-target");
-        const evtRow = document.getElementById(targetId);
-        if (evtRow) {
-          $(this).toggleClass("expanded");
-          $(evtRow).toggleClass("visible");
-        }
-      });
-      TmMatchAccordion.bindToggles(body, { stopPropagation: true });
-    }
-  };
-
-  // src/components/match/tm-match-styles.js
-  var inject3 = () => {
-    if (document.getElementById("tsa-match-style")) return;
-    const style = document.createElement("style");
-    style.id = "tsa-match-style";
-    style.textContent = `
-            /* \u2500\u2500 Match Dialog \u2500\u2500 */
-            .rnd-overlay {
-                position: fixed; top:0; left:0; right:0; bottom:0;
-                background: var(--tmu-surface-overlay-strong);
-                z-index: 10000;
-                display: flex; align-items: center; justify-content: center;
-            }
-            .rnd-dialog {
-                background: var(--tmu-surface-panel); border: none;
-                border-radius: 0; width: 100vw; height: 100vh;
-                overflow: hidden; display: flex; flex-direction: column;
-            }
-            .rnd-dlg-head {
-                background: linear-gradient(180deg, var(--tmu-surface-card-soft) 0%, var(--tmu-surface-panel) 50%, var(--tmu-surface-card) 100%);
-                padding: var(--tmu-space-md) var(--tmu-space-lg) var(--tmu-space-sm);
-                position: relative;
-                border-bottom: 2px solid var(--tmu-border-soft-alpha-mid);
-                overflow: visible; z-index: 2;
-            }
-            .rnd-dlg-head-content {
-                display: flex; flex-direction: column; align-items: center;
-            }
-            .rnd-dlg-head-row {
-                display: flex; align-items: center;
-                justify-content: center; width: 100%;
-            }
-            .rnd-dlg-team-group {
-                display: flex; align-items: center; gap: var(--tmu-space-md);
-                flex: 1; min-width: 0;
-            }
-            .rnd-dlg-team-group.home { justify-content: flex-end; }
-            .rnd-dlg-team-group.away { justify-content: flex-start; }
-            .rnd-dlg-team-info {
-                display: flex; flex-direction: column; gap: var(--tmu-space-xs); min-width: 0;
-            }
-            .rnd-dlg-team-group.home .rnd-dlg-team-info { align-items: flex-end; }
-            .rnd-dlg-team-group.away .rnd-dlg-team-info { align-items: flex-start; }
-            .rnd-dlg-team {
-                 color: var(--tmu-text-strong); font-weight: 700; font-size: var(--tmu-font-md);
-                letter-spacing: 0.3px; line-height: 1.2;
-                white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-                max-width: 200px;
-            }
-            .rnd-dlg-chips {
-                display: flex; gap: var(--tmu-space-xs); flex-wrap: wrap;
-            }
-            .rnd-dlg-team-group.home .rnd-dlg-chips { justify-content: flex-end; }
-            .rnd-dlg-chips .tmu-badge { white-space: nowrap; }
-            .rnd-dlg-score-block {
-                display: flex; flex-direction: column; align-items: center;
-                flex-shrink: 0; padding: 0 var(--tmu-space-md);
-            }
-            .rnd-dlg-score {
-                color: var(--tmu-text-inverse); font-weight: 800; font-size: 32px;
-                letter-spacing: 3px; line-height: 1;
-                text-shadow: 0 0 20px var(--tmu-success-fill-hover), 0 1px 3px var(--tmu-shadow-panel);
-            }
-            .rnd-dlg-datetime {
-                text-align: center; margin-top: 0;
-                font-size: var(--tmu-font-xs); color: var(--tmu-text-faint); letter-spacing: 0.3px;
-                font-weight: 500;
-            }
-            .rnd-dlg-close {
-                position: absolute; top: var(--tmu-space-sm); right: var(--tmu-space-sm); z-index: 3;
-            }
-            .rnd-dlg-close:hover { transform: scale(1.1); }
-
-            /* \u2500\u2500 Live replay \u2500\u2500 */
-            .rnd-live-bar {
-                display: flex; align-items: center; gap: var(--tmu-space-md);
-                background: var(--tmu-success-fill); padding: var(--tmu-space-sm) var(--tmu-space-xxl);
-                border-bottom: 1px solid var(--tmu-border-embedded); justify-content: center;
-            }
-            .rnd-live-min {
-                 font-size: var(--tmu-font-lg); font-weight: 700; color: var(--tmu-accent);
-                min-width: 48px; text-align: center;
-                animation: rnd-pulse 1.2s ease-in-out infinite;
-            }
-            @keyframes rnd-pulse { 0%,100%{opacity:1} 50%{opacity:.45} }
-            .rnd-live-progress {
-                flex: 1; max-width: 400px; height: 6px;
-                background: var(--tmu-accent-fill); border-radius: var(--tmu-space-xs); overflow: hidden;
-            }
-            .rnd-live-progress-fill {
-                height: 100%; background: linear-gradient(90deg, var(--tmu-compare-home-grad-start), var(--tmu-accent));
-                border-radius: var(--tmu-space-xs); transition: width 0.4s;
-            }
-            .rnd-live-btn {
-                background: none !important; border: 1px solid var(--tmu-success) !important; border-radius: var(--tmu-space-xs);
-                color: var(--tmu-text-main);
-                transition: background 0.15s;
-            }
-            .rnd-live-btn:hover { background: var(--tmu-border-contrast) !important; }
-            .rnd-live-label {
-                font-size: var(--tmu-font-xs); color: var(--tmu-text-dim); text-transform: uppercase;
-                letter-spacing: 1px; font-weight: 600;
-            }
-            .rnd-live-ended .rnd-live-min { color: var(--tmu-text-panel-label); animation: none; }
-            .rnd-live-feed-line {
-                padding: var(--tmu-space-sm) 0; border-bottom: 1px solid var(--tmu-accent-fill);
-                animation: rnd-feedIn 0.4s ease;
-            }
-            @keyframes rnd-feedIn { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
-            .rnd-live-feed-min {
-                font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-accent);
-                margin-right: var(--tmu-space-sm);
-            }
-            .rnd-live-feed-text { color: var(--tmu-text-main); font-size: var(--tmu-font-sm); }
-            .rnd-dlg-body {
-                overflow-y: auto; padding: var(--tmu-space-sm) var(--tmu-space-xxl);
-                flex: 1; color: var(--tmu-text-main); font-size: var(--tmu-font-sm);
-            }
-            .rnd-event-row {
-                display: flex; align-items: flex-start; gap: var(--tmu-space-sm);
-                padding: var(--tmu-space-xs) 0; border-bottom: 1px solid var(--tmu-border-soft);
-            }
-            .rnd-event-min { color: var(--tmu-text-panel-label); font-weight: 600; min-width: 28px; text-align: right; }
-            .rnd-event-icon { min-width: 18px; text-align: center; }
-            .rnd-event-text { flex: 1; color: var(--tmu-text-main); }
-            /* \u2500\u2500 Venue tab \u2500\u2500 */
-            .rnd-venue-wrap { max-width: 900px; margin: 0 auto; }
-            .rnd-venue-hero {
-                position: relative; border-radius: var(--tmu-space-md); overflow: hidden;
-                background: linear-gradient(135deg, var(--tmu-surface-panel) 0%, var(--tmu-accent-fill) 40%, var(--tmu-success-fill) 100%);
-                margin-bottom: var(--tmu-space-xl); padding: var(--tmu-space-xxl);
-                border: 1px solid var(--tmu-border-embedded);
-                box-shadow: 0 6px 24px var(--tmu-surface-overlay);
-            }
-            .rnd-venue-hero::before {
-                content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-                background: repeating-linear-gradient(90deg, transparent, transparent 48%, var(--tmu-border-contrast) 48%, var(--tmu-border-contrast) 52%);
-                pointer-events: none;
-            }
-            .rnd-venue-stadium-svg { display: block; margin: 0 auto var(--tmu-space-xl); opacity: 0.55; }
-            .rnd-venue-name {
-                text-align: center; font-size: var(--tmu-font-xl); font-weight: 800; color: var(--tmu-text-strong);
-                letter-spacing: 0.5px; margin-bottom: var(--tmu-space-xs); text-shadow: 0 2px 8px var(--tmu-surface-overlay);
-            }
-            .rnd-venue-city {
-                text-align: center; font-size: var(--tmu-font-sm); color: var(--tmu-text-panel-label); margin-bottom: var(--tmu-space-md);
-                letter-spacing: 1px; text-transform: uppercase;
-            }
-            .rnd-venue-tournament {
-                text-align: center; margin-bottom: 0;
-            }
-            .rnd-venue-tournament span {
-                display: inline-block; background: var(--tmu-success-fill); padding: var(--tmu-space-xs) var(--tmu-space-md);
-                border-radius: var(--tmu-space-xl); font-size: var(--tmu-font-xs); color: var(--tmu-text-main); letter-spacing: 0.5px;
-                border: 1px solid var(--tmu-border-success);
-            }
-            .rnd-venue-cards {
-                display: grid; grid-template-columns: 1fr 1fr; gap: var(--tmu-space-md); margin-bottom: var(--tmu-space-lg);
-            }
-            .rnd-venue-card {
-                background: linear-gradient(145deg, var(--tmu-surface-tab-hover), var(--tmu-surface-panel));
-                border: 1px solid var(--tmu-border-embedded); border-radius: var(--tmu-space-md); padding: var(--tmu-space-lg);
-                text-align: center; position: relative; overflow: hidden;
-            }
-            .rnd-venue-card::after {
-                content: ''; position: absolute; top: -20px; right: -20px;
-                width: 60px; height: 60px; border-radius: 50%;
-                background: var(--tmu-success-fill-faint);
-            }
-            .rnd-venue-card-icon { font-size: var(--tmu-font-2xl); margin-bottom: var(--tmu-space-sm); }
-            .rnd-venue-card-value {
-                font-size: var(--tmu-font-xl); font-weight: 800; color: var(--tmu-text-strong); margin-bottom: 0;
-            }
-            .rnd-venue-card-label { font-size: var(--tmu-font-xs); color: var(--tmu-text-panel-label); text-transform: uppercase; letter-spacing: 0.5px; }
-            .rnd-venue-gauge-wrap {
-                background: linear-gradient(145deg, var(--tmu-surface-tab-hover), var(--tmu-surface-panel));
-                border: 1px solid var(--tmu-border-embedded); border-radius: var(--tmu-space-md); padding: var(--tmu-space-xl);
-                margin-bottom: var(--tmu-space-lg);
-            }
-            .rnd-venue-gauge-header {
-                display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--tmu-space-md);
-            }
-            .rnd-venue-gauge-title { font-size: var(--tmu-font-sm); color: var(--tmu-text-panel-label); text-transform: uppercase; letter-spacing: 0.5px; }
-            .rnd-venue-gauge-value { font-size: var(--tmu-font-md); font-weight: 700; color: var(--tmu-text-strong); }
-            .rnd-venue-gauge-bar {
-                height: 10px; background: var(--tmu-surface-panel); border-radius: var(--tmu-space-xs); overflow: hidden;
-                position: relative;
-            }
-            .rnd-venue-gauge-fill {
-                height: 100%; border-radius: var(--tmu-space-xs);
-                transition: width 0.6s ease;
-            }
-            .rnd-venue-gauge-fill.attendance {
-                background: linear-gradient(90deg, var(--tmu-compare-home-grad-start), var(--tmu-compare-home-grad-end), var(--tmu-text-live));
-            }
-            .rnd-venue-weather {
-                background: linear-gradient(145deg, var(--tmu-surface-tab-hover), var(--tmu-surface-panel));
-                border: 1px solid var(--tmu-border-embedded); border-radius: var(--tmu-space-md); padding: var(--tmu-space-xl);
-                margin-bottom: var(--tmu-space-lg); display: flex; align-items: center; gap: var(--tmu-space-xl);
-            }
-            .rnd-venue-weather-icon { font-size: 48px; line-height: 1; }
-            .rnd-venue-weather-info { flex: 1; }
-            .rnd-venue-weather-text { font-size: var(--tmu-font-lg); font-weight: 700; color: var(--tmu-text-strong); margin-bottom: 0; }
-            .rnd-venue-weather-sub { font-size: var(--tmu-font-sm); color: var(--tmu-text-panel-label); }
-            .rnd-venue-facilities {
-                display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--tmu-space-md); margin-bottom: var(--tmu-space-lg);
-            }
-            .rnd-venue-facility {
-                background: linear-gradient(145deg, var(--tmu-surface-tab-hover), var(--tmu-surface-panel));
-                border: 1px solid var(--tmu-border-embedded); border-radius: var(--tmu-space-md); padding: var(--tmu-space-md) var(--tmu-space-sm);
-                text-align: center; transition: border-color 0.2s;
-            }
-            .rnd-venue-facility.active { border-color: var(--tmu-success); background: linear-gradient(145deg, var(--tmu-accent-fill), var(--tmu-success-fill)); }
-            .rnd-venue-facility-icon { font-size: var(--tmu-font-xl); margin-bottom: var(--tmu-space-xs); }
-            .rnd-venue-facility-label { font-size: var(--tmu-font-xs); color: var(--tmu-text-panel-label); text-transform: uppercase; letter-spacing: 0.3px; }
-            .rnd-venue-facility .rnd-venue-facility-status {
-                font-size: var(--tmu-font-xs); margin-top: var(--tmu-space-xs); color: var(--tmu-text-faint); font-weight: 600;
-            }
-            .rnd-venue-facility.active .rnd-venue-facility-status { color: var(--tmu-accent); }
-            .rnd-report-text {
-                color: var(--tmu-text-main); font-size: var(--tmu-font-sm); line-height: 1.6;
-            }
-            .rnd-report-text .rnd-goal-text { color: var(--tmu-text-live); font-weight: 700; }
-            .rnd-report-text .rnd-yellow-text { color: var(--tmu-text-highlight); }
-            .rnd-report-text .rnd-red-text { color: var(--tmu-danger); font-weight: 700; }
-            .rnd-report-text .rnd-sub-text { color: var(--tmu-text-preview); }
-            .rnd-report-text .rnd-player-name { color: var(--tmu-text-strong); font-weight: 600; }
-
-            /* \u2500\u2500 Dialog logos \u2500\u2500 */
-            .rnd-dlg-logo {
-                width: 44px; height: 44px; flex-shrink: 0;
-                filter: drop-shadow(0 2px 6px var(--tmu-shadow-panel));
-                object-fit: contain; pointer-events: none;
-            }
-
-            /* \u2500\u2500 Statistics tab \u2500\u2500 */
-            .rnd-stats-wrap {
-                max-width: 650px; margin: 0 auto; padding: var(--tmu-space-xs) 0 var(--tmu-space-md);
-            }
-            .rnd-stats-team-header {
-                display: flex; align-items: center; justify-content: space-between;
-                padding: var(--tmu-space-md) var(--tmu-space-lg) var(--tmu-space-md); margin-bottom: var(--tmu-space-xs);
-            }
-            .rnd-stats-team-side {
-                display: flex; align-items: center; gap: var(--tmu-space-md);
-            }
-            .rnd-stats-team-side.away { flex-direction: row-reverse; }
-            .rnd-stats-team-logo {
-                width: 36px; height: 36px; object-fit: contain;
-                filter: drop-shadow(0 2px 4px var(--tmu-surface-overlay));
-            }
-            .rnd-stats-team-name {
-                 font-weight: 700; font-size: var(--tmu-font-md); color: var(--tmu-text-strong);
-                letter-spacing: 0.2px;
-            }
-            .rnd-stats-vs {
-                font-size: var(--tmu-font-xs); color: var(--tmu-text-faint); font-weight: 600;
-                text-transform: uppercase; letter-spacing: 1px;
-            }
-            .rnd-stats-wrap .tmu-cstat {
-                padding: var(--tmu-space-md) var(--tmu-space-lg);
-            }
-            .rnd-stat-divider {
-                height: 1px; margin: 0 var(--tmu-space-lg);
-                background: linear-gradient(90deg, transparent, var(--tmu-border-embedded) 20%, var(--tmu-border-embedded) 80%, transparent);
-            }
-            .rnd-stats-wrap .tmu-cstat.rnd-stat-highlight {
-                background: var(--tmu-compare-fill);
-                border-radius: var(--tmu-space-sm); margin: 0 var(--tmu-space-sm);
-                padding: var(--tmu-space-md) var(--tmu-space-md);
-            }
-
-            /* \u2500\u2500 Advanced Stats (Attacking Styles) \u2500\u2500 */
-            .rnd-adv-section {
-                margin-top: var(--tmu-space-lg); padding-top: var(--tmu-space-md);
-                border-top: 1px solid var(--tmu-border-embedded);
-            }
-            .rnd-adv-title {
-                text-align: center; font-size: var(--tmu-font-xs); font-weight: 700;
-                color: var(--tmu-text-muted); text-transform: uppercase; letter-spacing: 1.2px;
-                margin-bottom: var(--tmu-space-md);
-            }
-            .rnd-adv-team-label {
-                font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-text-accent-soft);
-                text-transform: uppercase; letter-spacing: 0.8px;
-                padding: var(--tmu-space-sm) var(--tmu-space-md) var(--tmu-space-xs); margin-top: var(--tmu-space-sm);
-            }
-            .rnd-mps-wrap {
-                padding: var(--tmu-space-sm) 0 0;
-                overflow: hidden;
-            }
-            .rnd-mps-table {
-                width: 100%; table-layout: fixed; border-collapse: collapse;
-                background: var(--tmu-surface-panel-dark); border: 1px solid var(--tmu-border-faint);
-                border-radius: var(--tmu-space-md); overflow: hidden;
-            }
-            .rnd-mps-table + .rnd-mps-table { margin-top: var(--tmu-space-sm); }
-            .rnd-mps-table th:nth-child(1), .rnd-mps-table td:nth-child(1) { width: 46%; }
-            .rnd-mps-table th:nth-child(2), .rnd-mps-table td:nth-child(2) { width: 7%; }
-            .rnd-mps-table th:nth-child(3), .rnd-mps-table td:nth-child(3) { width: 4%; }
-            .rnd-mps-table th:nth-child(4), .rnd-mps-table td:nth-child(4) { width: 5%; }
-            .rnd-mps-table th:nth-child(5), .rnd-mps-table td:nth-child(5) { width: 4%; }
-            .rnd-mps-table th:nth-child(6), .rnd-mps-table td:nth-child(6) { width: 9%; }
-            .rnd-mps-table th:nth-child(7), .rnd-mps-table td:nth-child(7) { width: 4%; }
-            .rnd-mps-table th:nth-child(8), .rnd-mps-table td:nth-child(8) { width: 5%; }
-            .rnd-mps-table th:nth-child(9), .rnd-mps-table td:nth-child(9) { width: 5%; }
-            .rnd-mps-table th:nth-child(10), .rnd-mps-table td:nth-child(10) { width: 6%; }
-            .rnd-mps-table-gk th:nth-child(1), .rnd-mps-table-gk td:nth-child(1) { width: 54%; }
-            .rnd-mps-table-gk th:nth-child(2), .rnd-mps-table-gk td:nth-child(2) { width: 9%; }
-            .rnd-mps-table-gk th:nth-child(3), .rnd-mps-table-gk td:nth-child(3) { width: 9%; }
-            .rnd-mps-table-gk th:nth-child(4), .rnd-mps-table-gk td:nth-child(4) { width: 7%; }
-            .rnd-mps-table-gk th:nth-child(5), .rnd-mps-table-gk td:nth-child(5) { width: 10%; }
-            .rnd-mps-table-gk th:nth-child(6), .rnd-mps-table-gk td:nth-child(6) { width: 4%; }
-            .rnd-mps-table-gk th:nth-child(7), .rnd-mps-table-gk td:nth-child(7) { width: 7%; }
-            .rnd-mps-table th, .rnd-mps-table td {
-                text-align: center; font-variant-numeric: tabular-nums;
-                padding: var(--tmu-space-sm) var(--tmu-space-xs);
-            }
-            .rnd-mps-table tr{    
-                border-bottom: 1px solid var(--tmu-border-faint);
-            }
-            .rnd-mps-table th {
-                font-size: var(--tmu-font-2xs); color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: .35px;
-                font-weight: 700;
-                background: var(--tmu-surface-accent-soft);
-            }
-            .rnd-mps-table td {
-                font-size: var(--tmu-font-xs); color: var(--tmu-text-main); font-weight: 700;
-            }
-            .rnd-mps-table th.l, .rnd-mps-table td.l { text-align: left; }
-            .rnd-mps-table th.c, .rnd-mps-table td.c { text-align: center; }
-            .rnd-mps-row { cursor: pointer; transition: background .15s; }
-            .rnd-mps-row:hover { background: var(--tmu-border-contrast); }
-            .rnd-mps-name { 
-                 font-size: var(--tmu-font-sm); font-weight: 700; color: var(--tmu-text-strong);
-                min-width: 0; flex: 1 1 auto; white-space: nowrap;
-                overflow: hidden; text-overflow: ellipsis;
-            }
-            .rnd-mps-name-cell {
-                display: flex; align-items: center; gap: var(--tmu-space-sm);
-                min-width: 0; white-space: nowrap;
-            }
-            .rnd-mps-name-cell .tm-pos-chip { flex-shrink: 0; }
-            .rnd-mps-sub-flag {
-                display: inline-block; margin-left: 0; font-size: var(--tmu-font-xs); font-weight: 800;
-                flex-shrink: 0;
-                vertical-align: middle;
-            }
-            .rnd-mps-sub-flag.out { color: var(--tmu-warning-soft); }
-            .rnd-mps-sub-flag.in { color: var(--tmu-accent); }
-            .rnd-adv-table {
-                    width: 100%; border-collapse: collapse; font-size: var(--tmu-font-sm);
-            }
-            .rnd-adv-table th {
-                    padding: var(--tmu-space-xs) var(--tmu-space-sm); font-size: var(--tmu-font-xs); font-weight: 700;
-                color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 0.5px;
-                border-bottom: 1px solid var(--tmu-border-soft); text-align: center;
-            }
-            .rnd-adv-table th:first-child { text-align: left; }
-            .rnd-adv-row {
-                cursor: pointer; transition: background 0.15s;
-            }
-            .rnd-adv-row:hover { background: var(--tmu-border-contrast); }
-            .rnd-adv-row td {
-                padding: var(--tmu-space-xs) var(--tmu-space-sm); text-align: center;
-                border-bottom: 1px solid var(--tmu-border-faint);
-                font-variant-numeric: tabular-nums;
-            }
-            .rnd-adv-row td:first-child {
-                text-align: left; font-weight: 600; color: var(--tmu-text-main);
-            }
-            .rnd-adv-row td.adv-zero { color: var(--tmu-text-dim); }
-            .rnd-adv-row td.adv-goal { color: var(--tmu-accent); font-weight: 700; }
-            .rnd-adv-row td.adv-shot { color: var(--tmu-text-highlight); }
-            .rnd-adv-row td.adv-lost { color: var(--tmu-warning-soft); }
-            .rnd-adv-row .adv-arrow {
-                display: inline-block; font-size: var(--tmu-font-2xs); margin-left: var(--tmu-space-xs);
-                transition: transform 0.2s; color: var(--tmu-text-faint);
-            }
-            .rnd-adv-row.expanded .adv-arrow { transform: rotate(90deg); }
-            .rnd-adv-row.rnd-adv-total td {
-                font-weight: 800; border-top: 1px solid var(--tmu-border-embedded);
-                color: var(--tmu-text-strong); cursor: default;
-            }
-            .rnd-adv-row.rnd-adv-total td:first-child { color: var(--tmu-text-muted); }
-            .rnd-adv-events {
-                display: none;
-            }
-            .rnd-adv-events.visible { display: table-row; }
-            .rnd-adv-events td {
-                padding: 0; border-bottom: 1px solid var(--tmu-border-soft-alpha-strong);
-            }
-            .rnd-adv-evt-list {
-                padding: var(--tmu-space-xs) 0 var(--tmu-space-sm) 0; font-size: var(--tmu-font-xs);
-            }
-            .rnd-adv-evt {
-                padding: 0; color: var(--tmu-text-main);
-                display: flex; align-items: stretch; gap: 0;
-                border-bottom: 1px solid var(--tmu-border-soft-alpha);
-            }
-            .rnd-adv-evt:last-child { border-bottom: none; }
-            .rnd-adv-evt .adv-result-tag {
-                font-size: var(--tmu-font-2xs); font-weight: 700; padding: var(--tmu-space-sm) var(--tmu-space-xs) 0;
-                text-transform: uppercase; white-space: nowrap;
-                min-width: 52px; text-align: center;
-                align-self: flex-start;
-            }
-            .rnd-adv-evt .adv-result-tag.goal { color: var(--tmu-accent); }
-            .rnd-adv-evt .adv-result-tag.shot { color: var(--tmu-text-highlight); }
-            .rnd-adv-evt .adv-result-tag.lost { color: var(--tmu-warning-soft); }
-            .rnd-adv-evt .rnd-acc { flex: 1; border-bottom: none; }
-            .rnd-adv-evt .rnd-acc-head { padding: var(--tmu-space-xs) var(--tmu-space-sm); min-height: auto; }
-            .rnd-adv-evt .rnd-acc-min { font-size: var(--tmu-font-xs); min-width: 28px; }
-            .rnd-adv-evt .rnd-acc-body { padding: 0 var(--tmu-space-sm) var(--tmu-space-sm); }
-            .rnd-adv-evt .rnd-player-name { color: var(--tmu-text-strong); font-weight: 600; }
-
-            /* \u2500\u2500 Player Card Dialog \u2500\u2500 */
-            .rnd-plr-overlay {
-                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-                background: var(--tmu-surface-overlay-strong); z-index: 100002;
-                display: flex; align-items: center; justify-content: center;
-                animation: rndFadeIn .15s ease;
-            }
-            .rnd-plr-dialog {
-                background: linear-gradient(160deg, var(--tmu-surface-panel) 0%, var(--tmu-surface-card-soft) 60%, var(--tmu-surface-card) 100%);
-                border: 1px solid var(--tmu-border-embedded); border-radius: var(--tmu-space-md);
-                width: 820px; max-width: 96vw; max-height: 88vh;
-                overflow-y: auto; color: var(--tmu-text-main);
-                box-shadow: 0 12px 60px var(--tmu-surface-overlay-strong), 0 0 0 1px var(--tmu-success-fill-soft);
-            }
-            .rnd-plr-header {
-                display: flex; align-items: center; gap: var(--tmu-space-lg);
-                padding: var(--tmu-space-xl) var(--tmu-space-xxl) var(--tmu-space-lg);
-                background: linear-gradient(180deg, var(--tmu-surface-accent-soft) 0%, transparent 100%);
-                border-bottom: 1px solid var(--tmu-border-soft); position: relative;
-            }
-            .rnd-plr-header-main {
-                flex: 1; min-width: 0;
-                display: flex; align-items: center; justify-content: space-between; gap: var(--tmu-space-xl);
-            }
-            .rnd-plr-face {
-                width: 84px; height: 84px; border-radius: 50%;
-                border: 3px solid var(--tmu-success); overflow: hidden;
-                flex-shrink: 0; background: var(--tmu-surface-panel);
-                box-shadow: 0 4px 16px var(--tmu-surface-overlay);
-            }
-            .rnd-plr-face img { width: 100%; height: 100%; object-fit: cover; }
-            .rnd-plr-info { flex: 1; min-width: 0; }
-            .rnd-plr-name-row {
-                display: flex; align-items: center; gap: var(--tmu-space-sm); margin-bottom: var(--tmu-space-xs);
-            }
-            .rnd-plr-name {
-                 font-size: var(--tmu-font-xl); font-weight: 800; color: var(--tmu-text-strong);
-                text-decoration: none; cursor: pointer;
-            }
-            .rnd-plr-name:hover { color: var(--tmu-text-inverse); text-decoration: underline; }
-            .rnd-plr-link {
-                 color: var(--tmu-text-faint); font-size: var(--tmu-font-md); text-decoration: none;
-                transition: color .15s;
-            }
-            .rnd-plr-link:hover { color: var(--tmu-accent); }
-            .rnd-plr-badges {
-                display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px;
-            }
-            .rnd-plr-badges .tmu-badge { white-space: nowrap; }
-            .rnd-plr-kpis {
-                display: grid; grid-template-columns: repeat(2, minmax(72px, 1fr));
-                    gap: var(--tmu-space-sm); flex-shrink: 0;
-            }
-            .rnd-plr-kpi-metric { min-width: 72px; }
-            .rnd-plr-close {
-                position: absolute; top: 10px; right: 14px;
-                transition: transform .15s;
-            }
-            .rnd-plr-close:hover { transform: scale(1.06); }
-            .rnd-plr-body { padding: var(--tmu-space-lg) var(--tmu-space-xxl) var(--tmu-space-xl); }
-            .rnd-plr-body-section {
-                background: linear-gradient(180deg, var(--tmu-surface-panel-dark), var(--tmu-surface-dark-strong));
-                border: 1px solid var(--tmu-border-faint);
-                    border-radius: var(--tmu-space-md); padding: var(--tmu-space-md) var(--tmu-space-md); margin-bottom: 14px;
-                box-shadow: inset 0 1px 0 var(--tmu-border-contrast);
-            }
-            .rnd-plr-stats-row {
-                display: grid; grid-template-columns: repeat(5, 1fr);
-                    gap: var(--tmu-space-sm); margin-bottom: var(--tmu-space-lg);
-            }
-            .rnd-plr-stat-card {
-                background: var(--tmu-surface-accent-soft); border: 1px solid var(--tmu-border-soft);
-                    border-radius: var(--tmu-space-sm); padding: var(--tmu-space-md) var(--tmu-space-xs) var(--tmu-space-sm);
-                text-align: center; transition: background .15s;
-            }
-            .rnd-plr-stat-card:hover { background: var(--tmu-surface-tab-hover); }
-            .rnd-plr-stat-icon { font-size: var(--tmu-font-lg); margin-bottom: 2px; }
-            .rnd-plr-stat-val {
-                font-size: var(--tmu-font-xl); font-weight: 800; color: var(--tmu-text-strong); line-height: 1.1;
-            }
-            .rnd-plr-stat-lbl {
-                font-size: var(--tmu-font-2xs); color: var(--tmu-text-faint); text-transform: uppercase;
-                letter-spacing: 0.3px; margin-top: 2px;
-            }
-            .rnd-plr-stat-card.green .rnd-plr-stat-val { color: var(--tmu-success-strong); }
-            .rnd-plr-stat-card.red .rnd-plr-stat-val { color: var(--tmu-danger-strong); }
-            .rnd-plr-stat-card.gold .rnd-plr-stat-val { color: var(--tmu-text-highlight); }
-            .rnd-plr-section-title {
-                    font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-text-faint);
-                text-transform: uppercase; letter-spacing: 1px;
-                margin: 14px 0 8px; padding-bottom: var(--tmu-space-xs);
-                border-bottom: 1px solid var(--tmu-border-soft);
-                display: flex; align-items: center; gap: 6px;
-            }
-            .rnd-plr-section-title .sec-icon { font-size: var(--tmu-font-sm); }
-            /* \u2500\u2500 Player compact stats grid \u2500\u2500 */
-            .rnd-pls-wrap { margin-bottom: 0; }
-            .rnd-pls-row {
-                display: grid; grid-template-columns: repeat(auto-fit, minmax(62px, 1fr));
-                gap: 6px;
-                    margin-bottom: var(--tmu-space-sm);
-                background: var(--tmu-surface-dark-soft); border: 1px solid var(--tmu-border-faint);
-                border-radius: 10px; padding: var(--tmu-space-sm);
-            }
-            .rnd-pls-row:last-child { margin-bottom: 0; }
-            .rnd-pls-cell {
-                display: flex; flex-direction: column; align-items: center;
-                min-width: 0; padding: var(--tmu-space-sm) var(--tmu-space-xs); text-align: center;
-                 background: var(--tmu-surface-overlay-soft); border-radius: var(--tmu-space-sm);
-            }
-            .rnd-pls-icon { font-size: var(--tmu-font-sm); line-height: 1; margin-bottom: 2px; }
-            .rnd-pls-val  { font-size: var(--tmu-font-lg); font-weight: 800; color: var(--tmu-text-strong); line-height: 1.1; }
-            .rnd-pls-lbl  { font-size: var(--tmu-font-2xs); color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: .3px; margin-top: 2px; white-space: nowrap; }
-            .rnd-pls-cell.hi-gold  .rnd-pls-val { color: var(--tmu-text-highlight); }
-            .rnd-pls-cell.hi-green .rnd-pls-val { color: var(--tmu-success-strong); }
-            .rnd-pls-cell.hi-red   .rnd-pls-val { color: var(--tmu-danger-strong); }
-            /* \u2500\u2500 Tactics cards \u2500\u2500 */
-            .rnd-tactics-section {
-                margin-top: 6px; padding: var(--tmu-space-sm);
-                background: linear-gradient(180deg, var(--tmu-surface-panel-dark), var(--tmu-surface-dark-strong));
-                 border-radius: var(--tmu-space-sm); border: 1px solid var(--tmu-border-soft);
-            }
-            .rnd-tactics-grid { display: flex; flex-direction: column; gap: 0; }
-            .rnd-tactic-row {
-                display: flex; align-items: center; gap: 6px;
-                padding: var(--tmu-space-xs) var(--tmu-space-sm);
-                border-bottom: 1px solid var(--tmu-border-soft-alpha);
-            }
-            .rnd-tactic-row:last-child { border-bottom: none; }
-            .rnd-tactic-row.r5-row {
-                padding: var(--tmu-space-sm) var(--tmu-space-sm); margin-bottom: 2px;
-                background: var(--tmu-surface-overlay-soft); border-radius: 6px;
-                border-bottom: none;
-            }
-            .rnd-tactic-icon {
-                    font-size: var(--tmu-font-sm); line-height: 1; width: 18px;
-                text-align: center; flex-shrink: 0;
-            }
-            .rnd-tactic-label {
-                font-size: var(--tmu-font-2xs); color: var(--tmu-text-faint); text-transform: uppercase;
-                letter-spacing: 0.6px; font-weight: 700; min-width: 52px;
-                flex-shrink: 0;
-            }
-            .rnd-tactic-meter {
-                flex: 1; height: 4px; background: var(--tmu-surface-overlay); border-radius: 2px;
-                overflow: hidden;
-            }
-            .rnd-tactic-meter-fill {
-                height: 100%; border-radius: 2px; transition: width 0.4s ease;
-            }
-            .rnd-tactic-meter-fill.home { background: linear-gradient(90deg, var(--tmu-compare-home-grad-start), var(--tmu-compare-home-grad-end)); }
-            .rnd-tactic-meter-fill.away { background: linear-gradient(90deg, var(--tmu-compare-away-grad-start), var(--tmu-compare-away-grad-end)); }
-            .rnd-tactic-value {
-                    font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-text-main);
-                min-width: 0; text-align: right;
-                white-space: nowrap;
-            }
-            .rnd-tactic-value-pill {
-                font-size: var(--tmu-font-2xs); font-weight: 700; padding: 0 var(--tmu-space-sm);
-                 border-radius: var(--tmu-space-xs); white-space: nowrap;
-            }
-            .rnd-tactic-value-pill.home {
-                background: var(--tmu-success-fill-soft); color: var(--tmu-text-live);
-            }
-            .rnd-tactic-value-pill.away {
-                background: var(--tmu-preview-fill); color: var(--tmu-text-preview);
-            }
-            /* \u2500\u2500 Report event badges \u2500\u2500 */
-            .rnd-acc-home .tmu-badge,
-            .rnd-acc-away .tmu-badge {
-                margin-bottom: 6px;
-            }
-
-            /* \u2500\u2500 Details timeline \u2500\u2500 */
-            .rnd-timeline { margin-top: var(--tmu-space-lg); }
-            .rnd-tl-row {
-                display: flex; align-items: center;
-                border-bottom: 1px solid var(--tmu-border-soft);
-                padding: var(--tmu-space-sm) 0; min-height: 32px;
-            }
-            .rnd-tl-row:last-child { border-bottom: none; }
-            .rnd-tl-goal { background: var(--tmu-success-fill-faint); }
-            .rnd-tl-home {
-                flex: 1; text-align: right; padding-right: var(--tmu-space-md);
-                color: var(--tmu-text-strong); font-size: var(--tmu-font-sm);
-            }
-            .rnd-tl-min {
-                width: 44px; text-align: center; flex-shrink: 0;
-                color: var(--tmu-text-panel-label); font-weight: 700; font-size: var(--tmu-font-sm);
-                background: var(--tmu-accent-fill); border-radius: 3px; padding: 0 0;
-            }
-            .rnd-tl-away {
-                flex: 1; text-align: left; padding-left: var(--tmu-space-md);
-                color: var(--tmu-text-strong); font-size: var(--tmu-font-sm);
-            }
-
-            /* \u2500\u2500 Report accordion \u2500\u2500 */
-            .rnd-acc { border-bottom: 1px solid var(--tmu-border-soft); }
-            .rnd-acc:last-child { border-bottom: none; }
-            .rnd-acc-head {
-                display: flex; align-items: center;
-                padding: var(--tmu-space-sm) 0; min-height: 32px; cursor: pointer;
-                transition: background 0.15s;
-            }
-            .rnd-acc-head:hover { background: var(--tmu-border-contrast); }
-            .rnd-acc-goal { background: var(--tmu-success-fill-faint); }
-            .rnd-acc-home {
-                flex: 1; text-align: right; padding-right: var(--tmu-space-md);
-                color: var(--tmu-text-strong); font-size: var(--tmu-font-sm);
-            }
-            .rnd-acc-min {
-                width: 44px; text-align: center; flex-shrink: 0;
-                color: var(--tmu-text-panel-label); font-weight: 700; font-size: var(--tmu-font-sm);
-                background: var(--tmu-accent-fill); border-radius: 3px; padding: 0 0;
-            }
-            .rnd-acc-away {
-                flex: 1; text-align: left; padding-left: var(--tmu-space-md);
-                color: var(--tmu-text-strong); font-size: var(--tmu-font-sm);
-            }
-            .rnd-acc-body {
-                display: none; padding: var(--tmu-space-sm) var(--tmu-space-md) var(--tmu-space-md);
-                background: var(--tmu-surface-overlay-soft); border-radius: 0 0 4px 4px;
-            }
-            .rnd-acc.open .rnd-acc-body { display: block; }
-            .rnd-acc-chevron {
-                width: 14px; height: 14px; flex-shrink: 0;
-                fill: var(--tmu-text-dim); transition: transform 0.2s;
-                margin: 0 4px;
-            }
-            .rnd-acc.open .rnd-acc-chevron { transform: rotate(90deg); }
-
-            /* \u2500\u2500 Lineups tab \u2500\u2500 */
-            .rnd-lu-outer { display: flex; flex-direction: column; }
-            .rnd-lu-wrap { display: flex; gap: 0; }
-            .rnd-lu-list {
-                    flex: 0 0 25%; font-size: var(--tmu-font-sm);
-                padding: 0 var(--tmu-space-sm); box-sizing: border-box;
-            }
-            .rnd-lu-player {
-                display: flex; align-items: center; gap: 6px;
-                padding: var(--tmu-space-xs) 0; border-bottom: 1px solid var(--tmu-accent-fill);
-            }
-            .rnd-lu-player:last-child { border-bottom: none; }
-            .rnd-lu-clickable { cursor: pointer; transition: background .15s; }
-            .rnd-lu-clickable:hover { background: var(--tmu-success-fill-soft); }
-            .rnd-lu-name { flex: 1; color: var(--tmu-text-main); font-size: var(--tmu-font-sm); }
-            .rnd-lu-pos { color: var(--tmu-text-panel-label); font-size: var(--tmu-font-xs); text-transform: uppercase; width: 30px; text-align: center; }
-            .rnd-lu-rating { font-weight: 700; font-size: var(--tmu-font-sm); width: 32px; text-align: right; }
-            .rnd-lu-r5 {
-                font-weight: 700; font-size: var(--tmu-font-xs); min-width: 36px;
-                text-align: center; border-radius: 10px;
-                padding: 0 var(--tmu-space-xs); color: var(--tmu-text-inverse); flex-shrink: 0;
-                background: var(--tmu-surface-tab-hover);
-            }
-            .rnd-lu-sub-header {
-                font-size: var(--tmu-font-xs); color: var(--tmu-text-dim); text-transform: uppercase;
-                letter-spacing: 1px; padding: var(--tmu-space-sm) 0 var(--tmu-space-xs); font-weight: 600;
-            }
-            .rnd-lu-captain {
-                    font-size: var(--tmu-font-xs); font-weight: 800; color: var(--tmu-metal-gold);
-                margin-left: 2px;
-            }
-            .rnd-lu-mom {
-                    font-size: var(--tmu-font-xs); margin-left: 2px;
-            }
-            .rnd-pitch-captain {
-                position: absolute; top: 50%; left: 50%;
-                transform: translate(30%, -100%);
-                font-size: var(--tmu-font-2xs); font-weight: 900; color: var(--tmu-text-inverse);
-                background: var(--tmu-text-warm-accent); border-radius: 50%;
-                width: 16px; height: 16px;
-                display: flex; align-items: center; justify-content: center;
-                z-index: 4; box-shadow: 0 1px 3px var(--tmu-shadow-panel);
-                border: 1.5px solid var(--tmu-metal-gold);
-            }
-            .rnd-pitch-mom {
-                position: absolute; top: 50%; left: 50%;
-                transform: translate(-130%, -100%);
-                font-size: var(--tmu-font-sm); z-index: 4;
-                filter: drop-shadow(0 1px 2px var(--tmu-shadow-panel));
-            }
-
-            /* Pitch */
-            .rnd-pitch-wrap { flex: 0 0 50%; display: flex; flex-direction: column; align-items: center; justify-content: start; gap: var(--tmu-space-sm); }
-            /* Unity 3D viewport row: feed | viewport | stats */
-            .rnd-unity-row {
-                display: flex; gap: 0; width: 100%;
-                    margin-bottom: var(--tmu-space-sm); align-items: stretch;
-            }
-            .rnd-unity-feed {
-                flex: 0 0 25%; min-width: 0; display: flex; flex-direction: column;
-                gap: 3px; overflow-y: auto; overflow-x: hidden;
-                scrollbar-width: none; /* Firefox */
-                padding: var(--tmu-space-sm) var(--tmu-space-sm); box-sizing: border-box;
-                min-height: 200px; /* expanded by JS (syncUnityPanelHeights) when Unity is active */
-            }
-            .rnd-unity-feed::-webkit-scrollbar { display: none; } /* Chrome/Edge */
-            .rnd-unity-feed-line {
-                display: flex; align-items: baseline; gap: 5px;
-                font-size: var(--tmu-font-sm); color: var(--tmu-text-main); line-height: 1.4;
-                padding: 0 0;
-                animation: rnd-fade-in 0.4s ease;
-            }
-            .rnd-unity-feed-min {
-                 font-size: var(--tmu-font-2xs); font-weight: 700; color: var(--tmu-accent);
-                background: var(--tmu-surface-overlay); border-radius: 3px;
-                padding: 0 var(--tmu-space-xs); white-space: nowrap; flex-shrink: 0;
-            }
-            .rnd-unity-feed-text { color: var(--tmu-text-main); }
-            .rnd-unity-feed-text .rnd-player-name { color: var(--tmu-text-strong); font-weight: 600; }
-            @keyframes rnd-fade-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
-            .rnd-unity-stats {
-                flex: 0 0 25%; display: flex; flex-direction: column;
-                gap: 0; padding: var(--tmu-space-sm); box-sizing: border-box;
-                font-size: var(--tmu-font-xs); overflow-y: auto;
-                background: var(--tmu-surface-dark-strong);
-                    border-radius: var(--tmu-space-sm); border: 1px solid var(--tmu-border-soft-alpha-mid);
-                min-height: 200px;
-            }
-            /* When Unity viewport is hidden: expand feed+stats to fill the full row */
-            .rnd-unity-row.rnd-no-unity { gap: var(--tmu-space-sm); }
-            .rnd-unity-row.rnd-no-unity .rnd-unity-feed,
-            .rnd-unity-row.rnd-no-unity .rnd-unity-stats { flex: 0 0 calc(50% - 4px); }
-            .rnd-unity-stat-row {
-                padding: var(--tmu-space-xs) var(--tmu-space-sm);
-                border-bottom: 1px solid var(--tmu-border-soft-alpha);
-                transition: background .2s;
-            }
-            .rnd-unity-stat-row:last-child { border-bottom: none; }
-            .rnd-unity-stat-row:hover { background: var(--tmu-compare-fill); }
-            .rnd-unity-stat-hdr {
-                display: flex; align-items: center; justify-content: space-between;
-                margin-bottom: 3px;
-            }
-            .rnd-unity-stat-hdr .val {
-                font-weight: 800; font-size: var(--tmu-font-sm); min-width: 18px;
-                font-variant-numeric: tabular-nums;
-            }
-            .rnd-unity-stat-hdr .val.home { text-align: left; color: var(--tmu-accent); }
-            .rnd-unity-stat-hdr .val.away { text-align: right; color: var(--tmu-info-alt); }
-            .rnd-unity-stat-hdr .val.lead { font-size: var(--tmu-font-md); }
-            .rnd-unity-stat-label {
-                    font-size: var(--tmu-font-2xs); color: var(--tmu-text-faint); text-transform: uppercase;
-                letter-spacing: 0.8px; font-weight: 700; text-align: center; flex: 1;
-            }
-            .rnd-unity-stat-bar {
-                display: flex; height: 5px; border-radius: 3px; overflow: hidden;
-                background: var(--tmu-surface-overlay); gap: 2px;
-            }
-            .rnd-unity-stat-bar .seg {
-                transition: width 0.5s cubic-bezier(.4,0,.2,1);
-                min-width: 2px; border-radius: 2px;
-            }
-            .rnd-unity-stat-bar .seg.home { background: linear-gradient(90deg, var(--tmu-compare-home-grad-start), var(--tmu-compare-home-grad-end)); }
-            .rnd-unity-stat-bar .seg.away { background: linear-gradient(90deg, var(--tmu-compare-away-grad-start), var(--tmu-compare-away-grad-end)); }
-            .rnd-unity-viewport {
-                position: relative; border: 2px solid var(--tmu-success);
-                    border-radius: var(--tmu-space-sm); overflow: hidden;
-                background: var(--tmu-surface-overlay-strong);
-                width: 100%; max-width: 400px;
-                margin: 0 auto;
-                aspect-ratio: 780 / 447;
-            }
-            .rnd-unity-viewport .webgl-content {
-                position: relative !important;
-                top: auto !important; left: auto !important;
-                right: auto !important; bottom: auto !important;
-                transform: none !important;
-                width: 100% !important; height: 100% !important;
-                margin: 0 !important; padding: 0 !important;
-                display: block !important;
-            }
-            .rnd-unity-viewport #gameContainer {
-                position: relative !important;
-                top: auto !important; left: auto !important;
-                right: auto !important; bottom: auto !important;
-                transform: none !important;
-                width: 100% !important; height: 100% !important;
-                margin: 0 !important; padding: 0 !important;
-            }
-            .rnd-unity-viewport #gameContainer .footer { display: none !important; }
-            .rnd-unity-viewport canvas {
-                width: 100% !important; height: 100% !important;
-                display: block !important;
-                object-fit: contain;
-            }
-            /* Hide datetime & show inline time when live */
-            .rnd-dlg-head.rnd-live-active .rnd-dlg-datetime { display: none; }
-            .rnd-dlg-head-time {
-                 display: none; gap: var(--tmu-space-sm); align-items: center;
-                justify-content: center; margin-top: 6px;
-                padding-top: var(--tmu-space-sm);
-                border-top: 1px solid var(--tmu-border-soft-alpha);
-            }
-            .rnd-dlg-head.rnd-live-active .rnd-dlg-head-time { display: flex; }
-            .rnd-dlg-head-time .rnd-live-min {
-                font-size: var(--tmu-font-md); font-weight: 800; color: var(--tmu-accent);
-                background: var(--tmu-surface-overlay-strong); padding: 0 var(--tmu-space-md);
-                    border-radius: var(--tmu-space-sm); min-width: 48px; text-align: center;
-                letter-spacing: 0.5px;
-                box-shadow: 0 0 10px var(--tmu-success-fill-soft);
-                animation: rnd-pulse 1.2s ease-in-out infinite;
-            }
-            .rnd-dlg-head-time .rnd-live-progress {
-                flex: 1; max-width: 180px; height: 4px;
-                background: var(--tmu-surface-overlay-strong); border-radius: 2px; overflow: hidden;
-            }
-            .rnd-dlg-head-time .rnd-live-progress-fill {
-                height: 100%; border-radius: 2px; transition: width 0.4s;
-                background: linear-gradient(90deg, var(--tmu-compare-home-grad-start), var(--tmu-accent));
-                box-shadow: 0 0 6px var(--tmu-success-fill-hover);
-            }
-            .rnd-dlg-head-time .rnd-live-btn {
-                border-radius: 9999px;
-                transition: transform 0.2s;
-            }
-            .rnd-dlg-head-time .rnd-live-btn:hover {
-                transform: scale(1.1);
-            }
-            .rnd-live-filter-group {
-                display: flex; gap: 1px;
-                background: var(--tmu-surface-overlay-strong); border-radius: 10px;
-                padding: 0;
-            }
-            .rnd-live-filter-btn {
-                min-height: 22px;
-                padding: 0 var(--tmu-space-sm);
-                    border-radius: var(--tmu-space-sm);
-                font-size: var(--tmu-font-xs);
-                white-space: nowrap;
-                letter-spacing: 0.3px;
-                text-transform: uppercase;
-            }
-            .rnd-live-filter-dot {
-                width: 6px; height: 6px; border-radius: 50%;
-                background: var(--tmu-danger);
-                flex: 0 0 auto;
-            }
-            .rnd-live-filter-btn:disabled {
-                opacity: 0.35; cursor: not-allowed;
-                pointer-events: none;
-            }
-            .rnd-r5-compare { display: flex; gap: var(--tmu-space-md); width: 100%; justify-content: center; align-items: center; }
-            .rnd-r5-side { display: flex; align-items: center; gap: 6px; flex: 1; }
-            .rnd-r5-side.away { flex-direction: row-reverse; }
-            .rnd-r5-side-label { font-size: var(--tmu-font-xs); color: var(--tmu-text-panel-label); white-space: nowrap; font-weight: 600; }
-                .rnd-r5-side-meter { flex: 1; height: 8px; background: var(--tmu-surface-overlay); border-radius: var(--tmu-space-xs); overflow: hidden; }
-                .rnd-r5-side-meter-fill { height: 100%; border-radius: var(--tmu-space-xs); transition: width .6s ease; }
-            .rnd-r5-side-meter-fill.home { background: linear-gradient(90deg, var(--tmu-compare-home-grad-start), var(--tmu-compare-home-grad-end)); }
-            .rnd-r5-side-meter-fill.away { background: linear-gradient(90deg, var(--tmu-compare-away-grad-start), var(--tmu-compare-away-grad-end)); }
-            .rnd-r5-side-val { font-size: var(--tmu-font-sm); font-weight: 700; min-width: 32px; text-align: center; }
-            .rnd-pitch {
-                position: relative; width: 100%;
-                background: linear-gradient(90deg, #2d6b1e 0%, #357a22 50%, #2d6b1e 100%);
-                border: 2px solid var(--tmu-success); border-radius: 6px; overflow: hidden;
-            }
-            .rnd-pitch-lines {
-                position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-                pointer-events: none; z-index: 0;
-            }
-            .rnd-pitch-grid {
-                position: relative; z-index: 1;
-                display: grid;
-                grid-template-columns: repeat(12, 8.333%);
-                grid-template-rows: repeat(5, 20%);
-                width: 100%; aspect-ratio: 3 / 2;
-            }
-            .rnd-pitch-cell {
-                position: relative; overflow: visible;
-            }
-            .rnd-pitch-face {
-                position: absolute; top: 50%; left: 50%;
-                transform: translate(-50%, -50%);
-                width: 70%; max-width: 48px; aspect-ratio: 1;
-                border-radius: 50%; overflow: hidden;
-                box-shadow: 0 2px 6px var(--tmu-surface-overlay);
-                z-index: 2;
-            }
-            .rnd-pitch-face img {
-                width: 100%; height: 100%; object-fit: cover;
-                border-radius: 50%;
-            }
-            .rnd-pitch-info {
-                position: absolute; top: 50%; left: 50%;
-                transform: translate(-50%, 0);
-                margin-top: 40%;
-                display: flex; flex-direction: column; align-items: center;
-                z-index: 3; pointer-events: none;
-            }
-            .rnd-pitch-label {
-                font-size: var(--tmu-font-xs); color: var(--tmu-text-inverse);
-                text-shadow: 0 1px 3px var(--tmu-shadow-panel);
-                white-space: nowrap;
-                text-align: center;
-                font-weight: 600; line-height: 1.2;
-            }
-            .rnd-pitch-rating {
-                font-size: var(--tmu-font-2xs); font-weight: 700;
-                padding: 0 var(--tmu-space-xs); border-radius: 3px;
-                background: var(--tmu-surface-overlay-strong); line-height: 1.3;
-            }
-            .rnd-pitch-events {
-                display: flex; gap: 1px; flex-wrap: wrap;
-                justify-content: center; font-size: var(--tmu-font-2xs);
-            }
-            /* \u2500\u2500 Pitch hover tooltip \u2500\u2500 */
-            .rnd-pitch-cell[data-pid] { cursor: pointer; }
-            .rnd-pitch-tooltip {
-                position: fixed; z-index: 100001;
-                background: linear-gradient(135deg, var(--tmu-surface-card-soft) 0%, var(--tmu-surface-tab-hover) 100%);
-                    border: 1px solid var(--tmu-success); border-radius: var(--tmu-space-sm);
-                padding: var(--tmu-space-md) var(--tmu-space-md); min-width: 200px; max-width: 280px;
-                box-shadow: 0 6px 24px var(--tmu-shadow-panel);
-                pointer-events: none; font-size: var(--tmu-font-xs); color: var(--tmu-text-main);
-                opacity: 0; transition: opacity .15s ease;
-            }
-            .rnd-pitch-tooltip.visible { opacity: 1; }
-            .rnd-pitch-tooltip-header {
-                 display: flex; align-items: center; gap: var(--tmu-space-sm);
-                 margin-bottom: var(--tmu-space-sm); padding-bottom: var(--tmu-space-sm);
-                border-bottom: 1px solid var(--tmu-border-success);
-            }
-            .rnd-pitch-tooltip-name { font-size: var(--tmu-font-sm); font-weight: 700; color: var(--tmu-text-strong); }
-            .rnd-pitch-tooltip-pos { font-size: var(--tmu-font-xs); color: var(--tmu-text-panel-label); font-weight: 600; }
-            .rnd-pitch-tooltip-badges { display: flex; gap: 6px; margin-left: auto; }
-            .rnd-pitch-tooltip-badge {
-                font-size: var(--tmu-font-xs); font-weight: 700; padding: 0 var(--tmu-space-sm);
-                 border-radius: var(--tmu-space-xs); background: var(--tmu-surface-overlay);
-            }
-            .rnd-pitch-tooltip-skills {
-                display: flex; gap: var(--tmu-space-md); margin-bottom: 6px;
-            }
-            .rnd-pitch-tooltip-skills-col {
-                flex: 1; min-width: 0;
-            }
-            .rnd-pitch-tooltip-skill {
-                display: flex; justify-content: space-between;
-                padding: 0 0; border-bottom: 1px solid var(--tmu-border-soft-alpha);
-            }
-            .rnd-pitch-tooltip-skill-name { color: var(--tmu-text-panel-label); font-size: var(--tmu-font-xs); }
-            .rnd-pitch-tooltip-skill-val { font-weight: 700; font-size: var(--tmu-font-xs); }
-            .rnd-pitch-tooltip-footer {
-                display: flex; gap: var(--tmu-space-sm); justify-content: center;
-                padding-top: var(--tmu-space-sm); border-top: 1px solid var(--tmu-border-success);
-            }
-            .rnd-pitch-tooltip-stat {
-                text-align: center;
-            }
-            .rnd-pitch-tooltip-stat-val { font-size: var(--tmu-font-md); font-weight: 800; }
-            .rnd-pitch-tooltip-stat-lbl { font-size: var(--tmu-font-2xs); color: var(--tmu-text-faint); text-transform: uppercase; }
-            .rnd-lu-events {
-                display: flex; gap: 1px; flex-shrink: 0; font-size: var(--tmu-font-xs);
-                margin-left: 2px;
-            }
-
-            /* H2H tab */
-            .rnd-h2h-wrap { max-width: 640px; margin: 0 auto; padding: var(--tmu-space-sm) 0 var(--tmu-space-lg); }
-
-            /* \u2500\u2500 Overall record strip \u2500\u2500 */
-            .rnd-h2h-record {
-                display: flex; align-items: center; justify-content: center;
-                 gap: var(--tmu-space-xxl); padding: var(--tmu-space-md) 0 var(--tmu-space-md);
-                border-bottom: 1px solid var(--tmu-border-soft-alpha);
-                 margin-bottom: var(--tmu-space-xs);
-            }
-            .rnd-h2h-record-side {
-                 display: flex; align-items: center; gap: var(--tmu-space-sm);
-            }
-            .rnd-h2h-record-side.away { flex-direction: row-reverse; }
-            .rnd-h2h-record-logo {
-                width: 28px; height: 28px; object-fit: contain;
-                filter: drop-shadow(0 1px 3px var(--tmu-surface-overlay));
-            }
-            .rnd-h2h-record-name {
-                 font-size: var(--tmu-font-sm); font-weight: 700; color: var(--tmu-text-main);
-                max-width: 150px; white-space: nowrap; overflow: hidden;
-                text-overflow: ellipsis;
-            }
-            .rnd-h2h-record-stat {
-                display: flex; flex-direction: column; align-items: center;
-            }
-            .rnd-h2h-record-num {
-                font-size: var(--tmu-font-xl); font-weight: 800; line-height: 1;
-            }
-            .rnd-h2h-record-num.home { color: var(--tmu-compare-home-grad-end); }
-            .rnd-h2h-record-num.draw { color: var(--tmu-text-muted); }
-            .rnd-h2h-record-num.away { color: var(--tmu-compare-away-grad-end); }
-            .rnd-h2h-record-label {
-                    font-size: var(--tmu-font-2xs); color: var(--tmu-text-dim); text-transform: uppercase;
-                letter-spacing: 1px; font-weight: 600; margin-top: 2px;
-            }
-            .rnd-h2h-goals-summary {
-                    text-align: center; font-size: var(--tmu-font-xs); color: var(--tmu-text-dim);
-                margin-top: -6px; padding-bottom: var(--tmu-space-sm);
-            }
-            .rnd-h2h-goals-summary span { color: var(--tmu-text-panel-label); font-weight: 700; }
-
-            /* \u2500\u2500 Match list \u2500\u2500 */
-            .rnd-h2h-matches { padding-top: var(--tmu-space-xs); }
-            .rnd-h2h-season {
-                font-size: var(--tmu-font-2xs); color: var(--tmu-text-faint); text-transform: uppercase;
-                letter-spacing: 1.5px; padding: var(--tmu-space-md) 0 var(--tmu-space-xs); font-weight: 700;
-                border-bottom: 1px solid var(--tmu-border-soft-alpha);
-            }
-            .rnd-h2h-match {
-                position: relative;
-                display: flex; align-items: center; gap: 0;
-                padding: var(--tmu-space-sm) var(--tmu-space-sm); margin: 2px 0; border-radius: 6px;
-                font-size: var(--tmu-font-sm); cursor: pointer;
-                transition: background 0.15s;
-            }
-            .rnd-h2h-match:hover { background: var(--tmu-border-contrast); }
-            .rnd-h2h-match.h2h-readonly { cursor: default; }
-            .rnd-h2h-match.h2h-win { border-left: 3px solid var(--tmu-success); }
-            .rnd-h2h-match.h2h-loss { border-left: 3px solid var(--tmu-compare-away-grad-end); }
-            .rnd-h2h-match.h2h-draw { border-left: 3px solid var(--tmu-text-dim); }
-            .rnd-h2h-date {
-                 color: var(--tmu-text-faint); font-size: var(--tmu-font-xs); width: 72px; flex-shrink: 0;
-                font-weight: 500;
-            }
-            .rnd-h2h-match .tmu-badge {
-                flex-shrink: 0; margin-right: 8px; width: 100px;
-                justify-content: center;
-            }
-            .rnd-h2h-home {
-                margin-left: 16px; text-align: right; color: var(--tmu-text-main);
-                    font-size: var(--tmu-font-sm); white-space: nowrap; overflow: hidden;
-                text-overflow: ellipsis; padding-right: var(--tmu-space-sm);
-            }
-            .rnd-h2h-result {
-                font-weight: 800; color: var(--tmu-text-strong); width: 44px;
-                    text-align: center; font-size: var(--tmu-font-md); flex-shrink: 0;
-                letter-spacing: 1px;
-            }
-            .rnd-h2h-away {
-                flex: 1; text-align: left; color: var(--tmu-text-main);
-                    font-size: var(--tmu-font-sm); white-space: nowrap; overflow: hidden;
-                text-overflow: ellipsis; padding-left: var(--tmu-space-sm);
-            }
-            .rnd-h2h-home.winner { color: var(--tmu-success); font-weight: 700; }
-            .rnd-h2h-away.winner { color: var(--tmu-success); font-weight: 700; }
-            .rnd-h2h-att {
-                font-size: var(--tmu-font-2xs); color: var(--tmu-text-dim); width: 50px;
-                text-align: right; flex-shrink: 0; font-variant-numeric: tabular-nums;
-            }
-
-            /* \u2500\u2500 League Tab \u2500\u2500 */
-            .rnd-league-wrap {
-                max-width: 100%; margin: 0 auto; padding: 0 0 var(--tmu-space-xl);
-            }
-            .rnd-league-header {
-                display: flex; align-items: center; justify-content: center;
-                gap: 14px; padding: var(--tmu-space-md) var(--tmu-space-xl) var(--tmu-space-md);
-                background: linear-gradient(180deg, var(--tmu-surface-accent-soft) 0%, transparent 100%);
-                border-bottom: 1px solid var(--tmu-border-soft-alpha);
-                    margin-bottom: var(--tmu-space-xs);
-            }
-            .rnd-league-title {
-                    font-size: var(--tmu-font-sm); font-weight: 700; color: var(--tmu-text-main);
-                text-transform: uppercase; letter-spacing: 1.5px;
-            }
-            .rnd-league-header .tmu-badge { animation: rnd-pulse-score 1.5s ease-in-out infinite; }
-            @keyframes rnd-pulse-score {
-                0%, 100% { opacity: 1; }
-                50% { opacity: 0.55; }
-            }
-            .rnd-league-columns {
-                 display: flex; gap: var(--tmu-space-xxl); padding: 0 var(--tmu-space-lg);
-            }
-            .rnd-league-col-matches { flex: 1; min-width: 0; }
-            .rnd-league-col-standings { flex: 1.15; min-width: 0; overflow-x: auto; }
-            .rnd-league-col-title {
-                    font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-text-faint);
-                text-transform: uppercase; letter-spacing: 1.5px;
-                padding: var(--tmu-space-sm) var(--tmu-space-md) var(--tmu-space-md); margin-bottom: 0;
-                border-bottom: 1px solid var(--tmu-border-soft-alpha);
-            }
-
-            /* \u2500\u2500 Match card \u2500\u2500 */
-            .rnd-league-match {
-                position: relative;
-                display: flex; align-items: center; gap: 0;
-                padding: var(--tmu-space-md) var(--tmu-space-md); border-radius: 0;
-                font-size: var(--tmu-font-sm); cursor: default;
-                transition: background 0.15s;
-                border-left: 3px solid transparent;
-            }
-            .rnd-league-match:nth-child(even) {
-                background: var(--tmu-surface-overlay-soft);
-            }
-            .rnd-league-match:nth-child(odd) {
-                background: var(--tmu-border-contrast);
-            }
-            .rnd-league-match:hover { background: var(--tmu-border-contrast); }
-            .rnd-league-match.rnd-league-current {
-                background: var(--tmu-success-fill-hover) !important;
-                border-left-color: var(--tmu-success);
-            }
-            .rnd-league-match.rnd-league-current:hover {
-                background: var(--tmu-success-fill-strong) !important;
-            }
-            .rnd-league-home {
-                flex: 1; text-align: right; white-space: nowrap;
-                overflow: hidden; text-overflow: ellipsis;
-                color: var(--tmu-text-main); font-size: var(--tmu-font-sm); font-weight: 600;
-                padding-right: var(--tmu-space-sm);
-            }
-            .rnd-league-away {
-                flex: 1; text-align: left; white-space: nowrap;
-                overflow: hidden; text-overflow: ellipsis;
-                color: var(--tmu-text-main); font-size: var(--tmu-font-sm); font-weight: 600;
-                padding-left: var(--tmu-space-sm);
-            }
-            .rnd-league-logo {
-                width: 22px; height: 22px; vertical-align: middle;
-                flex-shrink: 0;
-                filter: drop-shadow(0 1px 3px var(--tmu-surface-overlay));
-            }
-            .rnd-league-score-block {
-                display: flex; align-items: center; justify-content: center;
-                width: 70px; margin: 0 6px; flex-shrink: 0;
-                background: var(--tmu-surface-overlay); border-radius: 5px;
-                padding: var(--tmu-space-xs) 0;
-            }
-            .rnd-league-score-num {
-                width: 22px; text-align: center;
-                font-weight: 800; font-size: var(--tmu-font-lg); color: var(--tmu-text-strong);
-                font-variant-numeric: tabular-nums; line-height: 1;
-            }
-            .rnd-league-score-sep {
-                color: var(--tmu-text-dim); font-weight: 600; margin: 0 4px;
-                font-size: var(--tmu-font-sm);
-            }
-            .rnd-league-match.live .rnd-league-score-block {
-                background: var(--tmu-success-fill-soft);
-                border: 1px solid var(--tmu-border-success);
-            }
-            .rnd-league-match.live .rnd-league-score-num {
-                color: var(--tmu-success);
-            }
-            /* \u2500\u2500 League Tooltip \u2500\u2500 */
-            .rnd-league-tooltip {
-                position: absolute; z-index: 100;
-                background: linear-gradient(160deg, var(--tmu-surface-panel) 0%, var(--tmu-surface-card-soft) 60%, var(--tmu-surface-card) 100%);
-                border: 1px solid var(--tmu-border-success);
-                    border-radius: var(--tmu-space-md); padding: 0;
-                min-width: 320px; max-width: 400px;
-                box-shadow: 0 12px 48px var(--tmu-surface-overlay-strong), 0 0 0 1px var(--tmu-success-fill-faint);
-                pointer-events: none; opacity: 0;
-                transition: opacity 0.15s;
-                overflow: hidden;
-            }
-            .rnd-league-tooltip.visible { opacity: 1; }
-            .rnd-league-tt-head {
-                display: flex; align-items: center; justify-content: center;
-                    gap: var(--tmu-space-sm); padding: var(--tmu-space-md) var(--tmu-space-lg);
-                background: linear-gradient(180deg, var(--tmu-surface-accent-soft) 0%, transparent 100%);
-                border-bottom: 1px solid var(--tmu-border-soft-alpha);
-            }
-            .rnd-league-tt-team {
-                font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-text-main);
-                max-width: 100px; white-space: nowrap;
-                overflow: hidden; text-overflow: ellipsis;
-            }
-            .rnd-league-tt-score {
-                display: flex; align-items: center; gap: 0;
-                background: var(--tmu-surface-overlay); border-radius: 6px;
-                padding: var(--tmu-space-xs) var(--tmu-space-md);
-            }
-            .rnd-league-tt-score-num {
-                font-size: var(--tmu-font-xl); font-weight: 800; color: var(--tmu-text-strong);
-                min-width: 16px; text-align: center; line-height: 1;
-            }
-            .rnd-league-tt-score-sep {
-                color: var(--tmu-text-dim); margin: 0 5px; font-size: var(--tmu-font-md);
-            }
-            .rnd-league-tt-logo {
-                width: 24px; height: 24px;
-                filter: drop-shadow(0 1px 3px var(--tmu-surface-overlay));
-            }
-            .rnd-league-tt-stats {
-                padding: var(--tmu-space-md) var(--tmu-space-lg);
-            }
-            .rnd-league-tt-stat-row {
-                display: flex; align-items: center; margin-bottom: 6px;
-            }
-            .rnd-league-tt-stat-row:last-child { margin-bottom: 0; }
-            .rnd-league-tt-val {
-                font-weight: 800; font-size: var(--tmu-font-sm); min-width: 24px;
-                font-variant-numeric: tabular-nums;
-            }
-            .rnd-league-tt-val.home { text-align: right; color: var(--tmu-accent); }
-            .rnd-league-tt-val.away { text-align: left; color: var(--tmu-info-alt); }
-            .rnd-league-tt-val.leading { font-size: var(--tmu-font-md); }
-            .rnd-league-tt-label {
-                flex: 1; text-align: center;
-                font-size: var(--tmu-font-2xs); color: var(--tmu-text-faint); font-weight: 700;
-                text-transform: uppercase; letter-spacing: 0.8px;
-            }
-            .rnd-league-tt-bar {
-                flex: 1; display: flex; height: 4px; border-radius: 2px;
-                overflow: hidden; background: var(--tmu-surface-overlay); gap: 1px;
-                margin: 0 8px;
-            }
-            .rnd-league-tt-seg {
-                border-radius: 2px; min-width: 2px;
-                transition: width 0.3s ease;
-            }
-            .rnd-league-tt-seg.home {
-                background: linear-gradient(90deg, var(--tmu-compare-home-grad-start), var(--tmu-compare-home-grad-end));
-            }
-            .rnd-league-tt-seg.away {
-                background: linear-gradient(90deg, var(--tmu-compare-away-grad-start), var(--tmu-compare-away-grad-end));
-            }
-            .rnd-league-tt-events {
-                border-top: 1px solid var(--tmu-border-soft-alpha);
-                padding: var(--tmu-space-sm) var(--tmu-space-lg) var(--tmu-space-md);
-                font-size: var(--tmu-font-xs); color: var(--tmu-text-panel-label);
-            }
-            .rnd-league-tt-evt-row {
-                display: flex; gap: var(--tmu-space-sm);
-                padding: 0 0;
-                border-bottom: 1px solid var(--tmu-border-contrast);
-            }
-            .rnd-league-tt-evt-row:last-child { border-bottom: none; }
-            .tt-evt-home {
-                flex: 1; text-align: right; color: var(--tmu-text-panel-label);
-                white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            }
-            .tt-evt-away {
-                flex: 1; text-align: left; color: var(--tmu-text-panel-label);
-                white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            }
-            .rnd-league-tt-events .evt-min {
-                color: var(--tmu-text-dim); font-weight: 600; font-size: var(--tmu-font-2xs);
-            }
-
-            /* \u2500\u2500 League Standings \u2500\u2500 */
-            .rnd-league-tbl {
-                width: 100%; border-collapse: collapse;
-                font-size: var(--tmu-font-sm);
-            }
-            .rnd-league-tbl th {
-                padding: var(--tmu-space-sm) var(--tmu-space-sm); text-align: center;
-                color: var(--tmu-text-faint); font-weight: 700;
-                border-bottom: 2px solid var(--tmu-border-soft-alpha-mid);
-                font-size: var(--tmu-font-xs); white-space: nowrap;
-                text-transform: uppercase; letter-spacing: 0.8px;
-            }
-            .rnd-league-tbl th:first-child,
-            .rnd-league-tbl td:first-child { text-align: center; width: 48px; }
-            .rnd-league-tbl th:nth-child(2),
-            .rnd-league-tbl td:nth-child(2) { text-align: left; }
-            .rnd-league-tbl td {
-                padding: var(--tmu-space-sm) var(--tmu-space-sm); text-align: center;
-                color: var(--tmu-text-panel-label); border-bottom: 1px solid var(--tmu-border-contrast);
-                white-space: nowrap; font-variant-numeric: tabular-nums;
-                font-size: var(--tmu-font-sm);
-            }
-            .rnd-league-tbl tr {
-                transition: background .12s;
-            }
-            .rnd-league-tbl tr:nth-child(even) {
-                background: var(--tmu-surface-overlay-soft);
-            }
-            .rnd-league-tbl tr:nth-child(odd) {
-                background: var(--tmu-border-contrast);
-            }
-            .rnd-league-tbl tr:hover { background: var(--tmu-surface-overlay-soft); }
-            .rnd-league-tbl tr.rnd-league-hl {
-                background: var(--tmu-success-fill-soft) !important;
-            }
-            .rnd-league-tbl tr.rnd-league-hl:hover {
-                background: var(--tmu-success-fill-hover) !important;
-            }
-            .rnd-league-tbl tr.rnd-league-hl td {
-                color: var(--tmu-text-accent-soft); font-weight: 600;
-            }
-            .rnd-league-tbl td.pts {
-                color: var(--tmu-text-strong); font-weight: 800; font-size: var(--tmu-font-sm);
-            }
-            .rnd-league-tbl td.pos-num {
-                font-weight: 700; color: var(--tmu-text-faint); font-size: var(--tmu-font-xs);
-            }
-            .rnd-league-tbl .club-cell {
-                display: flex; align-items: center; gap: 6px;
-                max-width: 170px; overflow: hidden; text-overflow: ellipsis;
-            }
-            .rnd-league-tbl .club-logo {
-                width: 18px; height: 18px; flex-shrink: 0;
-                filter: drop-shadow(0 1px 2px var(--tmu-surface-overlay));
-            }
-            .rnd-league-tbl .club-name {
-                overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-                font-weight: 500;
-            }
-            .rnd-league-tbl td.gd-pos { color: var(--tmu-success); }
-            .rnd-league-tbl td.gd-neg { color: var(--tmu-warning-soft); }
-            .rnd-league-tbl td.w-col { color: var(--tmu-success); }
-            .rnd-league-tbl td.l-col { color: var(--tmu-warning-soft); }
-
-            /* \u2500\u2500 Position arrows \u2500\u2500 */
-            .pos-arrow {
-                display: inline-block; font-size: var(--tmu-font-2xs); margin-left: 3px;
-                font-weight: 700; vertical-align: middle;
-            }
-            .pos-arrow.pos-up { color: var(--tmu-success-strong); }
-            .pos-arrow.pos-down { color: var(--tmu-danger-strong); }
-            .pos-arrow.pos-same { color: var(--tmu-text-dim); font-size: var(--tmu-font-2xs); }
-
-            /* \u2500\u2500 Zone indicators \u2500\u2500 */
-            .rnd-league-tbl tr.zone-relegation {
-                border-left: 3px solid var(--tmu-danger-strong);
-            }
-            .rnd-league-tbl tr.zone-relegation td:first-child {
-                border-left: 3px solid var(--tmu-danger-strong);
-            }
-            .rnd-league-tbl tr.zone-relegation td {
-                color: var(--tmu-danger);
-            }
-            .rnd-league-tbl tr.zone-relegation td.pos-num {
-                color: var(--tmu-danger-strong);
-            }
-            .rnd-league-tbl tr.zone-playoff {
-                border-left: 3px solid var(--tmu-warning-soft);
-            }
-            .rnd-league-tbl tr.zone-playoff td:first-child {
-                border-left: 3px solid var(--tmu-warning-soft);
-            }
-            .rnd-league-tbl tr.zone-playoff td.pos-num {
-                color: var(--tmu-warning-soft);
-            }
-
-            /* \u2500\u2500 Legend \u2500\u2500 */
-            .rnd-league-legend {
-                 display: flex; gap: var(--tmu-space-lg); padding: var(--tmu-space-sm) var(--tmu-space-md) var(--tmu-space-xs);
-                 font-size: var(--tmu-font-xs); color: var(--tmu-text-faint);
-            }
-            .legend-item {
-                display: flex; align-items: center; gap: 5px;
-            }
-            .legend-dot {
-                width: 10px; height: 10px; border-radius: 2px;
-            }
-            .legend-dot.legend-rel { background: var(--tmu-danger-strong); }
-            .legend-dot.legend-po { background: var(--tmu-warning-soft); }
-
-            /* \u2500\u2500 Analysis Tab \u2500\u2500 */
-            .rnd-analysis-wrap {
-                max-width: 100%; padding: 0 0 var(--tmu-space-xl);
-            }
-            .rnd-an-section {
-                margin-bottom: 2px;
-                background: var(--tmu-surface-overlay-soft);
-                border-bottom: 1px solid var(--tmu-border-soft-alpha);
-            }
-            .rnd-an-section-head {
-                    display: flex; align-items: center; gap: var(--tmu-space-sm);
-                padding: var(--tmu-space-md) var(--tmu-space-xl) var(--tmu-space-sm);
-                    font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-text-faint);
-                text-transform: uppercase; letter-spacing: 1.5px;
-            }
-                .rnd-an-section-head .an-icon { font-size: var(--tmu-font-md); }
-
-            /* Form strip */
-            .rnd-an-form-row {
-                 display: flex; align-items: center; gap: var(--tmu-space-md);
-                padding: var(--tmu-space-sm) var(--tmu-space-xl) var(--tmu-space-md);
-            }
-            .rnd-an-form-side {
-                flex: 1; display: flex; align-items: center; gap: 6px;
-            }
-            .rnd-an-form-side.away { justify-content: flex-end; flex-direction: row-reverse; }
-            .rnd-an-form-label {
-                font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-text-panel-label);
-                min-width: 40px;
-            }
-            .rnd-an-form-side.home .rnd-an-form-label { text-align: right; }
-            .rnd-an-form-side.away .rnd-an-form-label { text-align: left; }
-            .rnd-an-form-dots {
-                display: flex; gap: 3px;
-            }
-            .rnd-an-form-dot {
-                 width: 22px; height: 22px; border-radius: var(--tmu-space-xs);
-                display: flex; align-items: center; justify-content: center;
-                font-size: var(--tmu-font-xs); font-weight: 800; color: var(--tmu-text-inverse);
-                text-shadow: 0 1px 2px var(--tmu-surface-overlay);
-            }
-            .rnd-an-form-dot.w { background: var(--tmu-success); }
-            .rnd-an-form-dot.d { background: var(--tmu-warning-soft); }
-            .rnd-an-form-dot.l { background: var(--tmu-danger-strong); }
-            .rnd-an-form-pts {
-                font-size: var(--tmu-font-sm); font-weight: 800; color: var(--tmu-text-accent-soft);
-                min-width: 24px; text-align: center;
-            }
-
-            /* Form comparison bar */
-            .rnd-an-form-bar-wrap {
-                padding: 0 var(--tmu-space-xl) var(--tmu-space-md);
-            }
-            .rnd-an-form-bar {
-                display: flex; height: 6px; border-radius: 3px;
-                overflow: hidden; background: var(--tmu-surface-overlay); gap: 1px;
-            }
-            .rnd-an-form-seg {
-                border-radius: 3px; transition: width 0.3s;
-            }
-            .rnd-an-form-seg.home { background: linear-gradient(90deg, var(--tmu-compare-home-grad-start), var(--tmu-compare-home-grad-end)); }
-            .rnd-an-form-seg.away { background: linear-gradient(90deg, var(--tmu-compare-away-grad-start), var(--tmu-compare-away-grad-end)); }
-
-            /* Strength bars */
-            .rnd-an-strength-row {
-                display: flex; align-items: center; gap: 0;
-                padding: var(--tmu-space-xs) var(--tmu-space-xl);
-            }
-            .rnd-an-strength-row:nth-child(even) { background: var(--tmu-border-contrast); }
-            .rnd-an-str-val {
-                min-width: 44px; font-weight: 800; font-size: var(--tmu-font-sm);
-                font-variant-numeric: tabular-nums;
-            }
-            .rnd-an-str-val.home { text-align: right; color: var(--tmu-accent); padding-right: var(--tmu-space-sm); }
-            .rnd-an-str-val.away { text-align: left; color: var(--tmu-info-alt); padding-left: var(--tmu-space-sm); }
-            .rnd-an-str-val.leading { font-size: var(--tmu-font-md); }
-            .rnd-an-str-label {
-                min-width: 54px; text-align: center;
-                font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-text-faint);
-                text-transform: uppercase; letter-spacing: 0.5px;
-            }
-            .rnd-an-str-bar {
-                 flex: 1; height: 8px; border-radius: var(--tmu-space-xs);
-                background: var(--tmu-surface-overlay); overflow: hidden;
-            }
-            .rnd-an-str-fill {
-                 height: 100%; border-radius: var(--tmu-space-xs); transition: width 0.5s ease;
-            }
-            .rnd-an-str-fill.home { background: linear-gradient(90deg, var(--tmu-compare-home-grad-start), var(--tmu-compare-home-grad-end)); float: right; }
-            .rnd-an-str-fill.away { background: linear-gradient(90deg, var(--tmu-compare-away-grad-end), var(--tmu-compare-away-grad-start)); }
-
-            /* Key players */
-            .rnd-an-keys {
-                display: flex; gap: 0; padding: 0;
-            }
-            .rnd-an-keys-side {
-                flex: 1; display: flex; flex-direction: column; gap: 2px;
-                padding: var(--tmu-space-sm) var(--tmu-space-md) var(--tmu-space-md);
-            }
-            .rnd-an-keys-side.away { border-left: 1px solid var(--tmu-border-soft-alpha); }
-            .rnd-an-key-player {
-                 display: flex; align-items: center; gap: var(--tmu-space-sm);
-                padding: var(--tmu-space-sm) var(--tmu-space-sm); border-radius: 6px;
-                transition: background .12s;
-            }
-            .rnd-an-key-player:nth-child(even) { background: var(--tmu-border-contrast); }
-            .rnd-an-key-player:hover { background: var(--tmu-surface-overlay-soft); }
-            .rnd-an-key-face {
-                width: 36px; height: 36px; border-radius: 50%;
-                overflow: hidden; flex-shrink: 0;
-                border: 2px solid var(--tmu-border-success);
-            }
-            .rnd-an-key-face img {
-                width: 100%; height: 100%; object-fit: cover; object-position: top;
-            }
-            .rnd-an-key-info { flex: 1; min-width: 0; }
-            .rnd-an-key-name {
-                font-size: var(--tmu-font-sm); font-weight: 600; color: var(--tmu-text-main);
-                white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            }
-            .rnd-an-key-meta {
-                font-size: var(--tmu-font-xs); color: var(--tmu-text-faint);
-            }
-            .rnd-an-key-r5 {
-                font-size: var(--tmu-font-md); font-weight: 800;
-                font-variant-numeric: tabular-nums;
-                min-width: 40px; text-align: right;
-            }
-            .rnd-an-key-rank {
-                font-size: var(--tmu-font-lg); font-weight: 800; color: var(--tmu-text-disabled-strong);
-                min-width: 20px; text-align: center;
-            }
-
-            /* Profile stats grid */
-            .rnd-an-profile-grid {
-                display: grid; grid-template-columns: 1fr 1fr;
-                gap: 2px; padding: 0 var(--tmu-space-xl) var(--tmu-space-md);
-            }
-            .rnd-an-profile-card {
-                display: flex; align-items: center; gap: 10px;
-                padding: var(--tmu-space-md) var(--tmu-space-md); background: var(--tmu-surface-overlay-soft);
-                border-radius: 6px;
-            }
-            .rnd-an-profile-icon { font-size: var(--tmu-font-lg); }
-            .rnd-an-profile-info { flex: 1; }
-            .rnd-an-profile-label {
-                font-size: var(--tmu-font-2xs); font-weight: 700; color: var(--tmu-text-dim);
-                text-transform: uppercase; letter-spacing: 1px;
-            }
-            .rnd-an-profile-vals {
-                 display: flex; gap: var(--tmu-space-sm); margin-top: 2px;
-            }
-            .rnd-an-profile-val {
-                 font-size: var(--tmu-font-md); font-weight: 800;
-            }
-            .rnd-an-profile-val.home { color: var(--tmu-accent); }
-            .rnd-an-profile-val.away { color: var(--tmu-info-alt); }
-            .rnd-an-profile-vs {
-                 font-size: var(--tmu-font-xs); color: var(--tmu-text-dim); font-weight: 600;
-            }
-
-            /* Tactical matchup */
-            .rnd-an-tactics {
-                display: flex; gap: 0; padding: 0;
-            }
-            .rnd-an-tactic-side {
-                flex: 1; padding: var(--tmu-space-sm) var(--tmu-space-xl) var(--tmu-space-md);
-            }
-            .rnd-an-tactic-side.away {
-                border-left: 1px solid var(--tmu-border-soft-alpha);
-            }
-            .rnd-an-tactic-team {
-                font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-text-panel-label);
-                margin-bottom: 6px;
-            }
-            .rnd-an-tactic-item {
-                 display: flex; align-items: center; gap: 6px;
-                 padding: var(--tmu-space-xs) 0; font-size: var(--tmu-font-sm); color: var(--tmu-text-main);
-            }
-            .rnd-an-tactic-item .t-icon { font-size: var(--tmu-font-sm); width: 20px; text-align: center; }
-            .rnd-an-tactic-item .t-label {
-                font-size: var(--tmu-font-2xs); color: var(--tmu-text-dim); text-transform: uppercase;
-                letter-spacing: 0.5px; min-width: 55px;
-            }
-            .rnd-an-tactic-item .t-val { font-weight: 700; color: var(--tmu-text-main); }
-
-            /* Unavailable */
-            .rnd-an-unavail {
-                display: flex; gap: 0; padding: 0;
-            }
-            .rnd-an-unavail-side {
-                flex: 1; padding: var(--tmu-space-sm) var(--tmu-space-xl) var(--tmu-space-md);
-            }
-            .rnd-an-unavail-side.away {
-                border-left: 1px solid var(--tmu-border-soft-alpha);
-            }
-            .rnd-an-unavail-player {
-                 display: flex; align-items: center; gap: 6px;
-                 padding: var(--tmu-space-xs) 0; font-size: var(--tmu-font-sm); color: var(--tmu-warning-soft);
-            }
-            .rnd-an-unavail-none {
-                font-size: var(--tmu-font-xs); color: var(--tmu-text-dim); font-style: italic;
-                padding: var(--tmu-space-xs) 0;
-            }
-
-            /* Prediction */
-            .rnd-an-prediction {
-                display: flex; flex-direction: column; align-items: center;
-                padding: var(--tmu-space-lg) var(--tmu-space-xl) var(--tmu-space-xl); gap: 10px;
-            }
-            .rnd-an-pred-teams {
-                 display: flex; align-items: center; gap: var(--tmu-space-lg); width: 100%;
-            }
-            .rnd-an-pred-side {
-                flex: 1; text-align: center;
-            }
-            .rnd-an-pred-logo {
-                width: 48px; height: 48px;
-                filter: drop-shadow(0 2px 6px var(--tmu-surface-overlay));
-            }
-            .rnd-an-pred-name {
-                font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-text-panel-label);
-                 margin-top: var(--tmu-space-xs);
-            }
-            .rnd-an-pred-pct {
-                 font-size: var(--tmu-font-3xl); font-weight: 800; margin-top: 2px;
-            }
-            .rnd-an-pred-pct.home { color: var(--tmu-accent); }
-            .rnd-an-pred-pct.away { color: var(--tmu-info-alt); }
-            .rnd-an-pred-pct.draw { color: var(--tmu-warning-soft); }
-            .rnd-an-pred-bar-wrap {
-                width: 100%; display: flex; gap: 2px;
-                height: 10px; border-radius: 5px; overflow: hidden;
-            }
-            .rnd-an-pred-seg {
-                height: 100%; border-radius: 5px; transition: width 0.5s;
-            }
-            .rnd-an-pred-seg.home { background: linear-gradient(90deg, var(--tmu-compare-home-grad-start), var(--tmu-compare-home-grad-end)); }
-            .rnd-an-pred-seg.draw { background: linear-gradient(90deg, var(--tmu-warning-soft), var(--tmu-text-highlight)); }
-            .rnd-an-pred-seg.away { background: linear-gradient(90deg, var(--tmu-compare-away-grad-start), var(--tmu-compare-away-grad-end)); }
-            .rnd-an-pred-label {
-                 font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-text-faint);
-                text-transform: uppercase; letter-spacing: 1px;
-                text-align: center;
-            }
-            .rnd-an-pred-draw {
-                text-align: center;
-            }
+      el2.appendChild(closeBtn);
+      const headRow = document.createElement("div");
+      headRow.className = "mp-head-row";
+      headRow.innerHTML = `
+            <div class="mp-team home">${homeName}</div>
+            <div class="mp-score-block">
+                <div class="mp-score">0 - 0</div>
+                <div class="mp-minute">0:00</div>
+            </div>
+            <div class="mp-team away">${awayName}</div>
         `;
-    document.head.appendChild(style);
-  };
-  var TmMatchStyles = { inject: inject3 };
-
-  // src/components/match/tm-match-venue.js
-  var TmMatchVenue = {
-    render(body, mData) {
-      const md = mData.match_data;
-      const venue = md.venue;
-      const weatherBase = (venue.weather || "").replace(/\d+/g, "");
-      const weatherMap = {
-        sunny: { icon: "\u2600\uFE0F", text: "Sunny", desc: "Clear skies" },
-        cloudy: { icon: "\u26C5", text: "Cloudy", desc: "Partly cloudy" },
-        rainy: { icon: "\u{1F327}\uFE0F", text: "Rain", desc: "Wet conditions" },
-        snow: { icon: "\u2744\uFE0F", text: "Snow", desc: "Snowy pitch" },
-        overcast: { icon: "\u2601\uFE0F", text: "Overcast", desc: "Heavy clouds" }
-      };
-      const w = weatherMap[weatherBase] || { icon: "\u{1F324}\uFE0F", text: weatherBase.charAt(0).toUpperCase() + weatherBase.slice(1), desc: "" };
-      const capacity = Number(venue.capacity) || 0;
-      const attendance = Number(md.attendance) || 0;
-      const attPct = capacity ? Math.round(attendance / capacity * 100) : 0;
-      const pitchPct = Number(venue.pitch_condition) || 0;
-      const stadiumSvg = `<svg class="rnd-venue-stadium-svg" width="220" height="80" viewBox="0 0 220 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <ellipse cx="110" cy="65" rx="100" ry="12" fill="var(--tmu-success-fill)" stroke="var(--tmu-accent-fill)" stroke-width="1"/>
-            <path d="M25 65 L25 30 Q25 22 33 20 L55 16 Q60 15 60 20 L60 65" fill="var(--tmu-surface-panel)" stroke="var(--tmu-accent-fill)" stroke-width="0.8"/>
-            <path d="M60 65 L60 22 Q60 14 68 12 L102 6 Q110 5 110 12 L110 65" fill="var(--tmu-surface-card-soft)" stroke="var(--tmu-accent-fill)" stroke-width="0.8"/>
-            <path d="M110 65 L110 12 Q110 5 118 6 L152 12 Q160 14 160 22 L160 65" fill="var(--tmu-surface-card-soft)" stroke="var(--tmu-accent-fill)" stroke-width="0.8"/>
-            <path d="M160 65 L160 20 Q160 15 165 16 L187 20 Q195 22 195 30 L195 65" fill="var(--tmu-surface-panel)" stroke="var(--tmu-accent-fill)" stroke-width="0.8"/>
-            <rect x="70" y="50" width="80" height="15" rx="2" fill="var(--tmu-accent-fill)" stroke="var(--tmu-accent-fill)" stroke-width="0.6"/>
-            <line x1="110" y1="50" x2="110" y2="65" stroke="var(--tmu-accent-fill)" stroke-width="0.4"/>
-            <circle cx="110" cy="57" r="4" stroke="var(--tmu-accent-fill)" stroke-width="0.4" fill="none"/>
-            <rect x="72" y="53" width="12" height="9" rx="1" fill="none" stroke="var(--tmu-accent-fill)" stroke-width="0.4"/>
-            <rect x="136" y="53" width="12" height="9" rx="1" fill="none" stroke="var(--tmu-accent-fill)" stroke-width="0.4"/>
-            ${[35, 50, 65, 80, 140, 155, 170, 185].map((x) => `<rect x="${x - 1}" y="${x < 110 ? 28 : 28}" width="2" height="4" rx="0.5" fill="var(--tmu-success)" opacity="0.5"/>`).join("")}
-            <ellipse cx="45" cy="26" rx="14" ry="3" fill="none" stroke="var(--tmu-accent-fill)" stroke-width="0.4" opacity="0.4"/>
-            <ellipse cx="175" cy="26" rx="14" ry="3" fill="none" stroke="var(--tmu-accent-fill)" stroke-width="0.4" opacity="0.4"/>
-        </svg>`;
-      let html2 = '<div class="rnd-venue-wrap">';
-      html2 += '<div class="rnd-venue-hero">';
-      html2 += stadiumSvg;
-      html2 += `<div class="rnd-venue-name">${venue.name}</div>`;
-      html2 += `<div class="rnd-venue-city">\u{1F4CD} ${venue.city}</div>`;
-      html2 += `<div class="rnd-venue-tournament"><span>\u{1F3C6} ${venue.tournament}</span></div>`;
-      html2 += "</div>";
-      html2 += '<div class="rnd-venue-cards">';
-      html2 += `<div class="rnd-venue-card">
-            <div class="rnd-venue-card-icon">\u{1F3DF}\uFE0F</div>
-            <div class="rnd-venue-card-value">${capacity.toLocaleString()}</div>
-            <div class="rnd-venue-card-label">Capacity</div>
-        </div>`;
-      html2 += `<div class="rnd-venue-card">
-            <div class="rnd-venue-card-icon">\u{1F465}</div>
-            <div class="rnd-venue-card-value">${attendance ? attendance.toLocaleString() : "\u2014"}</div>
-            <div class="rnd-venue-card-label">Attendance</div>
-        </div>`;
-      html2 += "</div>";
-      if (attendance && capacity) {
-        html2 += '<div class="rnd-venue-gauge-wrap">';
-        html2 += '<div class="rnd-venue-gauge-header">';
-        html2 += '<span class="rnd-venue-gauge-title">Stadium Fill</span>';
-        html2 += `<span class="rnd-venue-gauge-value">${attPct}%</span>`;
-        html2 += "</div>";
-        html2 += `<div class="rnd-venue-gauge-bar"><div class="rnd-venue-gauge-fill attendance" style="width:${attPct}%"></div></div>`;
-        html2 += "</div>";
-      }
-      html2 += '<div class="rnd-venue-weather">';
-      html2 += `<div class="rnd-venue-weather-icon">${w.icon}</div>`;
-      html2 += '<div class="rnd-venue-weather-info">';
-      html2 += `<div class="rnd-venue-weather-text">${w.text}</div>`;
-      html2 += `<div class="rnd-venue-weather-sub">${w.desc}</div>`;
-      html2 += "</div></div>";
-      html2 += '<div class="rnd-venue-gauge-wrap">';
-      html2 += '<div class="rnd-venue-gauge-header">';
-      html2 += '<span class="rnd-venue-gauge-title">Pitch Condition</span>';
-      html2 += `<span class="rnd-venue-gauge-value">${pitchPct}%</span>`;
-      html2 += "</div>";
-      const pitchColor = pitchPct >= 80 ? "var(--tmu-success)" : pitchPct >= 50 ? "var(--tmu-warning-soft)" : "var(--tmu-danger-strong)";
-      html2 += `<div class="rnd-venue-gauge-bar"><div class="rnd-venue-gauge-fill" style="width:${pitchPct}%;background:${pitchColor}"></div></div>`;
-      html2 += "</div>";
-      html2 += '<div class="rnd-venue-facilities">';
-      const facilities = [
-        { key: "sprinklers", icon: "\u{1F4A7}", label: "Sprinklers" },
-        { key: "draining", icon: "\u{1F6B0}", label: "Draining" },
-        { key: "pitchcover", icon: "\u{1F6E1}\uFE0F", label: "Pitch Cover" },
-        { key: "heating", icon: "\u{1F525}", label: "Heating" }
-      ];
-      facilities.forEach((f) => {
-        const active = venue[f.key] ? "active" : "";
-        html2 += `<div class="rnd-venue-facility ${active}">
-                <div class="rnd-venue-facility-icon">${f.icon}</div>
-                <div class="rnd-venue-facility-label">${f.label}</div>
-                <div class="rnd-venue-facility-status">${venue[f.key] ? "\u2713 Yes" : "\u2717 No"}</div>
-            </div>`;
+      el2.appendChild(headRow);
+      const controls = document.createElement("div");
+      controls.className = "mp-controls";
+      const progress = document.createElement("div");
+      progress.className = "mp-progress";
+      progress.innerHTML = '<div class="mp-progress-fill"></div>';
+      controls.appendChild(progress);
+      const toggleBtn = TmButton.button({ label: "\u25B6", variant: "secondary", size: "sm", onClick: () => onToggle == null ? void 0 : onToggle() });
+      controls.appendChild(toggleBtn);
+      const skipBtn = TmButton.button({ label: "\u23ED", variant: "secondary", size: "sm", onClick: () => onSkip == null ? void 0 : onSkip() });
+      controls.appendChild(skipBtn);
+      const { el: modeSwitcher, setActive: setModeActive } = TmButtonGroup.buttonGroup({
+        items: [
+          { key: "all", label: "All" },
+          { key: "key", label: "Key" }
+        ],
+        active: initialMode,
+        size: "xs",
+        onChange: (key) => onModeChange == null ? void 0 : onModeChange(key)
       });
-      html2 += "</div>";
-      html2 += "</div>";
-      body.html(html2);
+      controls.appendChild(modeSwitcher);
+      el2.appendChild(controls);
+      const scoreEl = headRow.querySelector(".mp-score");
+      const minEl = headRow.querySelector(".mp-minute");
+      const progEl = progress.querySelector(".mp-progress-fill");
+      const update = (match, replayState, maximumMinute) => {
+        const { h, a } = scoreAt(match, replayState.currentMinute, replayState.committedActionIndex);
+        scoreEl.textContent = `${h} - ${a}`;
+        if (replayState.ended) {
+          minEl.textContent = "FT";
+          minEl.classList.add("ended");
+        } else {
+          minEl.textContent = `${replayState.currentMinute}:${String(replayState.seconds).padStart(2, "0")}`;
+          minEl.classList.remove("ended");
+        }
+        const pct = Math.min(100, Math.round((replayState.currentMinute * 60 + replayState.seconds) / (maximumMinute * 60) * 100));
+        progEl.style.width = pct + "%";
+        toggleBtn.textContent = replayState.playing && !replayState.ended ? "\u23F8" : "\u25B6";
+        setModeActive(replayState.mode);
+      };
+      return { el: el2, update };
     }
   };
 
-  // src/components/match/tm-match-unity-player.js
-  var DEFAULT_STATE = () => ({
-    available: false,
-    ready: false,
-    playing: false,
-    pendingMinute: null,
-    loadedMinutes: [],
-    playedMinutes: [],
-    canvasParent: null,
-    tmPaused: false,
-    clipTextQueue: [],
-    clipTextCursor: 0,
-    clipTextGroups: [],
-    clipGroupCursor: 0,
-    clipPostQueue: [],
-    activeMinute: null,
-    clipFirstShown: false,
-    clipSkippedFirst: false
-  });
-  var TmMatchUnityPlayer = {
-    create(callbacks) {
-      let state5 = DEFAULT_STATE();
-      const getUW = () => typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
-      const countPlayLines = (play) => {
-        if (!play) return 1;
-        return Math.max(1, play.segments.reduce((s6, seg) => s6 + seg.text.filter((l) => l.trim()).length, 0));
-      };
-      const findPlay = (mData, min, reportEvtIdx) => {
-        var _a2;
-        const plays = ((_a2 = mData.plays) == null ? void 0 : _a2[String(min)]) || [];
-        return plays.find((p) => p.reportEvtIdx === reportEvtIdx) || null;
-      };
-      const buildClipTextQueue = (mData, minute) => {
-        var _a2;
-        callbacks.syncLiveDerivedTeams();
-        const plays = ((_a2 = mData.plays) == null ? void 0 : _a2[String(minute)]) || [];
-        const queue = [];
-        const groups = [];
-        const postQueue = [];
-        plays.forEach((play, playIdx) => {
-          let flatIdx = 0;
-          if (playIdx === 0) {
-            play.segments.forEach((seg) => {
-              const groupStart = queue.length;
-              let groupCount = 0;
-              seg.text.forEach((line) => {
-                if (!line || !line.trim()) return;
-                queue.push({ reportEvtIdx: play.reportEvtIdx, flatLineIdx: flatIdx });
-                flatIdx++;
-                groupCount++;
-              });
-              if (groupCount > 0) groups.push({ start: groupStart, count: groupCount });
-            });
-          } else {
-            play.segments.forEach((seg) => {
-              seg.text.forEach((line) => {
-                if (!line || !line.trim()) return;
-                postQueue.push({ reportEvtIdx: play.reportEvtIdx, flatLineIdx: flatIdx });
-                flatIdx++;
-              });
-            });
-          }
-        });
-        return { queue, groups, postQueue };
-      };
-      const advanceClipTextOneLine = () => {
-        const liveState = callbacks.getLiveState();
-        if (!liveState || !state5.clipTextQueue.length) return;
-        const idx = state5.clipTextCursor;
-        if (idx >= state5.clipTextQueue.length) return;
-        const entry = state5.clipTextQueue[idx];
-        state5.clipTextCursor = idx + 1;
-        const play = findPlay(liveState.mData, liveState.min, entry.reportEvtIdx);
-        const total = play ? countPlayLines(play) : 1;
-        const isComplete = entry.flatLineIdx >= total - 1;
-        callbacks.onTextAdvanced(entry.reportEvtIdx, entry.flatLineIdx, isComplete);
-        updateMatchFeed();
-        if (isComplete) updateMatchStats();
-      };
-      const flushClipText = () => {
-        const remaining = state5.clipTextQueue.length - state5.clipTextCursor;
-        const postLen = state5.clipPostQueue ? state5.clipPostQueue.length : 0;
-        console.log("[RND] flushClipText remaining=" + remaining + " postQueue=" + postLen);
-        while (state5.clipTextCursor < state5.clipTextQueue.length) {
-          advanceClipTextOneLine();
+  // src/components/match-new/tm-match-feed.js
+  var STYLE_ID44 = "mp-feed-style";
+  var injectStyles33 = () => {
+    if (document.getElementById(STYLE_ID44)) return;
+    const s6 = document.createElement("style");
+    s6.id = STYLE_ID44;
+    s6.textContent = `
+        /* Feed panel \u2014 20% of mp-body */
+        .mp-feed {
+            flex: 0 0 260px; min-width: 0;
+            display: flex; flex-direction: column;
+            gap: 3px; overflow-y: auto; overflow-x: hidden;
+            scrollbar-width: none;
+            padding: 8px; box-sizing: border-box;
+            border-right: 1px solid var(--tmu-border-soft-alpha);
+            max-height: var(--mp-canvas-h, 100%);
         }
-        if (state5.clipPostQueue && state5.clipPostQueue.length > 0) {
-          state5.clipPostQueue.forEach((entry) => {
-            state5.clipTextQueue.push(entry);
-          });
-          state5.clipPostQueue = [];
-          while (state5.clipTextCursor < state5.clipTextQueue.length) {
-            advanceClipTextOneLine();
-          }
+        .mp-feed::-webkit-scrollbar { display: none; }
+
+        .mp-feed-line {
+            display: flex; align-items: baseline; gap: 5px;
+            font-size: 12px; color: var(--tmu-text-main); line-height: 1.4;
+            padding: 2px 0;
+            animation: mp-feed-in 0.4s ease;
         }
-      };
-      const advanceClipTextGroup = () => {
-        const groups = state5.clipTextGroups || [];
-        const gi = state5.clipGroupCursor || 0;
-        if (gi >= groups.length) return;
-        const group = groups[gi];
-        for (let j = 0; j < group.count; j++) {
-          if (state5.clipTextCursor < state5.clipTextQueue.length) {
-            advanceClipTextOneLine();
-          }
+        @keyframes mp-feed-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+        .mp-feed-min {
+            font-size: 10px; font-weight: 700; color: var(--tmu-accent);
+            background: var(--tmu-surface-overlay); border-radius: 3px;
+            padding: 0 4px; white-space: nowrap; flex-shrink: 0;
         }
-        state5.clipGroupCursor = gi + 1;
-        callbacks.syncLiveDerivedTeams();
-        console.log("[RND] Advanced text group " + gi + " (" + group.count + " lines)");
+        .mp-feed-text { color: var(--tmu-text-main); }
+    `;
+    document.head.appendChild(s6);
+  };
+  var TmMatchFeed = {
+    /**
+     * @returns {{ el, sync(match, currentMinute, currentActionIndex, currentActionLineIndex), clear() }}
+     */
+    create() {
+      injectStyles33();
+      const el2 = document.createElement("div");
+      el2.className = "mp-feed";
+      const rendered = /* @__PURE__ */ new Set();
+      let lastMinute = null;
+      const appendLine = (min, text) => {
+        const div = document.createElement("div");
+        div.className = "mp-feed-line";
+        div.innerHTML = `<span class="mp-feed-min">${min}'</span><span class="mp-feed-text">${text.replace(/\[\w+\]/g, "").trim()}</span>`;
+        el2.appendChild(div);
+        el2.scrollTop = el2.scrollHeight;
       };
-      const updateMatchFeed = () => {
-        const liveState = callbacks.getLiveState();
-        const container = $("#rnd-unity-feed");
-        if (!container.length || !liveState) return;
-        const mData = liveState.mData;
-        const curMin = liveState.min;
-        const curEvtIdx = liveState.curEvtIdx;
-        const curLineIdx = liveState.curLineIdx;
-        const allLines = [];
-        const minPlays = (mData.plays || {})[String(curMin)] || [];
-        for (const play of minPlays) {
-          if (play.reportEvtIdx > curEvtIdx) break;
-          let flatIdx = 0;
-          for (const seg of play.segments) {
-            for (const line of seg.text) {
+      const sync = (match, currentMinute, currentActionIndex, currentActionLineIndex) => {
+        if (currentMinute !== lastMinute) {
+          clear();
+          lastMinute = currentMinute;
+        }
+        for (const action of match.plays[String(currentMinute)] || []) {
+          if (action.reportEventIndex > currentActionIndex) break;
+          let lineIndex = 0;
+          for (const clip of action.clips) {
+            for (const line of clip.text) {
               if (!line.trim()) {
-                flatIdx++;
+                lineIndex++;
                 continue;
               }
-              if (play.reportEvtIdx === curEvtIdx && flatIdx > curLineIdx) break;
-              allLines.push({ min: curMin, text: line });
-              flatIdx++;
+              if (action.reportEventIndex === currentActionIndex && lineIndex > currentActionLineIndex) {
+                lineIndex++;
+                continue;
+              }
+              const key = `${currentMinute}:${action.reportEventIndex}:${lineIndex}`;
+              if (!rendered.has(key)) {
+                rendered.add(key);
+                appendLine(currentMinute, line);
+              }
+              lineIndex++;
             }
           }
         }
-        let html2 = "";
-        allLines.forEach((item) => {
-          const text = item.text.replace(/\[(goal|yellow|red|sub|assist)\]/g, "");
-          html2 += `<div class="rnd-unity-feed-line"><span class="rnd-unity-feed-min">${item.min}'</span><span class="rnd-unity-feed-text">${text}</span></div>`;
-        });
-        container.html(html2);
-        container.scrollTop(container[0].scrollHeight);
       };
-      const updateMatchStats = () => {
-        const liveState = callbacks.getLiveState();
-        const container = $("#rnd-unity-stats");
-        if (!container.length || !liveState) return;
-        const homeStats = liveState.mData.teams.home.stats || {};
-        const awayStats = liveState.mData.teams.away.stats || {};
-        const statRows = [
-          ["Shots", homeStats.shots, awayStats.shots],
-          ["On Target", homeStats.shotsOnTarget, awayStats.shotsOnTarget],
-          ["Goals", homeStats.goals, awayStats.goals],
-          ["Yellow", homeStats.yellowCards, awayStats.yellowCards],
-          ["Red", homeStats.redCards, awayStats.redCards]
-        ];
-        container.html(statRows.map(([label, leftValue, rightValue]) => TmMatchComparisonRow.stacked({
-          label,
-          leftValue,
-          rightValue,
-          rowClass: "rnd-unity-stat-row",
-          headerClass: "rnd-unity-stat-hdr",
-          leftValueClass: "val home",
-          rightValueClass: "val away",
-          labelClass: "rnd-unity-stat-label",
-          barClass: "rnd-unity-stat-bar",
-          leftSegmentClass: "seg home",
-          rightSegmentClass: "seg away",
-          leftLeadClass: "lead",
-          rightLeadClass: "lead"
-        })).join(""));
+      const clear = () => {
+        rendered.clear();
+        el2.innerHTML = "";
+        lastMinute = null;
       };
-      const saveUnityCanvas = () => {
-        if (!state5.available) return;
-        const webglContent = document.querySelector(".webgl-content");
-        if (!webglContent) return;
-        if (webglContent.parentElement && webglContent.parentElement.id === "rnd-unity-safe") return;
-        let safe = document.getElementById("rnd-unity-safe");
+      return { el: el2, sync, clear };
+    }
+  };
+
+  // src/components/match-new/tm-match-stats.js
+  var STYLE_ID45 = "mp-stats-style";
+  var injectStyles34 = () => {
+    if (document.getElementById(STYLE_ID45)) return;
+    const s6 = document.createElement("style");
+    s6.id = STYLE_ID45;
+    s6.textContent = `
+        .mp-stats {
+            flex: 0 0 260px; min-width: 0;
+            display: flex; flex-direction: column;
+            overflow-y: auto; overflow-x: hidden;
+            scrollbar-width: none;
+            padding: 10px 8px; box-sizing: border-box;
+            border-left: 1px solid var(--tmu-border-soft-alpha);
+            max-height: var(--mp-canvas-h, 100%);
+        }
+        .mp-stats::-webkit-scrollbar { display: none; }
+
+        .mp-stats-heading {
+            font-size: 9px; font-weight: 700; letter-spacing: 0.07em;
+            text-transform: uppercase; color: var(--tmu-text-muted);
+            padding-bottom: 8px; text-align: center;
+        }
+
+        .mp-stats-row {
+            display: flex; align-items: center; gap: 3px;
+            margin-bottom: 7px;
+        }
+        .mp-stats-num {
+            width: 26px; font-size: 13px; font-weight: 700;
+            color: var(--tmu-text-main); line-height: 1;
+        }
+        .mp-stats-num.home { text-align: right; }
+        .mp-stats-num.away { text-align: left; }
+
+        .mp-stats-mid {
+            flex: 1; display: flex; flex-direction: column;
+            align-items: stretch; gap: 3px; min-width: 0;
+        }
+        .mp-stats-label {
+            font-size: 9px; color: var(--tmu-text-muted);
+            text-align: center; white-space: nowrap; line-height: 1;
+        }
+        .mp-stats-bar {
+            display: flex; height: 3px; border-radius: 2px; overflow: hidden;
+        }
+        .mp-stats-bar-h {
+            background: var(--tmu-accent);
+            transition: flex 0.4s ease;
+        }
+        .mp-stats-bar-a {
+            background: var(--tmu-surface-overlay-strong);
+            transition: flex 0.4s ease;
+        }
+
+        .mp-stats-row.poss .mp-stats-num {
+            font-size: 11px;
+        }
+    `;
+    document.head.appendChild(s6);
+  };
+  var deriveStats = (match, replayState) => {
+    var _a2;
+    const homeClubId = String(match.home.club.id);
+    const { committedClipIndex, currentMinute } = replayState;
+    const acc = {
+      home: { shots: 0, sot: 0, yellow: 0, red: 0, penalties: 0, corners: 0, plays: 0 },
+      away: { shots: 0, sot: 0, yellow: 0, red: 0, penalties: 0, corners: 0, plays: 0 }
+    };
+    const minuteKeys = Object.keys(match.plays).map(Number).sort((a, b) => a - b);
+    for (const min of minuteKeys) {
+      if (min > currentMinute) break;
+      const isCurrent = min === currentMinute;
+      let ci = -1;
+      let minDone = false;
+      for (const play of match.plays[String(min)] || []) {
+        if (minDone) break;
+        const side = String(play.team) === homeClubId ? "home" : "away";
+        let playHadClip = false;
+        for (const clip of play.clips) {
+          if (isCurrent) {
+            ci++;
+            if (ci > committedClipIndex) {
+              minDone = true;
+              break;
+            }
+          }
+          playHadClip = true;
+          if (/^cornerkick/.test(clip.video)) acc[side].corners++;
+          for (const action of clip.actions) {
+            if (!action.by) continue;
+            const aSide = ((_a2 = match.home.playerIds) == null ? void 0 : _a2.has(String(action.by))) ? "home" : "away";
+            if (action.action === "shot") {
+              acc[aSide].shots++;
+              const sotRevealed = !isCurrent || ci + 1 <= committedClipIndex;
+              if (action.onTarget && sotRevealed) acc[aSide].sot++;
+              if (action.penalty) acc[aSide].penalties++;
+            } else if (action.action === "yellow" || action.action === "yellowRed") {
+              acc[aSide].yellow++;
+              if (action.action === "yellowRed") acc[aSide].red++;
+            } else if (action.action === "red") {
+              acc[aSide].red++;
+            }
+          }
+        }
+        if (!isCurrent || playHadClip) acc[side].plays++;
+      }
+    }
+    const totalPlays = acc.home.plays + acc.away.plays;
+    const homePoss = totalPlays ? Math.round(acc.home.plays / totalPlays * 100) : 50;
+    return { home: acc.home, away: acc.away, homePoss, awayPoss: 100 - homePoss };
+  };
+  var STAT_ROWS = [
+    { key: "shots", label: "Shots" },
+    { key: "sot", label: "On target" },
+    { key: "corners", label: "Corners" },
+    { key: "penalties", label: "Penalties" },
+    { key: "yellow", label: "Yellow" },
+    { key: "red", label: "Red" }
+  ];
+  var makeRow = (label, isPoss = false) => {
+    const row = document.createElement("div");
+    row.className = "mp-stats-row" + (isPoss ? " poss" : "");
+    const hNum = document.createElement("span");
+    hNum.className = "mp-stats-num home";
+    hNum.textContent = "0";
+    const mid = document.createElement("div");
+    mid.className = "mp-stats-mid";
+    const lbl = document.createElement("div");
+    lbl.className = "mp-stats-label";
+    lbl.textContent = label;
+    const bar = document.createElement("div");
+    bar.className = "mp-stats-bar";
+    const barH = document.createElement("div");
+    barH.className = "mp-stats-bar-h";
+    barH.style.flex = "1";
+    const barA = document.createElement("div");
+    barA.className = "mp-stats-bar-a";
+    barA.style.flex = "1";
+    bar.appendChild(barH);
+    bar.appendChild(barA);
+    mid.appendChild(lbl);
+    mid.appendChild(bar);
+    const aNum = document.createElement("span");
+    aNum.className = "mp-stats-num away";
+    aNum.textContent = "0";
+    row.appendChild(hNum);
+    row.appendChild(mid);
+    row.appendChild(aNum);
+    return { row, hNum, aNum, barH, barA };
+  };
+  var TmMatchStats = {
+    /**
+     * @param {object} match  Normalised match object (home.playerIds must be populated)
+     * @returns {{ el: HTMLElement, update(replayState): void }}
+     */
+    create(match) {
+      injectStyles34();
+      const el2 = document.createElement("div");
+      el2.className = "mp-stats";
+      const heading = document.createElement("div");
+      heading.className = "mp-stats-heading";
+      heading.textContent = "Stats";
+      el2.appendChild(heading);
+      const rowEls = {};
+      for (const { key, label } of STAT_ROWS) {
+        const r = makeRow(label);
+        rowEls[key] = r;
+        el2.appendChild(r.row);
+      }
+      const possR = makeRow("Possession", true);
+      possR.hNum.textContent = "50%";
+      possR.aNum.textContent = "50%";
+      el2.appendChild(possR.row);
+      const update = (replayState) => {
+        const { home, away, homePoss, awayPoss } = deriveStats(match, replayState);
+        for (const { key } of STAT_ROWS) {
+          const h = home[key], a = away[key];
+          const total = h + a || 1;
+          const hf = Math.round(h / total * 100);
+          rowEls[key].hNum.textContent = String(h);
+          rowEls[key].aNum.textContent = String(a);
+          rowEls[key].barH.style.flex = String(hf);
+          rowEls[key].barA.style.flex = String(100 - hf);
+        }
+        possR.hNum.textContent = homePoss + "%";
+        possR.aNum.textContent = awayPoss + "%";
+        possR.barH.style.flex = String(homePoss);
+        possR.barA.style.flex = String(awayPoss);
+      };
+      return { el: el2, update };
+    }
+  };
+
+  // src/components/match/tm-unity-engine.js
+  var TmUnityEngine = {
+    create({ viewportId, onReady, onClipStart, onClipEnd, onMinuteDone }) {
+      const uw = () => typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
+      let available = false;
+      let ready = false;
+      let playing = false;
+      let activeMinute = null;
+      let pendingMinute = null;
+      let tmStopped = false;
+      let canvasParent = null;
+      let clipStartCounter = 0;
+      let clipEndCounter = 0;
+      const clipsForMinute = (report, minute) => (report[String(minute)] || []).flatMap((evt) => {
+        var _a2;
+        const v = (_a2 = evt.chance) == null ? void 0 : _a2.video;
+        if (!v) return [];
+        return Array.isArray(v) ? v : [v];
+      });
+      const saveCanvas = () => {
+        var _a2;
+        if (!available) return;
+        const webgl = document.querySelector(".webgl-content");
+        if (!webgl || ((_a2 = webgl.parentElement) == null ? void 0 : _a2.id) === "mp-canvas-safe") return;
+        let safe = document.getElementById("mp-canvas-safe");
         if (!safe) {
           safe = document.createElement("div");
-          safe.id = "rnd-unity-safe";
+          safe.id = "mp-canvas-safe";
           safe.style.cssText = "position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;overflow:hidden;pointer-events:none;";
           document.body.appendChild(safe);
         }
-        safe.appendChild(webglContent);
-        console.log("[RND] Canvas saved to safe container");
+        safe.appendChild(webgl);
       };
-      const syncUnityPanelHeights = () => {
-        const vp = document.getElementById("rnd-unity-viewport");
-        if (!vp) return;
-        requestAnimationFrame(() => {
-          const h = vp.offsetHeight;
-          if (!h) return;
-          const feed = document.getElementById("rnd-unity-feed");
-          const stats = document.getElementById("rnd-unity-stats");
-          if (feed) feed.style.maxHeight = h + "px";
-          if (stats) stats.style.maxHeight = h + "px";
-        });
-      };
-      const moveUnityCanvas = () => {
-        if (!state5.available) return;
-        const webglContent = document.querySelector(".webgl-content");
-        if (!webglContent) return;
-        const target = document.getElementById("rnd-unity-viewport");
+      const moveCanvas = () => {
+        if (!available) return;
+        const webgl = document.querySelector(".webgl-content");
+        if (!webgl) return;
+        const target = document.getElementById(viewportId);
         if (!target) return;
-        if (!state5.canvasParent) state5.canvasParent = webglContent.parentElement;
+        if (!canvasParent) canvasParent = webgl.parentElement;
         target.innerHTML = "";
-        target.appendChild(webglContent);
-        webglContent.style.display = "block";
+        target.appendChild(webgl);
+        webgl.style.display = "block";
         const gc2 = document.getElementById("gameContainer");
         if (gc2) {
           gc2.style.width = "100%";
           gc2.style.height = "100%";
           gc2.style.margin = "0";
         }
-        target.style.display = "block";
-        const row = document.querySelector(".rnd-unity-row");
-        if (row) row.classList.remove("rnd-no-unity");
-        console.log("[RND] Canvas moved into viewport");
-        syncUnityPanelHeights();
       };
-      const playUnityClips = (minute) => {
-        const uw = getUW();
-        if (!state5.available || !uw.gameInstance) return;
-        state5.playing = true;
-        uw.gameInstance.SendMessage("ClipsViewerScript", "PlayMinute", JSON.stringify({ id: minute }));
-      };
-      const loadUnityClips = (minute, mData) => {
-        const uw = getUW();
-        if (!state5.available || !uw.gameInstance) return false;
-        const rawEvts = (mData.report || {})[String(minute)] || [];
-        const videoList = [];
-        rawEvts.forEach((evt) => {
-          var _a2;
-          const v = (_a2 = evt.chance) == null ? void 0 : _a2.video;
-          if (!v) return;
-          if (Array.isArray(v)) videoList.push(...v);
-          else videoList.push(v);
-        });
-        if (videoList.length === 0) return false;
-        console.log("[RND] Loading clips for minute", minute, videoList.length, "clips:", videoList);
-        const { queue, groups, postQueue } = buildClipTextQueue(mData, minute);
-        state5.clipTextQueue = queue;
-        state5.clipTextGroups = groups;
-        state5.clipPostQueue = postQueue;
-        state5.clipTextCursor = 0;
-        state5.clipGroupCursor = 0;
-        state5.activeMinute = minute;
-        state5.clipFirstShown = false;
-        state5.clipSkippedFirst = false;
-        state5.pendingMinute = minute;
-        const prepareMsg = JSON.stringify({ queue: videoList, id: minute });
-        console.log("[RND] SendMessage PrepareMinute", prepareMsg);
-        uw.gameInstance.SendMessage("ClipsViewerScript", "PrepareMinute", prepareMsg);
-        return true;
-      };
-      const stopTMReplay = () => {
-        const uw = getUW();
-        if (state5.tmPaused) return;
-        state5.tmPaused = true;
-        if (uw.flash_status) {
-          uw.flash_status.playback_mode = "pause";
-          uw.flash_status.enabled = false;
+      const stopTm = () => {
+        if (tmStopped) return;
+        tmStopped = true;
+        const w = uw();
+        if (w.flash_status) {
+          w.flash_status.playback_mode = "pause";
+          w.flash_status.enabled = false;
         }
-        uw._orig_run_match = uw.run_match;
-        uw.run_match = function() {
+        w._orig_run_match = w.run_match;
+        w.run_match = () => {
         };
-        if (uw.show_next_action_text_entry) {
-          uw._orig_show_next_action_text_entry = uw.show_next_action_text_entry;
-          uw.show_next_action_text_entry = function() {
+        if (w.show_next_action_text_entry) {
+          w._orig_show_next_action_text_entry = w.show_next_action_text_entry;
+          w.show_next_action_text_entry = () => {
           };
         }
-        if (uw.prepare_next_minute) {
-          uw._orig_prepare_next_minute = uw.prepare_next_minute;
-          uw.prepare_next_minute = function() {
+        if (w.prepare_next_minute) {
+          w._orig_prepare_next_minute = w.prepare_next_minute;
+          w.prepare_next_minute = () => {
           };
         }
-        const lastId = setTimeout(() => {
-        }, 0);
-        for (let i = lastId - 20; i <= lastId; i++) clearTimeout(i);
-        console.log("[RND] TM replay stopped completely");
       };
-      const setupStargateOverride = () => {
-        const uw = getUW();
-        uw._orig_stargate = uw.stargate;
-        uw.stargate = function(vars) {
+      const setupStargate = () => {
+        const w = uw();
+        const orig = w.stargate;
+        w.stargate = (vars) => {
+          var _a2;
           if (vars.flash_ready) {
-            state5.ready = true;
+            ready = true;
           }
           if (vars.finished_loading) {
-            const min = vars.finished_loading.id;
-            state5.loadedMinutes.push(min);
-            if (state5.pendingMinute === min) {
-              state5.pendingMinute = null;
-              playUnityClips(min);
-            }
-          }
-          if (vars.finished_clip) {
-            console.log("[RND] finished_clip:", JSON.stringify(vars.finished_clip));
-            if (state5.clipFirstShown && !state5.clipSkippedFirst) {
-              state5.clipSkippedFirst = true;
-              console.log("[RND] Skipping finished_clip for group 0 (already shown on start)");
-            } else {
-              advanceClipTextGroup();
+            const id = vars.finished_loading.id;
+            if (pendingMinute === id) {
+              pendingMinute = null;
+              (_a2 = w.gameInstance) == null ? void 0 : _a2.SendMessage(
+                "ClipsViewerScript",
+                "PlayMinute",
+                JSON.stringify({ id })
+              );
             }
           }
           if (vars.starting_clip) {
-            console.log("[RND] starting_clip:", JSON.stringify(vars.starting_clip));
-            state5.playing = true;
-            if (!state5.clipFirstShown) {
-              state5.clipFirstShown = true;
-              advanceClipTextGroup();
-            }
+            playing = true;
+            onClipStart == null ? void 0 : onClipStart(clipStartCounter++);
+          }
+          if (vars.finished_clip) {
+            onClipEnd == null ? void 0 : onClipEnd(clipEndCounter++);
           }
           if (vars.finished_playing) {
-            const min = vars.finished_playing.id;
-            state5.playedMinutes.push(min);
-            state5.playing = false;
-            console.log("[RND] All clips finished for minute", min);
-            flushClipText();
-            state5.activeMinute = null;
-            callbacks.onAllClipsFinished(min);
+            const id = vars.finished_playing.id;
+            playing = false;
+            activeMinute = null;
+            onMinuteDone == null ? void 0 : onMinuteDone(id);
           }
+          orig == null ? void 0 : orig(vars);
         };
       };
+      const load2 = (report, minute) => {
+        const w = uw();
+        if (!available || !w.gameInstance) return false;
+        const clips = clipsForMinute(report, minute);
+        if (!clips.length) return false;
+        clipStartCounter = 0;
+        clipEndCounter = 0;
+        activeMinute = minute;
+        pendingMinute = minute;
+        w.gameInstance.SendMessage(
+          "ClipsViewerScript",
+          "PrepareMinute",
+          JSON.stringify({ queue: clips, id: minute })
+        );
+        return true;
+      };
+      const sendPauseToggle = () => {
+        var _a2;
+        if (activeMinute !== null) {
+          (_a2 = uw().gameInstance) == null ? void 0 : _a2.SendMessage("ClipsViewerScript", "OnPauseGame");
+        }
+      };
       const init2 = () => {
-        const uw = getUW();
         const poll = setInterval(() => {
-          if (uw.gameInstance || uw.gameInstanceLoaded) {
+          const w = uw();
+          if (w.gameInstance || w.gameInstanceLoaded) {
             clearInterval(poll);
-            state5.available = true;
-            state5.ready = true;
-            stopTMReplay();
-            setupStargateOverride();
-            const vp = document.getElementById("rnd-unity-viewport");
-            if (vp) {
-              moveUnityCanvas();
-              vp.style.display = "block";
-            }
-            callbacks.onUnityReady();
+            available = true;
+            ready = true;
+            stopTm();
+            setupStargate();
+            moveCanvas();
+            onReady == null ? void 0 : onReady();
           }
         }, 500);
         setTimeout(() => clearInterval(poll), 3e4);
       };
       return {
         init: init2,
-        getState: () => state5,
-        resetState: () => {
-          state5 = DEFAULT_STATE();
-        },
-        saveUnityCanvas,
-        moveUnityCanvas,
-        loadUnityClips,
-        updateMatchFeed,
-        updateMatchStats
+        load: load2,
+        sendPauseToggle,
+        moveCanvas,
+        saveCanvas,
+        isAvailable: () => available,
+        isReady: () => ready,
+        isPlaying: () => playing,
+        getActiveMinute: () => activeMinute
       };
     }
   };
 
+  // src/components/match-new/tm-unity-player.js
+  var STYLE_ID46 = "mp-unity-style";
+  var injectStyles35 = () => {
+    if (document.getElementById(STYLE_ID46)) return;
+    const s6 = document.createElement("style");
+    s6.id = STYLE_ID46;
+    s6.textContent = `
+        /* TV frame \u2014 bezel wrapping the canvas */
+        #mp-viewport-wrap {
+            flex: 0 0 auto; align-self: stretch;
+            position: relative;
+            display: flex; align-items: stretch; justify-content: center;
+            background: transparent; overflow: visible; box-sizing: border-box;
+        }
+
+        /* Outer bezel */
+        .mp-tv {
+            display: flex; flex-direction: column; height: 100%;
+            background: linear-gradient(160deg, #2a2a2a 0%, #141414 60%, #1c1c1c 100%);
+            border-radius: 8px 8px 4px 4px;
+            padding: 10px 10px 0;
+            box-sizing: border-box;
+            box-shadow: 0 0 0 1px #111, 0 2px 0 #3a3a3a inset, 0 8px 32px rgba(0,0,0,0.8);
+        }
+
+        /* Screen surround \u2014 position:relative so HUD and click overlay are scoped here */
+        .mp-tv-screen {
+            position: relative; flex: 1;
+            background: #050505;
+            border-radius: 3px 3px 0 0;
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.9), inset 0 1px 3px rgba(0,0,0,0.6);
+        }
+
+        /* Brand bar */
+        .mp-tv-brand {
+            display: flex; align-items: center; justify-content: center;
+            height: 28px; gap: 5px; position: relative;
+        }
+        .mp-tv-fullscreen {
+            position: absolute; right: 8px;
+            background: none; border: none; cursor: pointer;
+            color: #555; padding: 0; line-height: 1;
+            display: flex; align-items: center;
+            transition: color 0.15s;
+        }
+        .mp-tv-fullscreen:hover { color: #aaa; }
+
+        /* Viewport box */
+        #mp-viewport {
+            position: relative; height: 100%;
+            aspect-ratio: 780 / 447;
+            overflow: hidden; background: #000;
+        }
+
+        /* Unity canvas overrides */
+        #mp-viewport .webgl-content {
+            position: relative !important;
+            top: auto !important; left: auto !important;
+            right: auto !important; bottom: auto !important;
+            transform: none !important;
+            width: 100% !important; height: 100% !important;
+            margin: 0 !important; padding: 0 !important;
+            display: block !important;
+        }
+        #mp-viewport #gameContainer {
+            position: relative !important;
+            top: auto !important; left: auto !important;
+            right: auto !important; bottom: auto !important;
+            transform: none !important;
+            width: 100% !important; height: 100% !important;
+            margin: 0 !important; padding: 0 !important;
+        }
+        #mp-viewport #gameContainer .footer { display: none !important; }
+        #mp-viewport #gameContainer button { display: none !important; }
+        #mp-viewport #gameContainer img { display: none !important; }
+        #mp-viewport #gameContainer #unityPlayer { display: none !important; }
+        #mp-viewport canvas {
+            width: 100% !important; height: 100% !important;
+            display: block !important; object-fit: contain;
+        }
+        .mp-no-unity { color: var(--tmu-text-faint); font-size: 11px; text-align: center; padding: 12px; }
+
+        /* Grain overlay */
+        #mp-viewport::after {
+            content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+            background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/></filter><rect width='200' height='200' filter='url(%23n)' opacity='0.35'/></svg>");
+            opacity: 0.045; animation: mp-grain 0.35s steps(1) infinite;
+        }
+        @keyframes mp-grain {
+            0%   { background-position: 0 0; }   20% { background-position: -30px 20px; }
+            40%  { background-position: 20px -40px; } 60% { background-position: -45px 15px; }
+            80%  { background-position: 30px 35px; }
+        }
+
+        /* Transparent click overlay \u2014 covers exact canvas area for pause/play */
+        .mp-canvas-click {
+            position: absolute; inset: 0; z-index: 5; cursor: pointer;
+        }
+
+        /* HUD \u2014 scoreboard inside the screen, always visible, above the click overlay */
+        .mp-hud {
+            position: absolute; top: 10px; left: 10px; z-index: 10;
+            pointer-events: auto; user-select: none;
+        }
+        .mp-hud-main {
+            display: flex; align-items: stretch;
+            background: rgba(8,8,8,0.86); backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.09);
+            font-family: Arial, sans-serif; white-space: nowrap; overflow: hidden;
+        }
+        .mp-hud-team {
+            font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
+            color: #cacaca; text-transform: uppercase;
+            padding: 6px 9px; line-height: 1; display: flex; align-items: center;
+        }
+        .mp-hud-score-block {
+            display: flex; align-items: center; gap: 3px;
+            background: rgba(255,255,255,0.07); padding: 0 9px;
+        }
+        .mp-hud-score-h, .mp-hud-score-a {
+            font-size: 13px; font-weight: 800; color: #fff;
+            min-width: 13px; text-align: center; line-height: 1; padding: 0 1px;
+        }
+        .mp-hud-score-dash {
+            font-size: 11px; color: rgba(255,255,255,0.3);
+        }
+        .mp-hud-vdiv {
+            width: 1px; background: rgba(255,255,255,0.1); align-self: stretch;
+        }
+        .mp-hud-time {
+            font-size: 10px; font-weight: 700; color: #e53935;
+            padding: 6px 8px; letter-spacing: 0.03em;
+            display: flex; align-items: center;
+        }
+        .mp-hud-stats-toggle {
+            background: none; border: none; cursor: pointer;
+            color: rgba(255,255,255,0.35); padding: 6px 7px; font-size: 10px;
+            border-left: 1px solid rgba(255,255,255,0.09);
+            display: flex; align-items: center; line-height: 1;
+            transition: color 0.15s;
+        }
+        .mp-hud-stats-toggle:hover { color: rgba(255,255,255,0.75); }
+
+        /* Stats dropdown panel */
+        .mp-hud-stats-panel {
+            background: rgba(8,8,8,0.92); backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.09); border-top: none;
+            padding: 8px 8px 6px;
+        }
+        .mp-hud-stats-panel[hidden] { display: none; }
+        .mp-hud-stat-row {
+            display: flex; align-items: center; gap: 6px;
+            margin-bottom: 5px; font-family: Arial, sans-serif;
+        }
+        .mp-hud-stat-row:last-child { margin-bottom: 0; }
+        .mp-hud-stat-h, .mp-hud-stat-a {
+            font-size: 11px; font-weight: 800; color: #e0e0e0; width: 18px; line-height: 1;
+        }
+        .mp-hud-stat-h { text-align: right; }
+        .mp-hud-stat-a { text-align: left; }
+        .mp-hud-stat-label {
+            flex: 1; font-size: 9px; color: rgba(255,255,255,0.38);
+            text-align: center; text-transform: uppercase; letter-spacing: 0.05em;
+            min-width: 64px;
+        }
+        .mp-hud-stat-row.poss .mp-hud-stat-h,
+        .mp-hud-stat-row.poss .mp-hud-stat-a { font-size: 10px; }
+
+        /* CSS fullscreen */
+        #mp-viewport-wrap.mp-fs-active {
+            position: fixed; inset: 0; z-index: 99999;
+            max-width: none; background: #000;
+            align-items: center; justify-content: center;
+        }
+        #mp-viewport-wrap.mp-fs-active .mp-tv {
+            width: min(100vw, calc(100vh * (780 / 447)));
+            max-width: none;
+        }
+        #mp-viewport-wrap.mp-fs-active .mp-tv-brand { display: none; }
+    `;
+    document.head.appendChild(s6);
+  };
+  var TmUnityPlayer = {
+    /**
+     * @param {{ onReady, onClipStart, onClipEnd, onMinuteDone }} opts
+     * @returns {{ el, init, load, sendPauseToggle, saveCanvas, isAvailable, isReady, isPlaying, getActiveMinute }}
+     */
+    create({ onReady, onClipStart, onClipEnd, onMinuteDone, onCanvasClick, getHUD, getStats }) {
+      injectStyles35();
+      const wrap = document.createElement("div");
+      wrap.id = "mp-viewport-wrap";
+      const tvBrandSvg = `<svg width="48" height="14" viewBox="0 0 48 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <text x="0" y="11" font-family="Arial,sans-serif" font-size="11" font-weight="700" letter-spacing="1" fill="#888">TM</text>
+            <rect x="23" y="4" width="1" height="6" rx="0.5" fill="#444"/>
+            <text x="27" y="11" font-family="Arial,sans-serif" font-size="11" font-weight="700" letter-spacing="1" fill="#e53935">TV</text>
+        </svg>`;
+      const fullscreenSvg = `<svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1h4v1.5H2.5V4H1V1zm8 0h4v3h-1.5V2.5H9V1zM1 9h1.5v1.5H4V12H1V9zm9.5 1.5H9V12h4V9h-1.5v1.5z"/>
+        </svg>`;
+      const HUD_STATS = [
+        { key: "shots", label: "Shots" },
+        { key: "sot", label: "On target" },
+        { key: "corners", label: "Corners" },
+        { key: "penalties", label: "Penalties" },
+        { key: "yellow", label: "Yellow" },
+        { key: "red", label: "Red" }
+      ];
+      const statsRowsHTML = HUD_STATS.map(
+        ({ label }) => `<div class="mp-hud-stat-row">
+                <span class="mp-hud-stat-h">0</span>
+                <span class="mp-hud-stat-label">${label}</span>
+                <span class="mp-hud-stat-a">0</span>
+            </div>`
+      ).join("") + `<div class="mp-hud-stat-row poss">
+                <span class="mp-hud-stat-h">50%</span>
+                <span class="mp-hud-stat-label">Possession</span>
+                <span class="mp-hud-stat-a">50%</span>
+            </div>`;
+      wrap.innerHTML = `
+            <div class="mp-tv">
+                <div class="mp-tv-screen">
+                    <div id="mp-viewport"><div class="mp-no-unity">Loading Unity\u2026</div></div>
+                    <div class="mp-hud">
+                        <div class="mp-hud-main">
+                            <span class="mp-hud-team mp-hud-home-val"></span>
+                            <div class="mp-hud-score-block">
+                                <span class="mp-hud-score-h mp-hud-h-val">0</span>
+                                <span class="mp-hud-score-dash">-</span>
+                                <span class="mp-hud-score-a mp-hud-a-val">0</span>
+                            </div>
+                            <span class="mp-hud-team mp-hud-away-val"></span>
+                            <div class="mp-hud-vdiv"></div>
+                            <span class="mp-hud-time mp-hud-time-val">00:00</span>
+                            <button class="mp-hud-stats-toggle" title="Stats">\u25BE</button>
+                        </div>
+                        <div class="mp-hud-stats-panel" hidden>${statsRowsHTML}</div>
+                    </div>
+                    <div class="mp-canvas-click"></div>
+                </div>
+                <div class="mp-tv-brand">
+                    ${tvBrandSvg}
+                    <button class="mp-tv-fullscreen" title="Fullscreen">${fullscreenSvg}</button>
+                </div>
+            </div>`;
+      const hudHome = wrap.querySelector(".mp-hud-home-val");
+      const hudAway = wrap.querySelector(".mp-hud-away-val");
+      const hudH = wrap.querySelector(".mp-hud-h-val");
+      const hudA = wrap.querySelector(".mp-hud-a-val");
+      const hudTime = wrap.querySelector(".mp-hud-time-val");
+      const statsPanel = wrap.querySelector(".mp-hud-stats-panel");
+      const statsTgl = wrap.querySelector(".mp-hud-stats-toggle");
+      const statHEls = [...wrap.querySelectorAll(".mp-hud-stat-h")];
+      const statAEls = [...wrap.querySelectorAll(".mp-hud-stat-a")];
+      const STAT_KEYS = ["shots", "sot", "corners", "penalties", "yellow", "red"];
+      statsTgl.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const opening = statsPanel.hasAttribute("hidden");
+        if (opening) statsPanel.removeAttribute("hidden");
+        else statsPanel.setAttribute("hidden", "");
+        statsTgl.textContent = opening ? "\u25B4" : "\u25BE";
+      });
+      const updateHUD = () => {
+        if (getHUD) {
+          const { homeName, awayName, homeScore, awayScore, minute, seconds } = getHUD();
+          hudHome.textContent = homeName;
+          hudAway.textContent = awayName;
+          hudH.textContent = homeScore;
+          hudA.textContent = awayScore;
+          const mm = String(minute).padStart(2, "0");
+          const ss = String(seconds).padStart(2, "0");
+          hudTime.textContent = `${mm}:${ss}`;
+        }
+        if (getStats && !statsPanel.hasAttribute("hidden")) {
+          const { home, away, homePoss, awayPoss } = getStats();
+          STAT_KEYS.forEach((key, i) => {
+            statHEls[i].textContent = String(home[key]);
+            statAEls[i].textContent = String(away[key]);
+          });
+          statHEls[6].textContent = homePoss + "%";
+          statAEls[6].textContent = awayPoss + "%";
+        }
+      };
+      wrap.querySelector(".mp-canvas-click").addEventListener("click", () => {
+        onCanvasClick == null ? void 0 : onCanvasClick();
+      });
+      const onFsKey = (e) => {
+        if (e.key === "Escape") exitFs();
+      };
+      const enterFs = () => {
+        wrap.classList.add("mp-fs-active");
+        document.addEventListener("keydown", onFsKey);
+      };
+      const exitFs = () => {
+        wrap.classList.remove("mp-fs-active");
+        document.removeEventListener("keydown", onFsKey);
+      };
+      wrap.querySelector(".mp-tv-fullscreen").addEventListener("click", () => {
+        wrap.classList.contains("mp-fs-active") ? exitFs() : enterFs();
+      });
+      const engine = TmUnityEngine.create({
+        viewportId: "mp-viewport",
+        onReady,
+        onClipStart,
+        onClipEnd,
+        onMinuteDone
+      });
+      return {
+        el: wrap,
+        init: () => engine.init(),
+        load: (report, minute) => engine.load(report, minute),
+        sendPauseToggle: () => engine.sendPauseToggle(),
+        saveCanvas: () => engine.saveCanvas(),
+        isAvailable: () => engine.isAvailable(),
+        isReady: () => engine.isReady(),
+        isPlaying: () => engine.isPlaying(),
+        getActiveMinute: () => engine.getActiveMinute(),
+        updateHUD
+      };
+    }
+  };
+
+  // src/components/match-new/tm-replay-controller.js
+  var TmReplayController = {
+    /**
+     * @param {{
+     *   match:           object,
+     *   maximumMinute:   number,
+     *   schedule:        object,
+     *   unity:           object,       // TmUnityPlayer instance
+     *   postDelay?:      number,
+     *   onTick?:         (replayState) => void,
+     *   onMinuteAdvanced?: (replayState) => void,
+     *   onEnded?:        (replayState) => void,
+     * }} opts
+     */
+    create(opts) {
+      var _a2;
+      const {
+        match,
+        maximumMinute,
+        schedule,
+        unity,
+        postDelay = 3,
+        clipRevealDelay = 1,
+        initialMode = "all",
+        onTick,
+        onMinuteAdvanced,
+        onEnded
+      } = opts;
+      const allPlayMinutes = Object.keys(match.plays).map(Number).sort((a, b) => a - b);
+      const keyPlayMinutes = allPlayMinutes.filter(
+        (min) => (match.plays[String(min)] || []).some((action) => action.severity === 1)
+      );
+      const initialPlayMinutes = initialMode === "key" ? keyPlayMinutes : allPlayMinutes;
+      const replayState = {
+        mode: initialMode,
+        playMinutes: initialPlayMinutes,
+        schedule,
+        playMinuteIndex: 0,
+        currentMinute: (_a2 = initialPlayMinutes[0]) != null ? _a2 : 0,
+        seconds: 0,
+        currentActionIndex: -1,
+        currentActionLineIndex: -1,
+        committedActionIndex: -1,
+        committedClipIndex: -1,
+        playing: false,
+        ended: initialPlayMinutes.length === 0,
+        tickTimer: null,
+        advanceTimer: null,
+        clipRevealTimer: null,
+        speed: 1e3
+      };
+      const snapshot = () => ({
+        currentMinute: replayState.currentMinute,
+        seconds: replayState.seconds,
+        currentActionIndex: replayState.currentActionIndex,
+        currentActionLineIndex: replayState.currentActionLineIndex,
+        committedActionIndex: replayState.committedActionIndex,
+        committedClipIndex: replayState.committedClipIndex,
+        playing: replayState.playing,
+        ended: replayState.ended,
+        mode: replayState.mode,
+        unityActive: unity.getActiveMinute() !== null
+      });
+      let clipMap = [];
+      const OUTCOME_ACTIONS = /* @__PURE__ */ new Set(["yellow", "yellowRed", "red", "injury", "subIn"]);
+      const buildClipMap = (minute) => {
+        clipMap = [];
+        for (const action of match.plays[String(minute)] || []) {
+          const isGoalPlay = action.outcome === "goal";
+          const goalClipIdx = isGoalPlay ? (() => {
+            const idx = action.clips.findIndex((c) => /^goal_/.test(c.video));
+            return idx !== -1 ? idx : action.clips.length - 1;
+          })() : -1;
+          let actionLineIndex = 0;
+          action.clips.forEach((clip, clipIdx) => {
+            let clipHasLines = false;
+            for (const line of clip.text) {
+              if (!line.trim()) {
+                actionLineIndex++;
+                continue;
+              }
+              actionLineIndex++;
+              clipHasLines = true;
+            }
+            const hasOutcome = isGoalPlay ? clipIdx === goalClipIdx : clip.actions.some((a) => OUTCOME_ACTIONS.has(a.action));
+            const entry = {
+              actionReportIndex: action.reportEventIndex,
+              lastLineIndex: clipHasLines ? actionLineIndex - 1 : -1,
+              hasOutcome
+            };
+            clipMap.push(clipHasLines || hasOutcome ? entry : null);
+          });
+        }
+      };
+      const tick = () => {
+        if (!replayState.playing || replayState.ended) return;
+        if (unity.getActiveMinute() !== null) {
+          replayState.seconds = Math.min(replayState.seconds + 1, 59);
+          onTick == null ? void 0 : onTick(snapshot());
+          replayState.tickTimer = setTimeout(tick, replayState.speed);
+          return;
+        }
+        replayState.seconds++;
+        const entries = replayState.schedule[replayState.currentMinute] || [];
+        for (const entry of entries) {
+          if (entry.seconds === replayState.seconds) {
+            replayState.currentActionIndex = entry.actionIndex;
+            replayState.currentActionLineIndex = entry.lineIndex;
+            replayState.committedActionIndex = entry.actionIndex;
+          }
+        }
+        onTick == null ? void 0 : onTick(snapshot());
+        const lastScheduledSecond = entries.length ? entries[entries.length - 1].seconds : -1;
+        if (replayState.seconds >= 60 || replayState.seconds > lastScheduledSecond + postDelay) {
+          advanceMinute();
+          return;
+        }
+        replayState.tickTimer = setTimeout(tick, replayState.speed);
+      };
+      const advanceMinute = () => {
+        clearTimeout(replayState.tickTimer);
+        clearTimeout(replayState.advanceTimer);
+        clearTimeout(replayState.clipRevealTimer);
+        replayState.tickTimer = null;
+        replayState.advanceTimer = null;
+        replayState.clipRevealTimer = null;
+        if (replayState.playMinuteIndex + 1 >= replayState.playMinutes.length) {
+          replayState.currentMinute = maximumMinute;
+          replayState.seconds = 59;
+          replayState.currentActionIndex = 999;
+          replayState.currentActionLineIndex = 999;
+          replayState.committedActionIndex = 999;
+          replayState.committedClipIndex = 999;
+          replayState.playing = false;
+          replayState.ended = true;
+          onEnded == null ? void 0 : onEnded(snapshot());
+          return;
+        }
+        replayState.playMinuteIndex++;
+        replayState.currentMinute = replayState.playMinutes[replayState.playMinuteIndex];
+        replayState.seconds = 0;
+        replayState.currentActionIndex = -1;
+        replayState.currentActionLineIndex = -1;
+        replayState.committedActionIndex = -1;
+        replayState.committedClipIndex = -1;
+        clipMap = [];
+        if (unity.isAvailable() && unity.isReady()) {
+          const loaded = unity.load(match.report, replayState.currentMinute);
+          if (loaded) buildClipMap(replayState.currentMinute);
+        }
+        onMinuteAdvanced == null ? void 0 : onMinuteAdvanced(snapshot());
+        replayState.tickTimer = setTimeout(tick, replayState.speed);
+      };
+      const onClipStart = (clipIndex) => {
+        const entry = clipMap[clipIndex];
+        if (!entry) return;
+        clearTimeout(replayState.clipRevealTimer);
+        replayState.clipRevealTimer = setTimeout(() => {
+          replayState.clipRevealTimer = null;
+          replayState.currentActionIndex = entry.actionReportIndex;
+          replayState.currentActionLineIndex = entry.lastLineIndex;
+          onTick == null ? void 0 : onTick(snapshot());
+        }, clipRevealDelay * 1e3);
+      };
+      const onClipEnd = (clipIndex) => {
+        replayState.committedClipIndex = clipIndex;
+        const entry = clipMap[clipIndex];
+        if (entry == null ? void 0 : entry.hasOutcome) {
+          replayState.committedActionIndex = entry.actionReportIndex;
+        }
+        onTick == null ? void 0 : onTick(snapshot());
+      };
+      const onUnityMinuteDone = () => {
+        clearTimeout(replayState.tickTimer);
+        replayState.tickTimer = null;
+        replayState.currentActionIndex = 999;
+        replayState.currentActionLineIndex = 999;
+        replayState.committedActionIndex = 999;
+        replayState.committedClipIndex = 999;
+        onTick == null ? void 0 : onTick(snapshot());
+        replayState.advanceTimer = setTimeout(advanceMinute, postDelay * 1e3);
+      };
+      const play = () => {
+        if (replayState.ended || replayState.playing) return;
+        replayState.playing = true;
+        if (unity.getActiveMinute() !== null) unity.sendPauseToggle();
+        onTick == null ? void 0 : onTick(snapshot());
+        tick();
+      };
+      const pause = () => {
+        if (!replayState.playing) return;
+        replayState.playing = false;
+        clearTimeout(replayState.tickTimer);
+        clearTimeout(replayState.advanceTimer);
+        clearTimeout(replayState.clipRevealTimer);
+        replayState.tickTimer = null;
+        replayState.advanceTimer = null;
+        replayState.clipRevealTimer = null;
+        if (unity.isPlaying()) unity.sendPauseToggle();
+        onTick == null ? void 0 : onTick(snapshot());
+      };
+      const toggle = () => replayState.playing ? pause() : play();
+      const skip = () => {
+        clearTimeout(replayState.tickTimer);
+        clearTimeout(replayState.advanceTimer);
+        clearTimeout(replayState.clipRevealTimer);
+        replayState.tickTimer = null;
+        replayState.advanceTimer = null;
+        replayState.clipRevealTimer = null;
+        replayState.playing = false;
+        if (unity.isPlaying()) unity.sendPauseToggle();
+        replayState.currentMinute = maximumMinute;
+        replayState.seconds = 59;
+        replayState.currentActionIndex = 999;
+        replayState.currentActionLineIndex = 999;
+        replayState.committedActionIndex = 999;
+        replayState.committedClipIndex = 999;
+        replayState.playMinuteIndex = replayState.playMinutes.length;
+        replayState.ended = true;
+        onEnded == null ? void 0 : onEnded(snapshot());
+      };
+      const setMode = (newMode) => {
+        var _a3;
+        if (replayState.mode === newMode) return;
+        clearTimeout(replayState.tickTimer);
+        clearTimeout(replayState.advanceTimer);
+        clearTimeout(replayState.clipRevealTimer);
+        replayState.tickTimer = null;
+        replayState.advanceTimer = null;
+        replayState.clipRevealTimer = null;
+        replayState.playing = false;
+        if (unity.isPlaying()) unity.sendPauseToggle();
+        replayState.mode = newMode;
+        replayState.playMinutes = newMode === "key" ? keyPlayMinutes : allPlayMinutes;
+        replayState.playMinuteIndex = 0;
+        replayState.currentMinute = (_a3 = replayState.playMinutes[0]) != null ? _a3 : 0;
+        replayState.seconds = 0;
+        replayState.currentActionIndex = -1;
+        replayState.currentActionLineIndex = -1;
+        replayState.committedActionIndex = -1;
+        replayState.committedClipIndex = -1;
+        replayState.ended = replayState.playMinutes.length === 0;
+        clipMap = [];
+        onTick == null ? void 0 : onTick(snapshot());
+      };
+      const destroy = () => {
+        clearTimeout(replayState.tickTimer);
+        clearTimeout(replayState.advanceTimer);
+        clearTimeout(replayState.clipRevealTimer);
+        replayState.playing = false;
+      };
+      return { play, pause, toggle, skip, destroy, setMode, onClipStart, onClipEnd, onUnityMinuteDone, getState: snapshot };
+    }
+  };
+
+  // src/components/shared/tm-player-row.js
+  var STYLE_ID47 = "tm-player-row-style";
+  function injectTmPlayerRowStyles() {
+    if (document.getElementById(STYLE_ID47)) return;
+    const s6 = document.createElement("style");
+    s6.id = STYLE_ID47;
+    s6.textContent = `
+        .tm-pr {
+            display: flex; align-items: center; gap: 5px;
+            padding: 3px 6px 3px 0; min-width: 0;
+            transition: opacity .2s;
+        }
+        .tm-pr-bar {
+            flex-shrink: 0;
+            width: 4px; min-height: 18px; border-radius: 2px;
+            align-self: stretch;
+        }
+        .tm-pr-no {
+            flex-shrink: 0; width: 22px;
+            font-size: 10px; color: var(--tmu-text-muted);
+            text-align: right; font-variant-numeric: tabular-nums;
+        }
+        .tm-pr-pos { flex-shrink: 0; }
+        .tm-pr-name {
+            flex: 1; min-width: 0;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            font-size: 12px; font-weight: 600;
+            color: var(--tmu-text-inverse);
+            transition: color .2s;
+        }
+        .tm-pr-icon {
+            flex-shrink: 0; width: 12px;
+            font-size: 10px; text-align: center;
+            transition: color .2s;
+        }
+        .tm-pr-stats {
+            flex-shrink: 0; display: flex; align-items: center; gap: 4px;
+        }
+        .tm-pr-stars { font-size: 9px; letter-spacing: -1px; }
+        .tm-pr-rec, .tm-pr-r5, .tm-pr-rtn {
+            font-size: 10px; font-weight: 700; font-variant-numeric: tabular-nums;
+            flex-shrink: 0;
+        }
+        .tm-pr-rec { min-width: 30px; text-align: right; }
+        .tm-pr-r5  { min-width: 28px; text-align: right; }
+        .tm-pr-rtn { min-width: 24px; text-align: right; }
+
+        /* states */
+        .tm-pr[data-state="active"] { opacity: 1; }
+        .tm-pr[data-state="sub-in"] { opacity: 1; }
+        .tm-pr[data-state="sub-in"] .tm-pr-icon { color: #4caf50; }
+        .tm-pr[data-state="bench"]  { opacity: 0.4; }
+        .tm-pr[data-state="off"]    { opacity: 0.4; }
+        .tm-pr[data-state="off"] .tm-pr-name  { color: var(--tmu-danger); }
+        .tm-pr[data-state="off"] .tm-pr-icon  { color: var(--tmu-danger); }
+    `;
+    document.head.appendChild(s6);
+  }
+  function posColor(posKey2) {
+    if (!posKey2) return "var(--tmu-text-dim)";
+    const meta = TmConst.POSITION_MAP[(posKey2 || "").toLowerCase()];
+    if (meta == null ? void 0 : meta.color) return meta.color;
+    const v = TmPosition.variant(posKey2);
+    const map = { gk: "var(--tmu-success-strong)", d: "var(--tmu-info-dark)", m: "var(--tmu-warning)", f: "var(--tmu-danger-deep)" };
+    return map[v] || "var(--tmu-text-dim)";
+  }
+  function cleanName(p) {
+    var _a2, _b, _c, _d, _e, _f;
+    const n = (p.lastname || p.name || "?").trim();
+    if (/^['"\d]/.test(n))
+      return ((_c = (_b = (_a2 = p.positions) == null ? void 0 : _a2.find((pos) => pos.preferred)) == null ? void 0 : _b.key) == null ? void 0 : _c.toUpperCase()) || ((_f = (_e = (_d = p.positions) == null ? void 0 : _d[0]) == null ? void 0 : _e.key) == null ? void 0 : _f.toUpperCase()) || (p.fp || "").split(",")[0].toUpperCase() || "?";
+    return n;
+  }
+  var ICONS3 = { "sub-in": "\u2191", "off": "\u2193", "active": "", "bench": "" };
+  var TmPlayerRow = {
+    /**
+     * Build a new row element.
+     * @param {object} player   — must have: id, name|lastname, no, position|fp
+     * @param {object} opts
+     *   @param {string}  [opts.posKey]  — explicit position key (falls back to player.position / player.fp)
+     *   @param {string}  [opts.state]   — 'active' | 'bench' | 'off' | 'sub-in'  (default: 'active')
+     * @returns {HTMLDivElement}
+     */
+    build(player2, { posKey: posKey2, state: state5 = "active" } = {}) {
+      var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j;
+      injectTmPlayerRowStyles();
+      const raw = posKey2 || player2.position || "";
+      const slot = /^sub/i.test(raw) ? "" : raw.toLowerCase();
+      const pref = (_a2 = player2.positions) == null ? void 0 : _a2.filter((p) => p.preferred);
+      const lead = (pref == null ? void 0 : pref.length) ? pref[0] : (_b = player2.positions) == null ? void 0 : _b[0];
+      const barColor3 = slot ? posColor(slot) : (lead == null ? void 0 : lead.color) || posColor((lead == null ? void 0 : lead.key) || "");
+      const chipPositions = slot ? [slot] : (pref == null ? void 0 : pref.length) ? pref : lead ? [lead] : [];
+      const el2 = document.createElement("div");
+      el2.className = "tm-pr";
+      el2.dataset.state = state5;
+      el2.dataset.id = String((_d = (_c = player2.id) != null ? _c : player2.player_id) != null ? _d : "");
+      const bar = document.createElement("span");
+      bar.className = "tm-pr-bar";
+      bar.style.background = barColor3;
+      const no = document.createElement("span");
+      no.className = "tm-pr-no";
+      no.textContent = player2.no != null ? player2.no : "\u2212";
+      const posWrap = document.createElement("span");
+      posWrap.className = "tm-pr-pos";
+      posWrap.innerHTML = chipPositions.length ? TmPosition.chip(chipPositions) : "";
+      const name = document.createElement("span");
+      name.className = "tm-pr-name";
+      name.textContent = cleanName(player2);
+      el2.append(bar, no, posWrap, name);
+      const posId = slot ? (_e = TmConst.POSITION_MAP[slot]) == null ? void 0 : _e.id : null;
+      const posRating = posId != null ? (_f = player2.positions) == null ? void 0 : _f.find((p) => p.id === posId) : (_i = (_g = player2.positions) == null ? void 0 : _g.find((p) => p.preferred)) != null ? _i : (_h = player2.positions) == null ? void 0 : _h[0];
+      const rec = (posRating == null ? void 0 : posRating.rec) != null && Number.isFinite(+posRating.rec) ? +posRating.rec : null;
+      const r5 = (posRating == null ? void 0 : posRating.r5) != null && Number.isFinite(+posRating.r5) ? +posRating.r5 : null;
+      const rtn = player2.routine > 0 && Number.isFinite(+player2.routine) ? +player2.routine : null;
+      if (rec != null || r5 != null || rtn != null) {
+        const stats = document.createElement("span");
+        stats.className = "tm-pr-stats";
+        if (rec != null) {
+          const s6 = document.createElement("span");
+          s6.className = "tm-pr-stars";
+          s6.innerHTML = TmStars.recommendation(rec, "") || "";
+          stats.appendChild(s6);
+          const rv = document.createElement("span");
+          rv.className = "tm-pr-rec";
+          rv.style.color = TmUtils.getColor(rec, TmConst.REC_THRESHOLDS);
+          rv.textContent = rec.toFixed(2);
+          stats.appendChild(rv);
+        }
+        if (r5 != null) {
+          const rv = document.createElement("span");
+          rv.className = "tm-pr-r5";
+          rv.style.color = TmUtils.getColor(r5, TmConst.R5_THRESHOLDS);
+          rv.textContent = TmUtils.formatR5(r5);
+          stats.appendChild(rv);
+        }
+        if (rtn != null) {
+          const rv = document.createElement("span");
+          rv.className = "tm-pr-rtn";
+          rv.style.color = TmUtils.getColor(rtn, TmConst.RTN_THRESHOLDS);
+          rv.textContent = rtn.toFixed(1);
+          stats.appendChild(rv);
+        }
+        el2.appendChild(stats);
+      }
+      const icon = document.createElement("span");
+      icon.className = "tm-pr-icon";
+      icon.textContent = (_j = ICONS3[state5]) != null ? _j : "";
+      el2.appendChild(icon);
+      return el2;
+    },
+    /**
+     * Update the state of an existing row element (no DOM rebuild).
+     * @param {HTMLElement} el
+     * @param {string}      state  — 'active' | 'bench' | 'off' | 'sub-in'
+     */
+    setState(el2, state5) {
+      var _a2;
+      if (!el2 || el2.dataset.state === state5) return;
+      el2.dataset.state = state5;
+      const icon = el2.querySelector(".tm-pr-icon");
+      if (icon) icon.textContent = (_a2 = ICONS3[state5]) != null ? _a2 : "";
+    },
+    /**
+     * Refresh bar color and pos chip after player.positions is enriched.
+     * Does not rebuild the element — only updates bar bg and posWrap innerHTML.
+     */
+    refreshPos(el2, player2) {
+      var _a2, _b;
+      if (!el2) return;
+      const raw = player2.position || "";
+      const slot = /^sub/i.test(raw) ? "" : raw.toLowerCase();
+      const pref = (_a2 = player2.positions) == null ? void 0 : _a2.filter((p) => p.preferred);
+      const lead = (pref == null ? void 0 : pref.length) ? pref[0] : (_b = player2.positions) == null ? void 0 : _b[0];
+      const barColor3 = slot ? posColor(slot) : (lead == null ? void 0 : lead.color) || posColor((lead == null ? void 0 : lead.key) || "");
+      const chipPositions = slot ? [slot] : (pref == null ? void 0 : pref.length) ? pref : lead ? [lead] : [];
+      const bar = el2.querySelector(".tm-pr-bar");
+      const posWrap = el2.querySelector(".tm-pr-pos");
+      if (bar) bar.style.background = barColor3;
+      if (posWrap) posWrap.innerHTML = chipPositions.length ? TmPosition.chip(chipPositions) : "";
+    }
+  };
+
+  // src/components/tactics/tm-tactics-styles.js
+  var STYLE_ID48 = "tmtc-style";
+  function injectTacticsStyles() {
+    if (document.getElementById(STYLE_ID48)) return;
+    const pitchSvg = [
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 420">`,
+      `<rect x="0" y="0" width="280" height="420" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="2"/>`,
+      // corner arcs
+      `<path d="M2,18 A16,16 0 0,0 18,2" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+      `<path d="M262,2 A16,16 0 0,0 278,18" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+      `<path d="M2,402 A16,16 0 0,1 18,418" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+      `<path d="M262,418 A16,16 0 0,1 278,402" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+      // center line + circle
+      `<line x1="2" y1="210" x2="278" y2="210" stroke="rgba(255,255,255,0.22)" stroke-width="1.5"/>`,
+      `<circle cx="140" cy="210" r="52" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="1.5"/>`,
+      `<circle cx="140" cy="210" r="3" fill="rgba(255,255,255,0.35)"/>`,
+      // top penalty area + goal area
+      `<path d="M56,2 L56,74 L224,74 L224,2" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+      `<line x1="95" y1="2" x2="95" y2="28" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+      `<line x1="95" y1="28" x2="185" y2="28" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+      `<line x1="185" y1="2" x2="185" y2="28" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+      `<circle cx="140" cy="68" r="2.5" fill="rgba(255,255,255,0.3)"/>`,
+      // bottom penalty area + goal area
+      `<path d="M56,418 L56,346 L224,346 L224,418" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+      `<line x1="95" y1="392" x2="95" y2="418" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+      `<line x1="95" y1="392" x2="185" y2="392" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+      `<line x1="185" y1="392" x2="185" y2="418" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
+      `<circle cx="140" cy="352" r="2.5" fill="rgba(255,255,255,0.3)"/>`,
+      `</svg>`
+    ].join("");
+    const pitchBg = `url("data:image/svg+xml,${encodeURIComponent(pitchSvg)}")`;
+    const s6 = document.createElement("style");
+    s6.id = STYLE_ID48;
+    s6.textContent = `
+        /* \u2500\u2500 full-width override \u2500\u2500 */
+        body:has(.tmtc-page) .tmvu-main {
+            width: calc(100% - 24px) !important;
+            max-width: none !important;
+            overflow-x: clip !important;
+            overflow-y: visible !important;
+        }
+        body:has(.tmtc-page) .tmvu-main * {
+            --sticky-unblock: 1;
+        }
+        /* Ensure nothing between body and field-col sets overflow-y */
+        body:has(.tmtc-page) .tmu-page-section-stack,
+        body:has(.tmtc-page) .tmtc-main-grid,
+        body:has(.tmtc-page) .tmtc-main-left,
+        body:has(.tmtc-page) .tmtc-lineup-2col {
+            overflow: visible;
+        }
+
+        /* \u2500\u2500 page layout \u2500\u2500 */
+        .tmtc-page {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            flex: 1 1 0;
+            gap: var(--tmu-space-lg);
+        }
+
+        /* \u2500\u2500 3-col main grid \u2500\u2500 */
+        .tmtc-main-grid {
+            display: flex;
+            gap: var(--tmu-space-md);
+            align-items: stretch;
+        }
+        .tmtc-main-left {
+            flex: 0 0 auto;
+            flex-shrink: 0;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .tmtc-main-mid {
+            flex: 1 1 0;
+            min-width: 0;
+        }
+        .tmtc-main-right {
+            flex: 0 0 400px;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: var(--tmu-space-sm);
+        }
+        .tmtc-orders-host {
+            min-width: 0;
+        }
+
+        /* \u2500\u2500 formation grid \u2500\u2500 */
+        .tmtc-lineup-2col {
+            display: flex;
+            gap: var(--tmu-space-md);
+            align-items: flex-start;
+            height: 100%;
+        }
+        .tmtc-field-col {
+            flex: 0 0 auto;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--tmu-space-sm);
+            position: sticky;
+            top: 160px;
+            align-self: flex-start;
+        }
+        .tmtc-squad-col {
+            flex: 1 1 0;
+            min-width: 0;
+            height: 100%;
+            overflow-y: auto;
+        }
+        .tmtc-field {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            flex: 0 0 auto;
+            height: calc(100dvh - 160px);
+            aspect-ratio: 2 / 3;
+            background-color: rgb(19 19 19);
+            background-image: ${pitchBg};
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
+        }
+        .tmtc-field-spacer {
+            flex: 0 0 8%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 8px;
+        }
+        .tmtc-fob {
+            display: flex;
+            align-items: stretch;
+            width: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .tmtc-fob-formation,
+        .tmtc-fob-item {
+            flex: 1 1 25%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1px;
+            padding: 5px 4px;
+            background: rgba(0,0,0,0.42);
+        }
+        .tmtc-fob-formation:not(:last-child),
+        .tmtc-fob-item:not(:last-child) {
+            border-right: 1px solid rgba(255,255,255,0.07);
+        }
+        .tmtc-fob-formation {
+            font-size: var(--tmu-font-xs);
+            font-weight: 800;
+            color: rgba(255,255,255,0.88);
+            letter-spacing: .06em;
+        }
+        .tmtc-fob-sep { display: none; }
+        .tmtc-fob-label {
+            font-size: 9px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.30);
+            text-transform: uppercase;
+            letter-spacing: .08em;
+        }
+        .tmtc-fob-value {
+            font-size: var(--tmu-font-xs);
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+        .tmtc-field-line {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            height: 16.66666%;
+            justify-content: center;
+        }
+        .tmtc-line {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 4px;
+        }
+        .tmtc-slot-spacer {
+            /* empty cell to maintain 5-col grid alignment */
+        }
+        .tmtc-line-label {
+            font-size: var(--tmu-font-2xs);
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.4);
+            text-align: center;
+        }
+        .tmtc-slot {
+            flex: 1 1 0;
+            min-width: 48px;
+            max-width: 100px;
+            padding: var(--tmu-space-xs) 4px;
+            border-radius: var(--tmu-space-sm);
+            background: rgba(0,0,0,0.45);
+            backdrop-filter: blur(2px);
+            border: 1px solid rgba(255,255,255,0.14);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1px;
+            text-align: center;
+            text-decoration: none;
+            cursor: grab;
+            user-select: none;
+            transition: background .12s, border-color .12s;
+        }
+        .tmtc-slot[draggable="true"]:active { cursor: grabbing; }
+        .tmtc-slot:hover:not(.tmtc-slot-empty) {
+            background: rgba(0,0,0,0.65);
+            border-color: rgba(255,255,255,0.28);
+        }
+        .tmtc-slot-empty {
+            opacity: .35;
+            min-height: 72px; /* match populated slot height so empty zones don't collapse */
+        }
+        .tmtc-slot-no {
+            font-size: var(--tmu-font-xs);
+            font-weight: 700;
+            color: color-mix(in srgb, var(--tmu-text-faint) 70%, white);
+            font-variant-numeric: tabular-nums;
+            letter-spacing: .02em;
+        }
+        .tmtc-slot-name {
+            font-size: var(--tmu-font-xs);
+            font-weight: 600;
+            color: var(--tmu-text-inverse);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+        .tmtc-slot-pos {
+            font-key: var(--tmu-font-2xs);
+        }
+        .tmtc-slot-meta {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            min-height: 12px;
+        }
+        .tmtc-slot-rec {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .tmtc-rec-stars {
+            display: inline-flex;
+            align-items: center;
+            letter-spacing: .4px;
+        }
+        .tmtc-rec-stars-sm {
+            font-size: 10px;
+        }
+        .tmtc-rec-stars-xs {
+            font-size: 9px;
+        }
+        .tmtc-slot-rec-empty {
+            font-size: var(--tmu-font-2xs);
+            color: var(--tmu-text-dim);
+        }
+        .tmtc-slot-rtn {
+            font-size: 10px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            line-height: 1.1;
+            letter-spacing: .02em;
+        }
+        .tmtc-slot-mood {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 14px;
+            height: 14px;
+            border-radius: 999px;
+            font-size: 10px;
+            line-height: 1;
+            border: 1px solid rgba(255,255,255,0.42);
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.22);
+            transform: translateY(-1px);
+        }
+        .tmtc-slot-mood-1 {
+            background: #f3db78;
+            color: #624800;
+        }
+        .tmtc-slot-mood-2 {
+            background: #ebb95e;
+            color: #6a3d00;
+        }
+        .tmtc-slot-mood-3 {
+            background: #ee8e57;
+            color: #641d00;
+        }
+        .tmtc-slot-mood-4 {
+            background: #df5948;
+            color: #ffffff;
+        }
+        .tmtc-slot-poskey {
+            font-size: var(--tmu-font-2xs);
+            color: var(--tmu-text-muted);
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+
+        /* \u2500\u2500 bench (below field) \u2500\u2500 */
+        .tmtc-bench-col {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 4px;
+            margin-bottom: var(--tmu-space-sm);
+        }
+        .tmtc-bench-section-head {
+            grid-column: 1 / -1;
+            font-size: var(--tmu-font-2xs);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: var(--tmu-text-panel-label);
+            padding-top: var(--tmu-space-xs);
+        }
+        .tmtc-bench-slot {
+            padding: 3px 4px;
+            border-radius: var(--tmu-space-sm);
+            background: var(--tmu-surface-dark-soft);
+            border: 1px dashed var(--tmu-border-faint);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1px;
+            min-height: 42px;
+            text-align: center;
+            cursor: default;
+        }
+        .tmtc-bench-slot:hover {
+            background: var(--tmu-surface-tab-hover);
+        }
+        .tmtc-bench-slot.has-player {
+            border-style: solid;
+            border-color: var(--tmu-border-embedded);
+        }
+        .tmtc-bench-role {
+            font-size: var(--tmu-font-2xs);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: var(--tmu-text-panel-label);
+            line-height: 1.2;
+        }
+        .tmtc-bench-name {
+            font-size: var(--tmu-font-2xs);
+            font-weight: 600;
+            color: var(--tmu-text-inverse);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+        .tmtc-player-flag {
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 4px;
+            flex-shrink: 0;
+        }
+        .tmtc-bench-empty {
+            font-size: var(--tmu-font-xs);
+            color: var(--tmu-text-disabled);
+            font-style: italic;
+        }
+
+        .tmtc-row-bench-placeholder td {
+            opacity: .55;
+            font-style: italic;
+            cursor: default;
+        }
+        .tmtc-row-bench-placeholder.tmtc-drag-over td {
+            opacity: 1;
+            background: rgba(77,171,247,0.08);
+        }
+        /* \u2500\u2500 player list \u2500\u2500 */
+        .tmtc-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--tmu-space-sm);
+            align-items: center;
+            margin-bottom: var(--tmu-space-md);
+        }
+        .tmtc-filter-group {
+            display: flex;
+            gap: 2px;
+        }
+        .tmtc-filter-sep {
+            width: 1px;
+            background: var(--tmu-border-soft-alpha);
+            align-self: stretch;
+            margin: 0 var(--tmu-space-xs);
+        }
+
+        /* \u2500\u2500 settings \u2500\u2500 */
+        .tmtc-settings-rows {
+            display: flex;
+            flex-direction: column;
+            gap: var(--tmu-space-sm);
+        }
+        .tmtc-setting-row {
+            flex-direction: column;
+            align-items: stretch;
+            gap: var(--tmu-space-xs);
+        }
+
+        /* \u2500\u2500 special roles list \u2500\u2500 */
+        .tmtc-roles-section {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin-top: var(--tmu-space-xs);
+        }
+        .tmtc-role-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--tmu-space-sm);
+            padding: 4px var(--tmu-space-sm);
+            border-radius: var(--tmu-space-xs);
+            background: var(--tmu-surface-dark-soft);
+            border: 1px solid var(--tmu-border-faint);
+            min-height: 30px;
+        }
+        .tmtc-role-label {
+            font-size: var(--tmu-font-xs);
+            font-weight: 600;
+            color: var(--tmu-text-panel-label);
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            flex-shrink: 0;
+        }
+        .tmtc-role-slot {
+            flex: 1 1 0;
+            min-width: 0;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .tmtc-role-slot.tmtc-drag-over {
+            outline: 2px dashed var(--tmu-info) !important;
+            outline-offset: -2px;
+            border-radius: var(--tmu-space-xs);
+            background: rgba(77,171,247,0.10) !important;
+        }
+        .tmtc-role-chip {
+            font-size: var(--tmu-font-xs);
+            font-weight: 700;
+            color: var(--tmu-text-inverse);
+            background: var(--tmu-surface-overlay);
+            border: 1px solid var(--tmu-border-soft);
+            border-radius: var(--tmu-space-xs);
+            padding: 2px 8px;
+            cursor: grab;
+            user-select: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 120px;
+        }
+        .tmtc-role-chip:active { cursor: grabbing; }
+        .tmtc-role-empty {
+            font-size: var(--tmu-font-xs);
+            color: var(--tmu-text-faint);
+        }
+
+        /* \u2500\u2500 orders table \u2500\u2500 */
+        .tmtc-orders-empty {
+            font-size: var(--tmu-font-sm);
+            color: var(--tmu-text-muted);
+            padding: var(--tmu-space-lg) 0;
+            text-align: center;
+        }
+        .tmtc-order-check { color: var(--tmu-success); font-weight: 700; }
+        .tmtc-order-pending { color: var(--tmu-text-disabled); }
+        .tmtc-order-action-cell { display: flex; flex-direction: column; gap: 2px; }
+        .tmtc-order-action-type {
+            font-size: var(--tmu-font-2xs);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            color: var(--tmu-text-panel-label);
+        }
+        .tmtc-order-action-val {
+            font-size: var(--tmu-font-xs);
+            color: var(--tmu-text-main);
+        }
+        .tmtc-orders-switch {
+            margin-bottom: 0;
+        }
+        .tmtc-orders-switch .tmu-tabs {
+            width: 100%;
+            border: 1px solid var(--tmu-border-soft-alpha-strong);
+            border-radius: var(--tmu-space-md);
+            overflow: hidden;
+            background: var(--tmu-surface-card-soft);
+            box-shadow: none;
+        }
+
+        /* \u2500\u2500 ghost placeholders: only visible during drag \u2500\u2500 */
+        .tmtc-slot.tmtc-slot-empty { visibility: hidden; }
+        .tmtc-slot-spacer { visibility: hidden; }
+        .tmtc-field.is-dragging .tmtc-slot.tmtc-slot-empty,
+        .tmtc-field.is-dragging .tmtc-slot-spacer { visibility: visible; }
+
+        /* \u2500\u2500 drag-and-drop visuals \u2500\u2500 */
+        .tmtc-drag-over {
+            outline: 2px dashed var(--tmu-info, #4dabf7) !important;
+            outline-offset: -2px;
+            background: rgba(77,171,247,0.10) !important;
+        }
+        .tmtc-drag-source {
+            opacity: 0.40;
+        }
+        .tmtc-bench-inner {
+            width: 100%;
+            cursor: grab;
+            user-select: none;
+        }
+        .tmtc-bench-inner:active { cursor: grabbing; }
+
+        /* \u2500\u2500 save status bar \u2500\u2500 */
+        .tmtc-save-status {
+            min-height: 0;
+            font-size: var(--tmu-font-xs);
+            font-weight: 700;
+            text-align: right;
+            padding: 0 var(--tmu-space-sm);
+            transition: opacity .3s;
+            opacity: 0;
+        }
+        .tmtc-save-status:not(:empty) { opacity: 1; }
+        .tmtc-save-ok  { color: var(--tmu-success); }
+        .tmtc-save-err { color: var(--tmu-danger);  }
+
+        .tmtc-row-sep td {
+            border-top: 2px solid !important;
+            border-color: var(--tmu-border-pill-active) !important;
+            border-bottom: none !important;
+        }
+
+        /* \u2500\u2500 squad table column \u2500\u2500 */
+        .tmtc-row-on-field td {
+            background: rgba(70,200,120,0.08) !important;
+        }
+        .tmtc-row-on-bench td {
+            background: rgba(70,140,200,0.06) !important;
+        }
+        .tmtc-row-out td {
+            opacity: 0.45;
+        }
+        .tmtc-sub-badge {
+            display: inline-block;
+            font-size: var(--tmu-font-3xs);
+            font-weight: 800;
+            letter-spacing: .06em;
+            padding: 1px 5px;
+            border-radius: 4px;
+            background: var(--tmu-surface-dark-soft);
+            color: var(--tmu-text-muted);
+            border: 1px solid var(--tmu-border-faint);
+        }
+        .tmtc-pb-cell {
+            width: 5px !important;
+            padding: 0 !important;
+        }
+        .tmtc-pb-inner {
+            display: block;
+            width: 4px;
+            min-height: 16px;
+            border-radius: 2px;
+        }
+
+        /* \u2500\u2500 foreigners notice \u2500\u2500 */
+        .tmtc-foreigners-note {
+            font-size: var(--tmu-font-sm);
+            color: var(--tmu-text-muted);
+            padding: var(--tmu-space-md);
+            border-top: 1px solid var(--tmu-border-soft-alpha);
+        }
+
+        /* \u2500\u2500 conditional orders table \u2500\u2500 */
+        .tmtc-co-row-empty td { opacity: 0.35; }
+        .tmu-tbl tbody tr[data-ri] { cursor: grab; }
+        .tmu-tbl tbody tr[data-ri]:hover td { background: var(--tmu-surface-hover) !important; }
+        .tmu-tbl tbody tr.tmtc-co-row-dragging td { opacity: 0.4; }
+        .tmu-tbl tbody tr.tmtc-co-row-drag-over td { background: var(--tmu-primary-muted) !important; outline: 2px dashed var(--tmu-primary); }
+
+        /* \u2500\u2500 conditional orders dialog \u2500\u2500 */
+        .tmtc-co-dialog-body {
+            display: flex; border-bottom: 1px solid var(--tmu-border-faint);
+        }
+        .tmtc-co-col {
+            flex: 1; min-width: 0;
+            padding: var(--tmu-space-md);
+            border-right: 1px solid var(--tmu-border-faint);
+            overflow-y: auto; max-height: 65vh;
+        }
+        .tmtc-co-col:last-child { border-right: none; }
+        .tmtc-co-col-label {
+            font-size: var(--tmu-font-xs); font-weight: 700; text-transform: uppercase;
+            letter-spacing: .06em; color: var(--tmu-text-faint);
+            padding-bottom: var(--tmu-space-xs);
+            border-bottom: 1px solid var(--tmu-border-faint);
+            margin-bottom: var(--tmu-space-sm);
+        }
+        .tmtc-co-radio-item {
+            border-radius: 6px;
+        }
+        .tmtc-co-radio-row {
+            display: flex; align-items: center; gap: 10px;
+            padding: 7px 8px; cursor: pointer; border-radius: 6px;
+            border: 1px solid transparent;
+            transition: background .1s, border-color .1s;
+        }
+        .tmtc-co-radio-row:hover { background: var(--tmu-surface-hover); border-color: var(--tmu-border-faint); }
+        .tmtc-co-radio-item.selected .tmtc-co-radio-row {
+            background: var(--tmu-primary-muted); border-color: var(--tmu-primary);
+        }
+        .tmtc-co-radio-input {
+            width: 15px; height: 15px; flex-shrink: 0;
+            accent-color: var(--tmu-primary); cursor: pointer;
+        }
+        .tmtc-co-radio-txt { font-size: var(--tmu-font-sm); color: var(--tmu-text-muted); line-height: 1.3; }
+        .tmtc-co-radio-item.selected .tmtc-co-radio-txt { font-weight: 700; color: var(--tmu-text-strong); }
+        .tmtc-co-radio-sub {
+            padding: var(--tmu-space-xs) var(--tmu-space-sm) var(--tmu-space-sm) 28px;
+            display: flex; flex-direction: column; gap: var(--tmu-space-xs);
+        }
+        .tmtc-co-radio-sub:empty { display: none; }
+        .tmtc-co-param-label {
+            font-size: var(--tmu-font-xs); font-weight: 600;
+            color: var(--tmu-text-muted); margin-top: var(--tmu-space-xs);
+        }
+        .tmtc-co-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+        .tmtc-co-modal-footer {
+            display: flex; gap: var(--tmu-space-sm);
+            padding: var(--tmu-space-sm) var(--tmu-space-md);
+            border-top: 1px solid var(--tmu-border-faint);
+            flex-shrink: 0;
+        }
+
+        /* \u2500\u2500 analytics/formation panel (4th column) \u2500\u2500 */
+        .tmtc-main-stats {
+            flex: 0 0 270px;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: var(--tmu-space-md);
+            overflow-y: auto;
+        }
+        .tmtc-panel-row {
+            display: flex;
+            align-items: center;
+            gap: var(--tmu-space-sm);
+        }
+        .tmtc-panel-fm-badge {
+            font-size: var(--tmu-font-xl);
+            font-weight: 900;
+            color: var(--tmu-text-strong);
+            letter-spacing: .03em;
+            white-space: nowrap;
+            flex-shrink: 0;
+            min-width: 72px;
+        }
+        .tmtc-panel-stats {
+            display: flex;
+            flex-direction: column;
+        }
+        .tmtc-panel-sep {
+            border: none;
+            border-top: 1px solid var(--tmu-border-soft-alpha);
+            margin: 0;
+        }
+        .tmtc-saved-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 6px;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+        .tmtc-saved-empty {
+            font-size: var(--tmu-font-xs);
+            color: var(--tmu-text-faint);
+            text-align: center;
+            padding: 6px 0;
+        }
+        .tmtc-saved-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            padding: 4px 6px;
+            border-radius: var(--tmu-space-xs);
+            background: var(--tmu-surface-card);
+            border: 1px solid var(--tmu-border-soft-alpha);
+        }
+        .tmtc-saved-info {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            flex: 1;
+            overflow: hidden;
+        }
+        .tmtc-saved-name {
+            font-size: var(--tmu-font-sm);
+            font-weight: 700;
+            color: var(--tmu-text-strong);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .tmtc-saved-meta {
+            font-size: var(--tmu-font-2xs);
+            color: var(--tmu-text-faint);
+        }
+        .tmtc-saved-actions {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+    `;
+    document.head.appendChild(s6);
+  }
+
+  // src/components/tactics/tm-tactics-field.js
+  var { FIELD_ZONES: FIELD_ZONES2, RTN_THRESHOLDS: RTN_THRESHOLDS2 } = TmConst;
+  var { escHtml: escHtml2 } = TmUtils;
+  function getTargetRanks(total, count) {
+    if (count <= 0) return [];
+    if (count >= total) return Array.from({ length: total }, (_, i) => i);
+    const c = Math.floor((total - 1) / 2);
+    const result = [];
+    if (count % 2 === 1) result.push(c);
+    for (let r = 1; result.length < count; r++) {
+      if (c - r >= 0) result.push(c - r);
+      if (result.length < count && c + r < total) result.push(c + r);
+    }
+    return result.sort((a, b) => a - b);
+  }
+  var gc = TmUtils.getColor;
+  function mountTacticsField(container, ctx) {
+    const {
+      players_by_id,
+      CLUB_COUNTRY: CLUB_COUNTRY2,
+      isForeigner: isForeigner2,
+      countSquadForeigners,
+      getPlayerAtSlot,
+      getPlayerSlot,
+      setPlayerSlot,
+      isFieldSlot,
+      getOccupiedFieldKeys,
+      drag,
+      save,
+      readOnly = false
+    } = ctx;
+    let hoverTimer = null;
+    container.addEventListener("mouseover", (event) => {
+      const el2 = event.target.closest(".tmtc-slot[data-player-id], .tmtc-bench-inner[data-player-id]");
+      if (!el2 || !container.contains(el2) || el2.contains(event.relatedTarget)) return;
+      const player2 = players_by_id[String(el2.dataset.playerId)] || null;
+      if (!player2) return;
+      clearTimeout(hoverTimer);
+      hoverTimer = setTimeout(() => TmPlayerTooltip.show(el2, player2), 80);
+    });
+    container.addEventListener("mouseout", (event) => {
+      const el2 = event.target.closest(".tmtc-slot[data-player-id], .tmtc-bench-inner[data-player-id]");
+      if (!el2 || !container.contains(el2) || el2.contains(event.relatedTarget)) return;
+      clearTimeout(hoverTimer);
+      TmPlayerTooltip.hide();
+    });
+    const fieldEl = document.createElement("div");
+    fieldEl.className = "tmtc-field";
+    container.appendChild(fieldEl);
+    const topSpacer = document.createElement("div");
+    topSpacer.className = "tmtc-field-spacer";
+    fieldEl.appendChild(topSpacer);
+    const fieldOverlayBar = document.createElement("div");
+    fieldOverlayBar.className = "tmtc-fob";
+    topSpacer.appendChild(fieldOverlayBar);
+    const BADGE_ZONES_LU = [...FIELD_ZONES2].reverse().filter((z) => z.key !== "gk");
+    function getFormationStr() {
+      return BADGE_ZONES_LU.map((z) => z.cols.filter((pk) => pk && getPlayerAtSlot(pk)).length).filter((n) => n > 0).join("-") || "?";
+    }
+    function refreshFieldOverlay() {
+      var _a2, _b;
+      const activeKeys = getOccupiedFieldKeys();
+      let totalR5 = 0, countR5 = 0, totalRtn = 0, countRtn = 0, totalAge = 0, countAge = 0;
+      for (const posKey2 of activeKeys) {
+        const p = getPlayerAtSlot(posKey2);
+        if (!p) continue;
+        const posId = (_a2 = TmConst.POSITION_MAP[posKey2]) == null ? void 0 : _a2.id;
+        if (((_b = p.allPositionRatings) == null ? void 0 : _b.length) && posId != null) {
+          const rating = p.allPositionRatings.find((r) => r.id === posId);
+          if (rating) {
+            totalR5 += parseFloat(rating.r5) || 0;
+            countR5++;
+          }
+        }
+        if (p.routine != null && Number(p.routine) > 0) {
+          totalRtn += parseFloat(p.routine);
+          countRtn++;
+        }
+        const age2 = p.ageMonths != null ? p.ageMonths / 12 : parseInt(p.age) || 0;
+        if (age2 > 0) {
+          totalAge += age2;
+          countAge++;
+        }
+      }
+      const r5 = countR5 > 0 ? (totalR5 / countR5).toFixed(2) : null;
+      const rtn = countRtn > 0 ? (totalRtn / countRtn).toFixed(1) : null;
+      const age = countAge > 0 ? (totalAge / countAge).toFixed(1) : null;
+      const sep = `<span class="tmtc-fob-sep">\xB7</span>`;
+      const item = (label, value, color) => `<span class="tmtc-fob-item"><span class="tmtc-fob-label">${label}</span><span class="tmtc-fob-value" style="color:${color}">${value}</span></span>`;
+      fieldOverlayBar.innerHTML = [
+        `<span class="tmtc-fob-formation">${getFormationStr()}</span>`,
+        sep,
+        item("R5", r5 != null ? r5 : "\u2014", r5 ? gc(parseFloat(r5), TmConst.R5_THRESHOLDS) : "var(--tmu-text-faint)"),
+        sep,
+        item("Rtn", rtn != null ? rtn : "\u2014", rtn ? gc(parseFloat(rtn), RTN_THRESHOLDS2) : "var(--tmu-text-faint)"),
+        sep,
+        item("Age", age != null ? age : "\u2014", "var(--tmu-text-muted)")
+      ].join("");
+    }
+    const slotEls = {};
+    function buildField() {
+      while (fieldEl.lastChild !== topSpacer) fieldEl.removeChild(fieldEl.lastChild);
+      for (const k of Object.keys(slotEls)) delete slotEls[k];
+      for (const zone of FIELD_ZONES2) {
+        const section = document.createElement("div");
+        section.className = "tmtc-field-line";
+        fieldEl.appendChild(section);
+        const lineEl = document.createElement("div");
+        lineEl.className = "tmtc-line";
+        section.appendChild(lineEl);
+        for (const posKey2 of zone.cols) {
+          if (!posKey2) {
+            const sp = document.createElement("div");
+            sp.className = "tmtc-slot-spacer";
+            lineEl.appendChild(sp);
+          } else {
+            const slotEl = makeFieldSlot(posKey2);
+            slotEls[posKey2] = slotEl;
+            lineEl.appendChild(slotEl);
+          }
+        }
+      }
+    }
+    function normalizeZone(zoneKey, changed) {
+      const zone = FIELD_ZONES2.find((z) => z.key === zoneKey);
+      if (!zone) return;
+      const centerPks = [zone.cols[1], zone.cols[2], zone.cols[3]].filter((pk) => pk != null);
+      if (!centerPks.length) return;
+      const occupied = centerPks.filter((pk) => getPlayerAtSlot(pk) != null);
+      if (!occupied.length) return;
+      const targetRanks = getTargetRanks(centerPks.length, occupied.length);
+      const targetPks = targetRanks.map((r) => centerPks[r]);
+      if (occupied.every((pk, i) => pk === targetPks[i])) return;
+      const occupiedPlayers = occupied.map((pk) => getPlayerAtSlot(pk));
+      for (const p of occupiedPlayers) setPlayerSlot(p, null);
+      for (let i = 0; i < occupiedPlayers.length; i++) {
+        setPlayerSlot(occupiedPlayers[i], targetPks[i]);
+        if (changed) changed[String(occupiedPlayers[i].id)] = targetPks[i];
+      }
+      for (const pk of centerPks) {
+        if (slotEls[pk]) renderFieldSlot(slotEls[pk], getPlayerAtSlot(pk), pk);
+      }
+    }
+    const getPositionRating = (player2, posKey2) => {
+      var _a2, _b, _c;
+      const posId = (_a2 = TmConst.POSITION_MAP[String(posKey2 || "").toLowerCase()]) == null ? void 0 : _a2.id;
+      return posId != null ? (_c = (_b = player2 == null ? void 0 : player2.positions) == null ? void 0 : _b.find((p) => p.id === posId)) != null ? _c : null : null;
+    };
+    function makeFieldSlot(posKey2) {
+      const player2 = getPlayerAtSlot(posKey2);
+      const slotEl = document.createElement("div");
+      slotEl.className = "tmtc-slot";
+      slotEl.dataset.posKey = posKey2;
+      renderFieldSlot(slotEl, player2, posKey2);
+      if (!readOnly) setupDropTarget(slotEl, posKey2);
+      return slotEl;
+    }
+    function renderFieldSlot(slotEl, player2, posKey2) {
+      var _a2, _b, _c;
+      if (!slotEl) return;
+      slotEl.innerHTML = "";
+      slotEl.dataset.posKey = posKey2;
+      slotEl.classList.toggle("tmtc-slot-empty", !player2);
+      if (player2) {
+        if (!readOnly) {
+          slotEl.setAttribute("draggable", "true");
+          slotEl.dataset.playerId = String(player2.id);
+          slotEl.removeEventListener("dragstart", onFieldDragStart);
+          slotEl.addEventListener("dragstart", onFieldDragStart);
+        } else {
+          slotEl.dataset.playerId = String(player2.id);
+        }
+        const slotRating = ((v) => v != null ? TmUtils.formatR5(v, "\u2014") : "\u2014")((_a2 = getPositionRating(player2, posKey2)) == null ? void 0 : _a2.r5);
+        const slotRec = (_c = (_b = getPositionRating(player2, posKey2)) == null ? void 0 : _b.rec) != null ? _c : null;
+        const slotRoutine = player2.routine > 0 ? Number(player2.routine).toFixed(1) : "\u2014";
+        const moodPenalty = TmPosition.moodPenalty(player2, posKey2);
+        slotEl.innerHTML = `
+                <span class="tmtc-slot-no">${escHtml2(slotRating)}</span>
+                <span class="tmtc-slot-name">${escHtml2(player2.lastname || player2.name || "")}${playerStatusIconsHtml(player2)}</span>
+                ${TmPosition.chip([posKey2 || ""])}
+                <span class="tmtc-slot-meta">
+                    <span class="tmtc-slot-rec">${TmStars.recommendation(slotRec, "tmtc-rec-stars tmtc-rec-stars-sm") || '<span class="tmtc-slot-rec-empty">\u2014</span>'}</span>
+                    ${moodPenalty > 0 ? `<span class="tmtc-slot-mood tmtc-slot-mood-${moodPenalty}" title="Out of natural position">\u2639</span>` : ""}
+                </span>
+                <span class="tmtc-slot-rtn" style="color:${slotRoutine !== "\u2014" ? gc(Number(slotRoutine), RTN_THRESHOLDS2) : "var(--tmu-text-dim)"}">${slotRoutine}</span>
+            `;
+      } else {
+        slotEl.removeAttribute("draggable");
+        delete slotEl.dataset.playerId;
+        slotEl.innerHTML = `<span class="tmtc-slot-poskey">${escHtml2(posKey2.toUpperCase())}</span>`;
+      }
+    }
+    function onFieldDragStart(e) {
+      const pid = e.currentTarget.dataset.playerId;
+      const posKey2 = e.currentTarget.dataset.posKey;
+      if (!pid) {
+        e.preventDefault();
+        return;
+      }
+      drag.state = { pid, fromType: "field", fromPosKey: posKey2 };
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", pid);
+      e.currentTarget.classList.add("tmtc-drag-source");
+      fieldEl.classList.add("is-dragging");
+    }
+    function clearDragVisuals() {
+      document.querySelectorAll(".tmtc-drag-source, .tmtc-drag-over").forEach((el2) => el2.classList.remove("tmtc-drag-source", "tmtc-drag-over"));
+      fieldEl.classList.remove("is-dragging");
+    }
+    function setupDropTarget(slotEl, posKey2) {
+      let n = 0;
+      slotEl.addEventListener("dragenter", (e) => {
+        e.preventDefault();
+        if (++n === 1) slotEl.classList.add("tmtc-drag-over");
+      });
+      slotEl.addEventListener("dragleave", () => {
+        if (--n <= 0) {
+          n = 0;
+          slotEl.classList.remove("tmtc-drag-over");
+        }
+      });
+      slotEl.addEventListener("dragover", (e) => e.preventDefault());
+      slotEl.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        n = 0;
+        slotEl.classList.remove("tmtc-drag-over");
+        clearDragVisuals();
+        const ds = drag.state;
+        drag.state = null;
+        if (!ds) return;
+        const { pid } = ds;
+        const player2 = players_by_id[pid];
+        if (!player2) return;
+        const prevPlayer = getPlayerAtSlot(posKey2);
+        if (prevPlayer && String(prevPlayer.id) === pid) return;
+        if (!prevPlayer && !isFieldSlot(getPlayerSlot(player2)) && getOccupiedFieldKeys().size >= 11) return;
+        if (CLUB_COUNTRY2) {
+          const projected = countSquadForeigners() + (isForeigner2(player2) && !getPlayerSlot(player2) ? 1 : 0) - (prevPlayer && isForeigner2(prevPlayer) ? 1 : 0);
+          if (projected > 5) {
+            TmAlert.show({ message: "Foreign player limit is 5 (squad of 16)", tone: "warning", duration: 3e3 });
+            return;
+          }
+        }
+        const changed = {};
+        const sourceSlot = getPlayerSlot(player2);
+        setPlayerSlot(player2, posKey2);
+        changed[pid] = posKey2;
+        if (prevPlayer) {
+          setPlayerSlot(prevPlayer, sourceSlot);
+          changed[String(prevPlayer.id)] = sourceSlot != null ? sourceSlot : "out";
+        }
+        normalizeAll(changed);
+        ctx.refreshAll();
+        await save(changed);
+      });
+    }
+    if (!readOnly) document.addEventListener("dragend", () => {
+      drag.state = null;
+      clearDragVisuals();
+    });
+    buildField();
+    function refresh() {
+      for (const [posKey2, slotEl] of Object.entries(slotEls)) {
+        renderFieldSlot(slotEl, getPlayerAtSlot(posKey2), posKey2);
+      }
+      refreshFieldOverlay();
+    }
+    function rebuild() {
+      buildField();
+      refreshFieldOverlay();
+    }
+    const normalizeAll = (changed) => {
+      for (const zone of FIELD_ZONES2) normalizeZone(zone.key, changed);
+    };
+    return {
+      refresh,
+      rebuild,
+      renderSlot: (posKey2) => renderFieldSlot(slotEls[posKey2], getPlayerAtSlot(posKey2), posKey2),
+      setDragging: (bool) => fieldEl.classList.toggle("is-dragging", bool),
+      clearDragVisuals,
+      normalizeZone,
+      normalizeAll
+    };
+  }
+  function mountTacticsFieldReadOnly(container, posPlayerMap, players = []) {
+    const players_by_id = Object.fromEntries(players.map((p) => [String(p.id), p]));
+    const { POSITION_MAP: POSITION_MAP2 } = TmConst;
+    return mountTacticsField(container, {
+      readOnly: true,
+      players_by_id,
+      getPlayerAtSlot: (posKey2) => {
+        var _a2;
+        return (_a2 = posPlayerMap[posKey2]) != null ? _a2 : null;
+      },
+      getPlayerSlot: () => null,
+      setPlayerSlot: () => {
+      },
+      isFieldSlot: (slot) => slot != null && POSITION_MAP2[slot] != null,
+      getOccupiedFieldKeys: () => new Set(Object.keys(posPlayerMap).filter((k) => POSITION_MAP2[k])),
+      CLUB_COUNTRY: null,
+      isForeigner: () => false,
+      countSquadForeigners: () => 0,
+      drag: { state: null },
+      save: () => {
+      },
+      refreshAll: () => {
+      }
+    });
+  }
+
+  // src/components/match-new/tm-match-field.js
+  var TmMatchField = {
+    /**
+     * @param {object} posPlayerMap   — { [posKey]: playerObject }  (mutated externally on update)
+     * @param {Array}  players        — full player list (for tooltips)
+     * @returns {{ el: HTMLElement, refresh: () => void }}
+     */
+    create(posPlayerMap, players = []) {
+      injectTacticsStyles();
+      const col = document.createElement("div");
+      col.className = "mp-lu-tactics-col";
+      const { refresh } = mountTacticsFieldReadOnly(col, posPlayerMap, players);
+      return { el: col, refresh };
+    }
+  };
+
+  // src/components/match-new/tm-match-squad-list.js
+  var isStarter = (p) => !!POSITION_MAP[(p.position || "").toLowerCase()];
+  var isBench = (p) => BENCH_SLOTS.includes((p.position || "").toLowerCase());
+  var posKey = (p) => (p.position || p.fp || "").toLowerCase().split(",")[0].replace(/^sub\d*/i, "");
+  var TmMatchSquadList = {
+    /**
+     * @param {'home'|'away'} side
+     * @param {Array}         lineup    — all match players for this side
+     * @returns {{ el: HTMLElement, playerEls: Map<string, HTMLElement> }}
+     */
+    create(side, lineup) {
+      const col = document.createElement("div");
+      col.className = `mp-lu-col mp-lu-col-${side}`;
+      const starters = lineup.filter(isStarter).sort((a, b) => {
+        var _a2, _b, _c, _d;
+        const ma = POSITION_MAP[a.position.toLowerCase()];
+        const mb = POSITION_MAP[b.position.toLowerCase()];
+        return ((_a2 = ma == null ? void 0 : ma.row) != null ? _a2 : 9) - ((_b = mb == null ? void 0 : mb.row) != null ? _b : 9) || ((_c = ma == null ? void 0 : ma.col) != null ? _c : 9) - ((_d = mb == null ? void 0 : mb.col) != null ? _d : 9);
+      });
+      const subs = lineup.filter(isBench).sort(
+        (a, b) => parseInt((a.position || "99").replace(/\D/g, "") || "99") - parseInt((b.position || "99").replace(/\D/g, "") || "99")
+      );
+      const playerEls = /* @__PURE__ */ new Map();
+      for (const p of starters) {
+        const el2 = TmPlayerRow.build(p, { posKey: posKey(p), state: "active" });
+        col.appendChild(el2);
+        playerEls.set(String(p.id), el2);
+      }
+      const divider = document.createElement("div");
+      divider.className = "mp-lu-div";
+      col.appendChild(divider);
+      for (const p of subs) {
+        const el2 = TmPlayerRow.build(p, { posKey: posKey(p), state: "bench" });
+        col.appendChild(el2);
+        playerEls.set(String(p.id), el2);
+      }
+      return { el: col, playerEls };
+    }
+  };
+
+  // src/components/match-new/tm-match-lineup.js
+  var STYLE_ID49 = "mp-lineup-style";
+  var isStarter2 = (p) => !!POSITION_MAP[(p.position || "").toLowerCase()];
+  function injectStyles36() {
+    if (document.getElementById(STYLE_ID49)) return;
+    const s6 = document.createElement("style");
+    s6.id = STYLE_ID49;
+    s6.textContent = `
+        .mp-lu {
+            display: flex; flex-direction: row; align-items: stretch;
+            width: 100%; flex: 0 0 auto;
+            border-top: 1px solid var(--tmu-border-soft-alpha);
+        }
+
+        /* \u2500\u2500 Player columns \u2500\u2500 */
+        .mp-lu-col {
+            flex: 1; min-width: 180px; box-sizing: border-box;
+            display: flex; flex-direction: column;
+            padding: 10px 6px 12px;
+            align-self: flex-start;
+            overflow-y: auto; scrollbar-width: none;
+        }
+        .mp-lu-col::-webkit-scrollbar { display: none; }
+        .mp-lu-col-home { border-right: 1px solid var(--tmu-border-soft-alpha); }
+        .mp-lu-col-away { border-left:  1px solid var(--tmu-border-soft-alpha); }
+
+        .mp-lu-div {
+            height: 1px; background: var(--tmu-border-soft-alpha);
+            margin: 5px 2px;
+        }
+
+        /* \u2500\u2500 Tactics field columns \u2500\u2500 */
+        .mp-lu-tactics-col {
+            flex: 0 0 auto; min-width: 0;
+            align-self: stretch;
+            aspect-ratio: 2 / 3;
+            display: flex; flex-direction: column;
+            padding: 10px 0 12px;
+        }
+        .mp-lu-tactics-col-home {
+            align-items: flex-end;
+            border-right: 1px solid var(--tmu-border-soft-alpha);
+        }
+        .mp-lu-tactics-col-away {
+            align-items: flex-start;
+            border-left: 1px solid var(--tmu-border-soft-alpha);
+        }
+
+        /* field fills the entire col */
+        .mp-lu-tactics-col .tmtc-field {
+            flex: 1; height: 0; width: 100%; aspect-ratio: unset;
+        }
+        .mp-lu-tactics-col .tmtc-field-spacer {
+            flex: 0 0 40px;
+        }
+    `;
+    document.head.appendChild(s6);
+  }
+  function derivePitchState(match, currentMinute) {
+    const playerSlot = /* @__PURE__ */ new Map();
+    const slotPlayer = /* @__PURE__ */ new Map();
+    for (const side of ["home", "away"]) {
+      for (const p of match[side].lineup) {
+        const pos = (p.position || "").toLowerCase();
+        if (!POSITION_MAP[pos]) continue;
+        const fk = `${side}:${pos}`;
+        playerSlot.set(String(p.id), fk);
+        slotPlayer.set(fk, String(p.id));
+      }
+    }
+    const homePids = new Set(match.home.lineup.map((p) => String(p.id)));
+    for (const min of Object.keys(match.plays).map(Number).sort((a, b) => a - b)) {
+      if (min > currentMinute) break;
+      for (const play of match.plays[String(min)]) {
+        for (const clip of play.clips || []) {
+          const outs = [], ins = [];
+          const posChanges = /* @__PURE__ */ new Map();
+          for (const a of clip.actions || []) {
+            if (a.action === "subOut") outs.push(String(a.by));
+            else if (a.action === "subIn") ins.push(String(a.by));
+            else if (a.action === "positionChange")
+              posChanges.set(String(a.by), String(a.position || "").toLowerCase());
+          }
+          for (let i = 0; i < outs.length; i++) {
+            const outId = outs[i];
+            const inId = ins[i];
+            const outSlot = playerSlot.get(outId);
+            if (outSlot) slotPlayer.delete(outSlot);
+            playerSlot.delete(outId);
+            if (inId) {
+              let inSlot = outSlot;
+              const newPos = posChanges.get(inId);
+              if (newPos && POSITION_MAP[newPos]) {
+                const inSide = homePids.has(inId) ? "home" : "away";
+                inSlot = `${inSide}:${newPos}`;
+              }
+              if (inSlot) {
+                slotPlayer.set(inSlot, inId);
+                playerSlot.set(inId, inSlot);
+              }
+            }
+          }
+        }
+      }
+    }
+    return playerSlot;
+  }
+  function buildInitialPosMap(lineup) {
+    const map = {};
+    for (const p of lineup) {
+      const key = (p.position || "").toLowerCase();
+      if (POSITION_MAP[key]) map[key] = p;
+    }
+    return map;
+  }
+  function rebuildPosMap(map, side, playerSlot, allPlayersById) {
+    for (const k of Object.keys(map)) delete map[k];
+    for (const [pid, slot] of playerSlot) {
+      if (!slot.startsWith(side + ":")) continue;
+      const pk = slot.slice(side.length + 1);
+      if (!POSITION_MAP[pk]) continue;
+      const p = allPlayersById.get(pid);
+      if (p) map[pk] = p;
+    }
+  }
+  var TmMatchLineup = {
+    create(match) {
+      injectStyles36();
+      const el2 = document.createElement("div");
+      el2.className = "mp-lu";
+      const { el: homeCol, playerEls: homeEls } = TmMatchSquadList.create("home", match.home.lineup);
+      const { el: awayCol, playerEls: awayEls } = TmMatchSquadList.create("away", match.away.lineup);
+      const homePosMap = buildInitialPosMap(match.home.lineup);
+      const homeField = TmMatchField.create(homePosMap, match.home.lineup);
+      homeField.el.classList.add("mp-lu-tactics-col-home");
+      const awayPosMap = buildInitialPosMap(match.away.lineup);
+      const awayField = TmMatchField.create(awayPosMap, match.away.lineup);
+      awayField.el.classList.add("mp-lu-tactics-col-away");
+      el2.append(homeCol, homeField.el, awayField.el, awayCol);
+      const allPlayersById = new Map([
+        ...match.home.lineup.map((p) => [String(p.id), p]),
+        ...match.away.lineup.map((p) => [String(p.id), p])
+      ]);
+      const homeStarterSet = new Set(match.home.lineup.filter(isStarter2).map((p) => String(p.id)));
+      const awayStarterSet = new Set(match.away.lineup.filter(isStarter2).map((p) => String(p.id)));
+      let lastMinute = -1;
+      function update(replayState) {
+        var _a2;
+        const minute = (_a2 = replayState == null ? void 0 : replayState.currentMinute) != null ? _a2 : 0;
+        if (minute === lastMinute) return;
+        lastMinute = minute;
+        const playerSlot = derivePitchState(match, minute);
+        const updateItems = (playerEls, starterSet) => {
+          for (const [pid, rowEl] of playerEls) {
+            const onPitch = playerSlot.has(pid);
+            const wasSt = starterSet.has(pid);
+            let state5;
+            if (onPitch && !wasSt) state5 = "sub-in";
+            else if (!onPitch && wasSt) state5 = "off";
+            else if (onPitch) state5 = "active";
+            else state5 = "bench";
+            TmPlayerRow.setState(rowEl, state5);
+          }
+        };
+        updateItems(homeEls, homeStarterSet);
+        updateItems(awayEls, awayStarterSet);
+        rebuildPosMap(homePosMap, "home", playerSlot, allPlayersById);
+        rebuildPosMap(awayPosMap, "away", playerSlot, allPlayersById);
+        homeField.refresh();
+        awayField.refresh();
+      }
+      update(null);
+      return { el: el2, update };
+    }
+  };
+
   // src/pages/match.js
+  var SHELL_STYLE_ID = "mp-shell-style";
+  var injectShellStyles = () => {
+    if (document.getElementById(SHELL_STYLE_ID)) return;
+    const s6 = document.createElement("style");
+    s6.id = SHELL_STYLE_ID;
+    s6.textContent = `
+        .mp-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--tmu-surface-overlay-strong);
+            z-index: 10000; display: flex; align-items: flex-start; justify-content: center;
+        }
+        .mp-dialog {
+            background: var(--tmu-surface-panel);
+            width: 100vw; height: 100vh;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .mp-body { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+        .mp-player {
+            display: flex; align-items: stretch; justify-content: center;
+            width: 100%; flex: 1; min-height: 0;
+        }
+    `;
+    document.head.appendChild(s6);
+  };
+  var openPlayer = async (matchId) => {
+    var _a2;
+    const match = await TmMatchModel.fetchMatchWithProfiles(matchId);
+    if (!match || match.status === "future") return;
+    const initialMode = match.status === "live" ? "all" : "key";
+    const { schedule } = TmMatchService.buildSchedule(match.plays);
+    const playMinutes = Object.keys(match.plays).map(Number).sort((a, b) => a - b);
+    const maximumMinute = playMinutes.length ? playMinutes[playMinutes.length - 1] : 90;
+    const header = TmMatchHeader.create({
+      homeName: match.home.club.name || "Home",
+      awayName: match.away.club.name || "Away",
+      initialMode,
+      onToggle: () => ctrl.toggle(),
+      onSkip: () => ctrl.skip(),
+      onClose: () => close(),
+      onModeChange: (mode) => {
+        feed.clear();
+        ctrl.setMode(mode);
+      }
+    });
+    const feed = TmMatchFeed.create();
+    const stats = TmMatchStats.create(match);
+    const lineup = TmMatchLineup.create(match);
+    const unity = TmUnityPlayer.create({
+      onReady: () => ctrl.play(),
+      onClipStart: (clipIndex) => ctrl.onClipStart(clipIndex),
+      onClipEnd: (clipIndex) => ctrl.onClipEnd(clipIndex),
+      onMinuteDone: () => ctrl.onUnityMinuteDone(),
+      onCanvasClick: () => ctrl.toggle(),
+      getHUD: () => {
+        const s6 = ctrl.getState();
+        const { h, a } = scoreAt(match, s6.currentMinute, s6.committedActionIndex);
+        return {
+          homeName: match.home.club.name || "Home",
+          awayName: match.away.club.name || "Away",
+          homeScore: h,
+          awayScore: a,
+          minute: s6.currentMinute,
+          seconds: s6.seconds
+        };
+      },
+      getStats: () => deriveStats(match, ctrl.getState())
+    });
+    const ctrl = TmReplayController.create({
+      match,
+      maximumMinute,
+      schedule,
+      unity,
+      initialMode,
+      onTick: (replayState) => {
+        feed.sync(match, replayState.currentMinute, replayState.currentActionIndex, replayState.currentActionLineIndex);
+        stats.update(replayState);
+        unity.updateHUD();
+        header.update(match, replayState, maximumMinute);
+        lineup.update(replayState);
+      },
+      onMinuteAdvanced: (replayState) => {
+        stats.update(replayState);
+        unity.updateHUD();
+        header.update(match, replayState, maximumMinute);
+      },
+      onEnded: (replayState) => {
+        feed.sync(match, replayState.currentMinute, replayState.currentActionIndex, replayState.currentActionLineIndex);
+        stats.update(replayState);
+        unity.updateHUD();
+        header.update(match, replayState, maximumMinute);
+        lineup.update(replayState);
+      }
+    });
+    injectShellStyles();
+    (_a2 = document.getElementById("mp-overlay")) == null ? void 0 : _a2.remove();
+    const overlay = document.createElement("div");
+    overlay.id = "mp-overlay";
+    overlay.className = "mp-overlay";
+    const dialog = document.createElement("div");
+    dialog.className = "mp-dialog";
+    const body = document.createElement("div");
+    body.className = "mp-body";
+    const player2 = document.createElement("div");
+    player2.className = "mp-player";
+    player2.appendChild(feed.el);
+    player2.appendChild(unity.el);
+    player2.appendChild(stats.el);
+    body.appendChild(player2);
+    body.appendChild(lineup.el);
+    dialog.appendChild(header.el);
+    dialog.appendChild(body);
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+    document.body.style.overflow = "hidden";
+    unity.init();
+    const viewport = document.getElementById("mp-viewport");
+    let canvasRO = null;
+    if (viewport) {
+      canvasRO = new ResizeObserver(() => {
+        body.style.setProperty("--mp-canvas-h", viewport.offsetHeight + "px");
+      });
+      canvasRO.observe(viewport);
+    }
+    const close = () => {
+      canvasRO == null ? void 0 : canvasRO.disconnect();
+      ctrl.destroy();
+      unity.saveCanvas();
+      document.removeEventListener("keydown", onKey);
+      overlay.remove();
+      document.body.style.overflow = "";
+    };
+    const onKey = (e) => {
+      if (e.key === "Escape") close();
+      if (e.key === " ") {
+        e.preventDefault();
+        ctrl.toggle();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) close();
+    });
+    header.update(match, ctrl.getState(), maximumMinute);
+    setTimeout(() => {
+      if (!unity.isAvailable()) ctrl.play();
+    }, 800);
+  };
   function initMatchPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const injectStyles39 = () => TmMatchStyles.inject();
-    const getOverlayTabsWrap = () => document.querySelector("#rnd-overlay .tmu-tabs");
-    const getActiveOverlayTab = () => {
-      var _a2, _b, _c;
-      return ((_c = (_b = (_a2 = getOverlayTabsWrap()) == null ? void 0 : _a2.querySelector(".tmu-tab.active")) == null ? void 0 : _b.dataset) == null ? void 0 : _c.tab) || "";
-    };
-    const setActiveOverlayTab = (tabKey) => {
-      const wrap = getOverlayTabsWrap();
-      if (wrap) TmTabs.setActive(wrap, tabKey);
-    };
-    const LINE_INTERVAL = 3;
-    const POST_DELAY = 3;
-    const roundMatchCache2 = /* @__PURE__ */ new Map();
-    let liveState = null;
-    let currentMData = null;
-    let prematchTimer = null;
-    const unity = TmMatchUnityPlayer.create({
-      getLiveState: () => liveState,
-      onTextAdvanced: (evtIdx, lineIdx, isComplete) => {
-        liveState.curEvtIdx = evtIdx;
-        liveState.curLineIdx = lineIdx;
-        liveState.curEvtComplete = isComplete;
-        liveState.justCompleted = isComplete;
-      },
-      onAllClipsFinished: (min) => {
-        if (liveState) {
-          liveState.sec = 59;
-          if (liveState.pendingFilterSwitch) {
-            applyFilterSwitch(liveState.pendingFilterSwitch);
-          }
-        }
-      },
-      onUnityReady: () => {
-        if (liveState && !liveState.playing && !liveState.ended) livePlay();
-      },
-      syncLiveDerivedTeams: () => syncLiveDerivedTeams(),
-      applyFilterSwitch: (mode) => applyFilterSwitch(mode)
-    });
-    const stopLiveClockTicker = () => {
-      if (!(liveState == null ? void 0 : liveState.clockTimer)) return;
-      clearTimeout(liveState.clockTimer);
-      liveState.clockTimer = null;
-    };
-    const scheduleLiveClockTicker = () => {
-      if (!liveState || !liveState.playing || liveState.ended || liveState.filterMode !== "live") return;
-      stopLiveClockTicker();
-      liveState.clockTimer = setTimeout(() => {
-        if (!liveState || !liveState.playing || liveState.ended || liveState.filterMode !== "live") {
-          stopLiveClockTicker();
-          return;
-        }
-        const kickoff = liveState.liveKickoff;
-        const info = kickoff ? calculateLiveMinute(kickoff) : null;
-        const lastMin = liveState.mData.match_data.last_min || 90;
-        if (!info || info.minute > lastMin) {
-          liveState.min = lastMin;
-          liveState.sec = 59;
-          liveState.curEvtIdx = 999;
-          liveState.curLineIdx = 999;
-          liveState.ended = true;
-          liveState.playing = false;
-          liveState.liveIsHT = false;
-          syncLiveDerivedTeams();
-          stopLiveClockTicker();
-          return;
-        }
-        const prevMin = liveState.min;
-        const prevSec = liveState.sec;
-        liveState.min = info.minute;
-        liveState.sec = info.second;
-        liveState.liveIsHT = info.isHT;
-        if (liveState.min !== prevMin) {
-          liveState.justCompleted = true;
-          if (!liveState.liveIsHT && unity.getState().activeMinute !== liveState.min) {
-            syncLiveDerivedTeams();
-          } else {
-            updateLiveHeader();
-          }
-        } else if (liveState.sec !== prevSec) {
-          updateLiveHeader();
-        }
-        scheduleLiveClockTicker();
-      }, 250);
-    };
-    const getLiveDerivedKey = (state5) => {
-      if (!state5) return "";
-      return [
-        state5.min,
-        state5.curEvtIdx,
-        state5.curLineIdx,
-        state5.ended ? 1 : 0,
-        state5.liveIsHT ? 1 : 0
-      ].join(":");
-    };
-    const deriveLiveMatchData = (force = false) => {
-      if (!(liveState == null ? void 0 : liveState.baseMData)) return (liveState == null ? void 0 : liveState.mData) || null;
-      const derivedKey = getLiveDerivedKey(liveState);
-      if (!force && liveState.mData && liveState.derivedKey === derivedKey) {
-        return liveState.mData;
+    const pathMatch = window.location.pathname.match(/\/matches\/(\d+)/);
+    if (pathMatch) {
+      openPlayer(pathMatch[1]);
+      return;
+    }
+    document.addEventListener("click", (e) => {
+      const trigger = e.target.closest("[data-matchid]") || e.target.closest("[data-id].rnd-h2h-match") || e.target.closest('a[href*="/matches/"]');
+      if (!trigger) return;
+      let matchId = trigger.dataset.matchid || trigger.dataset.id;
+      if (!matchId && trigger.href) {
+        const m = trigger.href.match(/\/matches\/(\d+)/);
+        if (m) matchId = m[1];
       }
-      const nextMatchData = TmMatchUtils.cloneMatchData(liveState.baseMData);
-      liveState.mData = TmMatchUtils.deriveMatchData({ ...liveState, mData: nextMatchData });
-      liveState.derivedKey = derivedKey;
-      return liveState.mData;
-    };
-    const calculateLiveMinute = (kickoff) => {
-      const now = Math.floor(Date.now() / 1e3);
-      const elapsed = now - kickoff;
-      if (elapsed < 0) return null;
-      const FIRST_HALF = 45 * 60;
-      const HT_BREAK = 15 * 60;
-      if (elapsed < FIRST_HALF) {
-        return { minute: Math.floor(elapsed / 60), second: elapsed % 60, isHT: false };
-      } else if (elapsed < FIRST_HALF + HT_BREAK) {
-        return { minute: 45, second: 0, isHT: true };
-      } else {
-        const sh = elapsed - FIRST_HALF - HT_BREAK;
-        return { minute: 45 + Math.floor(sh / 60), second: sh % 60, isHT: false };
-      }
-    };
-    const isMatchCurrentlyLive = (mData) => {
-      var _a2;
-      const lm = (_a2 = mData.match_data) == null ? void 0 : _a2.live_min;
-      return typeof lm === "number" && lm > 0;
-    };
-    const deriveKickoff = (mData) => {
-      const lm = mData.match_data.live_min;
-      const now = Math.floor(Date.now() / 1e3);
-      return now - Math.round(lm * 60);
-    };
-    const countPlayLines = (play) => {
-      if (!play) return 1;
-      return Math.max(1, play.segments.reduce((s6, seg) => s6 + seg.text.filter((l) => l.trim()).length, 0));
-    };
-    const findPlay = (mData, min, reportEvtIdx) => {
-      var _a2;
-      const plays = ((_a2 = mData.plays) == null ? void 0 : _a2[String(min)]) || [];
-      return plays.find((p) => p.reportEvtIdx === reportEvtIdx) || null;
-    };
-    const buildSchedule = (plays, keyOnly = false) => {
-      const schedule = {};
-      const eventMinList = [];
-      const mins = Object.keys(plays).map(Number).sort((a, b) => a - b);
-      mins.forEach((min) => {
-        const minPlays = plays[String(min)] || [];
-        const entries = [];
-        let secCursor = 0;
-        minPlays.forEach((play) => {
-          if (keyOnly && play.severity !== 1) return;
-          const lineCount = countPlayLines(play);
-          for (let li = 0; li < lineCount; li++) {
-            entries.push({ evtIdx: play.reportEvtIdx, lineIdx: li, sec: secCursor });
-            secCursor += LINE_INTERVAL;
-          }
-        });
-        if (entries.length > 0) {
-          schedule[min] = entries;
-          eventMinList.push(min);
-        }
-      });
-      return { schedule, eventMinList };
-    };
-    const syncLiveDerivedTeams = () => {
-      if (!(liveState == null ? void 0 : liveState.baseMData)) return;
-      deriveLiveMatchData();
-      unity.updateMatchStats();
-      updateLiveHeader();
-      refreshActiveTab();
-      console.log("[RND] Live derived data synced", liveState);
-    };
-    const updateLiveHeader = () => {
-      if (!liveState) return;
-      $("#rnd-overlay .rnd-dlg-score").text(`${liveState.mData.teams.home.goals} - ${liveState.mData.teams.away.goals}`);
-      const minDisplay = liveState.ended ? "FT" : liveState.liveIsHT ? "HT" : `${liveState.min}:${String(liveState.sec).padStart(2, "0")}`;
-      $("#rnd-live-min-head").text(minDisplay);
-      const maxMin = liveState.maxMin || 90;
-      const pct = Math.min(100, Math.round((liveState.min * 60 + liveState.sec) / (maxMin * 60) * 100));
-      $("#rnd-live-progress-head").css("width", pct + "%");
-      if (liveState.ended) {
-        $("#rnd-overlay .rnd-dlg-head").removeClass("rnd-live-active");
-        $("#rnd-live-play-head").html("\u25B6");
-      }
-      const hChip = $("#rnd-chip-ment-home");
-      if (hChip.length) hChip.find(".chip-val").text(liveState.mData.teams.home.mentalityLabel || liveState.mData.teams.home.mentality);
-      const aChip = $("#rnd-chip-ment-away");
-      if (aChip.length) aChip.find(".chip-val").text(liveState.mData.teams.away.mentalityLabel || liveState.mData.teams.away.mentality);
-    };
-    const refreshLeagueTabIfActive = (force = false) => {
-      if (!liveState) return;
-      const tab = getActiveOverlayTab();
-      if (tab !== "league") return;
-      if (!force && !liveState.justCompleted) return;
-      renderDialogTab("league", liveState.mData);
-    };
-    const refreshActiveTab = () => {
-      if (!liveState) return;
-      const tab = getActiveOverlayTab();
-      if (!tab) return;
-      if (liveState.ended) {
-        renderDialogTab(tab, liveState.mData);
-        return;
-      }
-      if (tab === "report") {
-        renderDialogTab("report", liveState.mData);
-        return;
-      }
-      if (tab === "details") {
-        if (liveState.justCompleted) renderDialogTab(tab, liveState.mData);
-        return;
-      }
-      if (tab === "statistics") {
-        if (liveState.justCompleted) renderDialogTab(tab, liveState.mData);
-        return;
-      }
-      if (tab === "lineups") {
-        renderDialogTab(tab, liveState.mData);
-        return;
-      }
-      if (tab === "league") {
-        renderDialogTab(tab, liveState.mData);
-        return;
-      }
-    };
-    const liveStep = () => {
-      if (!liveState || !liveState.playing) return;
-      if (liveState.filterMode === "live") {
-        const kickoff = liveState.liveKickoff;
-        if (!kickoff) return;
-        const info = calculateLiveMinute(kickoff);
-        const lastMin = liveState.mData.match_data.last_min || 90;
-        if (!info || info.minute > lastMin) {
-          liveState.min = lastMin;
-          liveState.sec = 59;
-          liveState.curEvtIdx = 999;
-          liveState.curLineIdx = 999;
-          liveState.ended = true;
-          liveState.playing = false;
-          liveState.liveIsHT = false;
-          syncLiveDerivedTeams();
-          return;
-        }
-        const prevMin = liveState.min;
-        liveState.min = info.minute;
-        liveState.sec = info.second;
-        liveState.liveIsHT = info.isHT;
-        if (info.isHT) {
-          liveState.curEvtIdx = 999;
-          liveState.curLineIdx = 999;
-          liveState.curEvtComplete = true;
-          updateLiveHeader();
-          liveState.timer = setTimeout(liveStep, liveState.speed);
-          return;
-        }
-        if (unity.getState().activeMinute === liveState.min) {
-          updateLiveHeader();
-          liveState.timer = setTimeout(liveStep, liveState.speed);
-          return;
-        }
-        liveState.curEvtIdx = 999;
-        liveState.curLineIdx = 999;
-        liveState.curEvtComplete = true;
-        const minuteChanged = liveState.min !== prevMin;
-        liveState.justCompleted = minuteChanged;
-        if (minuteChanged) refreshLeagueTabIfActive(true);
-        if (minuteChanged && unity.getState().available && unity.getState().ready) {
-          const hasClips = unity.loadUnityClips(liveState.min, liveState.mData);
-          if (hasClips) {
-            updateLiveHeader();
-            liveState.timer = setTimeout(liveStep, liveState.speed);
-            return;
-          }
-        }
-        if (minuteChanged) {
-          syncLiveDerivedTeams();
-        } else {
-          updateLiveHeader();
-        }
-        liveState.timer = setTimeout(liveStep, liveState.speed);
-        return;
-      }
-      liveState.sec++;
-      if (unity.getState().activeMinute === liveState.min) {
-        updateLiveHeader();
-        liveState.timer = setTimeout(liveStep, liveState.speed);
-        return;
-      }
-      const entries = liveState.schedule[liveState.min] || [];
-      const lastSec = entries.length > 0 ? entries[entries.length - 1].sec : -1;
-      const minuteEnd = lastSec + POST_DELAY;
-      if (liveState.sec > minuteEnd || liveState.sec >= 60) {
-        const nextIdx = liveState.eventMinIdx + 1;
-        if (nextIdx >= liveState.eventMinList.length) {
-          liveState.min = liveState.maxMin;
-          liveState.sec = 59;
-          liveState.curEvtIdx = 999;
-          liveState.curLineIdx = 999;
-          liveState.playing = false;
-          liveState.ended = true;
-          liveState.curEvtComplete = true;
-          liveState.justCompleted = true;
-          syncLiveDerivedTeams();
-          return;
-        }
-        liveState.eventMinIdx = nextIdx;
-        liveState.min = liveState.eventMinList[nextIdx];
-        liveState.sec = 0;
-        liveState.curEvtIdx = -1;
-        liveState.curEvtComplete = false;
-        refreshLeagueTabIfActive(true);
-        if (unity.getState().available && unity.getState().ready) {
-          const hasClips = unity.loadUnityClips(liveState.min, liveState.mData);
-          if (hasClips) {
-            updateLiveHeader();
-            liveState.timer = setTimeout(liveStep, liveState.speed);
-            return;
-          }
-        }
-      }
-      liveState.justCompleted = false;
-      const curEntries = liveState.schedule[liveState.min] || [];
-      curEntries.forEach((entry) => {
-        if (entry.sec === liveState.sec) {
-          liveState.curEvtIdx = entry.evtIdx;
-          liveState.curLineIdx = entry.lineIdx;
-          const play = findPlay(liveState.mData, liveState.min, entry.evtIdx);
-          const total = play ? countPlayLines(play) : 1;
-          const isComplete = entry.lineIdx >= total - 1;
-          liveState.curEvtComplete = isComplete;
-          if (isComplete) liveState.justCompleted = true;
-        }
-      });
-      liveState.timer = setTimeout(liveStep, liveState.speed);
-    };
-    const livePlay = () => {
-      if (!liveState || liveState.ended || liveState.playing) return;
-      liveState.playing = true;
-      $("#rnd-live-play-head").html("\u23F8");
-      if (unity.getState().activeMinute !== null) {
-        const uw = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
-        if (uw.gameInstance) uw.gameInstance.SendMessage("ClipsViewerScript", "OnPauseGame");
-      }
-      scheduleLiveClockTicker();
-      liveStep();
-    };
-    const livePause = () => {
-      if (!liveState) return;
-      liveState.playing = false;
-      clearTimeout(liveState.timer);
-      stopLiveClockTicker();
-      $("#rnd-live-play-head").html("\u25B6");
-      if (unity.getState().playing && unity.getState().activeMinute !== null) {
-        const uw = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
-        if (uw.gameInstance) uw.gameInstance.SendMessage("ClipsViewerScript", "OnPauseGame");
-      }
-    };
-    const liveToggle = () => {
-      if (!liveState) return;
-      if (liveState.playing) livePause();
-      else livePlay();
-    };
-    const applyFilterSwitch = (mode) => {
-      if (!liveState) return;
-      if (mode === "live") {
-        const sch2 = liveState.scheduleAll;
-        liveState.schedule = sch2.schedule;
-        liveState.eventMinList = sch2.eventMinList;
-        liveState.maxMin = sch2.eventMinList.length ? sch2.eventMinList[sch2.eventMinList.length - 1] : 90;
-        let kickoff = liveState.liveKickoff;
-        if (!kickoff && isMatchCurrentlyLive(liveState.mData)) {
-          kickoff = deriveKickoff(liveState.mData);
-          liveState.liveKickoff = kickoff;
-        }
-        const info = kickoff ? calculateLiveMinute(kickoff) : null;
-        const lastMin = liveState.mData.match_data.last_min || 90;
-        if (info && info.minute <= lastMin) {
-          liveState.min = info.minute;
-          liveState.sec = info.second;
-          liveState.liveIsHT = info.isHT;
-          liveState.curEvtIdx = 999;
-          liveState.curLineIdx = 999;
-          liveState.curEvtComplete = true;
-          liveState.justCompleted = true;
-          liveState.ended = false;
-        } else {
-          liveState.min = lastMin;
-          liveState.sec = 59;
-          liveState.curEvtIdx = 999;
-          liveState.curLineIdx = 999;
-          liveState.ended = true;
-          liveState.playing = false;
-          liveState.liveIsHT = false;
-        }
-        liveState.pendingFilterSwitch = null;
-        console.log("[RND] Filter switch applied: live (min " + liveState.min + ")");
-        return;
-      }
-      liveState.liveIsHT = false;
-      const sch = mode === "key" ? liveState.scheduleKey : liveState.scheduleAll;
-      liveState.schedule = sch.schedule;
-      liveState.eventMinList = sch.eventMinList;
-      liveState.maxMin = sch.eventMinList.length ? sch.eventMinList[sch.eventMinList.length - 1] : 90;
-      const curMin = liveState.min;
-      let newIdx = sch.eventMinList.findIndex((m) => m > curMin);
-      if (newIdx < 0) {
-        liveState.min = liveState.maxMin;
-        liveState.sec = 59;
-        liveState.curEvtIdx = 999;
-        liveState.curLineIdx = 999;
-        liveState.playing = false;
-        liveState.ended = true;
-        liveState.pendingFilterSwitch = null;
-        syncLiveDerivedTeams();
-        return;
-      }
-      liveState.eventMinIdx = newIdx;
-      liveState.min = sch.eventMinList[newIdx];
-      liveState.sec = -1;
-      liveState.curEvtIdx = -1;
-      liveState.curLineIdx = -1;
-      liveState.curEvtComplete = true;
-      liveState.justCompleted = false;
-      liveState.pendingFilterSwitch = null;
-      console.log("[RND] Filter switch applied: " + mode);
-      if (unity.getState().available && unity.getState().ready) {
-        unity.loadUnityClips(liveState.min, liveState.mData);
-      }
-      syncLiveDerivedTeams();
-    };
-    const liveSkip = () => {
-      if (!liveState) return;
-      livePause();
-      liveState.min = liveState.maxMin;
-      liveState.sec = 59;
-      liveState.curEvtIdx = 999;
-      liveState.curLineIdx = 999;
-      liveState.eventMinIdx = liveState.eventMinList.length;
-      liveState.ended = true;
-      syncLiveDerivedTeams();
-    };
-    const openMatchDialog = (matchId) => {
-      const cached = roundMatchCache2.get(String(matchId));
-      const show3 = (mData) => {
-        var _a2;
-        currentMData = mData;
-        const matchIsFuture = TmMatchUtils.isMatchFuture(mData);
-        const matchIsLive = !matchIsFuture && isMatchCurrentlyLive(mData);
-        if (!matchIsFuture) {
-          const allSch = buildSchedule(mData.plays, false);
-          const keySch = buildSchedule(mData.plays, true);
-          const { schedule: keySchedule, eventMinList: keyEventMinList } = keySch;
-          const maxMin = keyEventMinList.length ? keyEventMinList[keyEventMinList.length - 1] : 90;
-          if (liveState && liveState.timer) clearTimeout(liveState.timer);
-          if (matchIsLive) {
-            const { schedule: allSchedule, eventMinList: allEventMinList } = allSch;
-            const allMaxMin = allEventMinList.length ? allEventMinList[allEventMinList.length - 1] : 90;
-            const effectiveKickoff = deriveKickoff(mData);
-            const info = calculateLiveMinute(effectiveKickoff);
-            const lastMin = mData.match_data.last_min || 90;
-            const liveMin = info ? Math.min(info.minute, lastMin) : Math.floor(mData.match_data.live_min);
-            const liveSec = info ? info.second : 0;
-            const liveHT = info ? info.isHT : false;
-            console.log("[RND] LIVE detected \u2014 live_min:", mData.match_data.live_min, "\u2192 min:", liveMin, "sec:", liveSec, "HT:", liveHT);
-            liveState = {
-              min: liveMin,
-              sec: liveSec,
-              curEvtIdx: 999,
-              curLineIdx: 999,
-              curEvtComplete: true,
-              justCompleted: false,
-              playing: false,
-              timer: null,
-              mData,
-              speed: 1e3,
-              maxMin: allMaxMin,
-              ended: info ? info.minute > lastMin : false,
-              schedule: allSchedule,
-              eventMinList: allEventMinList,
-              eventMinIdx: 0,
-              filterMode: "live",
-              liveIsHT: liveHT,
-              liveKickoff: effectiveKickoff,
-              scheduleAll: allSch,
-              scheduleKey: keySch,
-              baseMData: TmMatchUtils.cloneMatchData(mData),
-              derivedKey: null
-            };
-          } else {
-            liveState = {
-              min: keyEventMinList.length ? keyEventMinList[0] : 0,
-              sec: -1,
-              curEvtIdx: -1,
-              curLineIdx: -1,
-              curEvtComplete: true,
-              justCompleted: false,
-              playing: false,
-              timer: null,
-              mData,
-              speed: 1e3,
-              maxMin,
-              ended: false,
-              schedule: keySchedule,
-              eventMinList: keyEventMinList,
-              eventMinIdx: 0,
-              filterMode: "key",
-              liveIsHT: false,
-              liveKickoff: null,
-              scheduleAll: allSch,
-              scheduleKey: keySch,
-              baseMData: TmMatchUtils.cloneMatchData(mData),
-              derivedKey: null
-            };
-          }
-          console.log("[RND] Live state initialized", liveState, mData);
-          syncLiveDerivedTeams();
-        } else {
-          if (liveState && liveState.timer) clearTimeout(liveState.timer);
-          liveState = null;
-        }
-        const overlay = TmMatchHeader.build(mData, matchIsFuture, matchIsLive);
-        $("body").append(overlay).css("overflow", "hidden");
-        const closeDialog = () => {
-          if (liveState && liveState.timer) clearTimeout(liveState.timer);
-          stopLiveClockTicker();
-          liveState = null;
-          currentMData = null;
-          if (prematchTimer) {
-            clearTimeout(prematchTimer);
-            prematchTimer = null;
-          }
-          overlay.remove();
-          $("body").css("overflow", "");
-        };
-        overlay.on("click", "#rnd-dlg-close", closeDialog);
-        overlay.on("click", (e) => {
-          if (e.target === overlay[0]) closeDialog();
-        });
-        $(document).one("keydown.rndDlg", (e) => {
-          if (e.key === "Escape") {
-            closeDialog();
-            $(document).off("keydown.rndDlg");
-          }
-        });
-        if (!matchIsFuture) {
-          overlay.on("click", "#rnd-live-play-head", liveToggle);
-          overlay.on("click", "#rnd-live-skip-head", liveSkip);
-          overlay.on("click", ".rnd-live-filter-btn", function() {
-            const mode = $(this).data("filter");
-            if (!liveState || liveState.filterMode === mode) return;
-            liveState.filterMode = mode;
-            overlay.find(".rnd-live-filter-btn").removeClass("active");
-            $(this).addClass("active");
-            if (unity.getState().activeMinute !== null || unity.getState().playing) {
-              liveState.pendingFilterSwitch = mode;
-              console.log("[RND] Filter switch deferred until animation finishes");
-              return;
-            }
-            applyFilterSwitch(mode);
-          });
-        }
-        overlay.on("click", ".tmu-tab", function() {
-          const tabKey = this.dataset.tab;
-          if (!tabKey || this.disabled) return;
-          setActiveOverlayTab(tabKey);
-          renderDialogTab(tabKey, mData);
-        });
-        if (!matchIsFuture) {
-          $("#rnd-overlay .rnd-dlg-head").addClass("rnd-live-active");
-        }
-        renderDialogTab("lineups", mData);
-        if (!matchIsFuture) {
-          updateLiveHeader();
-          setTimeout(() => livePlay(), 500);
-        } else {
-          const lm = (_a2 = mData.match_data) == null ? void 0 : _a2.live_min;
-          if (typeof lm === "number" && lm < 0) {
-            const msUntilKickoff = Math.abs(lm) * 60 * 1e3 + 5e3;
-            if (prematchTimer) clearTimeout(prematchTimer);
-            prematchTimer = setTimeout(() => {
-              prematchTimer = null;
-              closeDialog();
-              roundMatchCache2.delete(String(matchId));
-              openMatchDialog(matchId);
-            }, msUntilKickoff);
-            console.log("[RND] Prematch timer set \u2014 auto-reload in", Math.round(msUntilKickoff / 1e3), "seconds");
-          }
-        }
-      };
-      if (cached && cached.data) {
-        show3(cached.data);
-      } else {
-        TmMatchService.fetchMatch(matchId).then((mData) => {
-          if (mData) {
-            console.log("[RND] Match data fetched for matchId", matchId, mData);
-            show3(mData);
-          }
-        });
-      }
-      window.addEventListener("tm:match-profiles-ready", (e) => {
-        var _a2;
-        console.log("[RND] Match profiles ready", e);
-        const baseMData = (_a2 = liveState == null ? void 0 : liveState.baseMData) != null ? _a2 : currentMData;
-        if (!baseMData) return;
-        const players = e.detail.players;
-        ["home", "away"].forEach((side) => {
-          var _a3;
-          const rawLineup = Object.values(((_a3 = baseMData.lineup) == null ? void 0 : _a3[side]) || {});
-          const enrichedLineup = rawLineup.map((p) => {
-            var _a4, _b, _c, _d, _e, _f, _g, _h;
-            const player2 = players.find((pl) => Number(pl.id) === Number(p.id || p.player_id));
-            return {
-              ...p,
-              name: (_a4 = player2 == null ? void 0 : player2.name) != null ? _a4 : p.name,
-              lastname: (_c = (_b = player2 == null ? void 0 : player2.lastname) != null ? _b : p.nameLast) != null ? _c : p.lastname,
-              r5: (_d = player2 == null ? void 0 : player2.r5) != null ? _d : p.r5,
-              skills: (_e = player2 == null ? void 0 : player2.skills) != null ? _e : p.skills,
-              asi: (_f = player2 == null ? void 0 : player2.asi) != null ? _f : p.asi,
-              routine: (_g = player2 == null ? void 0 : player2.routine) != null ? _g : p.routine,
-              positions: (_h = player2 == null ? void 0 : player2.positions) != null ? _h : p.positions
-            };
-          });
-          baseMData.lineup[side] = enrichedLineup.reduce((acc, player2) => {
-            acc[String(player2.id || player2.player_id)] = player2;
-            return acc;
-          }, {});
-          baseMData.teams[side].lineup = enrichedLineup;
-          const starters = enrichedLineup.filter((p) => !/^sub/.test(p.position || ""));
-          const r5s = starters.map((p) => Number(p.r5)).filter(Number.isFinite);
-          if (r5s.length) baseMData.teams[side].avgR5 = r5s.reduce((a, b) => a + b, 0) / r5s.length;
-        });
-        baseMData.profilesReady = true;
-        if (liveState) {
-          liveState.derivedKey = null;
-          syncLiveDerivedTeams();
-        } else if (currentMData) {
-          const activeTab3 = getActiveOverlayTab() || "lineups";
-          renderDialogTab(activeTab3, currentMData);
-        }
-      });
-    };
-    const renderDialogTab = (tab, mData) => {
-      var _a2, _b, _c;
-      const activeMatchData = liveState ? deriveLiveMatchData() : mData;
-      const curMin = (_a2 = liveState == null ? void 0 : liveState.min) != null ? _a2 : 999;
-      const curEvtIdx = (_b = liveState == null ? void 0 : liveState.curEvtIdx) != null ? _b : 999;
-      const curLineIdx = (_c = liveState == null ? void 0 : liveState.curLineIdx) != null ? _c : 999;
-      const activeState = liveState || {
-        mData: activeMatchData,
-        min: curMin,
-        curEvtIdx,
-        curLineIdx,
-        ended: true
-      };
-      if (tab !== "lineups") unity.saveUnityCanvas();
-      const body = $("#rnd-dlg-body");
-      const sharedOpts = {
-        getUnityState: () => unity.getState(),
-        moveUnityCanvas: unity.moveUnityCanvas,
-        saveUnityCanvas: unity.saveUnityCanvas,
-        updateMatchStats: unity.updateMatchStats,
-        updateMatchFeed: unity.updateMatchFeed,
-        liveState: activeState
-      };
-      switch (tab) {
-        case "details":
-          TmMatchDetails.render(body, activeState);
-          break;
-        case "statistics":
-          TmMatchStatistics.render(body, activeState);
-          break;
-        case "report":
-          TmMatchReport.render(body, activeState);
-          break;
-        case "lineups":
-          TmMatchLineups.render(body, activeState, sharedOpts);
-          break;
-        case "venue":
-          TmMatchVenue.render(body, activeMatchData);
-          break;
-        case "h2h":
-          TmMatchH2H.render(body, activeMatchData);
-          break;
-        case "league":
-          TmMatchLeague.render(body, activeState);
-          break;
-        case "analysis":
-          TmMatchAnalysis.render(body, activeMatchData, activeMatchData.teams);
-          break;
-      }
-    };
-    const cleanupPage = () => {
-      if (liveState && liveState.timer) clearTimeout(liveState.timer);
-      stopLiveClockTicker();
-      liveState = null;
-      $("#rnd-overlay").remove();
-      $("body").css("overflow", "");
-      unity.resetState();
-    };
-    const initForCurrentPage = () => {
-      var _a2;
-      cleanupPage();
-      injectStyles39();
-      unity.init();
-      const matchId = (_a2 = window.location.pathname.match(/\/matches\/(\d+)/)) == null ? void 0 : _a2[1];
       if (!matchId) return;
-      try {
-        $(".banner_placeholder.rectangle")[0].parentNode.removeChild($(".banner_placeholder.rectangle")[0]);
-      } catch (e) {
-      }
-      try {
-        $(".column3_a .box").has("h2").filter(function() {
-          return $(this).find("h2").text().trim().toUpperCase() === "ROUNDS";
-        }).remove();
-      } catch (e) {
-      }
-      const pollInterval = setInterval(() => {
-        if ($("body").length && document.readyState !== "loading") {
-          clearInterval(pollInterval);
-          openMatchDialog(matchId);
-        }
-      }, 500);
-    };
-    initForCurrentPage();
+      e.preventDefault();
+      openPlayer(matchId);
+    });
   }
 
   // src/components/shared/tm-tournament-page.js
@@ -34554,12 +33093,12 @@ order:initial
   };
 
   // src/components/shared/tm-tournament-cards.js
-  var STYLE_ID42 = "tmvu-tournament-cards-style";
+  var STYLE_ID50 = "tmvu-tournament-cards-style";
   var escapeHtml26 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  var injectStyles31 = () => {
-    if (document.getElementById(STYLE_ID42)) return;
+  var injectStyles37 = () => {
+    if (document.getElementById(STYLE_ID50)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID42;
+    style.id = STYLE_ID50;
     style.textContent = `
         .tmvu-cup-note {
             padding: var(--tmu-space-md) var(--tmu-space-md);
@@ -34682,7 +33221,7 @@ order:initial
     document.head.appendChild(style);
   };
   var buildFixtureList = (matches, { season = null } = {}) => {
-    injectStyles31();
+    injectStyles37();
     return `
         <div class="tmvu-match-list">
             ${matches.map((match, index) => TmMatchRow.render({
@@ -34702,7 +33241,7 @@ order:initial
     `;
   };
   var buildGroupedFixtureList = (groups, { season = null } = {}) => {
-    injectStyles31();
+    injectStyles37();
     return `
         <div class="tmvu-cup-round-groups">
             ${(groups || []).map((group) => `
@@ -34715,7 +33254,7 @@ order:initial
     `;
   };
   var renderDrawCard = (section, { season = null, icon = "\u2694" } = {}) => {
-    injectStyles31();
+    injectStyles37();
     const wrap = document.createElement("section");
     TmUI.render(wrap, `
         <tm-card data-title="${escapeHtml26(section.title)}" data-icon="${icon}">
@@ -34725,7 +33264,7 @@ order:initial
     return wrap.firstElementChild || wrap;
   };
   var renderGroupedFixturesCard = (section, { season = null, icon = "\u{1F4C5}" } = {}) => {
-    injectStyles31();
+    injectStyles37();
     const wrap = document.createElement("section");
     TmUI.render(wrap, `
         <tm-card data-title="${escapeHtml26(section.title)}" data-icon="${icon}">
@@ -34735,7 +33274,7 @@ order:initial
     return wrap.firstElementChild || wrap;
   };
   var renderRouteCard = (routeRows, overview = {}, { season = null, title = "Route", icon = "\u{1F4C8}" } = {}) => {
-    injectStyles31();
+    injectStyles37();
     const wrap = document.createElement("section");
     TmUI.render(wrap, `
         <tm-card data-title="${escapeHtml26(title)}" data-icon="${icon}">
@@ -34763,7 +33302,7 @@ order:initial
     return wrap.firstElementChild || wrap;
   };
   var renderHistoryCard2 = (history, { title = "History", icon = "\u{1F4DC}" } = {}) => {
-    injectStyles31();
+    injectStyles37();
     const wrap = document.createElement("section");
     TmUI.render(wrap, `
         <tm-card data-title="${escapeHtml26(title)}" data-icon="${icon}">
@@ -34786,7 +33325,7 @@ order:initial
     return wrap.firstElementChild || wrap;
   };
   var TmTournamentCards = {
-    injectStyles: injectStyles31,
+    injectStyles: injectStyles37,
     buildFixtureList,
     buildGroupedFixtureList,
     renderDrawCard,
@@ -34799,13 +33338,13 @@ order:initial
   function initCupPage(main2) {
     if (!main2 || !main2.isConnected) return;
     const sourceRoot3 = document.querySelector(".main_center") || main2;
-    const STYLE_ID51 = "tmvu-cup-style";
+    const STYLE_ID58 = "tmvu-cup-style";
     const CURRENT_SEASON2 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
-    const injectStyles39 = () => {
-      if (document.getElementById(STYLE_ID51)) return;
+    const injectStyles45 = () => {
+      if (document.getElementById(STYLE_ID58)) return;
       injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID51;
+      style.id = STYLE_ID58;
       style.textContent = `
             .tmvu-cup-page {
                 --tmu-page-main-track: minmax(0, 0.88fr);
@@ -34875,7 +33414,7 @@ order:initial
       document.head.appendChild(style);
     };
     const cleanText28 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-    const htmlOf7 = (node) => node ? node.outerHTML : "";
+    const htmlOf6 = (node) => node ? node.outerHTML : "";
     const extractClubId4 = (node) => {
       if (!node) return "";
       const explicit = node.getAttribute("club_link");
@@ -34980,7 +33519,7 @@ order:initial
       return {
         clubName: cleanText28((clubLink == null ? void 0 : clubLink.textContent) || "Cup"),
         clubHref: (clubLink == null ? void 0 : clubLink.getAttribute("href")) || "#",
-        changeHtml: htmlOf7(changeLink),
+        changeHtml: htmlOf6(changeLink),
         competitionHtml,
         emblemSrc: (emblem == null ? void 0 : emblem.getAttribute("src")) || "",
         currentRoundHref: (roundLink == null ? void 0 : roundLink.getAttribute("href")) || "",
@@ -35047,7 +33586,7 @@ order:initial
     const renderDrawCard2 = (section) => TmTournamentCards.renderDrawCard(section, { season: CURRENT_SEASON2 });
     const renderHistoryCard3 = (history) => TmTournamentCards.renderHistoryCard(history);
     const render16 = () => {
-      injectStyles39();
+      injectStyles45();
       TmTournamentCards.injectStyles();
       TmMatchHoverCard.injectStyles();
       const menuItems = parseMenu10();
@@ -35075,7 +33614,7 @@ order:initial
   // src/pages/home.js
   function initHomePage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID51 = "tmvu-home-style";
+    const STYLE_ID58 = "tmvu-home-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const escapeHtml34 = (v) => String(v != null ? v : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const findColumnBoxByTitle = (root2, title) => {
@@ -35086,7 +33625,7 @@ order:initial
         return heading === wanted;
       }) || null;
     };
-    const injectStyles39 = () => {
+    const injectStyles45 = () => {
       injectTmPageLayoutStyles();
       const rules = [
         ".tmvu-home-page{--tmu-page-gap:var(--tmu-space-xxl);display:grid!important;grid-template-columns:minmax(0,1fr) 320px;gap:var(--tmu-page-gap);align-items:start;max-width:1240px;margin:0 auto;padding:var(--tmu-space-sm) var(--tmu-space-md) var(--tmu-space-xl)}",
@@ -35215,8 +33754,8 @@ order:initial
         ".tmvu-home-thread-copy{min-width:0}",
         ".tmvu-home-thread-date{font-size:var(--tmu-font-xs);font-weight:800;color:var(--tmu-text-muted);white-space:nowrap;padding:0;background:transparent;border:none;border-radius:0;text-align:left;min-height:0}"
       ];
-      const style = document.getElementById(STYLE_ID51) || document.createElement("style");
-      style.id = STYLE_ID51;
+      const style = document.getElementById(STYLE_ID58) || document.createElement("style");
+      style.id = STYLE_ID58;
       style.textContent = rules.join("");
       if (!style.parentNode) document.head.appendChild(style);
     };
@@ -35766,7 +34305,7 @@ order:initial
       const col1 = nativeMain.querySelector(":scope > .column1") || nativeMain.querySelector(".column1");
       const col2 = nativeMain.querySelector(":scope > .column2_a") || nativeMain.querySelector(".column2_a");
       if (!col1 || !col2) return;
-      injectStyles39();
+      injectStyles45();
       const origTabs = parseOrigTabs(col1);
       const tabsContent = col1.querySelector(".tabs_content");
       const activeKey = ((_a2 = origTabs.find((t) => t.isActive)) == null ? void 0 : _a2.targetId) || ((_b = origTabs[0]) == null ? void 0 : _b.targetId) || "";
@@ -36044,21 +34583,21 @@ order:initial
     if (!main2) main2 = document.querySelector(".tmvu-main");
     if (!main2) return;
     const sourceRoot3 = document.querySelector(".main_center") || main2;
-    const STYLE_ID51 = "tmvu-international-cup-overview-style";
+    const STYLE_ID58 = "tmvu-international-cup-overview-style";
     const CURRENT_SEASON2 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const cleanText28 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml34 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-    const htmlOf7 = (node) => node ? node.outerHTML : "";
+    const htmlOf6 = (node) => node ? node.outerHTML : "";
     const stripShadow = (root2) => {
       if (!root2) return null;
       const clone = root2.cloneNode(true);
       clone.querySelectorAll(".box_shadow").forEach((node) => node.remove());
       return clone;
     };
-    const injectStyles39 = () => {
-      if (document.getElementById(STYLE_ID51)) return;
+    const injectStyles45 = () => {
+      if (document.getElementById(STYLE_ID58)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID51;
+      style.id = STYLE_ID58;
       style.textContent = `
             .tmvu-main.tmvu-icup-page {
                 display: grid !important;
@@ -36406,12 +34945,12 @@ order:initial
         return groups;
       }, []);
     };
-    const renderStandingsTable = (table2) => {
-      const groups = TmStandingsParser.parseNativeGroupedTable(table2);
+    const renderStandingsTable = (table) => {
+      const groups = TmStandingsParser.parseNativeGroupedTable(table);
       if (groups.length > 1 || groups.length === 1 && groups[0].title) {
         return TmStandingsTable.buildGroupedHtml({ groups, promotionCount: 2 });
       }
-      const rows = TmStandingsParser.parseNativeTable(table2);
+      const rows = TmStandingsParser.parseNativeTable(table);
       if (!rows.length) return "";
       return `<div class="tmvu-standings-wrap">${TmStandingsTable.buildHtml({ rows, promotionCount: 2 })}</div>`;
     };
@@ -36478,16 +35017,16 @@ order:initial
             return TmTournamentCards.buildGroupedFixtureList(matchGroups, { season: CURRENT_SEASON2 });
           }
           const matches = Array.from(node.querySelectorAll("li")).map(parseMatchListItem2).filter(Boolean);
-          return matches.length ? TmTournamentCards.buildFixtureList(matches, { season: CURRENT_SEASON2 }) : htmlOf7(node);
+          return matches.length ? TmTournamentCards.buildFixtureList(matches, { season: CURRENT_SEASON2 }) : htmlOf6(node);
         }
         if (node.tagName === "TABLE") {
-          return renderStandingsTable(node) || htmlOf7(node);
+          return renderStandingsTable(node) || htmlOf6(node);
         }
-        const table2 = (_a2 = node.querySelector) == null ? void 0 : _a2.call(node, "table");
-        if (table2 && node.children.length === 1) {
-          return renderStandingsTable(table2) || htmlOf7(node);
+        const table = (_a2 = node.querySelector) == null ? void 0 : _a2.call(node, "table");
+        if (table && node.children.length === 1) {
+          return renderStandingsTable(table) || htmlOf6(node);
         }
-        const raw = htmlOf7(node);
+        const raw = htmlOf6(node);
         return isGroupStage ? `<section class="tmvu-icup-node-card">${raw}</section>` : raw;
       }).join("");
       if (/group.?stage/i.test(section.title)) {
@@ -36512,7 +35051,7 @@ order:initial
       title: panel.title,
       icon: "\u{1F3C1}"
     });
-    injectStyles39();
+    injectStyles45();
     TmStandingsTable.injectStyles();
     TmTournamentCards.injectStyles();
     TmMatchHoverCard.injectStyles();
@@ -37343,10 +35882,10 @@ order:initial
   // src/pages/teamsters.js
   function initTeamstersPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID51 = "tmvu-teamsters-style";
+    const STYLE_ID58 = "tmvu-teamsters-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles39 = () => {
-      if (document.getElementById(STYLE_ID51)) return;
+    const injectStyles45 = () => {
+      if (document.getElementById(STYLE_ID58)) return;
       injectTmPageLayoutStyles();
       const rules = [
         // page-shell overrides
@@ -37392,7 +35931,7 @@ order:initial
         ".tmvu-apply-intro a{color:var(--tmu-accent)}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID51;
+      style.id = STYLE_ID58;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -37451,7 +35990,7 @@ order:initial
       const navItems = snap1 ? parseNav(snap1) : [];
       const articleHtml = parseArticle(snap2);
       const tabDefs = snap3 ? parseTabs2(snap3) : [];
-      injectStyles39();
+      injectStyles45();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-teamsters-hero",
@@ -37551,7 +36090,7 @@ order:initial
       textarea.placeholder = "I wish to be a teamster in TM because...";
       textarea.className = "tmu-input tmu-input-tone-overlay tmu-input-density-regular";
       const submitBtn = TmUI.button({ label: "Send Application", color: "primary", size: "sm", shape: "md", type: "submit" });
-      const makeRow = (labelText, el2, required = false) => {
+      const makeRow2 = (labelText, el2, required = false) => {
         const div = document.createElement("div");
         div.className = "tmvu-apply-row";
         const lbl = document.createElement("label");
@@ -37568,8 +36107,8 @@ order:initial
         div.appendChild(el2);
         return div;
       };
-      const rowCountry = makeRow("Country", selCountry, true);
-      const rowLanguage = makeRow("Language", selLanguage, true);
+      const rowCountry = makeRow2("Country", selCountry, true);
+      const rowLanguage = makeRow2("Language", selLanguage, true);
       rowCountry.classList.add("is-hidden");
       rowLanguage.classList.add("is-hidden");
       selFor.addEventListener("change", () => {
@@ -37580,13 +36119,13 @@ order:initial
       const form = document.createElement("form");
       form.id = "teamster_apply_ui";
       form.className = "tmvu-apply-form tmu-stack tmu-stack-density-cozy";
-      form.appendChild(makeRow("Apply For", selFor, true));
+      form.appendChild(makeRow2("Apply For", selFor, true));
       form.appendChild(rowCountry);
       form.appendChild(rowLanguage);
-      form.appendChild(makeRow("Name", inputName));
-      form.appendChild(makeRow("Age", selAge));
-      form.appendChild(makeRow("Gender", selGender));
-      form.appendChild(makeRow("Motivation", textarea, true));
+      form.appendChild(makeRow2("Name", inputName));
+      form.appendChild(makeRow2("Age", selAge));
+      form.appendChild(makeRow2("Gender", selGender));
+      form.appendChild(makeRow2("Motivation", textarea, true));
       const actions = document.createElement("div");
       actions.className = "tmvu-apply-actions";
       actions.appendChild(submitBtn);
@@ -37640,7 +36179,7 @@ order:initial
       const isApply = /^\/teamsters\/apply\//i.test(window.location.pathname);
       const check = () => isApply ? document.querySelector("#teamster_apply") : document.querySelector(".column2_a .box_head");
       const run = () => {
-        injectStyles39();
+        injectStyles45();
         if (isApply) {
           const liveForm = document.querySelector("#teamster_apply");
           const nativeCol1 = document.querySelector(".main_center .column1");
@@ -37668,10 +36207,10 @@ order:initial
   // src/pages/about-tm.js
   function initAboutTmPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID51 = "tmvu-abouttm-style";
+    const STYLE_ID58 = "tmvu-abouttm-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles39 = () => {
-      if (document.getElementById(STYLE_ID51)) return;
+    const injectStyles45 = () => {
+      if (document.getElementById(STYLE_ID58)) return;
       injectTmPageLayoutStyles();
       const rules = [
         // page wrapper: single centered column
@@ -37694,7 +36233,7 @@ order:initial
         '.tmvu-abouttm-clearfix::after{content:"";display:table;clear:both}'
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID51;
+      style.id = STYLE_ID58;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -37714,7 +36253,7 @@ order:initial
         ((_a2 = snap.querySelector(".box_head h1.std, .box_head h2.std")) == null ? void 0 : _a2.textContent) || "About TM"
       );
       const articleHtml = transformArticle(snap.querySelector(".box_body .std"));
-      injectStyles39();
+      injectStyles45();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-abouttm-hero",
@@ -37753,10 +36292,10 @@ order:initial
   // src/pages/about-pro.js
   function initAboutProPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID51 = "tmvu-aboutpro-style";
+    const STYLE_ID58 = "tmvu-aboutpro-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles39 = () => {
-      if (document.getElementById(STYLE_ID51)) return;
+    const injectStyles45 = () => {
+      if (document.getElementById(STYLE_ID58)) return;
       injectTmPageLayoutStyles();
       const rules = [
         // hero: single column (no side slot)
@@ -37778,7 +36317,7 @@ order:initial
         ".tmvu-aboutpro-quote-attr{font-size:var(--tmu-font-xs);color:var(--tmu-text-faint);margin-top:var(--tmu-space-xs);text-align:right}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID51;
+      style.id = STYLE_ID58;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -37847,7 +36386,7 @@ order:initial
       const col2 = nativeMain.querySelector(".column2_a");
       const col3 = nativeMain.querySelector(".column3_a");
       if (!col2) return;
-      injectStyles39();
+      injectStyles45();
       const navItems = parseNav(col1);
       const sections = buildSections(col2);
       const quotes = buildQuotes(col3);
@@ -37973,7 +36512,7 @@ order:initial
   // src/pages/buy-pro.js
   function initBuyProPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID51 = "tmvu-buypro-style";
+    const STYLE_ID58 = "tmvu-buypro-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const PRO_NAV = [
       { href: "/buy-pro", label: "Buy Pro" },
@@ -37981,8 +36520,8 @@ order:initial
       { href: "/donations", label: "Donations" },
       { href: "/support-pro", label: "Support" }
     ];
-    const injectStyles39 = () => {
-      if (document.getElementById(STYLE_ID51)) return;
+    const injectStyles45 = () => {
+      if (document.getElementById(STYLE_ID58)) return;
       injectTmPageLayoutStyles();
       const rules = [
         // hero: single column
@@ -38007,7 +36546,7 @@ order:initial
         ".tmvu-buypro-notice strong{color:var(--tmu-text-strong)}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID51;
+      style.id = STYLE_ID58;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -38067,7 +36606,7 @@ order:initial
       const col3 = nativeMain.querySelector(".column3_a");
       const liveForm = document.getElementById("order_submit");
       if (!liveForm) return;
-      injectStyles39();
+      injectStyles45();
       liveForm.style.display = "none";
       const liveCountry = document.getElementById("payment_country-button");
       if (liveCountry) liveCountry.style.display = "none";
@@ -38145,7 +36684,7 @@ order:initial
   // src/pages/free-pro.js
   function initFreeProPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID51 = "tmvu-freepro-style";
+    const STYLE_ID58 = "tmvu-freepro-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const PRO_NAV = [
       { href: "/buy-pro", label: "Buy Pro" },
@@ -38153,8 +36692,8 @@ order:initial
       { href: "/donations", label: "Donations" },
       { href: "/support-pro", label: "Support" }
     ];
-    const injectStyles39 = () => {
-      if (document.getElementById(STYLE_ID51)) return;
+    const injectStyles45 = () => {
+      if (document.getElementById(STYLE_ID58)) return;
       injectTmPageLayoutStyles();
       const rules = [
         ".tmvu-freepro-hero{grid-template-columns:minmax(0,1fr)!important}",
@@ -38165,7 +36704,7 @@ order:initial
         ".tmvu-freepro-body a:hover{text-decoration:underline}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID51;
+      style.id = STYLE_ID58;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -38176,7 +36715,7 @@ order:initial
       const snap = col2.cloneNode(true);
       const title = "Free Pro";
       const std = snap.querySelector(".box_body .std");
-      injectStyles39();
+      injectStyles45();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-freepro-hero",
@@ -38224,10 +36763,10 @@ order:initial
   // src/pages/donations.js
   function initDonationsPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID51 = "tmvu-donations-style";
+    const STYLE_ID58 = "tmvu-donations-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles39 = () => {
-      if (document.getElementById(STYLE_ID51)) return;
+    const injectStyles45 = () => {
+      if (document.getElementById(STYLE_ID58)) return;
       injectTmPageLayoutStyles();
       const rules = [
         ".tmvu-donations-hero{grid-template-columns:minmax(0,1fr)!important}",
@@ -38256,7 +36795,7 @@ order:initial
         ".tmvu-donations-legendary .tmvu-donations-club{background:var(--tmu-border-contrast);border-radius:var(--tmu-space-xs)}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID51;
+      style.id = STYLE_ID58;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -38350,7 +36889,7 @@ order:initial
       const title = "Legendary Clubs";
       const std = snap.querySelector(".box_body .std");
       const navItems = col1 ? parseNav(col1.cloneNode(true)) : [];
-      injectStyles39();
+      injectStyles45();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-donations-hero",
@@ -38385,7 +36924,7 @@ order:initial
       const title = "Donations";
       const std = snap.querySelector(".box_body .std");
       const navItems = col1 ? parseNav(col1.cloneNode(true)) : [];
-      injectStyles39();
+      injectStyles45();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-donations-hero",
@@ -38442,10 +36981,10 @@ order:initial
   // src/pages/user-guide.js
   function initUserGuidePage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID51 = "tmvu-ug-style";
+    const STYLE_ID58 = "tmvu-ug-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles39 = () => {
-      if (document.getElementById(STYLE_ID51)) return;
+    const injectStyles45 = () => {
+      if (document.getElementById(STYLE_ID58)) return;
       injectTmPageLayoutStyles();
       const rules = [
         // hero: single column (no side slot used)
@@ -38474,7 +37013,7 @@ order:initial
         ".tmvu-ug-article .text_orange{color:var(--tmu-warning-soft);font-weight:600}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID51;
+      style.id = STYLE_ID58;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -38539,7 +37078,7 @@ order:initial
         if (s6.label) menuItems.push({ type: "subtitle", label: s6.label });
         s6.links.forEach((l) => menuItems.push({ href: l.href, label: l.label }));
       });
-      injectStyles39();
+      injectStyles45();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-ug-hero-card",
@@ -38793,12 +37332,12 @@ order:initial
     if (!main2) main2 = document.querySelector(".tmvu-main, .main_center");
     if (!main2) return;
     const sourceRoot3 = (document.querySelector(".main_center") || main2).cloneNode(true);
-    const STYLE_ID51 = "tmvu-international-cup-coefficients-style";
+    const STYLE_ID58 = "tmvu-international-cup-coefficients-style";
     const CURRENT_SEASON2 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const coefficientTierBreakIndexes = [];
     let activeCoefficientGroup = null;
     const cleanText28 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-    const htmlOf7 = (node) => node ? node.outerHTML : "";
+    const htmlOf6 = (node) => node ? node.outerHTML : "";
     const COEFFICIENT_GROUPS = [
       { slug: "fita", label: "FITA (Global)", overviewIds: ["1", "2", "3", "4", "5", "6"], matchIds: [], aliases: ["fita", "global", "world", "globalno"], hasQualificationTiers: false },
       { slug: "ueta", label: "UETA", overviewIds: ["1", "2"], matchIds: ["1", "2"], aliases: ["ueta"], hasQualificationTiers: true },
@@ -38842,10 +37381,10 @@ order:initial
       clone.querySelectorAll(".box_shadow").forEach((node) => node.remove());
       return clone;
     };
-    const injectStyles39 = () => {
-      if (document.getElementById(STYLE_ID51)) return;
+    const injectStyles45 = () => {
+      if (document.getElementById(STYLE_ID58)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID51;
+      style.id = STYLE_ID58;
       style.textContent = `
             .tmvu-main.tmvu-icup-page.tmvu-icup-page-coefficients {
                 display: grid !important;
@@ -39090,9 +37629,9 @@ order:initial
       const tournamentName = cleanText28(((_a2 = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _a2.textContent) || "International Cup");
       return { box, tournamentName };
     };
-    const normalizeCoefficientTable = (table2, label) => {
-      if (!table2) return "";
-      const clone = table2.cloneNode(true);
+    const normalizeCoefficientTable = (table, label) => {
+      if (!table) return "";
+      const clone = table.cloneNode(true);
       clone.dataset.tmvuTableLabel = label;
       const dataRows = Array.from(clone.querySelectorAll("tbody tr")).map((row) => ({ row, cells: Array.from(row.querySelectorAll("td")) })).filter(({ cells }) => cells.length);
       const applyTierBreaks = (breakIndexes) => {
@@ -39138,8 +37677,8 @@ order:initial
       return Array.from((box == null ? void 0 : box.querySelectorAll(".tab_container > div[id]")) || []).map((panel, index) => {
         const label = labels.get(panel.id) || `Tab ${index + 1}`;
         const paragraphs = Array.from(panel.querySelectorAll(":scope > .std > p")).map((node) => `<p>${node.innerHTML}</p>`).join("");
-        const tables = Array.from(panel.querySelectorAll("table")).map((table2) => `
-                <div class="tmvu-icup-table-shell">${normalizeCoefficientTable(table2, label)}</div>
+        const tables = Array.from(panel.querySelectorAll("table")).map((table) => `
+                <div class="tmvu-icup-table-shell">${normalizeCoefficientTable(table, label)}</div>
             `).join("");
         return {
           id: panel.id,
@@ -39205,7 +37744,7 @@ order:initial
         hostClass: "tmvu-icup-host",
         bodyClass: "tmvu-icup-stage tmvu-icup-coeff",
         bodyHtml: `
-                ${htmlOf7(tabsNode)}
+                ${htmlOf6(tabsNode)}
                 <div class="tmvu-icup-tab-panels">
                     ${panels.map((panel, index) => `
                         <section class="tmvu-icup-tab-panel" data-tab-panel="${escapeHtml34(panel.id)}"${index === 0 ? "" : " hidden"}>
@@ -39312,11 +37851,11 @@ order:initial
         return cells.length ? { cls: "tmu-grp-row", cells } : null;
       }).filter(Boolean);
     };
-    const buildSortableTableFromNative = (table2) => {
+    const buildSortableTableFromNative = (table) => {
       var _a2, _b, _c;
-      if (!table2) return null;
-      const tableLabel = cleanText28(table2.dataset.tmvuTableLabel || "");
-      const headerRows = Array.from(table2.querySelectorAll("tr")).filter((row) => row.querySelectorAll("th").length);
+      if (!table) return null;
+      const tableLabel = cleanText28(table.dataset.tmvuTableLabel || "");
+      const headerRows = Array.from(table.querySelectorAll("tr")).filter((row) => row.querySelectorAll("th").length);
       if (!headerRows.length) return null;
       const { matrix, totalColumns } = buildHeaderMatrix(headerRows);
       if (!totalColumns) return null;
@@ -39349,7 +37888,7 @@ order:initial
       const currentWindowIndex = (_b = rangeColumnIndexes[0]) != null ? _b : -1;
       const rollingWindowIndex = (_c = rangeColumnIndexes[1]) != null ? _c : -1;
       const formatTableNumber = (value) => Number.isFinite(value) ? value.toFixed(3) : "0.000";
-      const bodyRows = Array.from(table2.querySelectorAll("tbody tr")).map((row) => ({ row, cells: Array.from(row.querySelectorAll("td")) })).filter(({ cells }) => cells.length);
+      const bodyRows = Array.from(table.querySelectorAll("tbody tr")).map((row) => ({ row, cells: Array.from(row.querySelectorAll("td")) })).filter(({ cells }) => cells.length);
       const breakRowIndexes = new Set(
         bodyRows.map(({ row }, rowIndex) => row.dataset.tmvuBreakBefore === "1" || row.classList.contains("tmvu-icup-coeff-break") ? rowIndex : -1).filter((index) => index > 0)
       );
@@ -39527,7 +38066,7 @@ order:initial
       title: panel.title,
       icon: "\u{1F3C1}"
     });
-    injectStyles39();
+    injectStyles45();
     TmTournamentCards.injectStyles();
     const header = parseHeader();
     if (!header.box) return;
@@ -39696,7 +38235,7 @@ order:initial
   }
 
   // src/components/national-teams/tm-national-teams-nt-save.js
-  var STYLE_ID43 = "tmvu-nt-save-style";
+  var STYLE_ID51 = "tmvu-nt-save-style";
   var SCAN_SEASON_COUNT = 13;
   var RESULT_COLUMNS = [
     { key: "name", label: "Player" },
@@ -39730,11 +38269,11 @@ order:initial
   function matchesTargetCountry(player2, targetCountryCode) {
     return resolvePlayerCountryCode(player2) === normalizeCountryCode(targetCountryCode);
   }
-  var buttonHtml13 = (opts) => TmUI.button(opts).outerHTML;
-  function injectStyles32() {
-    if (document.getElementById(STYLE_ID43)) return;
+  var buttonHtml11 = (opts) => TmUI.button(opts).outerHTML;
+  function injectStyles38() {
+    if (document.getElementById(STYLE_ID51)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID43;
+    style.id = STYLE_ID51;
     style.textContent = `
         .tmvu-nt-save-panel {
             display: flex;
@@ -40226,9 +38765,9 @@ order:initial
       max: Math.max(...divisionNumbers)
     };
   }
-  function getDefaultScanScope(currentSeason5) {
+  function getDefaultScanScope(currentSeason4) {
     var _a2;
-    const seasonTo = Math.max(1, Number(currentSeason5) || Number((_a2 = window.SESSION) == null ? void 0 : _a2.season) || 1);
+    const seasonTo = Math.max(1, Number(currentSeason4) || Number((_a2 = window.SESSION) == null ? void 0 : _a2.season) || 1);
     const seasonFrom = Math.max(1, seasonTo - SCAN_SEASON_COUNT + 1);
     return {
       seasonFrom,
@@ -40337,21 +38876,21 @@ order:initial
     });
     return Array.from(map.values()).map((item) => ({ ...item, statuses: [...item.statuses] }));
   }
-  function parseTransferHistory(html2, groupCtx, season, targetCountryCode, currentSeason5) {
+  function parseTransferHistory(html2, groupCtx, season, targetCountryCode, currentSeason4) {
     if (!html2) return [];
     const doc = new DOMParser().parseFromString(html2, "text/html");
     const tables = [];
     doc.querySelectorAll("h3").forEach((h3) => {
       const label = lowerText(h3.textContent);
-      let table2 = h3.nextElementSibling;
-      while (table2 && table2.tagName !== "TABLE") table2 = table2.nextElementSibling;
-      if (!table2) return;
-      if (label.includes("bought")) tables.push({ type: "bought", table: table2 });
-      if (label.includes("sold")) tables.push({ type: "sold", table: table2 });
+      let table = h3.nextElementSibling;
+      while (table && table.tagName !== "TABLE") table = table.nextElementSibling;
+      if (!table) return;
+      if (label.includes("bought")) tables.push({ type: "bought", table });
+      if (label.includes("sold")) tables.push({ type: "sold", table });
     });
     const items = [];
-    tables.forEach(({ type, table: table2 }) => {
-      table2.querySelectorAll("tr").forEach((row) => {
+    tables.forEach(({ type, table }) => {
+      table.querySelectorAll("tr").forEach((row) => {
         const playerAnchor = row.querySelector('a[player_link], a[href*="/players/"]');
         const clubAnchor = row.querySelector('a[club_link], a[href*="/club/"]');
         if (!playerAnchor || !clubAnchor) return;
@@ -40361,7 +38900,7 @@ order:initial
         const clubId2 = extractClubId3(clubAnchor);
         if (!playerId) return;
         const recommendationStars = extractTransferRecommendationStars(row, playerAnchor);
-        const seasonsAgo = getTransferSeasonsAgo({ hits: [{ season: String(season) }] }, currentSeason5);
+        const seasonsAgo = getTransferSeasonsAgo({ hits: [{ season: String(season) }] }, currentSeason4);
         const requiredRecommendation = getTransferRecommendationThreshold(seasonsAgo);
         const passesRecommendation = recommendationStars != null && recommendationStars >= requiredRecommendation;
         if (!passesRecommendation) return;
@@ -40373,7 +38912,7 @@ order:initial
           transferType: type,
           sourceDivision: `${groupCtx.division}.${groupCtx.group}`,
           transferRecommendation: recommendationStars,
-          currentSeason: currentSeason5,
+          currentSeason: currentSeason4,
           seasonsAgo,
           requiredRecommendation,
           conditionMatched: `transfer rec >= ${requiredRecommendation}`
@@ -40403,8 +38942,8 @@ order:initial
     if (Number.isFinite(recSort)) return recSort;
     return getRecommendationStarsFromHtml((player2 == null ? void 0 : player2.recommendation) || "");
   }
-  function getTransferSeasonsAgo(candidate, currentSeason5) {
-    const seasonNow = Number(currentSeason5);
+  function getTransferSeasonsAgo(candidate, currentSeason4) {
+    const seasonNow = Number(currentSeason4);
     if (!Number.isFinite(seasonNow)) return null;
     const mostRecentSeason = Math.max(...((candidate == null ? void 0 : candidate.hits) || []).map((hit) => Number(hit.season)).filter(Number.isFinite));
     if (!Number.isFinite(mostRecentSeason)) return null;
@@ -40422,9 +38961,9 @@ order:initial
     const mostRecentSeason = Math.max(...((candidate == null ? void 0 : candidate.hits) || []).map((hit) => Number(hit.season)).filter(Number.isFinite));
     return Number.isFinite(mostRecentSeason) ? mostRecentSeason : null;
   }
-  function getTransferThresholdDebug(candidate, currentSeason5) {
+  function getTransferThresholdDebug(candidate, currentSeason4) {
     const mostRecentTransferSeason = getMostRecentTransferSeason(candidate);
-    const seasonsAgo = getTransferSeasonsAgo(candidate, currentSeason5);
+    const seasonsAgo = getTransferSeasonsAgo(candidate, currentSeason4);
     const requiredRecommendation = getTransferRecommendationThreshold(seasonsAgo);
     return {
       mostRecentTransferSeason,
@@ -40710,7 +39249,7 @@ order:initial
     state5.resultsToolbarEl = state5.resultsEl.querySelector("[data-nt-save-results-toolbar]");
     state5.resultsCountEl = state5.resultsEl.querySelector("[data-nt-save-results-count]");
     const tableHost = state5.resultsEl.querySelector("[data-nt-save-results-table]");
-    const table2 = TmTable.table({
+    const table = TmTable.table({
       cls: " tmvu-nt-save-result-table",
       items: results,
       headers: getResultHeaders(),
@@ -40722,7 +39261,7 @@ order:initial
         updateResultsToolbar(state5, sortedItems);
       }
     });
-    tableHost == null ? void 0 : tableHost.appendChild(table2);
+    tableHost == null ? void 0 : tableHost.appendChild(table);
     updateResultsToolbar(state5, results);
   }
   async function flushLiveResults(state5) {
@@ -40784,9 +39323,9 @@ order:initial
                     <p>Scans the selected season and league range for transfers, inactive clubs, banned clubs and flagged squads.</p>
                 </div>
                 <div class="tmvu-nt-save-actions">
-                    ${buttonHtml13({ label: "Run Scan", color: "primary", size: "sm", attrs: { "data-nt-save-run": "1" } })}
-                    ${buttonHtml13({ label: "Export Excel CSV", color: "secondary", size: "sm", cls: "tmvu-nt-save-export", attrs: { "data-nt-save-export": "1" } })}
-                    ${buttonHtml13({ label: "Close", color: "secondary", size: "sm", attrs: { "data-nt-save-close": "1" } })}
+                    ${buttonHtml11({ label: "Run Scan", color: "primary", size: "sm", attrs: { "data-nt-save-run": "1" } })}
+                    ${buttonHtml11({ label: "Export Excel CSV", color: "secondary", size: "sm", cls: "tmvu-nt-save-export", attrs: { "data-nt-save-export": "1" } })}
+                    ${buttonHtml11({ label: "Close", color: "secondary", size: "sm", attrs: { "data-nt-save-close": "1" } })}
                 </div>
             </div>
             <div class="tmvu-nt-save-body">
@@ -41221,17 +39760,17 @@ order:initial
     }
   }
   var TmNationalTeamsNtSave = {
-    mount({ navEl, countryCode = "", currentSeason: currentSeason5 = null } = {}) {
+    mount({ navEl, countryCode = "", currentSeason: currentSeason4 = null } = {}) {
       var _a2, _b;
       if (!navEl || !countryCode) return null;
-      injectStyles32();
+      injectStyles38();
       const existingAction = navEl.querySelector(".tmvu-nt-save-action");
       if (existingAction) return existingAction;
       const existingPanel = navEl.querySelector(".tmvu-nt-save-panel");
       if (existingPanel) return existingPanel;
       const state5 = {
         countryCode: lowerText(countryCode),
-        currentSeason: Number(currentSeason5) || Number((_a2 = window.SESSION) == null ? void 0 : _a2.season) || null,
+        currentSeason: Number(currentSeason4) || Number((_a2 = window.SESSION) == null ? void 0 : _a2.season) || null,
         tooltipCache: /* @__PURE__ */ new Map(),
         clubPageCache: /* @__PURE__ */ new Map(),
         flaggedClubs: /* @__PURE__ */ new Map(),
@@ -41257,7 +39796,7 @@ order:initial
         progressTimer: null,
         sortKey: "name",
         sortDir: 1,
-        scanScope: getDefaultScanScope(Number(currentSeason5) || Number((_b = window.SESSION) == null ? void 0 : _b.season) || null),
+        scanScope: getDefaultScanScope(Number(currentSeason4) || Number((_b = window.SESSION) == null ? void 0 : _b.season) || null),
         availableDivisionBounds: null,
         seasonFromEl: null,
         seasonToEl: null,
@@ -41293,7 +39832,7 @@ order:initial
             <div class="tmvu-nt-save-kicker">National Teams</div>
             <div class="tmvu-nt-save-title">NT Save Finder \xB7 ${escapeHtml27(state5.countryCode.toUpperCase())}</div>
             <div class="tmvu-nt-save-copy">Scans league transfer history, inactive clubs, banned clubs and flagged league squads for players eligible for NT save.</div>
-            ${buttonHtml13({ label: "Find NT Save Players", color: "secondary", size: "sm", attrs: { "data-nt-save-open": "1" } })}
+            ${buttonHtml11({ label: "Find NT Save Players", color: "secondary", size: "sm", attrs: { "data-nt-save-open": "1" } })}
             <div class="tmvu-nt-save-mini" data-nt-save-mini>Idle</div>
         `;
       panel.onclick = (event) => {
@@ -41355,7 +39894,7 @@ order:initial
     const rightLinks = rightItems.filter((item) => item.type === "link").map((item) => `${item.href}|${item.label}`);
     return leftLinks.length === rightLinks.length && leftLinks.every((item, index) => item === rightLinks[index]);
   };
-  var remountSideMenu = (main2, navEl, { id, className, items, activeHref, includeSave, countryCode, currentSeason: currentSeason5 }) => {
+  var remountSideMenu = (main2, navEl, { id, className, items, activeHref, includeSave, countryCode, currentSeason: currentSeason4 }) => {
     if ((navEl == null ? void 0 : navEl.parentNode) === main2) navEl.remove();
     const nextNavEl = TmSideMenu.mount(main2, {
       id,
@@ -41367,7 +39906,7 @@ order:initial
       TmNationalTeamsNtSave.mount({
         navEl: nextNavEl,
         countryCode,
-        currentSeason: currentSeason5
+        currentSeason: currentSeason4
       });
     }
     return nextNavEl;
@@ -41397,7 +39936,7 @@ order:initial
     className = "tmu-page-sidebar-stack",
     currentPath = window.location.pathname,
     countryCode = "",
-    currentSeason: currentSeason5 = null,
+    currentSeason: currentSeason4 = null,
     includeSave = true
   } = {}) => {
     const { items, activeHref } = buildNationalTeamsMenu(root2, currentPath);
@@ -41411,7 +39950,7 @@ order:initial
       TmNationalTeamsNtSave.mount({
         navEl,
         countryCode,
-        currentSeason: currentSeason5
+        currentSeason: currentSeason4
       });
     }
     if (main2 && root2 && countryCode && !hasElectionItem(items)) {
@@ -41420,7 +39959,7 @@ order:initial
         className,
         currentPath,
         countryCode,
-        currentSeason: currentSeason5,
+        currentSeason: currentSeason4,
         includeSave
       }, items).then((nextNavEl) => {
         navEl = nextNavEl || navEl;
@@ -41433,14 +39972,14 @@ order:initial
   function initNationalTeamsRankingsPage(main2) {
     if (!main2 || !main2.isConnected) return;
     const sourceRoot3 = (document.querySelector(".main_center") || main2).cloneNode(true);
-    const STYLE_ID51 = "tmvu-national-teams-rankings-style";
+    const STYLE_ID58 = "tmvu-national-teams-rankings-style";
     const cleanText28 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml34 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-    const injectStyles39 = () => {
-      if (document.getElementById(STYLE_ID51)) return;
+    const injectStyles45 = () => {
+      if (document.getElementById(STYLE_ID58)) return;
       injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID51;
+      style.id = STYLE_ID58;
       style.textContent = `
             .tmvu-nt-rankings-tabs {
                 margin-bottom: var(--tmu-space-sm);
@@ -41510,12 +40049,12 @@ order:initial
         labelById.set(id, cleanText28(tab.textContent) || "Tab");
       });
       return Array.from(box.querySelectorAll(".tab_container > div[id]")).map((panel, index) => {
-        const table2 = panel.querySelector("table");
-        if (!table2) return null;
+        const table = panel.querySelector("table");
+        if (!table) return null;
         return {
           id: panel.id,
           label: labelById.get(panel.id) || `Tab ${index + 1}`,
-          tableHtml: table2.outerHTML
+          tableHtml: table.outerHTML
         };
       }).filter(Boolean);
     };
@@ -41583,7 +40122,7 @@ order:initial
       return wrap.firstElementChild || wrap;
     };
     const render16 = () => {
-      injectStyles39();
+      injectStyles45();
       const overview = parseOverview4();
       if (!overview || !overview.panels.length) return;
       main2.classList.add("tmvu-nt-rankings-page", "tmu-page-layout-2col", "tmu-page-density-regular");
@@ -41604,7 +40143,7 @@ order:initial
   }
 
   // src/pages/national-teams-fixtures.js
-  var STYLE_ID44 = "tmvu-national-teams-fixtures-style";
+  var STYLE_ID52 = "tmvu-national-teams-fixtures-style";
   var cleanText22 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml28 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var normalizeFlagHtml2 = (value) => {
@@ -41653,10 +40192,10 @@ order:initial
     wrapper.innerHTML = html2;
     return ((_a2 = wrapper.querySelector("a[href]")) == null ? void 0 : _a2.getAttribute("href")) || "#";
   };
-  var injectStyles33 = () => {
-    if (document.getElementById(STYLE_ID44)) return;
+  var injectStyles39 = () => {
+    if (document.getElementById(STYLE_ID52)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID44;
+    style.id = STYLE_ID52;
     style.textContent = `
         .tmvu-nt-fixtures-page {
             --tmu-page-sidebar-width: 200px;
@@ -41685,7 +40224,7 @@ order:initial
     const contentBox = sourceRoot3.querySelector(".column2_a > .box");
     if (!contentBox) return;
     injectTmPageLayoutStyles();
-    injectStyles33();
+    injectStyles39();
     const title = cleanText22(((_a2 = contentBox.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "Fixtures");
     main2.innerHTML = "";
     main2.classList.add("tmvu-nt-fixtures-page", "tmu-page-layout-2col", "tmu-page-density-regular");
@@ -41755,7 +40294,7 @@ order:initial
   }
 
   // src/pages/national-teams-history.js
-  var STYLE_ID45 = "tmvu-national-teams-history-style";
+  var STYLE_ID53 = "tmvu-national-teams-history-style";
   var MONTH_INDEX = {
     january: 1,
     february: 2,
@@ -41849,10 +40388,10 @@ order:initial
     });
     return months.sort((left, right) => (right.sortValue || 0) - (left.sortValue || 0));
   };
-  var injectStyles34 = () => {
-    if (document.getElementById(STYLE_ID45)) return;
+  var injectStyles40 = () => {
+    if (document.getElementById(STYLE_ID53)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID45;
+    style.id = STYLE_ID53;
     style.textContent = `
         .tmvu-nt-history-page {
             --tmu-page-sidebar-width: 200px;
@@ -41903,7 +40442,7 @@ order:initial
     const contentBox = sourceRoot3.querySelector(".column2_a > .box");
     if (!contentBox) return;
     injectTmPageLayoutStyles();
-    injectStyles34();
+    injectStyles40();
     const title = cleanText23(((_a2 = contentBox.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "History");
     const months = parseHistoryMonths(contentBox);
     main2.innerHTML = "";
@@ -41948,7 +40487,7 @@ order:initial
   }
 
   // src/pages/national-teams-statistics.js
-  var STYLE_ID46 = "tmvu-national-teams-statistics-style";
+  var STYLE_ID54 = "tmvu-national-teams-statistics-style";
   var cleanText24 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml30 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var fetchDocument = async (path) => {
@@ -41961,9 +40500,9 @@ order:initial
   var parseStatisticsTable = (contentBox) => {
     const visibleTab = Array.from(contentBox.querySelectorAll("#tab0, .tab_container, .tab_content, .tabs_content > div")).find((node) => node && node.nodeType === 1 && !/display\s*:\s*none/i.test(node.getAttribute("style") || ""));
     const scope = visibleTab || contentBox;
-    const table2 = scope.querySelector("table");
-    if (!table2) return null;
-    const headerRow = table2.querySelector("thead tr") || table2.querySelector("tr");
+    const table = scope.querySelector("table");
+    if (!table) return null;
+    const headerRow = table.querySelector("thead tr") || table.querySelector("tr");
     const headerCells = Array.from((headerRow == null ? void 0 : headerRow.querySelectorAll("th, td")) || []);
     if (!headerCells.length) return null;
     const headers = headerCells.map((cell, index) => {
@@ -41979,7 +40518,7 @@ order:initial
         render: index === 0 ? ((_, item) => item.playerHtml || escapeHtml30(item.playerSort || "")) : ((value) => escapeHtml30(value != null ? value : ""))
       };
     });
-    const bodyRows = Array.from(table2.querySelectorAll("tbody tr")).filter((row) => row.querySelectorAll("td").length >= headerCells.length);
+    const bodyRows = Array.from(table.querySelectorAll("tbody tr")).filter((row) => row.querySelectorAll("td").length >= headerCells.length);
     const items = bodyRows.map((row, rowIndex) => {
       const cells = Array.from(row.querySelectorAll("td"));
       const playerCell = cells[0];
@@ -42001,10 +40540,10 @@ order:initial
     });
     return { headers, items };
   };
-  var injectStyles35 = () => {
-    if (document.getElementById(STYLE_ID46)) return;
+  var injectStyles41 = () => {
+    if (document.getElementById(STYLE_ID54)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID46;
+    style.id = STYLE_ID54;
     style.textContent = `
         .tmvu-nt-statistics-page {
             --tmu-page-sidebar-width: 200px;
@@ -42035,7 +40574,7 @@ order:initial
     const init2 = async () => {
       var _a2, _b, _c, _d, _e;
       injectTmPageLayoutStyles();
-      injectStyles35();
+      injectStyles41();
       main2.innerHTML = TmUI.loading("Loading national team statistics...");
       const sourceRoot3 = document.querySelector(".main_center");
       let dataRoot = sourceRoot3;
@@ -42099,9 +40638,9 @@ order:initial
   }
 
   // src/pages/national-teams-election.js
-  var STYLE_ID47 = "tmvu-national-teams-election-style";
+  var STYLE_ID55 = "tmvu-national-teams-election-style";
   var cleanText25 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-  var toNumber3 = (value) => Number.parseInt(String(value || ""), 10);
+  var toNumber2 = (value) => Number.parseInt(String(value || ""), 10);
   var escapeHtml31 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var extractCountryCode = (root2) => {
     var _a2, _b, _c, _d;
@@ -42112,7 +40651,7 @@ order:initial
     const pattern = actionName === "nomination_respond" ? /nomination_respond\(\s*['"]([^'"]+)['"]\s*,\s*(\d+)\s*,\s*(?:true|false)\s*\)/i : /election_vote\(\s*(\d+)\s*,\s*(?:true|false)\s*\)/i;
     const match = String(onclick || "").match(pattern);
     if (!match) return null;
-    return actionName === "nomination_respond" ? { country: match[1], response: toNumber3(match[2]) } : { clubId: toNumber3(match[1]) };
+    return actionName === "nomination_respond" ? { country: match[1], response: toNumber2(match[2]) } : { clubId: toNumber2(match[1]) };
   };
   var normalizeElectionSuggestions = (clubs) => {
     if (!clubs) return [];
@@ -42122,13 +40661,13 @@ order:initial
       if (Array.isArray(rawValue)) {
         const [id, label, countrySuffix] = rawValue;
         return {
-          id: toNumber3(id),
+          id: toNumber2(id),
           label: cleanText25(label || id),
           countrySuffix: cleanText25(countrySuffix || "")
         };
       }
       if (typeof rawValue === "object") {
-        const id = toNumber3((_c = (_b = (_a2 = rawValue.value) != null ? _a2 : rawValue.id) != null ? _b : rawValue.club_id) != null ? _c : rawLabel);
+        const id = toNumber2((_c = (_b = (_a2 = rawValue.value) != null ? _a2 : rawValue.id) != null ? _b : rawValue.club_id) != null ? _c : rawLabel);
         return {
           id,
           label: cleanText25((_g = (_f = (_e = (_d = rawValue.label) != null ? _d : rawValue.name) != null ? _e : rawValue.club_name) != null ? _f : rawLabel) != null ? _g : id),
@@ -42136,7 +40675,7 @@ order:initial
         };
       }
       return {
-        id: toNumber3(rawValue),
+        id: toNumber2(rawValue),
         label: cleanText25(rawLabel != null ? rawLabel : rawValue),
         countrySuffix: ""
       };
@@ -42385,10 +40924,10 @@ order:initial
     </div>
 `;
   var nominatorCellHtml = (row) => row.nominatedByHref ? `<a class="tmvu-nt-election-link" href="${escapeHtml31(row.nominatedByHref)}">${escapeHtml31(row.nominatedBy)}</a>` : escapeHtml31(row.nominatedBy);
-  var injectStyles36 = () => {
-    if (document.getElementById(STYLE_ID47)) return;
+  var injectStyles42 = () => {
+    if (document.getElementById(STYLE_ID55)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID47;
+    style.id = STYLE_ID55;
     style.textContent = `
         .tmvu-nt-election-page {
             --tmu-page-rail-width: 320px;
@@ -42559,7 +41098,7 @@ order:initial
     const contentBox = sourceRoot3.querySelector(".column2_a > .box");
     if (!contentBox) return;
     injectTmPageLayoutStyles();
-    injectStyles36();
+    injectStyles42();
     const countryCode = extractCountryCode(sourceRoot3) || cleanText25(((_a2 = window.SESSION) == null ? void 0 : _a2.country) || "").toLowerCase();
     const title = cleanText25(((_b = contentBox.querySelector(".box_head h2")) == null ? void 0 : _b.textContent) || "National coach election");
     const overview = parseElectionOverview(contentBox);
@@ -42706,12 +41245,12 @@ order:initial
       if (actionKind === "nomination-response") {
         await handleNominationResponse({
           country: button.getAttribute("data-action-country") || "",
-          response: toNumber3(button.getAttribute("data-action-response"))
+          response: toNumber2(button.getAttribute("data-action-response"))
         });
         return;
       }
       if (actionKind === "vote") {
-        await handleVote(toNumber3(button.getAttribute("data-action-club-id")));
+        await handleVote(toNumber2(button.getAttribute("data-action-club-id")));
       }
     });
     if (ruleSections.length) {
@@ -42738,7 +41277,7 @@ order:initial
   }
 
   // src/pages/national-teams-region.js
-  var STYLE_ID48 = "tmvu-national-teams-region-style";
+  var STYLE_ID56 = "tmvu-national-teams-region-style";
   var REGION_OPTIONS = [
     { value: "af", label: "Africa" },
     { value: "am", label: "North and South America" },
@@ -42747,10 +41286,10 @@ order:initial
   ];
   var cleanText26 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml32 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  var injectStyles37 = () => {
-    if (document.getElementById(STYLE_ID48)) return;
+  var injectStyles43 = () => {
+    if (document.getElementById(STYLE_ID56)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID48;
+    style.id = STYLE_ID56;
     style.textContent = `
         .tsa-panel-league-name {
             font-size: var(--tmu-font-sm);
@@ -42790,11 +41329,11 @@ order:initial
       const noteHtml = ((_b = (_a2 = panel == null ? void 0 : panel.querySelector(".align_left.std p")) == null ? void 0 : _a2.innerHTML) == null ? void 0 : _b.trim()) || "";
       const groups = Array.from((panel == null ? void 0 : panel.querySelectorAll("h3")) || []).map((heading) => {
         var _a3;
-        const table2 = (_a3 = heading.nextElementSibling) == null ? void 0 : _a3.querySelector("table.group_table");
-        if (!table2) return null;
+        const table = (_a3 = heading.nextElementSibling) == null ? void 0 : _a3.querySelector("table.group_table");
+        if (!table) return null;
         return {
           title: cleanText26(heading.textContent),
-          rows: Array.from(table2.querySelectorAll("tbody tr")).slice(1).map((tr) => {
+          rows: Array.from(table.querySelectorAll("tbody tr")).slice(1).map((tr) => {
             const cells = tr.querySelectorAll("td");
             if (cells.length < 10) return null;
             const teamLink = cells[1].querySelector('a[href*="/national-teams/"]');
@@ -42862,7 +41401,7 @@ order:initial
     const contentBox = sourceRoot3.querySelector(".column2_a > .box");
     if (!contentBox) return;
     injectTmPageLayoutStyles();
-    injectStyles37();
+    injectStyles43();
     TmStandingsTable.injectStyles();
     const countryCode = ((_c = (_b = (_a2 = sourceRoot3.querySelector('.content_menu a[href^="/national-teams/"]')) == null ? void 0 : _a2.getAttribute("href")) == null ? void 0 : _b.match(/\/national-teams\/([a-z]{2,3})\//i)) == null ? void 0 : _c[1]) || "";
     const subHeader = contentBox.querySelector(".box_sub_header");
@@ -42943,12 +41482,12 @@ order:initial
     const routeMatch = window.location.pathname.match(/^\/national-teams\/(?:([a-z]{2,3})\/?)?$/i);
     if (!routeMatch) return;
     const sourceRoot3 = (document.querySelector(".main_center") || main2).cloneNode(true);
-    const STYLE_ID51 = "tmvu-national-teams-style";
-    const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
+    const STYLE_ID58 = "tmvu-national-teams-style";
+    const { R5_THRESHOLDS: R5_THRESHOLDS4 } = TmConst;
     const CURRENT_SEASON2 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const cleanText28 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml34 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-    const metricHtml9 = (opts) => TmUI.metric(opts);
+    const metricHtml8 = (opts) => TmUI.metric(opts);
     const decodeHtmlEntities = (value) => {
       const text = String(value || "");
       if (!text.includes("&")) return text;
@@ -42956,11 +41495,11 @@ order:initial
       textarea.innerHTML = text;
       return textarea.value;
     };
-    const injectStyles39 = () => {
-      if (document.getElementById(STYLE_ID51)) return;
+    const injectStyles45 = () => {
+      if (document.getElementById(STYLE_ID58)) return;
       injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID51;
+      style.id = STYLE_ID58;
       style.textContent = `
             .tmvu-nt-page {
                 --tmu-page-main-track: minmax(0, 0.9fr);
@@ -43282,7 +41821,7 @@ order:initial
         `;
       document.head.appendChild(style);
     };
-    const parseFactTable = (table2) => Array.from((table2 == null ? void 0 : table2.querySelectorAll("tr")) || []).map((row) => {
+    const parseFactTable = (table) => Array.from((table == null ? void 0 : table.querySelectorAll("tr")) || []).map((row) => {
       var _a2, _b;
       const label = cleanText28(((_a2 = row.querySelector("th")) == null ? void 0 : _a2.textContent) || "");
       const valueCell = row.querySelector("td:last-child");
@@ -43290,9 +41829,9 @@ order:initial
       if (!label || !valueHtml) return null;
       return { label, valueHtml };
     }).filter(Boolean);
-    const sanitizeStandingsTable = (table2) => {
-      if (!table2) return "";
-      const clone = table2.cloneNode(true);
+    const sanitizeStandingsTable = (table) => {
+      if (!table) return "";
+      const clone = table.cloneNode(true);
       clone.querySelectorAll('td[rowspan] img[src*="/pics/trophies/"]').forEach((img) => {
         var _a2;
         (_a2 = img.closest("td[rowspan]")) == null ? void 0 : _a2.remove();
@@ -43339,7 +41878,7 @@ order:initial
         sections
       };
     };
-    function parseFixtures(table2) {
+    function parseFixtures(table) {
       const extractTeam = (cell) => {
         const teamAnchor = cell.querySelector('a[href*="/national-teams/"]');
         const countryAnchor = cell.querySelector('a.country_link, a[href*="/national-teams/"][class*="country"]');
@@ -43352,7 +41891,7 @@ order:initial
           flagHtml
         };
       };
-      return Array.from(table2.querySelectorAll("tr")).map((row) => {
+      return Array.from(table.querySelectorAll("tr")).map((row) => {
         var _a2, _b;
         const cells = row.querySelectorAll("td");
         if (cells.length < 5) return null;
@@ -43420,7 +41959,7 @@ order:initial
     const formatR52 = (value) => {
       if (!Number.isFinite(Number(value))) return '<span style="color:var(--tmu-text-faint)">\u2014</span>';
       const numeric = Number(value);
-      return `<span style="color:${TmUtils.getColor(numeric, R5_THRESHOLDS5)};font-weight:700">${TmUtils.formatR5(numeric)}</span>`;
+      return `<span style="color:${TmUtils.getColor(numeric, R5_THRESHOLDS4)};font-weight:700">${TmUtils.formatR5(numeric)}</span>`;
     };
     const loadSquadPlayers = async (squad) => {
       const players = await Promise.all(squad.rows.map(async (row) => {
@@ -43444,7 +41983,7 @@ order:initial
     };
     const buildSquadTable = (players) => {
       if (!players.length) return TmUI.empty("No squad players available.", true);
-      const table2 = TmTable.table({
+      const table = TmTable.table({
         items: players,
         headers: [
           { key: "age", label: "Age", sortable: false, render: (value) => escapeHtml34(value) },
@@ -43461,7 +42000,7 @@ order:initial
       });
       return `
             <div class="tmvu-nt-squad-wrap">
-                ${table2.outerHTML}
+                ${table.outerHTML}
             </div>
         `;
     };
@@ -43493,7 +42032,7 @@ order:initial
           side: overview.logoSrc ? `<img src="${overview.logoSrc}" alt="${escapeHtml34(overview.countryName)} logo">` : "",
           footer: `
                     <div class="tmvu-nt-stat-grid">
-                        ${quickFacts.map((item) => metricHtml9({ label: escapeHtml34(item.label), value: item.valueHtml, tone: "overlay", size: "sm" })).join("")}
+                        ${quickFacts.map((item) => metricHtml8({ label: escapeHtml34(item.label), value: item.valueHtml, tone: "overlay", size: "sm" })).join("")}
                     </div>
                 `
         }
@@ -43550,7 +42089,7 @@ order:initial
     };
     const render16 = () => {
       var _a2;
-      injectStyles39();
+      injectStyles45();
       TmMatchHoverCard.injectStyles();
       const overview = parseOverview4();
       if (!overview) return;
@@ -43591,10 +42130,10 @@ order:initial
   // src/pages/support-pro.js
   function initSupportProPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID51 = "tmvu-spro-style";
+    const STYLE_ID58 = "tmvu-spro-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles39 = () => {
-      if (document.getElementById(STYLE_ID51)) return;
+    const injectStyles45 = () => {
+      if (document.getElementById(STYLE_ID58)) return;
       injectTmPageLayoutStyles();
       const rules = [
         // hero: single column
@@ -43617,7 +42156,7 @@ order:initial
         ".tmvu-spro-faq-a{color:var(--tmu-text-main);padding-left:var(--tmu-space-md);border-left:2px solid var(--tmu-border-success);font-size:var(--tmu-font-sm);line-height:1.7}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID51;
+      style.id = STYLE_ID58;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -43686,7 +42225,7 @@ order:initial
       const title = "Support";
       const boxBody = snap2.querySelector(".box_body");
       const navItems = col1 ? parseNav(col1.cloneNode(true)) : [];
-      injectStyles39();
+      injectStyles45();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-spro-hero",
@@ -44654,9 +43193,9 @@ order:initial
       const countryLink = h3.querySelector("a.country_link");
       const countryName = countryLink ? countryLink.textContent.trim() : "";
       const nextDiv = h3.nextElementSibling;
-      const table2 = nextDiv && nextDiv.querySelector("table");
-      if (!table2) continue;
-      const tds = table2.querySelectorAll("tr:not(:first-child) td, tr.odd td");
+      const table = nextDiv && nextDiv.querySelector("table");
+      if (!table) continue;
+      const tds = table.querySelectorAll("tr:not(:first-child) td, tr.odd td");
       if (tds.length >= 6) {
         h3.style.display = "none";
         if (nextDiv) nextDiv.style.display = "none";
@@ -44840,9 +43379,9 @@ order:initial
   };
   var render15 = ({ player: player2 } = {}) => {
     var _a2;
-    const { getColor: getColor6 } = TmUtils;
-    const { R5_THRESHOLDS: R5_THRESHOLDS5, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS2 } = TmConst;
-    const badgeHtml7 = (opts, tone = "muted") => TmUI.badge({ size: "md", shape: "rounded", weight: "heavy", ...opts }, tone);
+    const { getColor: getColor5 } = TmUtils;
+    const { R5_THRESHOLDS: R5_THRESHOLDS4, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS3 } = TmConst;
+    const badgeHtml3 = (opts, tone = "muted") => TmUI.badge({ size: "md", shape: "rounded", weight: "heavy", ...opts }, tone);
     const infoTable = document.querySelector("table.info_table.zebra");
     const existingCard = document.querySelector("#tmvp-player-card");
     const col = document.querySelector("#tmvp-main");
@@ -44852,18 +43391,18 @@ order:initial
     const bestRec = ((_a2 = featuredPositions.sort((a, b) => (b.rec || 0) - (a.rec || 0))[0]) == null ? void 0 : _a2.rec) || 0;
     const hasNT = !!document.querySelector(".nt_icon") || _hasNTSnapshot;
     const recStarsHtml = TmStars.recommendation(bestRec, "tmpc-rec-stars");
-    const ntBadge = hasNT ? badgeHtml7({ icon: "\u{1F3C6}", label: "NT", size: "xs", weight: "bold" }, "warn") : "";
+    const ntBadge = hasNT ? badgeHtml3({ icon: "\u{1F3C6}", label: "NT", size: "xs", weight: "bold" }, "warn") : "";
     const posChips = TmPosition.chip(featuredPositions);
     const positionRatingRow = (position, cls = "") => `<div class="tmpc-rating-row${cls}">
                     <div class="tmpc-pos-bar" style="background:${position.color}"></div>
                     <span class="tmpc-pos-name" style="color:${position.color}">${position.position}</span>
                     <span class="tmpc-pos-stat">
                         <span class="tmpc-pos-stat-lbl tmu-kicker">R5</span>
-                        <span class="tmpc-pos-stat-val tmu-tabular" style="color:${getColor6(position.r5, R5_THRESHOLDS5)}">${position.r5}</span>
+                        <span class="tmpc-pos-stat-val tmu-tabular" style="color:${getColor5(position.r5, R5_THRESHOLDS4)}">${position.r5}</span>
                     </span>
                     <span class="tmpc-pos-stat">
                         <span class="tmpc-pos-stat-lbl tmu-kicker">REC</span>
-                        <span class="tmpc-pos-stat-val tmu-tabular" style="color:${getColor6(position.rec, REC_THRESHOLDS2)}">${position.rec}</span>
+                        <span class="tmpc-pos-stat-val tmu-tabular" style="color:${getColor5(position.rec, REC_THRESHOLDS2)}">${position.rec}</span>
                     </span>
                 </div>`;
     let positionRatings = "";
@@ -44894,9 +43433,9 @@ order:initial
                 <div class="tmpc-info">
                     <div class="tmpc-top-grid">
                         <div class="tmpc-name">${player2.name} ${CountryFlag.render(player2.country)}</div>
-                        ${badgeHtml7({ slot: `<span class="tmu-badge-label">ASI</span><span class="tmu-badge-value tmpc-badge-value-strong">${player2.asi.toLocaleString()}</span>` })}
+                        ${badgeHtml3({ slot: `<span class="tmu-badge-label">ASI</span><span class="tmu-badge-value tmpc-badge-value-strong">${player2.asi.toLocaleString()}</span>` })}
                         <div class="tmpc-pos-row">${posChips}${ntBadge}</div>
-                        ${badgeHtml7({ slot: `<span class="tmu-badge-label">TI</span><span class="tmu-badge-value" style="color:${getColor6(player2.ti, TI_THRESHOLDS2)}">${player2.ti}</span>` })}
+                        ${badgeHtml3({ slot: `<span class="tmu-badge-label">TI</span><span class="tmu-badge-value" style="color:${getColor5(player2.ti, TI_THRESHOLDS2)}">${player2.ti}</span>` })}
                     </div>
                     <div class="tmpc-details">
                         <tm-row data-justify="space-between">
@@ -44923,7 +43462,7 @@ order:initial
                         </tm-row>
                         <tm-row data-justify="space-between">
                             <span class="tmu-stat-lbl">Routine</span>
-                            <span class="tmpc-val tmu-tabular" style="color:${getColor6(player2.routine, RTN_THRESHOLDS2)}">${Number(player2.routine).toFixed(1)}</span>
+                            <span class="tmpc-val tmu-tabular" style="color:${getColor5(player2.routine, RTN_THRESHOLDS3)}">${Number(player2.routine).toFixed(1)}</span>
                         </tm-row>
                     </div> 
                 </div>
@@ -45252,7 +43791,7 @@ order:initial
   var TmPlayerSidebar = { mount: mount6 };
 
   // src/components/player/card/tm-player-styles.js
-  var inject4 = () => {
+  var inject3 = () => {
     if (document.getElementById("tsa-player-style")) return;
     const style = document.createElement("style");
     style.id = "tsa-player-style";
@@ -45293,7 +43832,7 @@ order:initial
 `;
     document.head.appendChild(style);
   };
-  var TmPlayerStyles = { inject: inject4 };
+  var TmPlayerStyles = { inject: inject3 };
 
   // src/components/player/scout/scout-report.js
   var mountScoutReport = (el2, reports) => {
@@ -46019,11 +44558,11 @@ order:initial
   }
 
   // src/pages/players-styles.js
-  var STYLE_ID49 = "tmvu-players-page-style";
+  var STYLE_ID57 = "tmvu-players-page-style";
   var injectPlayersPageStyles = () => {
-    if (document.getElementById(STYLE_ID49)) return;
+    if (document.getElementById(STYLE_ID57)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID49;
+    style.id = STYLE_ID57;
     style.textContent = `
         .tmvu-players-shell {
             display: flex;
@@ -46726,11 +45265,11 @@ order:initial
       const drawOrder = [...visibleSeries.filter((s6) => !s6.highlighted), ...visibleSeries.filter((s6) => s6.highlighted)];
       drawOrder.forEach((s6) => {
         const alpha = s6.highlighted ? 1 : anyHL ? 0.12 : 0.75;
-        const lw2 = s6.highlighted ? 2.8 : 1.3;
+        const lw = s6.highlighted ? 2.8 : 1.3;
         ctx.save();
         ctx.globalAlpha = alpha;
         ctx.strokeStyle = s6.color;
-        ctx.lineWidth = lw2;
+        ctx.lineWidth = lw;
         ctx.lineJoin = "round";
         ctx.lineCap = "round";
         ctx.beginPath();
@@ -46760,8 +45299,8 @@ order:initial
     },
     /* attachTooltip(canvas, tipEl, getSeriesFn, chartInfoGetter) */
     attachTooltip(canvas, tipEl, getSeriesFn, chartInfoGetter) {
-      const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
-      const { getColor: getColor6 } = TmUtils;
+      const { R5_THRESHOLDS: R5_THRESHOLDS4 } = TmConst;
+      const { getColor: getColor5 } = TmUtils;
       canvas.addEventListener("mousemove", (e) => {
         const info = chartInfoGetter();
         if (!info) return;
@@ -46784,7 +45323,7 @@ order:initial
           const { s: s6, i } = best;
           const age = s6.ages[i], val = s6.values[i];
           const ay = Math.floor(age), am = Math.round((age - ay) * 12);
-          tipEl.innerHTML = `<span style="color:${s6.color}">\u25CF</span> <b>${s6.name}</b> <span style="color:${themeColor2("--tmu-text-faint", "#6a9a58")}">(${s6.posLabel})</span><br><b>R5:</b> <span style="color:${getColor6(val, R5_THRESHOLDS5)}">${Number(val).toFixed(2)}</span> &nbsp; <b>Age:</b> ${ay}y ${am}m`;
+          tipEl.innerHTML = `<span style="color:${s6.color}">\u25CF</span> <b>${s6.name}</b> <span style="color:${themeColor2("--tmu-text-faint", "#6a9a58")}">(${s6.posLabel})</span><br><b>R5:</b> <span style="color:${getColor5(val, R5_THRESHOLDS4)}">${Number(val).toFixed(2)}</span> &nbsp; <b>Age:</b> ${ay}y ${am}m`;
           tipEl.style.display = "block";
           const px = info.xS(age), py = info.yS(val);
           let tx = px - tipEl.offsetWidth / 2;
@@ -46971,9 +45510,9 @@ order:initial
 
   // src/pages/r5history.js
   function initR5HistoryPage() {
-    const $3 = window.jQuery;
-    if (!$3) return;
-    const { R5_THRESHOLDS: R5_THRESHOLDS5 } = TmConst;
+    const $ = window.jQuery;
+    if (!$) return;
+    const { R5_THRESHOLDS: R5_THRESHOLDS4 } = TmConst;
     const POS_GROUPS = [
       { key: "all", label: "All", match: () => true },
       { key: "gk", label: "GK", match: (idx) => idx === 9 },
@@ -47031,12 +45570,12 @@ order:initial
       "#aed581",
       "#ffb74d"
     ];
-    const getColor6 = TmUtils.getColor;
-    const htmlOf7 = (node) => (node == null ? void 0 : node.outerHTML) || "";
-    const buttonHtml14 = (opts) => htmlOf7(TmUI.button(opts));
-    const checkboxHtml2 = (opts) => htmlOf7(TmUI.checkbox(opts));
-    const checkboxFieldHtml = (opts) => htmlOf7(TmUI.checkboxField(opts));
-    const inputHtml4 = (opts) => htmlOf7(TmUI.input({ size: "full", density: "compact", tone: "overlay", grow: true, ...opts }));
+    const getColor5 = TmUtils.getColor;
+    const htmlOf6 = (node) => (node == null ? void 0 : node.outerHTML) || "";
+    const buttonHtml12 = (opts) => htmlOf6(TmUI.button(opts));
+    const checkboxHtml2 = (opts) => htmlOf6(TmUI.checkbox(opts));
+    const checkboxFieldHtml = (opts) => htmlOf6(TmUI.checkboxField(opts));
+    const inputHtml4 = (opts) => htmlOf6(TmUI.input({ size: "full", density: "compact", tone: "overlay", grow: true, ...opts }));
     const getPositionIndex2 = TmLib.getPositionIndex;
     const posGroupColor = (posIdx) => TmPosition.groupColor(posIdx);
     const posLabel2 = (posIdx) => TmPosition.groupLabel(posIdx);
@@ -47171,7 +45710,7 @@ order:initial
     const createDialog = () => {
       const ov = document.createElement("div");
       ov.className = "tmrc-overlay";
-      const issuesButton = buttonHtml14({
+      const issuesButton = buttonHtml12({
         id: "tmrc-issues-btn",
         label: "\u26A0 Sync Issues",
         title: "Players with incomplete sync",
@@ -47179,15 +45718,15 @@ order:initial
         size: "xs",
         attrs: { "data-tone": "warn" }
       });
-      const closeButton = buttonHtml14({
+      const closeButton = buttonHtml12({
         id: "tmrc-close",
         icon: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
         title: "Close",
         variant: "icon"
       });
-      const zoomInButton = buttonHtml14({ id: "tmrc-zoom-in", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>', title: "Zoom In", color: "secondary", size: "xs" });
-      const zoomOutButton = buttonHtml14({ id: "tmrc-zoom-out", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>', title: "Zoom Out", color: "secondary", size: "xs" });
-      const zoomResetButton = buttonHtml14({ id: "tmrc-zoom-reset", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.12"/></svg>', title: "Reset Zoom", color: "secondary", size: "xs" });
+      const zoomInButton = buttonHtml12({ id: "tmrc-zoom-in", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>', title: "Zoom In", color: "secondary", size: "xs" });
+      const zoomOutButton = buttonHtml12({ id: "tmrc-zoom-out", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>', title: "Zoom Out", color: "secondary", size: "xs" });
+      const zoomResetButton = buttonHtml12({ id: "tmrc-zoom-reset", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.12"/></svg>', title: "Reset Zoom", color: "secondary", size: "xs" });
       ov.innerHTML = `
             <div class="tmrc-modal">
                 <div class="tmrc-head">
@@ -47239,7 +45778,7 @@ order:initial
         return;
       }
       const tag = (v, total) => v > 0 ? `<span class="tmrc-null">${v}/${total}</span>` : `<span class="tmrc-ok">\u2713</span>`;
-      const table2 = TmTable.table({
+      const table = TmTable.table({
         cls: " tmrc-issues-table",
         items: syncIssues,
         headers: [
@@ -47287,13 +45826,13 @@ order:initial
           }
         ]
       });
-      panel.replaceChildren(table2);
+      panel.replaceChildren(table);
     };
     const renderFilters = () => {
       const container = overlay.querySelector("#tmrc-filters");
       let h = '<span class="tmrc-filter-label">Position:</span>';
       POS_GROUPS.forEach((g) => {
-        h += buttonHtml14({
+        h += buttonHtml12({
           label: g.label,
           color: currentFilter === g.key ? "lime" : "secondary",
           size: "xs",
@@ -47342,8 +45881,8 @@ order:initial
       const searchLower = legendSearch.toLowerCase();
       const filteredLegend = searchLower ? allInLegend.filter((s6) => s6.name.toLowerCase().includes(searchLower)) : allInLegend;
       const filteredChecked = filteredLegend.filter((s6) => s6.visible).length;
-      const selectAllButton = buttonHtml14({ id: "tmrc-sel-all", label: "All", title: "Select All", color: "secondary", size: "xs" });
-      const selectNoneButton = buttonHtml14({ id: "tmrc-sel-none", label: "None", title: "Deselect All", color: "secondary", size: "xs" });
+      const selectAllButton = buttonHtml12({ id: "tmrc-sel-all", label: "All", title: "Select All", color: "secondary", size: "xs" });
+      const selectNoneButton = buttonHtml12({ id: "tmrc-sel-none", label: "None", title: "Deselect All", color: "secondary", size: "xs" });
       let h = `<div class="tmrc-legend-hdr">
             <span class="tmrc-legend-hdr-title">Players (${filteredChecked}/${filteredLegend.length}${searchLower ? " / " + totalCount : ""})</span>
             <div class="tmrc-legend-hdr-btns">
@@ -47367,7 +45906,7 @@ order:initial
                 <a class="tmrc-legend-name" href="https://trophymanager.com/players/${s6.pid}/" target="_blank" title="${s6.name}">${s6.name}</a>
                 <div class="tmrc-legend-pos" style="color:${posGroupColor(s6.posIdx)}">${s6.posLabel}</div>
                 <div class="tmrc-legend-age">${ageY}.${ageM}</div>
-                <div class="tmrc-legend-r5" style="color:${getColor6(lastR5, R5_THRESHOLDS5)}">${TmUtils.formatR5(lastR5)}</div>
+                <div class="tmrc-legend-r5" style="color:${getColor5(lastR5, R5_THRESHOLDS4)}">${TmUtils.formatR5(lastR5)}</div>
             </div>`;
       });
       container.innerHTML = h;
@@ -47447,7 +45986,7 @@ order:initial
         return;
       }
       const lastVals = visibleSeries.map((s6) => s6.values[s6.values.length - 1]);
-      const avg2 = lastVals.reduce((a, b) => a + b, 0) / lastVals.length;
+      const avg = lastVals.reduce((a, b) => a + b, 0) / lastVals.length;
       const max = Math.max(...lastVals);
       const min = Math.min(...lastVals);
       const best = visibleSeries.find((s6) => s6.values[s6.values.length - 1] === max);
@@ -47455,9 +45994,9 @@ order:initial
       container.innerHTML = `
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Players:</span> <span class="tmrc-stat-val">${visibleSeries.length}</span></div>
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Total records:</span> <span class="tmrc-stat-val">${totalWeeks}</span></div>
-            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Avg R5:</span> <span class="tmrc-stat-val" style="color:${getColor6(avg2, R5_THRESHOLDS5)}">${avg2.toFixed(2)}</span></div>
-            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Best:</span> <span class="tmrc-stat-val" style="color:${getColor6(max, R5_THRESHOLDS5)}">${max.toFixed(2)}</span> <span style="color:var(--tmu-text-faint);font-size:var(--tmu-font-xs)">(${(best == null ? void 0 : best.name) || "?"})</span></div>
-            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Min:</span> <span class="tmrc-stat-val" style="color:${getColor6(min, R5_THRESHOLDS5)}">${min.toFixed(2)}</span></div>
+            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Avg R5:</span> <span class="tmrc-stat-val" style="color:${getColor5(avg, R5_THRESHOLDS4)}">${avg.toFixed(2)}</span></div>
+            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Best:</span> <span class="tmrc-stat-val" style="color:${getColor5(max, R5_THRESHOLDS4)}">${max.toFixed(2)}</span> <span style="color:var(--tmu-text-faint);font-size:var(--tmu-font-xs)">(${(best == null ? void 0 : best.name) || "?"})</span></div>
+            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Min:</span> <span class="tmrc-stat-val" style="color:${getColor5(min, R5_THRESHOLDS4)}">${min.toFixed(2)}</span></div>
         `;
     };
     const redrawChart = () => {
@@ -47659,1014 +46198,230 @@ order:initial
     setTimeout(injectButton, 500);
   }
 
-  // src/components/tactics/tm-tactics-styles.js
-  var STYLE_ID50 = "tmtc-style";
-  function injectTacticsStyles() {
-    if (document.getElementById(STYLE_ID50)) return;
-    const pitchSvg = [
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 420">`,
-      `<rect x="0" y="0" width="280" height="420" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="2"/>`,
-      // corner arcs
-      `<path d="M2,18 A16,16 0 0,0 18,2" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
-      `<path d="M262,2 A16,16 0 0,0 278,18" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
-      `<path d="M2,402 A16,16 0 0,1 18,418" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
-      `<path d="M262,418 A16,16 0 0,1 278,402" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
-      // center line + circle
-      `<line x1="2" y1="210" x2="278" y2="210" stroke="rgba(255,255,255,0.22)" stroke-width="1.5"/>`,
-      `<circle cx="140" cy="210" r="52" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="1.5"/>`,
-      `<circle cx="140" cy="210" r="3" fill="rgba(255,255,255,0.35)"/>`,
-      // top penalty area + goal area
-      `<path d="M56,2 L56,74 L224,74 L224,2" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
-      `<line x1="95" y1="2" x2="95" y2="28" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
-      `<line x1="95" y1="28" x2="185" y2="28" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
-      `<line x1="185" y1="2" x2="185" y2="28" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
-      `<circle cx="140" cy="68" r="2.5" fill="rgba(255,255,255,0.3)"/>`,
-      // bottom penalty area + goal area
-      `<path d="M56,418 L56,346 L224,346 L224,418" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
-      `<line x1="95" y1="392" x2="95" y2="418" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
-      `<line x1="95" y1="392" x2="185" y2="392" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
-      `<line x1="185" y1="392" x2="185" y2="418" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>`,
-      `<circle cx="140" cy="352" r="2.5" fill="rgba(255,255,255,0.3)"/>`,
-      `</svg>`
-    ].join("");
-    const pitchBg = `url("data:image/svg+xml,${encodeURIComponent(pitchSvg)}")`;
-    const s6 = document.createElement("style");
-    s6.id = STYLE_ID50;
-    s6.textContent = `
-        /* \u2500\u2500 full-width override \u2500\u2500 */
-        body:has(.tmtc-page) .tmvu-main {
-            width: calc(100% - 24px) !important;
-            max-width: none !important;
-            overflow-x: clip !important;
-            overflow-y: visible !important;
-        }
-        body:has(.tmtc-page) .tmvu-main * {
-            --sticky-unblock: 1;
-        }
-        /* Ensure nothing between body and field-col sets overflow-y */
-        body:has(.tmtc-page) .tmu-page-section-stack,
-        body:has(.tmtc-page) .tmtc-main-grid,
-        body:has(.tmtc-page) .tmtc-main-left,
-        body:has(.tmtc-page) .tmtc-lineup-2col {
-            overflow: visible;
-        }
-
-        /* \u2500\u2500 page layout \u2500\u2500 */
-        .tmtc-page {
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-            flex: 1 1 0;
-            gap: var(--tmu-space-lg);
-        }
-
-        /* \u2500\u2500 3-col main grid \u2500\u2500 */
-        .tmtc-main-grid {
-            display: flex;
-            gap: var(--tmu-space-md);
-            align-items: stretch;
-        }
-        .tmtc-main-left {
-            flex: 0 0 auto;
-            flex-shrink: 0;
-            min-width: 0;
-            display: flex;
-            flex-direction: column;
-        }
-        .tmtc-main-mid {
-            flex: 1 1 0;
-            min-width: 0;
-        }
-        .tmtc-main-right {
-            flex: 0 0 400px;
-            min-width: 0;
-            display: flex;
-            flex-direction: column;
-            gap: var(--tmu-space-sm);
-        }
-        .tmtc-orders-host {
-            min-width: 0;
-        }
-
-        /* \u2500\u2500 formation grid \u2500\u2500 */
-        .tmtc-lineup-2col {
-            display: flex;
-            gap: var(--tmu-space-md);
-            align-items: flex-start;
-            height: 100%;
-        }
-        .tmtc-field-col {
-            flex: 0 0 auto;
-            min-width: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: var(--tmu-space-sm);
-            position: sticky;
-            top: 160px;
-            align-self: flex-start;
-        }
-        .tmtc-squad-col {
-            flex: 1 1 0;
-            min-width: 0;
-            height: 100%;
-            overflow-y: auto;
-        }
-        .tmtc-field {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-evenly;
-            flex: 0 0 auto;
-            height: calc(100dvh - 160px);
-            aspect-ratio: 2 / 3;
-            background-color: rgb(19 19 19);
-            background-image: ${pitchBg};
-            background-size: 100% 100%;
-            background-repeat: no-repeat;
-            border: 1px solid rgba(255,255,255,0.1);
-            overflow: hidden;
-        }
-        .tmtc-field-spacer {
-            flex: 0 0 8%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 8px;
-        }
-        .tmtc-fob {
-            display: flex;
-            align-items: stretch;
-            width: 100%;
-            border-radius: 10px;
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.08);
-        }
-        .tmtc-fob-formation,
-        .tmtc-fob-item {
-            flex: 1 1 25%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 1px;
-            padding: 5px 4px;
-            background: rgba(0,0,0,0.42);
-        }
-        .tmtc-fob-formation:not(:last-child),
-        .tmtc-fob-item:not(:last-child) {
-            border-right: 1px solid rgba(255,255,255,0.07);
-        }
-        .tmtc-fob-formation {
-            font-size: var(--tmu-font-xs);
-            font-weight: 800;
-            color: rgba(255,255,255,0.88);
-            letter-spacing: .06em;
-        }
-        .tmtc-fob-sep { display: none; }
-        .tmtc-fob-label {
-            font-size: 9px;
-            font-weight: 600;
-            color: rgba(255,255,255,0.30);
-            text-transform: uppercase;
-            letter-spacing: .08em;
-        }
-        .tmtc-fob-value {
-            font-size: var(--tmu-font-xs);
-            font-weight: 700;
-            font-variant-numeric: tabular-nums;
-        }
-        .tmtc-field-line {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            height: 16.66666%;
-            justify-content: center;
-        }
-        .tmtc-line {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 4px;
-        }
-        .tmtc-slot-spacer {
-            /* empty cell to maintain 5-col grid alignment */
-        }
-        .tmtc-line-label {
-            font-size: var(--tmu-font-2xs);
-            font-weight: 700;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-            color: rgba(255,255,255,0.4);
-            text-align: center;
-        }
-        .tmtc-slot {
-            flex: 1 1 0;
-            min-width: 48px;
-            max-width: 100px;
-            padding: var(--tmu-space-xs) 4px;
-            border-radius: var(--tmu-space-sm);
-            background: rgba(0,0,0,0.45);
-            backdrop-filter: blur(2px);
-            border: 1px solid rgba(255,255,255,0.14);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1px;
-            text-align: center;
-            text-decoration: none;
-            cursor: grab;
-            user-select: none;
-            transition: background .12s, border-color .12s;
-        }
-        .tmtc-slot[draggable="true"]:active { cursor: grabbing; }
-        .tmtc-slot:hover:not(.tmtc-slot-empty) {
-            background: rgba(0,0,0,0.65);
-            border-color: rgba(255,255,255,0.28);
-        }
-        .tmtc-slot-empty {
-            opacity: .35;
-            min-height: 72px; /* match populated slot height so empty zones don't collapse */
-        }
-        .tmtc-slot-no {
-            font-size: var(--tmu-font-xs);
-            font-weight: 700;
-            color: color-mix(in srgb, var(--tmu-text-faint) 70%, white);
-            font-variant-numeric: tabular-nums;
-            letter-spacing: .02em;
-        }
-        .tmtc-slot-name {
-            font-size: var(--tmu-font-xs);
-            font-weight: 600;
-            color: var(--tmu-text-inverse);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 100%;
-        }
-        .tmtc-slot-pos {
-            font-key: var(--tmu-font-2xs);
-        }
-        .tmtc-slot-meta {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            min-height: 12px;
-        }
-        .tmtc-slot-rec {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .tmtc-rec-stars {
-            display: inline-flex;
-            align-items: center;
-            letter-spacing: .4px;
-        }
-        .tmtc-rec-stars-sm {
-            font-size: 10px;
-        }
-        .tmtc-rec-stars-xs {
-            font-size: 9px;
-        }
-        .tmtc-slot-rec-empty {
-            font-size: var(--tmu-font-2xs);
-            color: var(--tmu-text-dim);
-        }
-        .tmtc-slot-rtn {
-            font-size: 10px;
-            font-weight: 700;
-            font-variant-numeric: tabular-nums;
-            line-height: 1.1;
-            letter-spacing: .02em;
-        }
-        .tmtc-slot-mood {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 14px;
-            height: 14px;
-            border-radius: 999px;
-            font-size: 10px;
-            line-height: 1;
-            border: 1px solid rgba(255,255,255,0.42);
-            box-shadow: 0 0 0 1px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.22);
-            transform: translateY(-1px);
-        }
-        .tmtc-slot-mood-1 {
-            background: #f3db78;
-            color: #624800;
-        }
-        .tmtc-slot-mood-2 {
-            background: #ebb95e;
-            color: #6a3d00;
-        }
-        .tmtc-slot-mood-3 {
-            background: #ee8e57;
-            color: #641d00;
-        }
-        .tmtc-slot-mood-4 {
-            background: #df5948;
-            color: #ffffff;
-        }
-        .tmtc-slot-poskey {
-            font-size: var(--tmu-font-2xs);
-            color: var(--tmu-text-muted);
-            text-transform: uppercase;
-            letter-spacing: .05em;
-        }
-
-        /* \u2500\u2500 bench (below field) \u2500\u2500 */
-        .tmtc-bench-col {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 4px;
-            margin-bottom: var(--tmu-space-sm);
-        }
-        .tmtc-bench-section-head {
-            grid-column: 1 / -1;
-            font-size: var(--tmu-font-2xs);
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: .08em;
-            color: var(--tmu-text-panel-label);
-            padding-top: var(--tmu-space-xs);
-        }
-        .tmtc-bench-slot {
-            padding: 3px 4px;
-            border-radius: var(--tmu-space-sm);
-            background: var(--tmu-surface-dark-soft);
-            border: 1px dashed var(--tmu-border-faint);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1px;
-            min-height: 42px;
-            text-align: center;
-            cursor: default;
-        }
-        .tmtc-bench-slot:hover {
-            background: var(--tmu-surface-tab-hover);
-        }
-        .tmtc-bench-slot.has-player {
-            border-style: solid;
-            border-color: var(--tmu-border-embedded);
-        }
-        .tmtc-bench-role {
-            font-size: var(--tmu-font-2xs);
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: .06em;
-            color: var(--tmu-text-panel-label);
-            line-height: 1.2;
-        }
-        .tmtc-bench-name {
-            font-size: var(--tmu-font-2xs);
-            font-weight: 600;
-            color: var(--tmu-text-inverse);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 100%;
-        }
-        .tmtc-player-flag {
-            display: inline-block;
-            vertical-align: middle;
-            margin-right: 4px;
-            flex-shrink: 0;
-        }
-        .tmtc-bench-empty {
-            font-size: var(--tmu-font-xs);
-            color: var(--tmu-text-disabled);
-            font-style: italic;
-        }
-
-        .tmtc-row-bench-placeholder td {
-            opacity: .55;
-            font-style: italic;
-            cursor: default;
-        }
-        .tmtc-row-bench-placeholder.tmtc-drag-over td {
-            opacity: 1;
-            background: rgba(77,171,247,0.08);
-        }
-        /* \u2500\u2500 player list \u2500\u2500 */
-        .tmtc-filters {
-            display: flex;
-            flex-wrap: wrap;
-            gap: var(--tmu-space-sm);
-            align-items: center;
-            margin-bottom: var(--tmu-space-md);
-        }
-        .tmtc-filter-group {
-            display: flex;
-            gap: 2px;
-        }
-        .tmtc-filter-sep {
-            width: 1px;
-            background: var(--tmu-border-soft-alpha);
-            align-self: stretch;
-            margin: 0 var(--tmu-space-xs);
-        }
-
-        /* \u2500\u2500 settings \u2500\u2500 */
-        .tmtc-settings-rows {
-            display: flex;
-            flex-direction: column;
-            gap: var(--tmu-space-sm);
-        }
-        .tmtc-setting-row {
-            flex-direction: column;
-            align-items: stretch;
-            gap: var(--tmu-space-xs);
-        }
-
-        /* \u2500\u2500 special roles list \u2500\u2500 */
-        .tmtc-roles-section {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            margin-top: var(--tmu-space-xs);
-        }
-        .tmtc-role-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: var(--tmu-space-sm);
-            padding: 4px var(--tmu-space-sm);
-            border-radius: var(--tmu-space-xs);
-            background: var(--tmu-surface-dark-soft);
-            border: 1px solid var(--tmu-border-faint);
-            min-height: 30px;
-        }
-        .tmtc-role-label {
-            font-size: var(--tmu-font-xs);
-            font-weight: 600;
-            color: var(--tmu-text-panel-label);
-            text-transform: uppercase;
-            letter-spacing: .06em;
-            flex-shrink: 0;
-        }
-        .tmtc-role-slot {
-            flex: 1 1 0;
-            min-width: 0;
-            display: flex;
-            justify-content: flex-end;
-        }
-        .tmtc-role-slot.tmtc-drag-over {
-            outline: 2px dashed var(--tmu-info) !important;
-            outline-offset: -2px;
-            border-radius: var(--tmu-space-xs);
-            background: rgba(77,171,247,0.10) !important;
-        }
-        .tmtc-role-chip {
-            font-size: var(--tmu-font-xs);
-            font-weight: 700;
-            color: var(--tmu-text-inverse);
-            background: var(--tmu-surface-overlay);
-            border: 1px solid var(--tmu-border-soft);
-            border-radius: var(--tmu-space-xs);
-            padding: 2px 8px;
-            cursor: grab;
-            user-select: none;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 120px;
-        }
-        .tmtc-role-chip:active { cursor: grabbing; }
-        .tmtc-role-empty {
-            font-size: var(--tmu-font-xs);
-            color: var(--tmu-text-faint);
-        }
-
-        /* \u2500\u2500 orders table \u2500\u2500 */
-        .tmtc-orders-empty {
-            font-size: var(--tmu-font-sm);
-            color: var(--tmu-text-muted);
-            padding: var(--tmu-space-lg) 0;
-            text-align: center;
-        }
-        .tmtc-order-check { color: var(--tmu-success); font-weight: 700; }
-        .tmtc-order-pending { color: var(--tmu-text-disabled); }
-        .tmtc-order-action-cell { display: flex; flex-direction: column; gap: 2px; }
-        .tmtc-order-action-type {
-            font-size: var(--tmu-font-2xs);
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: .07em;
-            color: var(--tmu-text-panel-label);
-        }
-        .tmtc-order-action-val {
-            font-size: var(--tmu-font-xs);
-            color: var(--tmu-text-main);
-        }
-        .tmtc-orders-switch {
-            margin-bottom: 0;
-        }
-        .tmtc-orders-switch .tmu-tabs {
-            width: 100%;
-            border: 1px solid var(--tmu-border-soft-alpha-strong);
-            border-radius: var(--tmu-space-md);
-            overflow: hidden;
-            background: var(--tmu-surface-card-soft);
-            box-shadow: none;
-        }
-
-        /* \u2500\u2500 ghost placeholders: only visible during drag \u2500\u2500 */
-        .tmtc-slot.tmtc-slot-empty { visibility: hidden; }
-        .tmtc-slot-spacer { visibility: hidden; }
-        .tmtc-field.is-dragging .tmtc-slot.tmtc-slot-empty,
-        .tmtc-field.is-dragging .tmtc-slot-spacer { visibility: visible; }
-
-        /* \u2500\u2500 drag-and-drop visuals \u2500\u2500 */
-        .tmtc-drag-over {
-            outline: 2px dashed var(--tmu-info, #4dabf7) !important;
-            outline-offset: -2px;
-            background: rgba(77,171,247,0.10) !important;
-        }
-        .tmtc-drag-source {
-            opacity: 0.40;
-        }
-        .tmtc-bench-inner {
-            width: 100%;
-            cursor: grab;
-            user-select: none;
-        }
-        .tmtc-bench-inner:active { cursor: grabbing; }
-
-        /* \u2500\u2500 save status bar \u2500\u2500 */
-        .tmtc-save-status {
-            min-height: 0;
-            font-size: var(--tmu-font-xs);
-            font-weight: 700;
-            text-align: right;
-            padding: 0 var(--tmu-space-sm);
-            transition: opacity .3s;
-            opacity: 0;
-        }
-        .tmtc-save-status:not(:empty) { opacity: 1; }
-        .tmtc-save-ok  { color: var(--tmu-success); }
-        .tmtc-save-err { color: var(--tmu-danger);  }
-
-        .tmtc-row-sep td {
-            border-top: 2px solid !important;
-            border-color: var(--tmu-border-pill-active) !important;
-            border-bottom: none !important;
-        }
-
-        /* \u2500\u2500 squad table column \u2500\u2500 */
-        .tmtc-row-on-field td {
-            background: rgba(70,200,120,0.08) !important;
-        }
-        .tmtc-row-on-bench td {
-            background: rgba(70,140,200,0.06) !important;
-        }
-        .tmtc-row-out td {
-            opacity: 0.45;
-        }
-        .tmtc-sub-badge {
-            display: inline-block;
-            font-size: var(--tmu-font-3xs);
-            font-weight: 800;
-            letter-spacing: .06em;
-            padding: 1px 5px;
-            border-radius: 4px;
-            background: var(--tmu-surface-dark-soft);
-            color: var(--tmu-text-muted);
-            border: 1px solid var(--tmu-border-faint);
-        }
-        .tmtc-pb-cell {
-            width: 5px !important;
-            padding: 0 !important;
-        }
-        .tmtc-pb-inner {
-            display: block;
-            width: 4px;
-            min-height: 16px;
-            border-radius: 2px;
-        }
-
-        /* \u2500\u2500 foreigners notice \u2500\u2500 */
-        .tmtc-foreigners-note {
-            font-size: var(--tmu-font-sm);
-            color: var(--tmu-text-muted);
-            padding: var(--tmu-space-md);
-            border-top: 1px solid var(--tmu-border-soft-alpha);
-        }
-
-        /* \u2500\u2500 conditional orders table \u2500\u2500 */
-        .tmtc-co-row-empty td { opacity: 0.35; }
-        .tmu-tbl tbody tr[data-ri] { cursor: grab; }
-        .tmu-tbl tbody tr[data-ri]:hover td { background: var(--tmu-surface-hover) !important; }
-        .tmu-tbl tbody tr.tmtc-co-row-dragging td { opacity: 0.4; }
-        .tmu-tbl tbody tr.tmtc-co-row-drag-over td { background: var(--tmu-primary-muted) !important; outline: 2px dashed var(--tmu-primary); }
-
-        /* \u2500\u2500 conditional orders dialog \u2500\u2500 */
-        .tmtc-co-dialog-body {
-            display: flex; border-bottom: 1px solid var(--tmu-border-faint);
-        }
-        .tmtc-co-col {
-            flex: 1; min-width: 0;
-            padding: var(--tmu-space-md);
-            border-right: 1px solid var(--tmu-border-faint);
-            overflow-y: auto; max-height: 65vh;
-        }
-        .tmtc-co-col:last-child { border-right: none; }
-        .tmtc-co-col-label {
-            font-size: var(--tmu-font-xs); font-weight: 700; text-transform: uppercase;
-            letter-spacing: .06em; color: var(--tmu-text-faint);
-            padding-bottom: var(--tmu-space-xs);
-            border-bottom: 1px solid var(--tmu-border-faint);
-            margin-bottom: var(--tmu-space-sm);
-        }
-        .tmtc-co-radio-item {
-            border-radius: 6px;
-        }
-        .tmtc-co-radio-row {
-            display: flex; align-items: center; gap: 10px;
-            padding: 7px 8px; cursor: pointer; border-radius: 6px;
-            border: 1px solid transparent;
-            transition: background .1s, border-color .1s;
-        }
-        .tmtc-co-radio-row:hover { background: var(--tmu-surface-hover); border-color: var(--tmu-border-faint); }
-        .tmtc-co-radio-item.selected .tmtc-co-radio-row {
-            background: var(--tmu-primary-muted); border-color: var(--tmu-primary);
-        }
-        .tmtc-co-radio-input {
-            width: 15px; height: 15px; flex-shrink: 0;
-            accent-color: var(--tmu-primary); cursor: pointer;
-        }
-        .tmtc-co-radio-txt { font-size: var(--tmu-font-sm); color: var(--tmu-text-muted); line-height: 1.3; }
-        .tmtc-co-radio-item.selected .tmtc-co-radio-txt { font-weight: 700; color: var(--tmu-text-strong); }
-        .tmtc-co-radio-sub {
-            padding: var(--tmu-space-xs) var(--tmu-space-sm) var(--tmu-space-sm) 28px;
-            display: flex; flex-direction: column; gap: var(--tmu-space-xs);
-        }
-        .tmtc-co-radio-sub:empty { display: none; }
-        .tmtc-co-param-label {
-            font-size: var(--tmu-font-xs); font-weight: 600;
-            color: var(--tmu-text-muted); margin-top: var(--tmu-space-xs);
-        }
-        .tmtc-co-chips { display: flex; flex-wrap: wrap; gap: 4px; }
-        .tmtc-co-modal-footer {
-            display: flex; gap: var(--tmu-space-sm);
-            padding: var(--tmu-space-sm) var(--tmu-space-md);
-            border-top: 1px solid var(--tmu-border-faint);
-            flex-shrink: 0;
-        }
-
-        /* \u2500\u2500 analytics/formation panel (4th column) \u2500\u2500 */
-        .tmtc-main-stats {
-            flex: 0 0 270px;
-            min-width: 0;
-            display: flex;
-            flex-direction: column;
-            gap: var(--tmu-space-md);
-            overflow-y: auto;
-        }
-        .tmtc-panel-row {
-            display: flex;
-            align-items: center;
-            gap: var(--tmu-space-sm);
-        }
-        .tmtc-panel-fm-badge {
-            font-size: var(--tmu-font-xl);
-            font-weight: 900;
-            color: var(--tmu-text-strong);
-            letter-spacing: .03em;
-            white-space: nowrap;
-            flex-shrink: 0;
-            min-width: 72px;
-        }
-        .tmtc-panel-stats {
-            display: flex;
-            flex-direction: column;
-        }
-        .tmtc-panel-sep {
-            border: none;
-            border-top: 1px solid var(--tmu-border-soft-alpha);
-            margin: 0;
-        }
-        .tmtc-saved-list {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            margin-bottom: 6px;
-            max-height: 180px;
-            overflow-y: auto;
-        }
-        .tmtc-saved-empty {
-            font-size: var(--tmu-font-xs);
-            color: var(--tmu-text-faint);
-            text-align: center;
-            padding: 6px 0;
-        }
-        .tmtc-saved-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 6px;
-            padding: 4px 6px;
-            border-radius: var(--tmu-space-xs);
-            background: var(--tmu-surface-card);
-            border: 1px solid var(--tmu-border-soft-alpha);
-        }
-        .tmtc-saved-info {
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-            flex: 1;
-            overflow: hidden;
-        }
-        .tmtc-saved-name {
-            font-size: var(--tmu-font-sm);
-            font-weight: 700;
-            color: var(--tmu-text-strong);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .tmtc-saved-meta {
-            font-size: var(--tmu-font-2xs);
-            color: var(--tmu-text-faint);
-        }
-        .tmtc-saved-actions {
-            display: flex;
-            gap: 4px;
-            flex-shrink: 0;
-        }
-    `;
-    document.head.appendChild(s6);
+  // src/components/tactics/tm-tactics-squad-list.js
+  var { BENCH_SLOTS: BENCH_SLOTS2, POSKEY_TO_ZONE: POSKEY_TO_ZONE2 } = TmConst;
+  function mountTacticsSquadList(container, ctx, fieldApi) {
+    const {
+      players,
+      players_by_id,
+      CLUB_COUNTRY: CLUB_COUNTRY2,
+      isForeigner: isForeigner2,
+      countSquadForeigners,
+      getPlayerSlot,
+      getPlayerAtSlot,
+      setPlayerSlot,
+      isFieldSlot,
+      isBenchSlot,
+      getOccupiedFieldKeys,
+      drag,
+      save
+    } = ctx;
+    function sortedPlayers() {
+      const fieldRows = players.filter((p) => isFieldSlot(getPlayerSlot(p))).sort((a, b) => {
+        var _a2, _b, _c, _d;
+        return ((_b = (_a2 = TmConst.POSITION_MAP[getPlayerSlot(b)]) == null ? void 0 : _a2.ordering) != null ? _b : 0) - ((_d = (_c = TmConst.POSITION_MAP[getPlayerSlot(a)]) == null ? void 0 : _c.ordering) != null ? _d : 0);
+      });
+      const benchRows = BENCH_SLOTS2.map((role) => {
+        const p = getPlayerAtSlot(role);
+        return p ? { ...p, _isBenchPlaceholder: true, _benchSlotFilled: true, _benchRole: role } : { _isBenchPlaceholder: true, _benchSlotFilled: false, _benchRole: role, id: `_bench_${role}`, no: "", name: "", lastname: "" };
+      });
+      const outRows = players.filter((p) => !getPlayerSlot(p));
+      if (benchRows.length) benchRows[0]._needsSep = true;
+      if (outRows.length) outRows[0]._needsSep = true;
+      return [...fieldRows, ...benchRows, ...outRows];
+    }
+    const stateOf = (p) => p._isBenchPlaceholder ? "bench" : isFieldSlot(getPlayerSlot(p)) ? "active" : "off";
+    const tblWrap = TmTable.table({
+      items: sortedPlayers(),
+      density: "tight",
+      rowAttrs: (p) => {
+        if (p._isBenchPlaceholder && p._benchSlotFilled)
+          return { draggable: "true", "data-player-id": p.id, "data-bench-role": p._benchRole };
+        if (p._isBenchPlaceholder)
+          return { "data-bench-role": p._benchRole };
+        return { draggable: "true", "data-player-id": p.id };
+      },
+      rowCls: (p) => {
+        const sep = p._needsSep ? " tmtc-row-sep" : "";
+        if (p._isBenchPlaceholder && p._benchSlotFilled) return "tmtc-row-on-bench" + sep;
+        if (p._isBenchPlaceholder) return "tmtc-row-bench-placeholder" + sep;
+        const slot = getPlayerSlot(p);
+        if (isFieldSlot(slot)) return "tmtc-row-on-field" + sep;
+        return "tmtc-row-out" + sep;
+      },
+      headers: [
+        {
+          key: "name",
+          label: "Player",
+          render: (_, p) => {
+            if (p._isBenchPlaceholder && !p._benchSlotFilled)
+              return '<span data-tpr-empty class="tmtc-pr-empty"><span style="color:var(--tmu-text-disabled);font-style:italic">drop player here</span></span>';
+            return `<span data-tpr-pid="${String(p.id)}" data-tpr-state="${stateOf(p)}"></span>`;
+          }
+        }
+      ],
+      emptyText: "No players.",
+      afterRender: ({ table }) => {
+        table.querySelectorAll("tbody [data-tpr-pid]").forEach((placeholder) => {
+          const pid = placeholder.dataset.tprPid;
+          const state5 = placeholder.dataset.tprState || "active";
+          const player2 = players_by_id[String(pid)];
+          if (!player2) return;
+          const slot = getPlayerSlot(player2);
+          const posKey2 = isFieldSlot(slot) ? slot : null;
+          const row = TmPlayerRow.build(player2, { posKey: posKey2, state: state5 });
+          placeholder.parentNode.replaceChild(row, placeholder);
+        });
+      }
+    });
+    tblWrap.addEventListener("dragstart", (e) => {
+      const tr = e.target.closest("tr[data-player-id]");
+      if (!tr || !tblWrap.contains(tr)) return;
+      const pid = tr.dataset.playerId;
+      if (!pid || pid.startsWith("_bench_")) return;
+      const fromRoleKey = tr.dataset.benchRole || null;
+      drag.state = { pid, fromType: "sidebar", fromRoleKey };
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", pid);
+      tr.classList.add("tmtc-drag-source");
+      const player2 = players_by_id[pid];
+      const playerSlot = player2 ? getPlayerSlot(player2) : null;
+      if (isFieldSlot(playerSlot) || getOccupiedFieldKeys().size < 11) fieldApi.setDragging(true);
+    });
+    let _hovRow = null;
+    const _setHovRow = (tr) => {
+      if (_hovRow === tr) return;
+      if (_hovRow) _hovRow.classList.remove("tmtc-drag-over");
+      _hovRow = tr;
+      if (tr) tr.classList.add("tmtc-drag-over");
+    };
+    tblWrap.addEventListener("dragover", (e) => {
+      if (!drag.state) return;
+      const tr = e.target.closest("tr[data-bench-role], tr[data-player-id]");
+      if (tr) {
+        e.preventDefault();
+        _setHovRow(tr);
+      }
+    });
+    tblWrap.addEventListener("dragleave", (e) => {
+      if (_hovRow && !tblWrap.contains(e.relatedTarget)) _setHovRow(null);
+    });
+    tblWrap.addEventListener("drop", async (e) => {
+      _setHovRow(null);
+      const benchTr = e.target.closest("tr[data-bench-role]");
+      const playerTr = !benchTr && e.target.closest("tr[data-player-id]");
+      if (!benchTr && !playerTr) return;
+      e.preventDefault();
+      fieldApi.clearDragVisuals();
+      const ds = drag.state;
+      drag.state = null;
+      if (!ds) return;
+      const player2 = players_by_id[ds.pid];
+      if (!player2) return;
+      let targetSlot, targetPlayer;
+      if (benchTr) {
+        targetSlot = benchTr.dataset.benchRole;
+        targetPlayer = getPlayerAtSlot(targetSlot);
+      } else {
+        targetPlayer = players_by_id[playerTr.dataset.playerId];
+        if (!targetPlayer) {
+          refresh();
+          return;
+        }
+        targetSlot = getPlayerSlot(targetPlayer);
+        if (!targetSlot) {
+          refresh();
+          return;
+        }
+      }
+      if (targetPlayer && String(targetPlayer.id) === ds.pid) {
+        refresh();
+        return;
+      }
+      if (CLUB_COUNTRY2) {
+        const projected = countSquadForeigners() + (isForeigner2(player2) && !getPlayerSlot(player2) ? 1 : 0) - (targetPlayer && isForeigner2(targetPlayer) ? 1 : 0);
+        if (projected > 5) {
+          TmAlert.show({ message: "Foreign player limit is 5 (squad of 16)", tone: "warning", duration: 3e3 });
+          return;
+        }
+      }
+      const sourceSlot = getPlayerSlot(player2);
+      const changed = {};
+      setPlayerSlot(player2, targetSlot);
+      changed[ds.pid] = targetSlot;
+      if (targetPlayer) {
+        setPlayerSlot(targetPlayer, sourceSlot);
+        changed[String(targetPlayer.id)] = sourceSlot != null ? sourceSlot : "out";
+      }
+      if (isFieldSlot(targetSlot)) {
+        fieldApi.normalizeAll(changed);
+      } else if (sourceSlot && isFieldSlot(sourceSlot)) {
+        fieldApi.normalizeZone(POSKEY_TO_ZONE2[sourceSlot], changed);
+      }
+      ctx.refreshAll();
+      await save(changed);
+    });
+    container.appendChild(tblWrap);
+    function refresh() {
+      tblWrap == null ? void 0 : tblWrap.refresh({ items: sortedPlayers() });
+    }
+    return { refresh };
   }
 
   // src/components/tactics/tm-tactics-lineup.js
-  var FIELD_ZONES2 = TmConst.FIELD_ZONES;
-  var BENCH_SLOTS2 = TmConst.BENCH_SLOTS;
-  var SPECIAL_SLOTS2 = TmConst.SPECIAL_SLOTS;
-  var ALL_BENCH = [...BENCH_SLOTS2, ...SPECIAL_SLOTS2];
-  var BENCH_LABELS2 = TmConst.BENCH_LABELS;
-  var POSKEY_TO_ZONE = {};
-  for (const z of FIELD_ZONES2) {
-    for (const pk of z.cols) {
-      if (pk) POSKEY_TO_ZONE[pk] = z.key;
-    }
-  }
-  var LINE_PENALTIES = {
-    1: { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4 },
-    2: { 1: 1, 2: 0, 3: 1, 4: 2, 5: 3 },
-    3: { 1: 2, 2: 1, 3: 0, 4: 1, 5: 2 },
-    4: { 1: 3, 2: 2, 3: 1, 4: 0, 5: 1 },
-    5: { 1: 4, 2: 3, 3: 2, 4: 1, 5: 0 }
-  };
-  function getTargetRanks(total, count) {
-    if (count <= 0) return [];
-    if (count >= total) return Array.from({ length: total }, (_, i) => i);
-    const c = Math.floor((total - 1) / 2);
-    const result = [];
-    if (count % 2 === 1) result.push(c);
-    for (let r = 1; result.length < count; r++) {
-      if (c - r >= 0) result.push(c - r);
-      if (result.length < count && c + r < total) result.push(c + r);
-    }
-    return result.sort((a, b) => a - b);
-  }
-  var escHtml = (v) => String(v != null ? v : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  var gc = TmUtils.getColor;
-  function encodeNested(obj, prefix = "") {
-    const parts = [];
-    for (const [key, val] of Object.entries(obj)) {
-      const k = prefix ? `${prefix}[${key}]` : key;
-      if (val !== null && val !== void 0 && typeof val === "object") {
-        parts.push(encodeNested(val, k));
-      } else if (val !== null && val !== void 0) {
-        parts.push(`${encodeURIComponent(k)}=${encodeURIComponent(val)}`);
-      }
-    }
-    return parts.join("&");
-  }
-  async function postSave(assoc, changedPlayers, reserves, national, miniGameId) {
-    return fetch("/ajax/tactics_post.ajax.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" },
-      body: encodeNested({ on_field: assoc, players: changedPlayers, reserves, national, miniGameId })
-    });
-  }
-  function mountTacticsLineup(container, data, opts = {}) {
-    var _a2;
+  var { BENCH_SLOTS: BENCH_SLOTS3, SPECIAL_SLOTS: SPECIAL_SLOTS2 } = TmConst;
+  function mountTacticsLineup(container, tactics, opts = {}) {
     const { reserves = 0, national = 0, miniGameId = 0 } = opts;
-    const { players_by_id = {} } = data;
-    const { R5_THRESHOLDS: R5_THRESHOLDS5, RTN_THRESHOLDS: RTN_THRESHOLDS2, REC_THRESHOLDS: REC_THRESHOLDS2 } = TmConst;
-    const clubCountry2 = String(((_a2 = window.SESSION) == null ? void 0 : _a2.country) || "").trim().toLowerCase();
-    const isForeigner2 = (p) => !!clubCountry2 && String((p == null ? void 0 : p.country) || "").trim().toLowerCase() !== clubCountry2;
-    function countSquadForeigners(excludePosKey) {
-      let count = 0;
-      for (const pk of getOccupiedFieldKeys()) {
-        if (pk === excludePosKey) continue;
-        const p = players_by_id[String(assignment[pk])];
-        if (p && isForeigner2(p)) count++;
-      }
-      for (const role of BENCH_SLOTS2) {
-        const pid = assignment[role];
-        if (!pid) continue;
-        const p = players_by_id[String(pid)];
-        if (p && isForeigner2(p)) count++;
-      }
-      return count;
-    }
-    function projectedForeigners(incomingPid, vacatingPosKey) {
-      const base = countSquadForeigners(vacatingPosKey);
-      return base + (isForeigner2(players_by_id[String(incomingPid)]) ? 1 : 0);
-    }
-    const assignment = { ...data.formation_assoc };
-    for (const [role, pid] of Object.entries(data.formation_subs || {})) {
-      if (!assignment[role] && pid) assignment[role] = pid;
-    }
-    const getOccupiedFieldKeys = () => new Set(
-      Object.keys(assignment).filter(
-        (pk) => TmConst.POSITION_MAP[pk] != null && assignment[pk] && String(assignment[pk]) !== "0"
-      )
-    );
-    const getFieldPosKey = (pid) => {
-      const s6 = String(pid);
-      for (const [pk, id] of Object.entries(assignment)) {
-        if (ALL_BENCH.includes(pk)) continue;
-        if (id != null && String(id) === s6) return pk;
-      }
-      return null;
+    const { players, specialRoles } = tactics;
+    const players_by_id = Object.fromEntries(players.map((p) => [String(p.id), p]));
+    const getPlayerSlot = (p) => {
+      var _a2, _b;
+      return (_b = (_a2 = p.positions.find((pos) => pos.playing)) == null ? void 0 : _a2.key) != null ? _b : null;
     };
-    const getBenchRole = (pid) => {
-      const s6 = String(pid);
-      return BENCH_SLOTS2.find((r) => assignment[r] != null && String(assignment[r]) === s6) || null;
+    const isFieldSlot = (slot) => slot != null && TmConst.POSITION_MAP[slot] != null;
+    const isBenchSlot = (slot) => BENCH_SLOTS3.includes(slot);
+    const getPlayerAtSlot = (slot) => {
+      var _a2;
+      return (_a2 = players.find((p) => getPlayerSlot(p) === slot)) != null ? _a2 : null;
     };
-    const getSortKey = (pid) => {
-      const pk = getFieldPosKey(pid);
-      if (pk) {
-        for (let zi = 0; zi < FIELD_ZONES2.length; zi++) {
-          const ci = FIELD_ZONES2[zi].cols.indexOf(pk);
-          if (ci >= 0) return (FIELD_ZONES2.length - 1 - zi) * 5 + ci;
-        }
-      }
-      const si = BENCH_SLOTS2.findIndex((r) => assignment[r] != null && String(assignment[r]) === String(pid));
-      if (si >= 0) return 100 + si;
-      return 999;
-    };
-    const buildAssocForSave = (outPid = null) => {
+    const getOccupiedFieldKeys = () => new Set(players.map(getPlayerSlot).filter(isFieldSlot));
+    function setPlayerSlot(player2, newSlot) {
+      for (const pos2 of player2.positions) pos2.playing = false;
+      if (!newSlot) return;
+      let pos = player2.positions.find((p) => p.key === newSlot);
+      if (!pos) player2.positions.push(pos = { key: newSlot });
+      pos.playing = true;
+    }
+    function countSquadForeigners() {
+      return players.filter((p) => getPlayerSlot(p) && isForeigner(p)).length;
+    }
+    function buildAssocForSave() {
       const result = {};
-      for (const pk of Object.keys(TmConst.POSITION_MAP)) {
-        result[pk] = assignment[pk] || 0;
+      for (const pk of Object.keys(TmConst.POSITION_MAP)) result[pk] = 0;
+      for (const p of players) {
+        const slot = getPlayerSlot(p);
+        if (slot) result[slot] = p.id;
       }
-      for (const role of [...BENCH_SLOTS2, ...SPECIAL_SLOTS2]) {
-        if (assignment[role]) result[role] = assignment[role];
+      for (const [role, pid] of Object.entries(specialRoles)) {
+        if (pid != null) result[role] = pid;
       }
-      if (outPid) result.out = outPid;
       return result;
-    };
+    }
     const changeListeners = [];
     const notifyChange = () => changeListeners.forEach((fn) => fn());
-    const adaptTooltipPlayer = (player2) => {
-      if (!player2) return null;
-      return {
-        ...player2,
-        name: player2.name || player2.lastname || String(player2.id || ""),
-        rec: player2._fmRec != null ? player2._fmRec : player2.rec,
-        r5: player2._fmR5 != null ? player2._fmR5 : player2.r5,
-        routine: Number.isFinite(parseFloat(player2.routine)) ? parseFloat(player2.routine) : null
-      };
-    };
-    const getPositionRating = (player2, posKey2) => {
-      var _a3, _b;
-      const positionId = (_a3 = TmConst.POSITION_MAP[String(posKey2 || "").toLowerCase()]) == null ? void 0 : _a3.id;
-      if (positionId == null || !((_b = player2 == null ? void 0 : player2.positions) == null ? void 0 : _b.length)) return null;
-      return player2.positions.find((rating) => rating.id === positionId) || null;
-    };
-    const getSlotRecommendation = (player2, posKey2) => {
-      const rating = getPositionRating(player2, posKey2);
-      if ((rating == null ? void 0 : rating.rec) != null) {
-        const score = parseFloat(rating.rec);
-        if (Number.isFinite(score)) return Math.round(score * 100) / 100;
+    const drag = { state: null };
+    async function save(changed) {
+      try {
+        await TmTacticsService.postLineupSave(buildAssocForSave(), changed, reserves, national, miniGameId);
+        TmAlert.show({ message: "Saved", tone: "success" });
+        notifyChange();
+      } catch (e) {
+        TmAlert.show({ message: "Save failed", tone: "error" });
       }
-      const fallback = parseFloat(player2 == null ? void 0 : player2.rec_sort);
-      return Number.isFinite(fallback) ? fallback : null;
-    };
-    const getSlotDisplayRating = (player2, posKey2) => {
-      const rating = getPositionRating(player2, posKey2);
-      if ((rating == null ? void 0 : rating.r5) != null) {
-        const score = parseFloat(rating.r5);
-        if (Number.isFinite(score)) return TmUtils.formatR5(score, "\u2014");
-      }
-      return "\u2014";
-    };
-    const getSlotRoutineDisplay = (player2) => {
-      const routine = parseFloat(player2 == null ? void 0 : player2.routine);
-      return Number.isFinite(routine) && routine > 0 ? routine.toFixed(1) : "\u2014";
-    };
-    const getMoodPenalty = (player2, posKey2) => {
-      var _a3, _b;
-      const placed = TmConst.POSITION_MAP[String(posKey2 || "").toLowerCase()];
-      if (!placed) return 0;
-      const favEntries = Array.isArray(player2 == null ? void 0 : player2.positions) ? player2.positions.filter((pos) => pos.preferred) : [];
-      if (!favEntries.length) return 0;
-      if (placed.row === 0) return favEntries.some((entry) => entry.row === 0) ? 0 : 4;
-      if (favEntries.some((entry) => entry.row === 0)) return 4;
-      const placedSide = placed.col === 0 ? "L" : placed.col === 4 ? "R" : "C";
-      let bestPenalty = 4;
-      for (const fav of favEntries) {
-        const favSide = fav.col === 0 ? "L" : fav.col === 4 ? "R" : "C";
-        let penalty = 0;
-        if (favSide !== placedSide) {
-          penalty += favSide === "C" || placedSide === "C" ? 2 : 1;
-        }
-        penalty += (_b = (_a3 = LINE_PENALTIES[placed.row]) == null ? void 0 : _a3[fav.row]) != null ? _b : 4;
-        bestPenalty = Math.min(bestPenalty, Math.min(penalty, 4));
-      }
-      return bestPenalty;
-    };
-    const sortedPlayers = () => {
-      var _a3, _b, _c, _d;
-      const rows = Object.values(data.players || {}).map((p) => {
-        const fmPosKey = getFieldPosKey(String(p.id));
-        const benchRole = !fmPosKey ? getBenchRole(String(p.id)) : null;
-        let _fmR5, _fmRec;
-        if (fmPosKey) {
-          const rating = getPositionRating(p, fmPosKey);
-          _fmR5 = (rating == null ? void 0 : rating.r5) != null ? parseFloat(rating.r5) : null;
-          if (_fmR5 == null) {
-            const v = parseFloat(p.r5);
-            if (Number.isFinite(v)) _fmR5 = v;
-          }
-          _fmRec = getSlotRecommendation(p, fmPosKey);
-          if (_fmRec == null) {
-            const v = parseFloat(p.rec);
-            if (Number.isFinite(v)) _fmRec = v;
-          }
-        } else {
-          const v5 = parseFloat(p.r5);
-          _fmR5 = Number.isFinite(v5) ? v5 : null;
-          const vR = parseFloat(p.rec);
-          _fmRec = Number.isFinite(vR) ? vR : null;
-        }
-        return {
-          ...p,
-          _fmOrder: getSortKey(String(p.id)),
-          _fmPosKey: fmPosKey,
-          _benchRole: benchRole,
-          _fmR5,
-          _fmRec
-        };
-      }).filter((p) => !p._benchRole).sort((a, b) => a._fmOrder - b._fmOrder);
-      _firstOutPid = (_b = (_a3 = rows.find((p) => getFieldPosKey(String(p.id)) === null)) == null ? void 0 : _a3.id) != null ? _b : null;
-      BENCH_SLOTS2.forEach((role, idx) => {
-        const pid = assignment[role];
-        const player2 = pid ? players_by_id[String(pid)] || null : null;
-        if (player2) {
-          const v5 = parseFloat(player2.r5);
-          const vR = parseFloat(player2.rec);
-          rows.push({
-            ...player2,
-            _isBenchPlaceholder: true,
-            _benchSlotFilled: true,
-            _benchRole: role,
-            _fmOrder: 100 + idx,
-            _fmPosKey: null,
-            _fmR5: Number.isFinite(v5) ? v5 : null,
-            _fmRec: Number.isFinite(vR) ? vR : null
-          });
-        } else {
-          rows.push({
-            _isBenchPlaceholder: true,
-            _benchSlotFilled: false,
-            _benchRole: role,
-            _fmOrder: 100 + idx,
-            id: `_bench_${role}`,
-            no: "",
-            name: "",
-            lastname: "",
-            rec_sort: null,
-            _fmR5: null,
-            _fmRec: null,
-            routine: null
-          });
-        }
-      });
-      _firstSubPid = (_d = (_c = rows.find((p) => p._isBenchPlaceholder && p._benchSlotFilled)) == null ? void 0 : _c.id) != null ? _d : null;
-      rows.sort((a, b) => a._fmOrder - b._fmOrder);
-      let _ms = false, _mo = false;
-      for (const r of rows) {
-        if (!_ms && r._fmOrder >= 100) {
-          r._needsSep = true;
-          _ms = true;
-        }
-        if (!_mo && r._fmOrder >= 999) {
-          r._needsSep = true;
-          _mo = true;
-        }
-      }
-      return rows;
-    };
-    const body = container;
+    }
     const layout = document.createElement("div");
     layout.className = "tmtc-lineup-2col";
-    body.appendChild(layout);
+    container.appendChild(layout);
     const fieldCol = document.createElement("div");
     fieldCol.className = "tmtc-field-col";
     layout.appendChild(fieldCol);
@@ -48674,681 +46429,35 @@ order:initial
     const squadCol = document.createElement("div");
     squadCol.className = "tmtc-squad-col";
     if (!externalSquadContainer) layout.appendChild(squadCol);
-    let hoverTooltipTimer = null;
-    const clearPlayerTooltip = () => {
-      clearTimeout(hoverTooltipTimer);
-      TmPlayerTooltip.hide();
+    const ctx = {
+      players,
+      players_by_id,
+      specialRoles,
+      CLUB_COUNTRY,
+      isForeigner,
+      getPlayerSlot,
+      getPlayerAtSlot,
+      setPlayerSlot,
+      isFieldSlot,
+      isBenchSlot,
+      getOccupiedFieldKeys,
+      countSquadForeigners,
+      drag,
+      changeListeners,
+      notifyChange,
+      save,
+      refreshAll: () => {
+      }
     };
-    const bindTooltipDelegation = (host) => {
-      if (!host || host.dataset.tmtcTooltipBound === "1") return;
-      host.dataset.tmtcTooltipBound = "1";
-      host.addEventListener("mouseover", (event) => {
-        const hoverEl = event.target.closest(".tmtc-slot[data-player-id], .tmtc-bench-inner[data-player-id]");
-        if (!hoverEl || !host.contains(hoverEl) || hoverEl.contains(event.relatedTarget)) return;
-        const playerId = hoverEl.dataset.playerId || "";
-        const player2 = adaptTooltipPlayer(players_by_id[String(playerId)] || null);
-        if (!player2) return;
-        clearPlayerTooltip();
-        hoverTooltipTimer = setTimeout(() => {
-          TmPlayerTooltip.show(hoverEl, player2);
-        }, 80);
-      });
-      host.addEventListener("mouseout", (event) => {
-        const hoverEl = event.target.closest(".tmtc-slot[data-player-id], .tmtc-bench-inner[data-player-id]");
-        if (!hoverEl || !host.contains(hoverEl) || hoverEl.contains(event.relatedTarget)) return;
-        clearPlayerTooltip();
-      });
+    const fieldApi = mountTacticsField(fieldCol, ctx);
+    const squadApi = mountTacticsSquadList(externalSquadContainer || squadCol, ctx, fieldApi);
+    ctx.refreshAll = () => {
+      fieldApi.refresh();
+      squadApi.refresh();
     };
-    bindTooltipDelegation(layout);
-    bindTooltipDelegation(externalSquadContainer || squadCol);
-    const specialRolesCol = document.createElement("div");
-    specialRolesCol.className = "tmtc-bench-col";
-    const fieldEl = document.createElement("div");
-    fieldEl.className = "tmtc-field";
-    fieldCol.appendChild(fieldEl);
-    const topSpacer = document.createElement("div");
-    topSpacer.className = "tmtc-field-spacer";
-    fieldEl.appendChild(topSpacer);
-    const fieldOverlayBar = document.createElement("div");
-    fieldOverlayBar.className = "tmtc-fob";
-    topSpacer.appendChild(fieldOverlayBar);
-    const BADGE_ZONES_LU = [...FIELD_ZONES2].reverse().filter((z) => z.key !== "gk");
-    function getFormationStr() {
-      return BADGE_ZONES_LU.map((z) => z.cols.filter((pk) => pk && assignment[pk] && String(assignment[pk]) !== "0").length).filter((n) => n > 0).join("-") || "?";
-    }
-    function refreshFieldOverlay() {
-      var _a3, _b;
-      const activeKeys = getOccupiedFieldKeys();
-      let totalR5 = 0, countR5 = 0, totalRtn = 0, countRtn = 0, totalAge = 0, countAge = 0;
-      for (const posKey2 of activeKeys) {
-        const pid = assignment[posKey2];
-        if (!pid || String(pid) === "0") continue;
-        const p = players_by_id[String(pid)];
-        if (!p) continue;
-        const posId = (_a3 = TmConst.POSITION_MAP[posKey2]) == null ? void 0 : _a3.id;
-        if (((_b = p.allPositionRatings) == null ? void 0 : _b.length) && posId != null) {
-          const rating = p.allPositionRatings.find((r) => r.id === posId);
-          if (rating) {
-            totalR5 += parseFloat(rating.r5) || 0;
-            countR5++;
-          }
-        }
-        if (p.routine != null && Number(p.routine) > 0) {
-          totalRtn += parseFloat(p.routine);
-          countRtn++;
-        }
-        const age2 = p.ageMonths != null ? p.ageMonths / 12 : parseInt(p.age) || 0;
-        if (age2 > 0) {
-          totalAge += age2;
-          countAge++;
-        }
-      }
-      const gc2 = TmUtils.getColor;
-      const r5 = countR5 > 0 ? (totalR5 / countR5).toFixed(2) : null;
-      const rtn = countRtn > 0 ? (totalRtn / countRtn).toFixed(1) : null;
-      const age = countAge > 0 ? (totalAge / countAge).toFixed(1) : null;
-      const sep = `<span class="tmtc-fob-sep">\xB7</span>`;
-      const item = (label, value, color) => `<span class="tmtc-fob-item"><span class="tmtc-fob-label">${label}</span><span class="tmtc-fob-value" style="color:${color}">${value}</span></span>`;
-      fieldOverlayBar.innerHTML = [
-        `<span class="tmtc-fob-formation">${getFormationStr()}</span>`,
-        sep,
-        item("R5", r5 != null ? r5 : "\u2014", r5 ? gc2(parseFloat(r5), TmConst.R5_THRESHOLDS) : "var(--tmu-text-faint)"),
-        sep,
-        item("Rtn", rtn != null ? rtn : "\u2014", rtn ? gc2(parseFloat(rtn), TmConst.RTN_THRESHOLDS) : "var(--tmu-text-faint)"),
-        sep,
-        item("Age", age != null ? age : "\u2014", "var(--tmu-text-muted)")
-      ].join("");
-    }
-    const slotEls = {};
-    const benchSlotEls = {};
-    let tblWrap = null;
-    function buildField() {
-      while (fieldEl.lastChild !== topSpacer) fieldEl.removeChild(fieldEl.lastChild);
-      for (const k of Object.keys(slotEls)) delete slotEls[k];
-      for (const zone of FIELD_ZONES2) {
-        const section = document.createElement("div");
-        section.className = "tmtc-field-line";
-        fieldEl.appendChild(section);
-        const lineEl = document.createElement("div");
-        lineEl.className = "tmtc-line";
-        section.appendChild(lineEl);
-        for (const posKey2 of zone.cols) {
-          if (!posKey2) {
-            const sp = document.createElement("div");
-            sp.className = "tmtc-slot-spacer";
-            lineEl.appendChild(sp);
-          } else {
-            const slotEl = makeFieldSlot(posKey2);
-            slotEls[posKey2] = slotEl;
-            lineEl.appendChild(slotEl);
-          }
-        }
-      }
-    }
-    function normalizeZone(zoneKey, changed) {
-      const zone = FIELD_ZONES2.find((z) => z.key === zoneKey);
-      if (!zone) return;
-      const centerPks = [zone.cols[1], zone.cols[2], zone.cols[3]].filter((pk) => pk != null);
-      if (!centerPks.length) return;
-      const occupied = centerPks.filter((pk) => assignment[pk] != null && String(assignment[pk]) !== "0");
-      if (!occupied.length) return;
-      const targetRanks = getTargetRanks(centerPks.length, occupied.length);
-      const targetPks = targetRanks.map((r) => centerPks[r]);
-      if (occupied.every((pk, i) => pk === targetPks[i])) return;
-      const pids = occupied.map((pk) => String(assignment[pk]));
-      for (const pk of occupied) assignment[pk] = null;
-      for (let i = 0; i < pids.length; i++) {
-        assignment[targetPks[i]] = pids[i];
-        if (changed) changed[pids[i]] = targetPks[i];
-      }
-      for (const pk of centerPks) {
-        const pid = assignment[pk];
-        if (slotEls[pk]) renderFieldSlot(slotEls[pk], pid ? players_by_id[pid] || null : null, pk);
-      }
-    }
-    function makeFieldSlot(posKey2) {
-      const pid = assignment[posKey2];
-      const player2 = pid ? players_by_id[pid] || null : null;
-      const slotEl = document.createElement("div");
-      slotEl.className = "tmtc-slot";
-      slotEl.dataset.posKey = posKey2;
-      renderFieldSlot(slotEl, player2, posKey2);
-      setupDropTarget(slotEl, posKey2);
-      return slotEl;
-    }
-    function renderFieldSlot(slotEl, player2, posKey2) {
-      if (!slotEl) return;
-      slotEl.innerHTML = "";
-      slotEl.dataset.posKey = posKey2;
-      slotEl.classList.toggle("tmtc-slot-empty", !player2);
-      if (player2) {
-        slotEl.setAttribute("draggable", "true");
-        slotEl.dataset.playerId = String(player2.id);
-        slotEl.removeEventListener("dragstart", onFieldDragStart);
-        slotEl.addEventListener("dragstart", onFieldDragStart);
-        const slotRec = getSlotRecommendation(player2, posKey2);
-        const slotRating = getSlotDisplayRating(player2, posKey2);
-        const slotRoutine = getSlotRoutineDisplay(player2);
-        const moodPenalty = getMoodPenalty(player2, posKey2);
-        slotEl.innerHTML = `
-                <span class="tmtc-slot-no">${escHtml(slotRating)}</span>
-                <span class="tmtc-slot-name">${escHtml(player2.lastname || player2.name || "")}${playerStatusIconsHtml(player2)}</span>
-                ${TmPosition.chip([posKey2 || ""])}
-                <span class="tmtc-slot-meta">
-                    <span class="tmtc-slot-rec">${TmStars.recommendation(slotRec, "tmtc-rec-stars tmtc-rec-stars-sm") || '<span class="tmtc-slot-rec-empty">\u2014</span>'}</span>
-                    ${moodPenalty > 0 ? `<span class="tmtc-slot-mood tmtc-slot-mood-${moodPenalty}" title="Out of natural position">\u2639</span>` : ""}
-                </span>
-                <span class="tmtc-slot-rtn" style="color:${slotRoutine !== "\u2014" ? gc(Number(slotRoutine), RTN_THRESHOLDS2) : "var(--tmu-text-dim)"}">${slotRoutine}</span>
-            `;
-      } else {
-        slotEl.removeAttribute("draggable");
-        delete slotEl.dataset.playerId;
-        slotEl.innerHTML = `<span class="tmtc-slot-poskey">${escHtml(posKey2.toUpperCase() || "\u2014")}</span>`;
-      }
-    }
-    function makeBenchSlot(role) {
-      const el2 = document.createElement("div");
-      el2.className = "tmtc-bench-slot";
-      el2.dataset.role = role;
-      const pid = assignment[role];
-      const player2 = pid ? players_by_id[pid] || null : null;
-      renderBenchSlot(el2, player2, BENCH_LABELS2[role] || role);
-      setupBenchDropTarget(el2, role);
-      return el2;
-    }
-    function renderBenchSlot(el2, player2, label) {
-      el2.innerHTML = "";
-      el2.classList.toggle("has-player", !!player2);
-      const roleEl = document.createElement("span");
-      roleEl.className = "tmtc-bench-role";
-      roleEl.textContent = label;
-      el2.appendChild(roleEl);
-      if (player2) {
-        const inner = document.createElement("div");
-        inner.setAttribute("draggable", "true");
-        inner.dataset.playerId = String(player2.id);
-        inner.className = "tmtc-bench-inner";
-        inner.innerHTML = `<span class="tmtc-bench-name">${escHtml(player2.lastname || player2.name || "")}${playerStatusIconsHtml(player2)}</span>`;
-        inner.addEventListener("dragstart", onBenchDragStart);
-        el2.appendChild(inner);
-      } else {
-        const emptyEl = document.createElement("span");
-        emptyEl.className = "tmtc-bench-empty";
-        emptyEl.textContent = "\u2014";
-        el2.appendChild(emptyEl);
-      }
-    }
-    function buildSquadTable() {
-      const wrap = TmTable.table({
-        items: sortedPlayers(),
-        sortKey: "_fmOrder",
-        sortDir: 1,
-        density: "tight",
-        rowAttrs: (p) => {
-          if (p._isBenchPlaceholder && p._benchSlotFilled)
-            return { draggable: "true", "data-player-id": p.id, "data-bench-role": p._benchRole };
-          if (p._isBenchPlaceholder)
-            return { "data-bench-role": p._benchRole };
-          return { draggable: "true", "data-player-id": p.id };
-        },
-        rowCls: (p) => {
-          const sep = p._needsSep ? " tmtc-row-sep" : "";
-          if (p._isBenchPlaceholder && p._benchSlotFilled) return "tmtc-row-on-bench" + sep;
-          if (p._isBenchPlaceholder) return "tmtc-row-bench-placeholder" + sep;
-          if (getFieldPosKey(String(p.id))) return "tmtc-row-on-field" + sep;
-          return "tmtc-row-out" + sep;
-        },
-        headers: [
-          {
-            key: "_bar",
-            label: "",
-            sortable: false,
-            cls: "tmtc-pb-cell",
-            thCls: "tmtc-pb-cell",
-            render: (_, p) => {
-              var _a3, _b, _c;
-              if (p._isBenchPlaceholder && !p._benchSlotFilled)
-                return '<span class="tmtc-pb-inner" style="background:var(--tmu-border-soft-alpha)"></span>';
-              const posStr = (p._fmPosKey || ((_b = (_a3 = p.positions) == null ? void 0 : _a3.find((pos) => pos.preferred)) == null ? void 0 : _b.key) || "").toLowerCase();
-              const color = ((_c = TmConst.POSITION_MAP[posStr]) == null ? void 0 : _c.color) || "var(--tmu-text-dim)";
-              return `<span class="tmtc-pb-inner" style="background:${color}"></span>`;
-            }
-          },
-          {
-            key: "no",
-            label: "#",
-            align: "r",
-            width: "28px",
-            sortable: false,
-            render: (v, p) => p._isBenchPlaceholder && !p._benchSlotFilled ? "" : `<span style="color:var(--tmu-text-muted);font-variant-numeric:tabular-nums">${escHtml(v)}</span>`
-          },
-          {
-            key: "_fmPosKey",
-            label: "Pos",
-            align: "c",
-            width: "68px",
-            sortable: false,
-            render: (v, p) => {
-              var _a3;
-              if (p._isBenchPlaceholder)
-                return `<span class="tmtc-sub-badge"${!p._benchSlotFilled ? ' style="opacity:.55"' : ""}>${escHtml(BENCH_LABELS2[p._benchRole] || p._benchRole)}</span>`;
-              if (p._benchRole)
-                return `<span class="tmtc-sub-badge">${escHtml(BENCH_LABELS2[p._benchRole] || p._benchRole)}</span>`;
-              if (!v) {
-                const positions = ((_a3 = p == null ? void 0 : p.positions) == null ? void 0 : _a3.filter((pos) => pos.preferred).map((pos) => pos.key)) || [];
-                if (!positions.length) return "";
-                return `<span style="opacity:0.45;filter:grayscale(1)">${TmPosition.chip(positions)}</span>`;
-              }
-              return TmPosition.chip([v.toUpperCase()]);
-            }
-          },
-          {
-            key: "name",
-            label: "Player",
-            render: (_, p) => {
-              if (p._isBenchPlaceholder && !p._benchSlotFilled)
-                return '<span style="color:var(--tmu-text-disabled);font-style:italic">drop player here</span>';
-              return `${CountryFlag.render(p.country, "tmtc-player-flag")}<a href="/players/${p.id}/" style="color:var(--tmu-text-inverse);text-decoration:none;font-weight:600" onclick="event.stopPropagation()">${escHtml(p.lastname || p.name || "")}</a>${playerStatusIconsHtml(p)}`;
-            }
-          },
-          {
-            key: "rec_sort",
-            label: "\u2605",
-            align: "c",
-            width: "58px",
-            render: (v, p) => {
-              if (p._isBenchPlaceholder && !p._benchSlotFilled) return "";
-              const starValue = p._fmRec != null ? p._fmRec : v;
-              return TmStars.recommendation(starValue, "tmtc-rec-stars tmtc-rec-stars-sm") || "\u2014";
-            }
-          },
-          {
-            key: "_fmRec",
-            label: "REC",
-            align: "r",
-            width: "40px",
-            sortable: false,
-            render: (v, p) => p._isBenchPlaceholder && !p._benchSlotFilled ? "" : v != null ? `<span class="tmu-tabular" style="color:${gc(v, REC_THRESHOLDS2)};font-weight:700">${v.toFixed(2)}</span>` : `<span style="color:var(--tmu-text-dim)">\u2014</span>`
-          },
-          {
-            key: "_fmR5",
-            label: "R5",
-            align: "r",
-            width: "40px",
-            sortable: false,
-            render: (v, p) => p._isBenchPlaceholder && !p._benchSlotFilled ? "" : v != null ? `<span class="tmu-tabular" style="color:${gc(v, R5_THRESHOLDS5)};font-weight:700">${TmUtils.formatR5(v)}</span>` : `<span style="color:var(--tmu-text-dim)">\u2014</span>`
-          },
-          {
-            key: "routine",
-            label: "Routine",
-            align: "r",
-            width: "42px",
-            render: (v, p) => p._isBenchPlaceholder && !p._benchSlotFilled ? "" : v != null && v > 0 ? `<span class="tmu-tabular" style="color:${gc(v, RTN_THRESHOLDS2)};font-weight:700">${Number(v).toFixed(1)}</span>` : `<span style="color:var(--tmu-text-dim)">\u2014</span>`
-          }
-        ],
-        emptyText: "No players."
-      });
-      wrap.addEventListener("dragstart", (e) => {
-        const tr = e.target.closest("tr[data-player-id]");
-        if (!tr || !wrap.contains(tr)) return;
-        const pid = tr.dataset.playerId;
-        if (!pid || pid.startsWith("_bench_")) return;
-        const fromRoleKey = tr.dataset.benchRole || null;
-        dragState = { pid, fromType: "sidebar", fromRoleKey };
-        e.dataTransfer.effectAllowed = "move";
-        e.dataTransfer.setData("text/plain", pid);
-        tr.classList.add("tmtc-drag-source");
-        if (getFieldPosKey(pid) || getOccupiedFieldKeys().size < 11) fieldEl.classList.add("is-dragging");
-      });
-      let _hovRow = null;
-      const _setHovRow = (tr) => {
-        if (_hovRow === tr) return;
-        if (_hovRow) _hovRow.classList.remove("tmtc-drag-over");
-        _hovRow = tr;
-        if (tr) tr.classList.add("tmtc-drag-over");
-      };
-      wrap.addEventListener("dragover", (e) => {
-        if (!dragState) return;
-        const tr = e.target.closest("tr[data-bench-role], tr[data-player-id]");
-        if (tr) {
-          e.preventDefault();
-          _setHovRow(tr);
-        }
-      });
-      wrap.addEventListener("dragleave", (e) => {
-        if (_hovRow && !wrap.contains(e.relatedTarget)) _setHovRow(null);
-      });
-      wrap.addEventListener("drop", async (e) => {
-        _setHovRow(null);
-        const benchTr = e.target.closest("tr[data-bench-role]");
-        const playerTr = !benchTr && e.target.closest("tr[data-player-id]");
-        if (!benchTr && !playerTr) return;
-        e.preventDefault();
-        clearDragVisuals();
-        const ds = dragState;
-        dragState = null;
-        if (!ds) return;
-        const { pid } = ds;
-        const player2 = players_by_id[pid];
-        if (!player2) return;
-        const changed = {};
-        if (benchTr) {
-          const roleKey = benchTr.dataset.benchRole;
-          const prevPid = assignment[roleKey] ? String(assignment[roleKey]) : null;
-          if (prevPid === String(pid)) {
-            refreshSquadTable();
-            return;
-          }
-          if (clubCountry2 && isForeigner2(player2)) {
-            const freeing = prevPid && isForeigner2(players_by_id[prevPid]);
-            const alreadyIn = [...getOccupiedFieldKeys(), ...BENCH_SLOTS2].some((k) => String(assignment[k]) === String(pid));
-            if (!freeing && !alreadyIn && countSquadForeigners() >= 5) {
-              TmAlert.show({ message: "Foreign player limit is 5 (squad of 16)", tone: "warning", duration: 3e3 });
-              return;
-            }
-          }
-          clearSourceOldSpot(ds, changed);
-          if (prevPid) backfillDisplaced(prevPid, ds, changed);
-          assignment[roleKey] = pid;
-          changed[pid] = roleKey;
-          renderBenchSlot(benchSlotEls[roleKey], player2, BENCH_LABELS2[roleKey] || roleKey);
-          if (ds.fromPosKey) normalizeZone(POSKEY_TO_ZONE[ds.fromPosKey], changed);
-        } else {
-          const targetPid = playerTr.dataset.playerId;
-          if (!targetPid || targetPid === String(pid)) {
-            refreshSquadTable();
-            return;
-          }
-          const targetPosKey = getFieldPosKey(targetPid);
-          const targetBenchRole = !targetPosKey ? getBenchRole(targetPid) : null;
-          if (targetPosKey) {
-            const vacatingPosKey = ds.fromType === "field" ? ds.fromPosKey : null;
-            if (clubCountry2 && projectedForeigners(pid, vacatingPosKey) > 5) {
-              TmAlert.show({ message: "Foreign player limit is 5 (squad of 16)", tone: "warning", duration: 3e3 });
-              return;
-            }
-            clearSourceOldSpot(ds, changed);
-            backfillDisplaced(targetPid, ds, changed);
-            assignment[targetPosKey] = pid;
-            changed[pid] = targetPosKey;
-            renderFieldSlot(slotEls[targetPosKey], player2, targetPosKey);
-            for (const zone of FIELD_ZONES2) normalizeZone(zone.key, changed);
-            refreshSquadTable();
-            try {
-              const outPid = Object.keys(changed).find((p) => changed[p] === "out") || null;
-              await postSave(buildAssocForSave(outPid), changed, reserves, national, miniGameId);
-              TmAlert.show({ message: "Saved", tone: "success" });
-              notifyChange();
-            } catch (e2) {
-              TmAlert.show({ message: "Save failed", tone: "error" });
-            }
-            return;
-          } else if (targetBenchRole && BENCH_SLOTS2.includes(targetBenchRole)) {
-            clearSourceOldSpot(ds, changed);
-            backfillDisplaced(targetPid, ds, changed);
-            assignment[targetBenchRole] = pid;
-            changed[pid] = targetBenchRole;
-            renderBenchSlot(benchSlotEls[targetBenchRole], player2, BENCH_LABELS2[targetBenchRole] || targetBenchRole);
-            for (const zone of FIELD_ZONES2) normalizeZone(zone.key, changed);
-          } else {
-            refreshSquadTable();
-            return;
-          }
-        }
-        refreshSquadTable();
-        try {
-          const outPid = Object.keys(changed).find((p) => changed[p] === "out") || null;
-          await postSave(buildAssocForSave(outPid), changed, reserves, national, miniGameId);
-          TmAlert.show({ message: "Saved", tone: "success" });
-          notifyChange();
-        } catch (e2) {
-          TmAlert.show({ message: "Save failed", tone: "error" });
-        }
-      });
-      return wrap;
-    }
-    function refreshSquadTable() {
-      for (const [posKey2, slotEl] of Object.entries(slotEls)) {
-        const pid = assignment[posKey2];
-        renderFieldSlot(slotEl, pid ? players_by_id[String(pid)] || null : null, posKey2);
-      }
-      for (const [role, slotEl] of Object.entries(benchSlotEls)) {
-        const pid = assignment[role];
-        renderBenchSlot(slotEl, pid ? players_by_id[String(pid)] || null : null, BENCH_LABELS2[role] || role);
-      }
-      tblWrap == null ? void 0 : tblWrap.refresh({ items: sortedPlayers() });
-      refreshFieldOverlay();
-    }
-    let dragState = null;
-    function onFieldDragStart(e) {
-      const pid = e.currentTarget.dataset.playerId;
-      const posKey2 = e.currentTarget.dataset.posKey;
-      if (!pid) {
-        e.preventDefault();
-        return;
-      }
-      dragState = { pid, fromType: "field", fromPosKey: posKey2 };
-      e.dataTransfer.effectAllowed = "move";
-      e.dataTransfer.setData("text/plain", pid);
-      e.currentTarget.classList.add("tmtc-drag-source");
-      fieldEl.classList.add("is-dragging");
-    }
-    function onBenchDragStart(e) {
-      var _a3;
-      e.stopPropagation();
-      const pid = e.currentTarget.dataset.playerId;
-      const roleKey = ((_a3 = e.currentTarget.closest(".tmtc-bench-slot")) == null ? void 0 : _a3.dataset.role) || "";
-      if (!pid) {
-        e.preventDefault();
-        return;
-      }
-      dragState = { pid, fromType: "bench", fromRoleKey: roleKey };
-      e.dataTransfer.effectAllowed = "move";
-      e.dataTransfer.setData("text/plain", pid);
-      e.currentTarget.classList.add("tmtc-drag-source");
-    }
-    function clearSourceOldSpot(ds, changed) {
-      const { pid, fromType, fromPosKey, fromRoleKey } = ds;
-      if (fromType === "field" && fromPosKey) {
-        assignment[fromPosKey] = null;
-        if (slotEls[fromPosKey]) renderFieldSlot(slotEls[fromPosKey], null, fromPosKey);
-      } else if (fromType === "bench" && fromRoleKey) {
-        assignment[fromRoleKey] = null;
-        renderBenchSlot(benchSlotEls[fromRoleKey], null, BENCH_LABELS2[fromRoleKey] || fromRoleKey);
-      } else if (fromType === "sidebar") {
-        const oldPk = getFieldPosKey(pid);
-        if (oldPk) {
-          assignment[oldPk] = null;
-          if (slotEls[oldPk]) renderFieldSlot(slotEls[oldPk], null, oldPk);
-          ds.fromPosKey = oldPk;
-        }
-        const oldRole = getBenchRole(pid);
-        if (oldRole) {
-          assignment[oldRole] = null;
-          renderBenchSlot(benchSlotEls[oldRole], null, BENCH_LABELS2[oldRole] || oldRole);
-          ds.fromRoleKey = oldRole;
-        }
-      }
-    }
-    function backfillDisplaced(displacedPid, ds, changed) {
-      const { fromType, fromPosKey, fromRoleKey } = ds;
-      if (fromType === "field" && fromPosKey) {
-        assignment[fromPosKey] = displacedPid;
-        if (slotEls[fromPosKey]) renderFieldSlot(slotEls[fromPosKey], players_by_id[displacedPid] || null, fromPosKey);
-        changed[displacedPid] = fromPosKey;
-      } else if ((fromType === "bench" || fromType === "sidebar") && fromRoleKey) {
-        assignment[fromRoleKey] = displacedPid;
-        renderBenchSlot(benchSlotEls[fromRoleKey], players_by_id[displacedPid] || null, BENCH_LABELS2[fromRoleKey] || fromRoleKey);
-        changed[displacedPid] = fromRoleKey;
-      } else {
-        changed[displacedPid] = "out";
-      }
-    }
-    function setupDropTarget(slotEl, posKey2) {
-      let n = 0;
-      slotEl.addEventListener("dragenter", (e) => {
-        e.preventDefault();
-        if (++n === 1) slotEl.classList.add("tmtc-drag-over");
-      });
-      slotEl.addEventListener("dragleave", () => {
-        if (--n <= 0) {
-          n = 0;
-          slotEl.classList.remove("tmtc-drag-over");
-        }
-      });
-      slotEl.addEventListener("dragover", (e) => e.preventDefault());
-      slotEl.addEventListener("drop", async (e) => {
-        e.preventDefault();
-        n = 0;
-        slotEl.classList.remove("tmtc-drag-over");
-        clearDragVisuals();
-        const ds = dragState;
-        dragState = null;
-        if (!ds) return;
-        const { pid } = ds;
-        const player2 = players_by_id[pid];
-        if (!player2) return;
-        const prevPid = assignment[posKey2] ? String(assignment[posKey2]) : null;
-        if (prevPid === String(pid)) return;
-        if (!prevPid && ds.fromType !== "field" && getOccupiedFieldKeys().size >= 11) return;
-        const vacatingPosKey = ds.fromType === "field" ? ds.fromPosKey : null;
-        if (clubCountry2 && projectedForeigners(pid, vacatingPosKey) > 5) {
-          TmAlert.show({ message: "Foreign player limit is 5 (squad of 16)", tone: "warning", duration: 3e3 });
-          return;
-        }
-        const changed = {};
-        clearSourceOldSpot(ds, changed);
-        if (prevPid) backfillDisplaced(prevPid, ds, changed);
-        assignment[posKey2] = pid;
-        changed[pid] = posKey2;
-        renderFieldSlot(slotEl, player2, posKey2);
-        for (const zone of FIELD_ZONES2) normalizeZone(zone.key, changed);
-        refreshSquadTable();
-        try {
-          const outPid = Object.keys(changed).find((p) => changed[p] === "out") || null;
-          await postSave(buildAssocForSave(outPid), changed, reserves, national, miniGameId);
-          TmAlert.show({ message: "Saved", tone: "success" });
-          notifyChange();
-        } catch (e2) {
-          TmAlert.show({ message: "Save failed", tone: "error" });
-        }
-      });
-    }
-    function setupBenchDropTarget(el2, roleKey) {
-      let n = 0;
-      el2.addEventListener("dragenter", (e) => {
-        e.preventDefault();
-        if (++n === 1) el2.classList.add("tmtc-drag-over");
-      });
-      el2.addEventListener("dragleave", () => {
-        if (--n <= 0) {
-          n = 0;
-          el2.classList.remove("tmtc-drag-over");
-        }
-      });
-      el2.addEventListener("dragover", (e) => e.preventDefault());
-      el2.addEventListener("drop", async (e) => {
-        e.preventDefault();
-        n = 0;
-        el2.classList.remove("tmtc-drag-over");
-        clearDragVisuals();
-        const ds = dragState;
-        dragState = null;
-        if (!ds) return;
-        const { pid } = ds;
-        const player2 = players_by_id[pid];
-        if (!player2) return;
-        const prevPid = assignment[roleKey] ? String(assignment[roleKey]) : null;
-        if (prevPid === String(pid)) return;
-        if (clubCountry2 && isForeigner2(player2)) {
-          const currentlyOccupyingForeigner = prevPid && isForeigner2(players_by_id[prevPid]);
-          const alreadyOnBench = BENCH_SLOTS2.some((r) => r !== roleKey && assignment[r] != null && String(assignment[r]) === String(pid));
-          const alreadyOnField = !!getOccupiedFieldKeys().size && [...getOccupiedFieldKeys()].some((pk) => String(assignment[pk]) === String(pid));
-          if (!alreadyOnBench && !alreadyOnField && !currentlyOccupyingForeigner) {
-            if (countSquadForeigners() >= 5) {
-              TmAlert.show({ message: "Foreign player limit is 5 (squad of 16)", tone: "warning", duration: 3e3 });
-              return;
-            }
-          }
-        }
-        const changed = {};
-        clearSourceOldSpot(ds, changed);
-        if (prevPid) backfillDisplaced(prevPid, ds, changed);
-        assignment[roleKey] = pid;
-        changed[pid] = roleKey;
-        renderBenchSlot(el2, player2, BENCH_LABELS2[roleKey] || roleKey);
-        for (const zone of FIELD_ZONES2) normalizeZone(zone.key, changed);
-        refreshSquadTable();
-        try {
-          const outPid = Object.keys(changed).find((p) => changed[p] === "out") || null;
-          await postSave(buildAssocForSave(outPid), changed, reserves, national, miniGameId);
-          TmAlert.show({ message: "Saved", tone: "success" });
-          notifyChange();
-        } catch (e2) {
-          TmAlert.show({ message: "Save failed", tone: "error" });
-        }
-      });
-    }
-    function clearDragVisuals() {
-      document.querySelectorAll(".tmtc-drag-source, .tmtc-drag-over").forEach((el2) => el2.classList.remove("tmtc-drag-source", "tmtc-drag-over"));
-      fieldEl.classList.remove("is-dragging");
-    }
-    document.addEventListener("dragend", () => {
-      dragState = null;
-      clearDragVisuals();
-    });
-    buildField();
-    for (const role of BENCH_SLOTS2) {
-      benchSlotEls[role] = makeBenchSlot(role);
-    }
-    for (const role of SPECIAL_SLOTS2) {
-      benchSlotEls[role] = makeBenchSlot(role);
-    }
-    const squadTarget = externalSquadContainer || squadCol;
-    tblWrap = buildSquadTable();
-    squadTarget.appendChild(tblWrap);
-    async function applyAssignment(newAssignment) {
-      const prevFieldPids = new Set(
-        [...getOccupiedFieldKeys()].map((pk) => String(assignment[pk]))
-      );
-      for (const pk of getOccupiedFieldKeys()) assignment[pk] = null;
-      const touchesBench = BENCH_SLOTS2.some((r) => r in newAssignment);
-      if (touchesBench) for (const role of BENCH_SLOTS2) assignment[role] = null;
-      const changed = {};
-      for (const [key, pid] of Object.entries(newAssignment)) {
-        if (!pid) continue;
-        assignment[key] = pid;
-        changed[String(pid)] = key;
-      }
-      for (const pid of prevFieldPids) {
-        if (!changed[pid]) changed[pid] = "out";
-      }
-      buildField();
-      for (const [role, el2] of Object.entries(benchSlotEls)) {
-        const pid = assignment[role];
-        renderBenchSlot(el2, pid ? players_by_id[pid] || null : null, BENCH_LABELS2[role] || role);
-      }
-      refreshSquadTable();
-      try {
-        const outPid = Object.keys(changed).find((p) => changed[p] === "out") || null;
-        await postSave(buildAssocForSave(outPid), changed, reserves, national, miniGameId);
-        TmAlert.show({ message: "Saved", tone: "success" });
-        notifyChange();
-      } catch (e) {
-        TmAlert.show({ message: "Save failed", tone: "error" });
-      }
-    }
-    const getAssignment = () => ({ ...assignment });
-    const getActiveKeys = () => getOccupiedFieldKeys();
-    const subscribe = (fn) => {
-      changeListeners.push(fn);
-      return () => {
-        const i = changeListeners.indexOf(fn);
-        if (i >= 0) changeListeners.splice(i, 1);
-      };
-    };
+    ctx.clearDragVisuals = fieldApi.clearDragVisuals;
     function mountSpecialRoles(target) {
-      const ROLE_LABELS = { captain: "Captain", corner: "Corners", penalty: "Penalty", freekick: "Free Kick" };
+      const { BENCH_LABELS: ROLE_LABELS } = TmConst;
       for (const role of SPECIAL_SLOTS2) {
         const row = document.createElement("div");
         row.className = "tmtc-role-row";
@@ -49362,7 +46471,7 @@ order:initial
         slot.dataset.role = role;
         row.appendChild(slot);
         const renderSlot = () => {
-          const pid = assignment[role];
+          const pid = specialRoles[role];
           const p = pid ? players_by_id[String(pid)] : null;
           slot.innerHTML = "";
           if (p) {
@@ -49372,7 +46481,7 @@ order:initial
             chip.dataset.playerId = String(p.id);
             chip.textContent = p.lastname || p.name || "";
             chip.addEventListener("dragstart", (e) => {
-              dragState = { pid: String(p.id), fromType: "bench", fromRoleKey: role };
+              drag.state = { pid: String(p.id), fromType: "bench", fromRoleKey: role };
               e.dataTransfer.effectAllowed = "move";
               e.dataTransfer.setData("text/plain", String(p.id));
               chip.classList.add("tmtc-drag-source");
@@ -49399,67 +46508,78 @@ order:initial
         });
         slot.addEventListener("dragover", (e) => e.preventDefault());
         slot.addEventListener("drop", async (e) => {
-          var _a3;
           e.preventDefault();
           _n = 0;
           slot.classList.remove("tmtc-drag-over");
-          const ds = dragState;
-          dragState = null;
-          clearDragVisuals();
+          const ds = drag.state;
+          drag.state = null;
+          fieldApi.clearDragVisuals();
           if (!ds) return;
           const { pid } = ds;
-          const player2 = players_by_id[pid];
-          if (!player2) return;
-          const prevPid = assignment[role] ? String(assignment[role]) : null;
-          if (prevPid === String(pid)) return;
+          if (!players_by_id[pid]) return;
+          if (String(specialRoles[role]) === pid) return;
+          const prevPid = specialRoles[role] != null ? String(specialRoles[role]) : null;
           const changed = {};
-          if (prevPid) {
-            changed[prevPid] = "out";
+          if (ds.fromType === "bench" && ds.fromRoleKey && isBenchSlot(ds.fromRoleKey)) {
+            const srcPlayer = players_by_id[pid];
+            if (srcPlayer) setPlayerSlot(srcPlayer, null);
           }
-          assignment[role] = pid;
+          if (prevPid) changed[prevPid] = "out";
+          specialRoles[role] = Number(pid);
           changed[pid] = role;
-          refreshSquadTable();
-          for (const r of SPECIAL_SLOTS2) {
-            (_a3 = target.querySelector(`[data-role="${r}"] .tmtc-role-slot`)) == null ? void 0 : _a3.dispatchEvent(new CustomEvent("_refresh"));
-          }
-          try {
-            const outPid = Object.keys(changed).find((p) => changed[p] === "out") || null;
-            await postSave(buildAssocForSave(outPid), changed, reserves, national, miniGameId);
-            TmAlert.show({ message: "Saved", tone: "success" });
-            notifyChange();
-          } catch (e2) {
-            TmAlert.show({ message: "Save failed", tone: "error" });
-          }
+          ctx.refreshAll();
+          await save(changed);
         });
-        slot.addEventListener("_refresh", renderSlot);
         changeListeners.push(renderSlot);
         target.appendChild(row);
       }
     }
-    return { refresh: refreshSquadTable, applyAssignment, getAssignment, getActiveKeys, subscribe, mountSpecialRoles };
+    async function applyAssignment(slotMap) {
+      const prevFieldPids = new Set(
+        players.filter((p) => isFieldSlot(getPlayerSlot(p))).map((p) => String(p.id))
+      );
+      for (const p of players) {
+        const slot = getPlayerSlot(p);
+        if (slot && (isFieldSlot(slot) || isBenchSlot(slot))) setPlayerSlot(p, null);
+      }
+      const changed = {};
+      for (const [slot, pid] of Object.entries(slotMap)) {
+        if (!pid) continue;
+        const p = players_by_id[String(pid)];
+        if (!p) continue;
+        setPlayerSlot(p, slot);
+        changed[String(pid)] = slot;
+      }
+      for (const pid of prevFieldPids) {
+        if (!changed[pid]) changed[pid] = "out";
+      }
+      fieldApi.rebuild();
+      squadApi.refresh();
+      await save(changed);
+    }
+    return {
+      refresh: ctx.refreshAll,
+      applyAssignment,
+      getAssignment: buildAssocForSave,
+      getActiveKeys: getOccupiedFieldKeys,
+      subscribe: (fn) => {
+        changeListeners.push(fn);
+        return () => {
+          const i = changeListeners.indexOf(fn);
+          if (i >= 0) changeListeners.splice(i, 1);
+        };
+      },
+      mountSpecialRoles
+    };
   }
 
   // src/components/tactics/tm-tactics-settings.js
-  var MENTALITY_LABELS = { 1: "Very Defensive", 2: "Defensive", 3: "Slightly Defensive", 4: "Normal", 5: "Slightly Attacking", 6: "Attacking", 7: "Very Attacking" };
-  var STYLE_LABELS = { 1: "Balanced", 2: "Direct", 3: "Wings", 4: "Short Passing", 5: "Long Balls", 6: "Through Balls" };
-  var FOCUS_LABELS = { 1: "Balanced", 2: "Left", 3: "Central", 4: "Right" };
-  async function saveSetting(saveKey, value, reserves, national, miniGameId) {
-    var _a2, _b, _c;
-    const clubId2 = String(((_a2 = window.SESSION) == null ? void 0 : _a2.id) || ((_b = window.SESSION) == null ? void 0 : _b.main_id) || ((_c = window.SESSION) == null ? void 0 : _c.club_id) || "");
-    const body = { save: saveKey, value: String(value), reserves, national, club_id: clubId2 };
-    if (saveKey !== "focus") body.miniGameId = miniGameId;
-    return fetch("/ajax/tactics_post.ajax.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" },
-      body: new URLSearchParams(body).toString()
-    });
-  }
-  function mountTacticsSettings(container, initialValues = {}, opts = {}, lineupApi = null) {
+  function mountTacticsSettings(container, tactics = {}, opts = {}, lineupApi = null) {
     const { reserves = 0, national = 0, miniGameId = 0 } = opts;
     const wrap = document.createElement("div");
     wrap.className = "tmtc-settings-rows";
     container.appendChild(wrap);
-    function buildRow({ label, labelsMap, saveKey, current }) {
+    function buildRow({ label, labelsMap, saveKey, current, onSave }) {
       var _a2;
       const row = document.createElement("div");
       row.className = "tmu-field tmtc-setting-row";
@@ -49484,9 +46604,10 @@ order:initial
           active: Number(val) === currentVal,
           onSelect: () => {
             currentVal = Number(val);
+            onSave == null ? void 0 : onSave(currentVal);
             ac.setValue(text);
             ac.hideDrop();
-            saveSetting(saveKey, currentVal, reserves, national, miniGameId);
+            TmTacticsService.saveSettingValue(saveKey, currentVal, reserves, national, miniGameId);
           }
         }));
       };
@@ -49506,10 +46627,16 @@ order:initial
       row.appendChild(ac);
       return row;
     }
-    wrap.appendChild(buildRow({ label: "Mentality", labelsMap: MENTALITY_LABELS, saveKey: "mentality", current: Number(initialValues.mentality) || 4 }));
-    wrap.appendChild(buildRow({ label: "Style", labelsMap: STYLE_LABELS, saveKey: "attacking", current: Number(initialValues.style) || 1 }));
-    wrap.appendChild(buildRow({ label: "Focus", labelsMap: FOCUS_LABELS, saveKey: "focus", current: Number(initialValues.focus) || 1 }));
-    if (lineupApi == null ? void 0 : lineupApi.mountSpecialRoles) {
+    wrap.appendChild(buildRow({ label: "Mentality", labelsMap: MENTALITY_MAP_LONG, saveKey: "mentality", current: tactics.mentality || 4, onSave: (v) => {
+      tactics.mentality = v;
+    } }));
+    wrap.appendChild(buildRow({ label: "Style", labelsMap: STYLE_MAP, saveKey: "attacking", current: tactics.attacking || 1, onSave: (v) => {
+      tactics.attacking = v;
+    } }));
+    wrap.appendChild(buildRow({ label: "Focus", labelsMap: FOCUS_MAP, saveKey: "focus", current: tactics.focus || 1, onSave: (v) => {
+      tactics.focus = v;
+    } }));
+    if (lineupApi) {
       const rolesSection = document.createElement("div");
       rolesSection.className = "tmtc-roles-section";
       wrap.appendChild(rolesSection);
@@ -49518,72 +46645,14 @@ order:initial
   }
 
   // src/components/tactics/tm-tactics-panel.js
-  var DEF_KEYS = {
-    1: ["dc"],
-    2: ["dcl", "dcr"],
-    3: ["dcl", "dc", "dcr"],
-    4: ["dl", "dcl", "dcr", "dr"],
-    5: ["dl", "dcl", "dc", "dcr", "dr"]
-  };
-  var DM_KEYS = {
-    1: ["dmc"],
-    2: ["dmcl", "dmcr"],
-    3: ["dml", "dmc", "dmr"],
-    4: ["dml", "dmcl", "dmcr", "dmr"],
-    5: ["dml", "dmcl", "dmc", "dmcr", "dmr"]
-  };
-  var MID_KEYS = {
-    1: ["mc"],
-    2: ["mcl", "mcr"],
-    3: ["mcl", "mc", "mcr"],
-    4: ["ml", "mcl", "mcr", "mr"],
-    5: ["ml", "mcl", "mc", "mcr", "mr"]
-  };
-  var OM_KEYS = {
-    1: ["omc"],
-    2: ["omcl", "omcr"],
-    3: ["oml", "omc", "omr"],
-    4: ["oml", "omcl", "omcr", "omr"],
-    5: ["oml", "omcl", "omc", "omcr", "omr"]
-  };
-  var FWD_KEYS = {
-    1: ["fc"],
-    2: ["fcl", "fcr"],
-    3: ["fcl", "fc", "fcr"]
-  };
-  function buildPresetPositions(nDef, nDm, nMid, nOm, nFwd) {
-    const pos = new Array(24).fill(null);
-    pos[0] = "gk";
-    const set = (start3, keys) => (keys || []).forEach((k, i) => {
-      pos[start3 + i] = k;
-    });
-    set(1, DEF_KEYS[nDef]);
-    set(6, DM_KEYS[nDm]);
-    set(11, MID_KEYS[nMid]);
-    set(16, OM_KEYS[nOm]);
-    set(21, FWD_KEYS[nFwd]);
-    return pos;
-  }
-  var FORMATION_PRESETS = {
-    "4-4-2": buildPresetPositions(4, 0, 4, 0, 2),
-    "4-3-3": buildPresetPositions(4, 0, 3, 0, 3),
-    "4-2-3-1": buildPresetPositions(4, 2, 0, 3, 1),
-    "4-5-1": buildPresetPositions(4, 0, 5, 0, 1),
-    "4-1-4-1": buildPresetPositions(4, 1, 4, 0, 1),
-    "4-3-2-1": buildPresetPositions(4, 0, 3, 2, 1),
-    "4-2-2-2": buildPresetPositions(4, 2, 2, 0, 2),
-    "4-1-2-3": buildPresetPositions(4, 1, 2, 0, 3),
-    "3-5-2": buildPresetPositions(3, 0, 5, 0, 2),
-    "3-4-3": buildPresetPositions(3, 0, 4, 0, 3),
-    "5-3-2": buildPresetPositions(5, 0, 3, 0, 2),
-    "5-4-1": buildPresetPositions(5, 0, 4, 0, 1),
-    "4-1-3-2": buildPresetPositions(4, 1, 3, 0, 2)
-  };
-  var FORMATION_NAMES = Object.keys(FORMATION_PRESETS);
-  var isUnavailable = (p) => (p == null ? void 0 : p.ban) && String(p.ban).startsWith("r") || (p == null ? void 0 : p.injury) && p.injury !== "0" && Number(p.injury) !== 0;
-  var _a;
-  var clubCountry = String(((_a = window.SESSION) == null ? void 0 : _a.country) || "").trim().toLowerCase();
-  var isForeigner = (p) => !!clubCountry && String((p == null ? void 0 : p.country) || "").trim().toLowerCase() !== clubCountry;
+  var OUTFIELD_ZONE_DEFS = TmConst.FIELD_ZONES.filter((z) => z.key !== "gk").map((z) => {
+    const cols = z.cols.filter(Boolean);
+    const keys = {};
+    for (let n = 1; n <= cols.length; n++) {
+      keys[n] = getTargetRanks(cols.length, n).map((i) => cols[i]);
+    }
+    return { keys, max: cols.length };
+  }).reverse();
   function pickBest11(activeKeys, players_by_id, maxForeigners = 5) {
     const activeSlots = [...activeKeys].map((pk) => {
       var _a2;
@@ -49595,7 +46664,7 @@ order:initial
     });
     const n = activeSlots.length;
     if (!players.length || !n) return {};
-    if (clubCountry && Number.isFinite(maxForeigners)) {
+    if (CLUB_COUNTRY && Number.isFinite(maxForeigners)) {
       const locals = players.filter((p2) => !isForeigner(p2));
       const foreigners = players.filter((p2) => isForeigner(p2));
       if (foreigners.length > maxForeigners) {
@@ -49666,13 +46735,6 @@ order:initial
     }
     return result;
   }
-  var OUTFIELD_ZONE_DEFS = [
-    { keys: FWD_KEYS, max: 3 },
-    { keys: OM_KEYS, max: 5 },
-    { keys: MID_KEYS, max: 5 },
-    { keys: DM_KEYS, max: 5 },
-    { keys: DEF_KEYS, max: 5 }
-  ];
   function computeAssignmentR5(assignment, players_by_id) {
     var _a2;
     let total = 0;
@@ -49692,7 +46754,7 @@ order:initial
       if (String(p == null ? void 0 : p.id) !== String(gkPid) && !isUnavailable(p)) outfieldById[id] = p;
     }
     const gkPlayer = gkPid ? players_by_id[String(gkPid)] || null : null;
-    const outfieldMaxForeigners = clubCountry ? isForeigner(gkPlayer) ? 4 : 5 : Infinity;
+    const outfieldMaxForeigners = CLUB_COUNTRY ? isForeigner(gkPlayer) ? 4 : 5 : Infinity;
     let bestR5 = -Infinity;
     let bestAssignment = null;
     function enumerate(zoneIdx, remaining, counts) {
@@ -49722,14 +46784,55 @@ order:initial
     enumerate(0, 10, []);
     return bestAssignment || {};
   }
-  function mountTacticsPanel(container, data, initialSettings, opts, lineupApi) {
+  function fillSubstitutes(baseFBP, players_by_id) {
+    const usedPids = new Set(Object.values(baseFBP).map(String));
+    let foreignersUsed = CLUB_COUNTRY ? Object.values(baseFBP).filter((pid) => pid && isForeigner(players_by_id[String(pid)])).length : 0;
+    const DEF_POS = new Set(Object.keys(TmConst.POSITION_MAP).filter((k) => TmConst.POSITION_MAP[k].section === "def"));
+    const MID_POS = new Set(Object.keys(TmConst.POSITION_MAP).filter((k) => TmConst.POSITION_MAP[k].section === "mid"));
+    const WING_POS = new Set(Object.keys(TmConst.POSITION_MAP).filter((k) => TmConst.POSITION_MAP[k].section === "wing"));
+    const FWD_POS = new Set(Object.keys(TmConst.POSITION_MAP).filter((k) => TmConst.POSITION_MAP[k].section === "fwd"));
+    const avail = Object.values(players_by_id).filter((p) => (p == null ? void 0 : p.id) && !usedPids.has(String(p.id)) && !isUnavailable(p)).map((p) => {
+      var _a2;
+      const r5 = ((_a2 = p.positions) == null ? void 0 : _a2.length) ? Math.max(0, ...p.positions.map((r) => parseFloat(r.r5) || 0)) : parseFloat(p.rec_sort) || 0;
+      const favPositions = new Set(
+        p.positions ? p.positions.filter((pos) => pos.preferred).map((pos) => pos.key) : []
+      );
+      return { pid: p.id, player: p, favPositions, ratings: p.positions || [], r5 };
+    }).sort((a, b) => b.r5 - a.r5);
+    const pickBestSub = (posSet) => {
+      const posIds = new Set(
+        [...posSet].map((pk) => {
+          var _a2;
+          return (_a2 = TmConst.POSITION_MAP[pk]) == null ? void 0 : _a2.id;
+        }).filter((id) => id != null)
+      );
+      const hit = avail.find((a) => {
+        if (usedPids.has(String(a.pid))) return false;
+        if (CLUB_COUNTRY && isForeigner(a.player) && foreignersUsed >= 5) return false;
+        if (a.ratings.length) {
+          return a.ratings.some((r) => posIds.has(r.id) && (parseFloat(r.r5) || 0) > 0);
+        }
+        return [...a.favPositions].some((fp) => posSet.has(fp));
+      });
+      if (!hit) return null;
+      usedPids.add(String(hit.pid));
+      if (CLUB_COUNTRY && isForeigner(hit.player)) foreignersUsed++;
+      return hit.pid;
+    };
+    return {
+      ...baseFBP,
+      sub1: pickBestSub(/* @__PURE__ */ new Set(["gk"])),
+      sub2: pickBestSub(DEF_POS),
+      sub3: pickBestSub(MID_POS),
+      sub4: pickBestSub(WING_POS),
+      sub5: pickBestSub(FWD_POS)
+    };
+  }
+  function mountTacticsPanel(container, tactics, opts, lineupApi) {
     var _a2;
-    const { players_by_id = {} } = data;
-    const { getAssignment, getActiveKeys, applyAssignment, subscribe } = lineupApi;
-    function refreshStats() {
-    }
-    subscribe(() => {
-    });
+    const { players = [] } = tactics;
+    const players_by_id = Object.fromEntries(players.map((p) => [String(p.id), p]));
+    const { getAssignment, getActiveKeys, applyAssignment } = lineupApi;
     const pickBtn = TmButton.button({
       label: "Pick Best 11",
       color: "primary",
@@ -49737,57 +46840,10 @@ order:initial
       block: true,
       onClick: async () => {
         pickBtn.disabled = true;
-        const currentAssignment = getAssignment();
-        const currentActiveKeys = new Set(
-          Object.keys(currentAssignment).filter(
-            (pk) => TmConst.POSITION_MAP[pk] != null && currentAssignment[pk] && String(currentAssignment[pk]) !== "0"
-          )
-        );
-        console.log("Current active keys before picking best 11:", currentActiveKeys);
-        const newFBP = pickBest11(currentActiveKeys, players_by_id);
+        const newFBP = pickBest11(getActiveKeys(), players_by_id);
         if (Object.keys(newFBP).length) {
-          const usedPids = new Set(Object.values(newFBP).map(String));
-          let foreignersUsed = clubCountry ? Object.values(newFBP).filter((pid) => pid && isForeigner(players_by_id[String(pid)])).length : 0;
-          const DEF_POS = /* @__PURE__ */ new Set(["dl", "dcl", "dc", "dcr", "dr"]);
-          const MID_POS = /* @__PURE__ */ new Set(["dmc", "dmcl", "dmcr", "mc", "mcl", "mcr", "omc", "omcl", "omcr"]);
-          const WING_POS = /* @__PURE__ */ new Set(["dml", "dmr", "ml", "mr", "oml", "omr"]);
-          const FWD_POS = /* @__PURE__ */ new Set(["fc", "fcl", "fcr"]);
-          const avail = Object.values(players_by_id).filter((p) => (p == null ? void 0 : p.id) && !usedPids.has(String(p.id)) && !isUnavailable(p)).map((p) => {
-            var _a3;
-            const r5 = ((_a3 = p.positions) == null ? void 0 : _a3.length) ? Math.max(0, ...p.positions.map((r) => parseFloat(r.r5) || 0)) : parseFloat(p.rec_sort) || 0;
-            const favPositions = new Set(
-              p.positions ? p.positions.filter((pos) => pos.preferred).map((pos) => pos.key) : []
-            );
-            return { pid: p.id, player: p, favPositions, ratings: p.positions || [], r5 };
-          }).sort((a, b) => b.r5 - a.r5);
-          const pickBestSub = (posSet) => {
-            const posIds = new Set(
-              [...posSet].map((pk) => {
-                var _a3;
-                return (_a3 = TmConst.POSITION_MAP[pk]) == null ? void 0 : _a3.id;
-              }).filter((id) => id != null)
-            );
-            const hit = avail.find((a) => {
-              if (usedPids.has(String(a.pid))) return false;
-              if (clubCountry && isForeigner(a.player) && foreignersUsed >= 5) return false;
-              if (a.ratings.length) {
-                return a.ratings.some((r) => posIds.has(r.id) && (parseFloat(r.r5) || 0) > 0);
-              }
-              return [...a.favPositions].some((fp) => posSet.has(fp));
-            });
-            if (!hit) return null;
-            usedPids.add(String(hit.pid));
-            if (clubCountry && isForeigner(hit.player)) foreignersUsed++;
-            return hit.pid;
-          };
-          const newAssignment = { ...newFBP };
-          newAssignment.sub1 = pickBestSub(/* @__PURE__ */ new Set(["gk"]));
-          newAssignment.sub2 = pickBestSub(DEF_POS);
-          newAssignment.sub3 = pickBestSub(MID_POS);
-          newAssignment.sub4 = pickBestSub(WING_POS);
-          newAssignment.sub5 = pickBestSub(FWD_POS);
+          const newAssignment = fillSubstitutes(newFBP, players_by_id);
           await applyAssignment(newAssignment);
-          refreshStats();
         }
         pickBtn.disabled = false;
       }
@@ -49805,45 +46861,8 @@ order:initial
         const newFBP = findBestR5Formation(players_by_id, gkPid);
         if (Object.keys(newFBP).length) {
           if (gkPid) newFBP["gk"] = gkPid;
-          const usedPids = new Set(Object.values(newFBP).map(String));
-          let foreignersUsed = clubCountry ? Object.values(newFBP).filter((pid) => pid && isForeigner(players_by_id[String(pid)])).length : 0;
-          const DEF_POS = /* @__PURE__ */ new Set(["dl", "dcl", "dc", "dcr", "dr"]);
-          const MID_POS = /* @__PURE__ */ new Set(["dmc", "dmcl", "dmcr", "mc", "mcl", "mcr", "omc", "omcl", "omcr"]);
-          const WING_POS = /* @__PURE__ */ new Set(["dml", "dmr", "ml", "mr", "oml", "omr"]);
-          const FWD_POS = /* @__PURE__ */ new Set(["fc", "fcl", "fcr"]);
-          const avail = Object.values(players_by_id).filter((p) => (p == null ? void 0 : p.id) && !usedPids.has(String(p.id)) && !isUnavailable(p)).map((p) => {
-            var _a3;
-            const r5 = ((_a3 = p.positions) == null ? void 0 : _a3.length) ? Math.max(0, ...p.positions.map((r) => parseFloat(r.r5) || 0)) : parseFloat(p.rec_sort) || 0;
-            const favPositions = new Set(
-              p.positions ? p.positions.filter((pos) => pos.preferred).map((pos) => pos.key) : []
-            );
-            return { pid: p.id, player: p, favPositions, ratings: p.positions || [], r5 };
-          }).sort((a, b) => b.r5 - a.r5);
-          const pickBestSub = (posSet) => {
-            const posIds = new Set(
-              [...posSet].map((pk) => {
-                var _a3;
-                return (_a3 = TmConst.POSITION_MAP[pk]) == null ? void 0 : _a3.id;
-              }).filter((id) => id != null)
-            );
-            const hit = avail.find((a) => {
-              if (usedPids.has(String(a.pid))) return false;
-              if (clubCountry && isForeigner(a.player) && foreignersUsed >= 5) return false;
-              if (a.ratings.length) return a.ratings.some((r) => posIds.has(r.id) && (parseFloat(r.r5) || 0) > 0);
-              return [...a.favPositions].some((fp) => posSet.has(fp));
-            });
-            if (!hit) return null;
-            usedPids.add(String(hit.pid));
-            if (clubCountry && isForeigner(hit.player)) foreignersUsed++;
-            return hit.pid;
-          };
-          newFBP.sub1 = pickBestSub(/* @__PURE__ */ new Set(["gk"]));
-          newFBP.sub2 = pickBestSub(DEF_POS);
-          newFBP.sub3 = pickBestSub(MID_POS);
-          newFBP.sub4 = pickBestSub(WING_POS);
-          newFBP.sub5 = pickBestSub(FWD_POS);
-          await applyAssignment(newFBP);
-          refreshStats();
+          const newAssignment = fillSubstitutes(newFBP, players_by_id);
+          await applyAssignment(newAssignment);
         }
         bestFmBtn.disabled = false;
       }
@@ -49962,12 +46981,12 @@ order:initial
     const hr = document.createElement("hr");
     hr.className = "tmtc-panel-sep";
     container.appendChild(hr);
-    mountTacticsSettings(container, initialSettings, opts, lineupApi);
-    return { refreshStats };
+    mountTacticsSettings(container, tactics, opts, lineupApi);
+    return {};
   }
 
   // src/components/tactics/tm-tactics-orders.js
-  var escHtml2 = (v) => String(v != null ? v : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  var { escHtml: escHtml3 } = TmUtils;
   var EVENT_LABELS = { 1: "Minute", 2: "Injury", 3: "Yellow Card", 4: "Red Card", 5: "Goal Scored" };
   var CONDITION_LABELS = { 1: "Winning", 2: "Draw", 3: "Losing", 4: "Any" };
   var ORDER_LABELS = { 1: "Substitution", 2: "Change Mentality", 3: "Change Style", 4: "Change Position" };
@@ -49976,8 +46995,8 @@ order:initial
   function actionCell(typeLabel, value) {
     if (!typeLabel) return '<span style="color:var(--tmu-text-disabled)">\u2014</span>';
     return `<div class="tmtc-order-action-cell">
-        <span class="tmtc-order-action-type">${escHtml2(typeLabel)}</span>
-        ${value ? `<span class="tmtc-order-action-val">${escHtml2(String(value))}</span>` : ""}
+        <span class="tmtc-order-action-type">${escHtml3(typeLabel)}</span>
+        ${value ? `<span class="tmtc-order-action-val">${escHtml3(String(value))}</span>` : ""}
     </div>`;
   }
   function eventPar(eventId, parVal, players_by_id) {
@@ -50300,22 +47319,22 @@ order:initial
   }
   async function mountTacticsOrders(container, data, opts = {}) {
     const { reserves = 0, national = 0, miniGameId = 0 } = opts;
-    const players_by_id = data.players_by_id || {};
+    const players_by_id = Object.fromEntries((data.players || []).map((p) => [String(p.id), p]));
     const refs = TmSectionCard.mount(container, {
       flush: true,
       cardVariant: "soft"
     });
     const body = refs.body;
     body.innerHTML = TmUI.loading();
-    const $3 = window.jQuery;
-    if (!$3) {
+    const $ = window.jQuery;
+    if (!$) {
       body.innerHTML = TmUI.error("jQuery not available.");
       return;
     }
     const load2 = async () => {
       body.innerHTML = "";
       const raw = await new Promise((resolve) => {
-        $3.post("/ajax/tactics_co_get.ajax.php", { get: "cond_orders", reserves, national, miniGameId }, (d) => resolve(d), "json").fail(() => resolve(null));
+        $.post("/ajax/tactics_co_get.ajax.php", { get: "cond_orders", reserves, national, miniGameId }, (d) => resolve(d), "json").fail(() => resolve(null));
       });
       if (!raw) {
         body.innerHTML = TmUI.error("Could not load conditional orders.");
@@ -50416,6 +47435,7 @@ order:initial
   }
 
   // src/models/tactics.js
+  var SPECIAL_KEYS = ["captain", "corner", "penalty", "freekick"];
   var _enrichFromDb = async (player2) => {
     var _a2, _b;
     const dbPlayer = await TmPlayerDB.get(player2.id);
@@ -50436,21 +47456,29 @@ order:initial
     return player2;
   };
   var TmTacticsModel = {
-    async fetchTactics(reserves, national, miniGameId, { clubId: clubId2 = "" } = {}) {
+    async fetchTactics(reserves, national, miniGameId, { initialSettings = {} } = {}) {
       const raw = await TmTacticsService.fetchTacticsRaw(reserves, national, miniGameId);
       if (!raw) return null;
       const players = await Promise.all(
         (raw.players || []).map((p) => _enrichFromDb(normalizeTacticsPlayer(p)))
       );
-      const players_by_id = Object.fromEntries(players.map((p) => [String(p.id), p]));
+      const assoc = raw.formation_assoc || {};
+      players.forEach((player2) => {
+        const position = (player2.positions || []).find((p) => Number(assoc[p.key]) === player2.id);
+        if (position) {
+          position.playing = true;
+        }
+      });
+      const specialRoles = {};
+      for (const role of SPECIAL_KEYS) {
+        specialRoles[role] = assoc[role] ? Number(assoc[role]) : null;
+      }
       return {
         players,
-        players_by_id,
-        formation: raw.formation || {},
-        formation_by_pos: raw.formation_by_pos || {},
-        formation_subs: raw.formation_subs || {},
-        formation_assoc: raw.formation_assoc || {},
-        positions: raw.positions || []
+        specialRoles,
+        mentality: Number(initialSettings.mentality) || 4,
+        attacking: Number(initialSettings.style) || 1,
+        focus: Number(initialSettings.focus) || 1
       };
     }
   };
@@ -50491,7 +47519,6 @@ order:initial
     mountedMain4 = main2;
     mountedPath2 = window.location.pathname;
     const teamMode = getTacticsTeamMode(window.location.pathname);
-    const bTeamClubId = getBTeamClubId2();
     const showReserves = hasReservesTeam();
     const activeTeamTab = teamMode === "reserves" && showReserves ? "reserves" : "first-team";
     if (teamMode === "reserves" && !showReserves) {
@@ -50499,9 +47526,8 @@ order:initial
       return;
     }
     const reserves = teamMode === "reserves" ? 1 : 0;
-    const clubId2 = teamMode === "reserves" ? bTeamClubId : String(((_b = window.SESSION) == null ? void 0 : _b.main_id) || "");
-    const national = Number((_c = window.national) != null ? _c : 0);
-    const miniGameId = Number((_d = window.miniGameId) != null ? _d : 0);
+    const national = Number((_b = window.national) != null ? _b : 0);
+    const miniGameId = Number((_c = window.miniGameId) != null ? _c : 0);
     const initialSettings = captureNativeSettings();
     injectTmPageLayoutStyles();
     injectTacticsStyles();
@@ -50511,26 +47537,17 @@ order:initial
     host.className = "tmu-page-section-stack";
     main2.appendChild(host);
     host.innerHTML = TmUI.loading();
-    let rawData;
+    let tactics;
     try {
-      rawData = await TmTacticsModel.fetchTactics(reserves, national, miniGameId, { clubId: clubId2 });
+      tactics = await TmTacticsModel.fetchTactics(reserves, national, miniGameId, { initialSettings });
     } catch (err) {
       host.innerHTML = TmUI.error((err == null ? void 0 : err.message) || "Failed to load tactics data.");
       return;
     }
-    if (!rawData) {
+    if (!tactics) {
       host.innerHTML = TmUI.error("No tactics data returned from server.");
       return;
     }
-    const data = {
-      players: rawData.players || {},
-      players_by_id: rawData.players_by_id || {},
-      formation: rawData.formation || {},
-      formation_by_pos: rawData.formation_by_pos || {},
-      formation_subs: rawData.formation_subs || {},
-      formation_assoc: rawData.formation_assoc || {},
-      positions: rawData.positions || []
-    };
     const opts = { reserves, national, miniGameId };
     host.innerHTML = "";
     const mainGrid = document.createElement("div");
@@ -50567,13 +47584,13 @@ order:initial
         window.location.assign(nextPath);
       }
     });
-    (_f = (_e = TmUI).setActive) == null ? void 0 : _f.call(_e, teamTabs, activeTeamTab);
+    (_e = (_d = TmUI).setActive) == null ? void 0 : _e.call(_d, teamTabs, activeTeamTab);
     rightSwitch.appendChild(teamTabs);
-    const lineupApi = mountTacticsLineup(leftPanel, data, { ...opts, squadContainer: midPanel });
-    const panelApi = mountTacticsPanel(statsPanel, data, initialSettings, opts, lineupApi);
-    mountTacticsOrders(ordersHost, data, opts);
+    const lineupApi = mountTacticsLineup(leftPanel, tactics, { ...opts, squadContainer: midPanel });
+    const panelApi = mountTacticsPanel(statsPanel, tactics, opts, lineupApi);
+    mountTacticsOrders(ordersHost, tactics, opts);
     lineupApi.refresh();
-    panelApi.refreshStats();
+    (_f = panelApi.refreshStats) == null ? void 0 : _f.call(panelApi);
     if (tacticsSyncListener) {
       window.removeEventListener("tm:player-synced", tacticsSyncListener);
       tacticsSyncListener = null;
@@ -50642,7 +47659,7 @@ order:initial
     if (topMenu) topMenu.style.display = "none";
     if (topMenuSub) topMenuSub.style.display = "none";
   }
-  function injectStyles38() {
+  function injectStyles44() {
     ensureTmTheme();
     if (document.getElementById("tmvu-shell-styles")) return;
     const style = document.createElement("style");
@@ -51267,7 +48284,7 @@ order:initial
     const currentPath = normalizeHref(window.location.pathname) || "/home/";
     const groups = collectNavGroups();
     replaceMainCenterClass();
-    injectStyles38();
+    injectStyles44();
     const clubInfo = getClubInfo();
     const openGroupId = getInitialOpenGroup();
     const headerFab = getHeaderFab(currentPath);

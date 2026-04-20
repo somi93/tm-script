@@ -83,7 +83,7 @@ export const TmMatchService = {
             const evts = report[String(min)] || [];
             const plays = [];
 
-            evts.forEach((evt, reportEvtIdx) => {
+            evts.forEach((evt, reportEventIndex) => {
                 const gPrefix = evt.type ? evt.type.replace(/[0-9]+.*/, '') : '';
 
                 const vids = evt.chance?.video;
@@ -92,7 +92,7 @@ export const TmMatchService = {
                 const evtHasShot = !!evt.shot;
                 const evtShotOnTarget = evt.shot?.target === 'on';
                 const outcome = evt.goal ? 'goal' : evt.shot ? 'shot' : 'lost';
-                const segments = [];
+                const clips = [];
 
                 for (let vi = 0; vi < vids.length; vi++) {
                     const v = vids[vi];
@@ -194,14 +194,14 @@ export const TmMatchService = {
                         actions.push({ action: 'injury', by: evt.injury });
                     }
 
-                    segments.push({ clip, text, actions });
+                    clips.push({ video: clip, text, actions });
                 }
 
-                if (evt.set_piece && segments.length > 0)
-                    segments[segments.length - 1].actions.push({ action: 'setpiece', by: evt.set_piece, style: gPrefix });
-                if (evt.mentality_change && segments.length > 0)
-                    segments[segments.length - 1].actions.push({ action: 'mentality_change', team: String(evt.mentality_change.team), mentality: Number(evt.mentality_change.mentality) });
-                plays.push({ team: evt.club, style: gPrefix, outcome, segments, reportEvtIdx, severity: evt.severity });
+                if (evt.set_piece && clips.length > 0)
+                    clips[clips.length - 1].actions.push({ action: 'setpiece', by: evt.set_piece, style: gPrefix });
+                if (evt.mentality_change && clips.length > 0)
+                    clips[clips.length - 1].actions.push({ action: 'mentality_change', team: String(evt.mentality_change.team), mentality: Number(evt.mentality_change.mentality) });
+                plays.push({ team: evt.club, style: gPrefix, outcome, clips, reportEventIndex, severity: evt.severity });
             });
 
             if (plays.length) result[String(min)] = plays;
@@ -440,6 +440,34 @@ export const TmMatchService = {
         return this.normalizeMatchData(compressed, options);
     },
 
-
+    /**
+     * Build a per-minute text schedule from match.plays.
+     * Used by the replay loop to know at which second each commentary line appears.
+     *
+     * @param {object} plays  — match.plays from buildNormalizedPlays
+     * @param {number} lineInterval  — seconds between consecutive lines (default 3)
+     * @returns {{ schedule: object, eventMins: number[] }}
+     */
+    buildSchedule(plays, lineInterval = 3) {
+        const schedule = {};
+        for (const [minStr, minPlays] of Object.entries(plays)) {
+            let seconds = 0;
+            const entries = [];
+            for (const action of minPlays) {
+                const lineCount = Math.max(
+                    1,
+                    action.clips.reduce((s, clip) => s + clip.text.filter(l => l.trim()).length, 0)
+                );
+                for (let actionLineIndex = 0; actionLineIndex < lineCount; actionLineIndex++) {
+                    entries.push({ actionIndex: action.reportEventIndex, lineIndex: actionLineIndex, seconds });
+                    seconds += lineInterval;
+                }
+            }
+            if (entries.length) {
+                schedule[Number(minStr)] = entries;
+            }
+        }
+        return { schedule };
+    },
 
 }

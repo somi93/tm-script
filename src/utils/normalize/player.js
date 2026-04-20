@@ -7,8 +7,8 @@ import { normalizeClubFromTooltip } from './club.js';
 export const applyPlayerPositionRatings = (player) => {
     player.positions = player.positions.map(position => ({
         ...position,
-        r5: TmLib.calculatePlayerR5(position, player),
-        rec: TmLib.calculatePlayerREC(position, player),
+        r5: position.id != null ? TmLib.calculatePlayerR5(position, player) : null,
+        rec: position.id != null ? TmLib.calculatePlayerREC(position, player) : null,
     }));
 
     const preferredPositions = player.positions.filter(position => position.preferred);
@@ -73,9 +73,8 @@ const _parseTacticsBan = (status, banned) => {
 };
 
 export const normalizeTacticsPlayer = (p) => {
-    const player = Player.create();
+    const player = Player.create({allPositions: true});
     player.id = Number(p.player_id);
-    player.player_id = player.id;
     player.club_id = Number(p.club_id);
     player.club.id = String(p.club_id);
     player.club.name = p.club_name || '';
@@ -98,7 +97,7 @@ export const normalizeTacticsPlayer = (p) => {
     player.rec_sort = p.rec_sort;
     player.faceUrl = TmUtils.extractFaceUrl(p.appearance, null);
     TmUtils.applyTooltipSkills(player, p.skills);
-    TmUtils.applyPlayerPositions(player, p.favposition);
+    TmUtils.applyPlayerPositions(player, p.favposition, true);
     player.skills = TmLib.calcSkillDecimalsSimple(player);
     applyPlayerPositionRatings(player);
     player.allPositionRatings = player.positions;
