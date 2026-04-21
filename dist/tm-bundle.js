@@ -2204,7 +2204,7 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
      * Mood penalty for placing a player in a given posKey.
      * Returns 0-4 (0 = natural position, 4 = maximum unhappiness).
      */
-    moodPenalty(player2, posKey2) {
+    moodPenalty(player2, posKey) {
       var _a2, _b;
       const LINE_PEN = {
         1: { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4 },
@@ -2213,7 +2213,7 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
         4: { 1: 3, 2: 2, 3: 1, 4: 0, 5: 1 },
         5: { 1: 4, 2: 3, 3: 2, 4: 1, 5: 0 }
       };
-      const placed = MAP[String(posKey2 || "").toLowerCase()];
+      const placed = MAP[String(posKey || "").toLowerCase()];
       if (!placed) return 0;
       const favs = Array.isArray(player2 == null ? void 0 : player2.positions) ? player2.positions.filter((p) => p.preferred) : [];
       if (!favs.length) return 0;
@@ -4099,8 +4099,8 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         minsPlayed = subOutAct ? subOutAct.min : matchEndMin;
       }
       const entry = { perMinute, grouped, minsPlayed };
-      const posKey2 = (player2.position || "").split(",")[0].toLowerCase().replace(/[^a-z]/g, "");
-      const posEntry = POSITION_MAP[posKey2] || POSITION_MAP[(player2.fp || "").split(",")[0].toLowerCase().replace(/[^a-z]/g, "")];
+      const posKey = (player2.position || "").split(",")[0].toLowerCase().replace(/[^a-z]/g, "");
+      const posEntry = POSITION_MAP[posKey] || POSITION_MAP[(player2.fp || "").split(",")[0].toLowerCase().replace(/[^a-z]/g, "")];
       const r5 = posEntry && ((_a2 = player2.skills) == null ? void 0 : _a2.length) && player2.asi ? Number(TmLib.calculatePlayerR5(posEntry, player2)) : null;
       return {
         ...player2,
@@ -4638,8 +4638,8 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       const playerMatchData = {};
       ourLineup.forEach((player2) => {
         const position = getDisplayPosition(player2);
-        const isBench2 = /^sub\d+$/i.test(position || "");
-        if (isBench2 && !player2.minsPlayed) return;
+        const isBench = /^sub\d+$/i.test(position || "");
+        if (isBench && !player2.minsPlayed) return;
         const pid = String(player2.player_id || player2.id);
         playerMatchData[pid] = {
           name: player2.name || player2.nameLast || pid,
@@ -19117,6 +19117,7 @@ order:initial
       }
     }
     let curSkills = records[skillsAnchorKey].skills.map(Number);
+    console.log(monthKeys);
     for (let i = anchorIdx + 1; i < monthKeys.length; i++) {
       const key = monthKeys[i];
       const record = records[key];
@@ -19130,6 +19131,7 @@ order:initial
         const downIdxs = wc.skillChanges.map((c, idx) => (c === "one_down" || c === "part_down") && idx < N ? idx : -1).filter((idx) => idx >= 0);
         if (upIdxs.length > 0 || downIdxs.length > 0) {
           gain = new Array(N).fill(0);
+          console.log(`Applying weeklyChanges for ${player2.name} at ${key}:`, wc.skillChanges, upIdxs, downIdxs);
           if (upIdxs.length > 0 && downIdxs.length > 0) {
             const nominalTotal = (upIdxs.length - downIdxs.length) * 0.1;
             const excess = totalGain - nominalTotal;
@@ -19197,6 +19199,9 @@ order:initial
     console.groupEnd();
   };
   var attachSkillsAnchor = (players) => {
+    players.forEach((player2) => {
+      console.log(player2.name, player2.monthKeys);
+    });
     for (const player2 of players) {
       if (!player2.needSync) continue;
       player2.skillsAnchorKey = findSkillsAnchor(player2.monthKeys, player2.records);
@@ -19282,7 +19287,7 @@ order:initial
 
   // src/workflows/player-history/save.js
   var saveHistoryRecords = async (players, { writeFullySynced = true } = {}) => {
-    const tasks = players.filter((p) => p.needSync && p.records).map(async (player2) => {
+    const tasks = players.filter((p) => p.needSync && p.records || true).map(async (player2) => {
       var _a2, _b;
       const { DBPlayer, records, ageMonthsString } = player2;
       const merged = { ...(DBPlayer == null ? void 0 : DBPlayer.records) || {}, ...records };
@@ -19323,12 +19328,11 @@ order:initial
     }));
     if (!active.length) return [...archived];
     const withSync = await attachSyncStatus(active, { mode });
-    if (!withSync.filter((p) => p.needSync).length) return withSync;
     const withData = await buildHistorySkeletons(withSync, onProgress);
     fillTIandASI(withData);
     attachSkillsAnchor(withData);
     attachRoutine(withData);
-    const needSync = withData.filter((p) => p.needSync);
+    const needSync = withData.filter((p) => p.needSync || true);
     for (const player2 of needSync) {
       attachR5Rec([player2]);
       if (mode === "full") {
@@ -30066,6 +30070,14 @@ order:initial
   var applyMatchContext = (player2, p, captainId) => {
     var _a2;
     player2.position = p.position || null;
+    if (player2.position) {
+      player2.positions = player2.positions || [];
+      for (const pos2 of player2.positions) pos2.playing = false;
+      const key = player2.position.toLowerCase();
+      let pos = player2.positions.find((pos2) => pos2.key === key);
+      if (!pos) player2.positions.push(pos = { key });
+      pos.playing = true;
+    }
     player2.captain = Number(p.player_id) === captainId;
     player2.rating = typeof p.rating === "number" && p.rating > 0 ? p.rating : null;
     player2.mom = (_a2 = p.mom) != null ? _a2 : 0;
@@ -32462,10 +32474,10 @@ order:initial
       var _a2, _b;
       const activeKeys = getOccupiedFieldKeys();
       let totalR5 = 0, countR5 = 0, totalRtn = 0, countRtn = 0, totalAge = 0, countAge = 0;
-      for (const posKey2 of activeKeys) {
-        const p = getPlayerAtSlot(posKey2);
+      for (const posKey of activeKeys) {
+        const p = getPlayerAtSlot(posKey);
         if (!p) continue;
-        const posId = (_a2 = TmConst.POSITION_MAP[posKey2]) == null ? void 0 : _a2.id;
+        const posId = (_a2 = TmConst.POSITION_MAP[posKey]) == null ? void 0 : _a2.id;
         if (((_b = p.allPositionRatings) == null ? void 0 : _b.length) && posId != null) {
           const rating = p.allPositionRatings.find((r) => r.id === posId);
           if (rating) {
@@ -32509,14 +32521,14 @@ order:initial
         const lineEl = document.createElement("div");
         lineEl.className = "tmtc-line";
         section.appendChild(lineEl);
-        for (const posKey2 of zone.cols) {
-          if (!posKey2) {
+        for (const posKey of zone.cols) {
+          if (!posKey) {
             const sp = document.createElement("div");
             sp.className = "tmtc-slot-spacer";
             lineEl.appendChild(sp);
           } else {
-            const slotEl = makeFieldSlot(posKey2);
-            slotEls[posKey2] = slotEl;
+            const slotEl = makeFieldSlot(posKey);
+            slotEls[posKey] = slotEl;
             lineEl.appendChild(slotEl);
           }
         }
@@ -32542,25 +32554,25 @@ order:initial
         if (slotEls[pk]) renderFieldSlot(slotEls[pk], getPlayerAtSlot(pk), pk);
       }
     }
-    const getPositionRating = (player2, posKey2) => {
+    const getPositionRating = (player2, posKey) => {
       var _a2, _b, _c;
-      const posId = (_a2 = TmConst.POSITION_MAP[String(posKey2 || "").toLowerCase()]) == null ? void 0 : _a2.id;
+      const posId = (_a2 = TmConst.POSITION_MAP[String(posKey || "").toLowerCase()]) == null ? void 0 : _a2.id;
       return posId != null ? (_c = (_b = player2 == null ? void 0 : player2.positions) == null ? void 0 : _b.find((p) => p.id === posId)) != null ? _c : null : null;
     };
-    function makeFieldSlot(posKey2) {
-      const player2 = getPlayerAtSlot(posKey2);
+    function makeFieldSlot(posKey) {
+      const player2 = getPlayerAtSlot(posKey);
       const slotEl = document.createElement("div");
       slotEl.className = "tmtc-slot";
-      slotEl.dataset.posKey = posKey2;
-      renderFieldSlot(slotEl, player2, posKey2);
-      if (!readOnly) setupDropTarget(slotEl, posKey2);
+      slotEl.dataset.posKey = posKey;
+      renderFieldSlot(slotEl, player2, posKey);
+      if (!readOnly) setupDropTarget(slotEl, posKey);
       return slotEl;
     }
-    function renderFieldSlot(slotEl, player2, posKey2) {
+    function renderFieldSlot(slotEl, player2, posKey) {
       var _a2, _b, _c;
       if (!slotEl) return;
       slotEl.innerHTML = "";
-      slotEl.dataset.posKey = posKey2;
+      slotEl.dataset.posKey = posKey;
       slotEl.classList.toggle("tmtc-slot-empty", !player2);
       if (player2) {
         if (!readOnly) {
@@ -32571,14 +32583,14 @@ order:initial
         } else {
           slotEl.dataset.playerId = String(player2.id);
         }
-        const slotRating = ((v) => v != null ? TmUtils.formatR5(v, "\u2014") : "\u2014")((_a2 = getPositionRating(player2, posKey2)) == null ? void 0 : _a2.r5);
-        const slotRec = (_c = (_b = getPositionRating(player2, posKey2)) == null ? void 0 : _b.rec) != null ? _c : null;
+        const slotRating = ((v) => v != null ? TmUtils.formatR5(v, "\u2014") : "\u2014")((_a2 = getPositionRating(player2, posKey)) == null ? void 0 : _a2.r5);
+        const slotRec = (_c = (_b = getPositionRating(player2, posKey)) == null ? void 0 : _b.rec) != null ? _c : null;
         const slotRoutine = player2.routine > 0 ? Number(player2.routine).toFixed(1) : "\u2014";
-        const moodPenalty = TmPosition.moodPenalty(player2, posKey2);
+        const moodPenalty = TmPosition.moodPenalty(player2, posKey);
         slotEl.innerHTML = `
                 <span class="tmtc-slot-no">${escHtml2(slotRating)}</span>
                 <span class="tmtc-slot-name">${escHtml2(player2.lastname || player2.name || "")}${playerStatusIconsHtml(player2)}</span>
-                ${TmPosition.chip([posKey2 || ""])}
+                ${TmPosition.chip([posKey || ""])}
                 <span class="tmtc-slot-meta">
                     <span class="tmtc-slot-rec">${TmStars.recommendation(slotRec, "tmtc-rec-stars tmtc-rec-stars-sm") || '<span class="tmtc-slot-rec-empty">\u2014</span>'}</span>
                     ${moodPenalty > 0 ? `<span class="tmtc-slot-mood tmtc-slot-mood-${moodPenalty}" title="Out of natural position">\u2639</span>` : ""}
@@ -32588,17 +32600,17 @@ order:initial
       } else {
         slotEl.removeAttribute("draggable");
         delete slotEl.dataset.playerId;
-        slotEl.innerHTML = `<span class="tmtc-slot-poskey">${escHtml2(posKey2.toUpperCase())}</span>`;
+        slotEl.innerHTML = `<span class="tmtc-slot-poskey">${escHtml2(posKey.toUpperCase())}</span>`;
       }
     }
     function onFieldDragStart(e) {
       const pid = e.currentTarget.dataset.playerId;
-      const posKey2 = e.currentTarget.dataset.posKey;
+      const posKey = e.currentTarget.dataset.posKey;
       if (!pid) {
         e.preventDefault();
         return;
       }
-      drag.state = { pid, fromType: "field", fromPosKey: posKey2 };
+      drag.state = { pid, fromType: "field", fromPosKey: posKey };
       e.dataTransfer.effectAllowed = "move";
       e.dataTransfer.setData("text/plain", pid);
       e.currentTarget.classList.add("tmtc-drag-source");
@@ -32608,7 +32620,7 @@ order:initial
       document.querySelectorAll(".tmtc-drag-source, .tmtc-drag-over").forEach((el2) => el2.classList.remove("tmtc-drag-source", "tmtc-drag-over"));
       fieldEl.classList.remove("is-dragging");
     }
-    function setupDropTarget(slotEl, posKey2) {
+    function setupDropTarget(slotEl, posKey) {
       let n = 0;
       slotEl.addEventListener("dragenter", (e) => {
         e.preventDefault();
@@ -32632,7 +32644,7 @@ order:initial
         const { pid } = ds;
         const player2 = players_by_id[pid];
         if (!player2) return;
-        const prevPlayer = getPlayerAtSlot(posKey2);
+        const prevPlayer = getPlayerAtSlot(posKey);
         if (prevPlayer && String(prevPlayer.id) === pid) return;
         if (!prevPlayer && !isFieldSlot(getPlayerSlot(player2)) && getOccupiedFieldKeys().size >= 11) return;
         if (CLUB_COUNTRY2) {
@@ -32644,8 +32656,8 @@ order:initial
         }
         const changed = {};
         const sourceSlot = getPlayerSlot(player2);
-        setPlayerSlot(player2, posKey2);
-        changed[pid] = posKey2;
+        setPlayerSlot(player2, posKey);
+        changed[pid] = posKey;
         if (prevPlayer) {
           setPlayerSlot(prevPlayer, sourceSlot);
           changed[String(prevPlayer.id)] = sourceSlot != null ? sourceSlot : "out";
@@ -32661,8 +32673,8 @@ order:initial
     });
     buildField();
     function refresh() {
-      for (const [posKey2, slotEl] of Object.entries(slotEls)) {
-        renderFieldSlot(slotEl, getPlayerAtSlot(posKey2), posKey2);
+      for (const [posKey, slotEl] of Object.entries(slotEls)) {
+        renderFieldSlot(slotEl, getPlayerAtSlot(posKey), posKey);
       }
       refreshFieldOverlay();
     }
@@ -32676,7 +32688,7 @@ order:initial
     return {
       refresh,
       rebuild,
-      renderSlot: (posKey2) => renderFieldSlot(slotEls[posKey2], getPlayerAtSlot(posKey2), posKey2),
+      renderSlot: (posKey) => renderFieldSlot(slotEls[posKey], getPlayerAtSlot(posKey), posKey),
       setDragging: (bool) => fieldEl.classList.toggle("is-dragging", bool),
       clearDragVisuals,
       normalizeZone,
@@ -32689,9 +32701,9 @@ order:initial
     return mountTacticsField(container, {
       readOnly: true,
       players_by_id,
-      getPlayerAtSlot: (posKey2) => {
+      getPlayerAtSlot: (posKey) => {
         var _a2;
-        return (_a2 = posPlayerMap[posKey2]) != null ? _a2 : null;
+        return (_a2 = posPlayerMap[posKey]) != null ? _a2 : null;
       },
       getPlayerSlot: () => null,
       setPlayerSlot: () => {
@@ -32783,11 +32795,11 @@ order:initial
     `;
     document.head.appendChild(s6);
   }
-  function posColor(posKey2) {
-    if (!posKey2) return "var(--tmu-text-dim)";
-    const meta = TmConst.POSITION_MAP[(posKey2 || "").toLowerCase()];
+  function posColor(posKey) {
+    if (!posKey) return "var(--tmu-text-dim)";
+    const meta = TmConst.POSITION_MAP[(posKey || "").toLowerCase()];
     if (meta == null ? void 0 : meta.color) return meta.color;
-    const v = TmPosition.variant(posKey2);
+    const v = TmPosition.variant(posKey);
     const map = { gk: "var(--tmu-success-strong)", d: "var(--tmu-info-dark)", m: "var(--tmu-warning)", f: "var(--tmu-danger-deep)" };
     return map[v] || "var(--tmu-text-dim)";
   }
@@ -32808,10 +32820,10 @@ order:initial
      *   @param {string}  [opts.state]   — 'active' | 'bench' | 'off' | 'sub-in'  (default: 'active')
      * @returns {HTMLDivElement}
      */
-    build(player2, { posKey: posKey2, state: state5 = "active" } = {}) {
+    build(player2, { posKey, state: state5 = "active" } = {}) {
       var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j;
       injectTmPlayerRowStyles();
-      const raw = posKey2 || player2.position || "";
+      const raw = posKey || player2.position || "";
       const slot = /^sub/i.test(raw) ? "" : raw.toLowerCase();
       const pref = (_a2 = player2.positions) == null ? void 0 : _a2.filter((p) => p.preferred);
       const lead = (pref == null ? void 0 : pref.length) ? pref[0] : (_b = player2.positions) == null ? void 0 : _b[0];
@@ -32907,49 +32919,6 @@ order:initial
     }
   };
 
-  // src/components/match-new/tm-match-squad-list.js
-  var isStarter = (p) => !!POSITION_MAP[(p.position || "").toLowerCase()];
-  var isBench = (p) => BENCH_SLOTS.includes((p.position || "").toLowerCase());
-  var posKey = (p) => (p.position || p.fp || "").toLowerCase().split(",")[0].replace(/^sub\d*/i, "");
-  var TmMatchSquadList = {
-    /**
-     * @param {'home'|'away'} side
-     * @param {Array}         lineup    — all match players for this side
-     * @returns {{ el: HTMLElement, playerEls: Map<string, HTMLElement> }}
-     */
-    create(side, lineup) {
-      const col = document.createElement("div");
-      col.className = `mp-lu-col mp-lu-col-${side}`;
-      const starters = lineup.filter(isStarter).sort((a, b) => {
-        var _a2, _b, _c, _d;
-        const ma = POSITION_MAP[a.position.toLowerCase()];
-        const mb = POSITION_MAP[b.position.toLowerCase()];
-        return ((_a2 = ma == null ? void 0 : ma.row) != null ? _a2 : 9) - ((_b = mb == null ? void 0 : mb.row) != null ? _b : 9) || ((_c = ma == null ? void 0 : ma.col) != null ? _c : 9) - ((_d = mb == null ? void 0 : mb.col) != null ? _d : 9);
-      });
-      const subs = lineup.filter(isBench).sort(
-        (a, b) => parseInt((a.position || "99").replace(/\D/g, "") || "99") - parseInt((b.position || "99").replace(/\D/g, "") || "99")
-      );
-      const playerEls = /* @__PURE__ */ new Map();
-      for (const p of starters) {
-        const el2 = TmPlayerRow.build(p, { posKey: posKey(p), state: "active" });
-        col.appendChild(el2);
-        playerEls.set(String(p.id), el2);
-      }
-      const divider = document.createElement("div");
-      divider.className = "mp-lu-div";
-      col.appendChild(divider);
-      for (const p of subs) {
-        const num = (p.position || "").replace(/\D/g, "");
-        const el2 = TmPlayerRow.build(p, { posKey: posKey(p), state: "bench" });
-        const posWrap = el2.querySelector(".tm-pr-pos");
-        if (posWrap && num) posWrap.innerHTML = TmPosition.chip([{ position: `SUB ${num}`, color: "var(--tmu-text-muted)" }]);
-        col.appendChild(el2);
-        playerEls.set(String(p.id), el2);
-      }
-      return { el: col, playerEls };
-    }
-  };
-
   // src/components/match-new/tm-match-lineup.js
   var STYLE_ID49 = "mp-lineup-style";
   function injectStyles36() {
@@ -32984,22 +32953,6 @@ order:initial
             flex: 1 1 0; min-width: 0;
             display: flex; flex-direction: column;
             overflow-y: auto; padding: 0 4px;
-        }
-
-        /* \u2500\u2500 Lineups tab wrap \u2500\u2500 */
-        .mp-lu-tab-wrap {
-            height: 100%;
-        }
-        .mp-lu-tab-wrap .mp-lu-tactics-col {
-            flex: 0 0 auto;
-            height: 100%;
-            width: auto;
-            aspect-ratio: 2 / 3;
-        }
-        .mp-lu-tab-wrap .mp-lu-tactics-col .tmtc-field {
-            height: 100%;
-            width: auto;
-            aspect-ratio: 2 / 3;
         }
     `;
     document.head.appendChild(s6);
@@ -33093,8 +33046,14 @@ order:initial
       const awayField = TmMatchField.create(awayPosMap, match.away.lineup);
       const luHomeField = TmMatchField.create(homePosMap, match.home.lineup);
       const luAwayField = TmMatchField.create(awayPosMap, match.away.lineup);
-      const luHomeList = TmMatchSquadList.create("home", match.home.lineup);
-      const luAwayList = TmMatchSquadList.create("away", match.away.lineup);
+      const luHomeCtx = makeMatchSquadCtx(match.home.lineup, "home");
+      const luAwayCtx = makeMatchSquadCtx(match.away.lineup, "away");
+      const luHomeListEl = document.createElement("div");
+      luHomeListEl.className = "mp-lu-col mp-lu-col-home";
+      const luAwayListEl = document.createElement("div");
+      luAwayListEl.className = "mp-lu-col mp-lu-col-away";
+      const luHomeSquad = mountTacticsSquadList(luHomeListEl, luHomeCtx, NOOP_FIELD_API);
+      const luAwaySquad = mountTacticsSquadList(luAwayListEl, luAwayCtx, NOOP_FIELD_API);
       const starterHomePids = new Set(match.home.lineup.filter((p) => POSITION_MAP[(p.position || "").toLowerCase()]).map((p) => String(p.id)));
       const starterAwayPids = new Set(match.away.lineup.filter((p) => POSITION_MAP[(p.position || "").toLowerCase()]).map((p) => String(p.id)));
       homePanel.append(homeField.el);
@@ -33134,22 +33093,25 @@ order:initial
         awayField.refresh();
         luHomeField.refresh();
         luAwayField.refresh();
-        const applyStates = (playerEls, starterPids) => {
-          for (const [pid, el2] of playerEls) {
-            TmPlayerRow.setState(el2, playerSlot.has(pid) ? starterPids.has(pid) ? "active" : "sub-in" : starterPids.has(pid) ? "off" : "bench");
-          }
+        const makeStateOf = (pitchPids, starterPids) => (p) => {
+          const pid = String(p.id);
+          return pitchPids.has(pid) ? starterPids.has(pid) ? "active" : "sub-in" : starterPids.has(pid) ? "off" : "bench";
         };
-        applyStates(luHomeList.playerEls, starterHomePids);
-        applyStates(luAwayList.playerEls, starterAwayPids);
+        const homePitchPids = new Set([...playerSlot].filter(([, s6]) => s6.startsWith("home:")).map(([pid]) => pid));
+        const awayPitchPids = new Set([...playerSlot].filter(([, s6]) => s6.startsWith("away:")).map(([pid]) => pid));
+        luHomeCtx.stateOf = makeStateOf(homePitchPids, starterHomePids);
+        luAwayCtx.stateOf = makeStateOf(awayPitchPids, starterAwayPids);
+        luHomeSquad.refresh();
+        luAwaySquad.refresh();
       }
       update(null);
       return {
         homePanel: { el: homePanel },
         awayPanel: { el: awayPanel },
-        luHomeListEl: luHomeList.el,
+        luHomeListEl,
         luHomeFieldEl: luHomeField.el,
         luAwayFieldEl: luAwayField.el,
-        luAwayListEl: luAwayList.el,
+        luAwayListEl,
         update
       };
     }
@@ -46176,7 +46138,7 @@ order:initial
         b: reserveIds.has(player2.id) ? true : void 0,
         weeklyChanges: skillChangesMap.get(player2.id) || null
       }));
-      console.group("[Step 2] Players loaded \u2014 total:", allPlayers2.length);
+      console.group("[Step 2] Players loaded \u2014 total:", allPlayers2.map((p) => p.weeklyChanges));
       console.log(allPlayers2);
       console.groupEnd();
       let syncBar = null;
@@ -47196,7 +47158,7 @@ order:initial
 
   // src/components/tactics/tm-tactics-squad-list.js
   var { BENCH_SLOTS: BENCH_SLOTS2, POSKEY_TO_ZONE: POSKEY_TO_ZONE2 } = TmConst;
-  function mountTacticsSquadList(container, ctx, fieldApi) {
+  function mountTacticsSquadList2(container, ctx, fieldApi) {
     const {
       players,
       players_by_id,
@@ -47226,12 +47188,16 @@ order:initial
       if (outRows.length) outRows[0]._needsSep = true;
       return [...fieldRows, ...benchRows, ...outRows];
     }
-    const stateOf = (p) => p._isBenchPlaceholder ? "bench" : isFieldSlot(getPlayerSlot(p)) ? "active" : "off";
+    const stateOf = (p) => {
+      var _a2;
+      return ((_a2 = ctx.stateOf) != null ? _a2 : ((p2) => p2._isBenchPlaceholder ? "bench" : isFieldSlot(getPlayerSlot(p2)) ? "active" : "off"))(p);
+    };
     const tblWrap = TmTable.table({
       items: sortedPlayers(),
       density: "tight",
       sortKey: null,
       rowAttrs: (p) => {
+        if (ctx.readOnly) return p._isBenchPlaceholder ? { "data-bench-role": p._benchRole } : { "data-player-id": p.id };
         if (p._isBenchPlaceholder && p._benchSlotFilled)
           return { draggable: "true", "data-player-id": p.id, "data-bench-role": p._benchRole };
         if (p._isBenchPlaceholder)
@@ -47268,8 +47234,8 @@ order:initial
           const player2 = players_by_id[String(pid)];
           if (!player2) return;
           const slot = getPlayerSlot(player2);
-          const posKey2 = isFieldSlot(slot) ? slot : null;
-          const row = TmPlayerRow.build(player2, { posKey: posKey2, state: state5 });
+          const posKey = isFieldSlot(slot) ? slot : null;
+          const row = TmPlayerRow.build(player2, { posKey, state: state5 });
           if (benchRole) {
             const num = benchRole.replace("sub", "");
             const posWrap = row.querySelector(".tm-pr-pos");
@@ -47279,94 +47245,96 @@ order:initial
         });
       }
     });
-    tblWrap.addEventListener("dragstart", (e) => {
-      const tr = e.target.closest("tr[data-player-id]");
-      if (!tr || !tblWrap.contains(tr)) return;
-      const pid = tr.dataset.playerId;
-      if (!pid || pid.startsWith("_bench_")) return;
-      const fromRoleKey = tr.dataset.benchRole || null;
-      drag.state = { pid, fromType: "sidebar", fromRoleKey };
-      e.dataTransfer.effectAllowed = "move";
-      e.dataTransfer.setData("text/plain", pid);
-      tr.classList.add("tmtc-drag-source");
-      const player2 = players_by_id[pid];
-      const playerSlot = player2 ? getPlayerSlot(player2) : null;
-      if (isFieldSlot(playerSlot) || getOccupiedFieldKeys().size < 11) fieldApi.setDragging(true);
-    });
-    let _hovRow = null;
-    const _setHovRow = (tr) => {
-      if (_hovRow === tr) return;
-      if (_hovRow) _hovRow.classList.remove("tmtc-drag-over");
-      _hovRow = tr;
-      if (tr) tr.classList.add("tmtc-drag-over");
-    };
-    tblWrap.addEventListener("dragover", (e) => {
-      if (!drag.state) return;
-      const tr = e.target.closest("tr[data-bench-role], tr[data-player-id]");
-      if (tr) {
-        e.preventDefault();
-        _setHovRow(tr);
-      }
-    });
-    tblWrap.addEventListener("dragleave", (e) => {
-      if (_hovRow && !tblWrap.contains(e.relatedTarget)) _setHovRow(null);
-    });
-    tblWrap.addEventListener("drop", async (e) => {
-      _setHovRow(null);
-      const benchTr = e.target.closest("tr[data-bench-role]");
-      const playerTr = !benchTr && e.target.closest("tr[data-player-id]");
-      if (!benchTr && !playerTr) return;
-      e.preventDefault();
-      fieldApi.clearDragVisuals();
-      const ds = drag.state;
-      drag.state = null;
-      if (!ds) return;
-      const player2 = players_by_id[ds.pid];
-      if (!player2) return;
-      let targetSlot, targetPlayer;
-      if (benchTr) {
-        targetSlot = benchTr.dataset.benchRole;
-        targetPlayer = getPlayerAtSlot(targetSlot);
-      } else {
-        targetPlayer = players_by_id[playerTr.dataset.playerId];
-        if (!targetPlayer) {
-          refresh();
-          return;
-        }
-        targetSlot = getPlayerSlot(targetPlayer);
-        if (!targetSlot) {
-          refresh();
-          return;
-        }
-      }
-      if (targetPlayer && String(targetPlayer.id) === ds.pid) {
-        refresh();
-        return;
-      }
-      if (CLUB_COUNTRY2) {
-        const projected = countSquadForeigners() + (isForeigner2(player2) && !getPlayerSlot(player2) ? 1 : 0) - (targetPlayer && isForeigner2(targetPlayer) ? 1 : 0);
-        if (projected > 5) {
-          TmAlert.show({ message: "Foreign player limit is 5 (squad of 16)", tone: "warning", duration: 3e3 });
-          return;
-        }
-      }
-      const sourceSlot = getPlayerSlot(player2);
-      const changed = {};
-      setPlayerSlot(player2, targetSlot);
-      changed[ds.pid] = targetSlot;
-      if (targetPlayer) {
-        setPlayerSlot(targetPlayer, sourceSlot);
-        changed[String(targetPlayer.id)] = sourceSlot != null ? sourceSlot : "out";
-      }
-      if (isFieldSlot(targetSlot)) {
-        fieldApi.normalizeAll(changed);
-      } else if (sourceSlot && isFieldSlot(sourceSlot)) {
-        fieldApi.normalizeZone(POSKEY_TO_ZONE2[sourceSlot], changed);
-      }
-      ctx.refreshAll();
-      await save(changed);
-    });
     container.appendChild(tblWrap);
+    if (!ctx.readOnly) {
+      tblWrap.addEventListener("dragstart", (e) => {
+        const tr = e.target.closest("tr[data-player-id]");
+        if (!tr || !tblWrap.contains(tr)) return;
+        const pid = tr.dataset.playerId;
+        if (!pid || pid.startsWith("_bench_")) return;
+        const fromRoleKey = tr.dataset.benchRole || null;
+        drag.state = { pid, fromType: "sidebar", fromRoleKey };
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", pid);
+        tr.classList.add("tmtc-drag-source");
+        const player2 = players_by_id[pid];
+        const playerSlot = player2 ? getPlayerSlot(player2) : null;
+        if (isFieldSlot(playerSlot) || getOccupiedFieldKeys().size < 11) fieldApi.setDragging(true);
+      });
+      let _hovRow = null;
+      const _setHovRow = (tr) => {
+        if (_hovRow === tr) return;
+        if (_hovRow) _hovRow.classList.remove("tmtc-drag-over");
+        _hovRow = tr;
+        if (tr) tr.classList.add("tmtc-drag-over");
+      };
+      tblWrap.addEventListener("dragover", (e) => {
+        if (!drag.state) return;
+        const tr = e.target.closest("tr[data-bench-role], tr[data-player-id]");
+        if (tr) {
+          e.preventDefault();
+          _setHovRow(tr);
+        }
+      });
+      tblWrap.addEventListener("dragleave", (e) => {
+        if (_hovRow && !tblWrap.contains(e.relatedTarget)) _setHovRow(null);
+      });
+      tblWrap.addEventListener("drop", async (e) => {
+        _setHovRow(null);
+        const benchTr = e.target.closest("tr[data-bench-role]");
+        const playerTr = !benchTr && e.target.closest("tr[data-player-id]");
+        if (!benchTr && !playerTr) return;
+        e.preventDefault();
+        fieldApi.clearDragVisuals();
+        const ds = drag.state;
+        drag.state = null;
+        if (!ds) return;
+        const player2 = players_by_id[ds.pid];
+        if (!player2) return;
+        let targetSlot, targetPlayer;
+        if (benchTr) {
+          targetSlot = benchTr.dataset.benchRole;
+          targetPlayer = getPlayerAtSlot(targetSlot);
+        } else {
+          targetPlayer = players_by_id[playerTr.dataset.playerId];
+          if (!targetPlayer) {
+            refresh();
+            return;
+          }
+          targetSlot = getPlayerSlot(targetPlayer);
+          if (!targetSlot) {
+            refresh();
+            return;
+          }
+        }
+        if (targetPlayer && String(targetPlayer.id) === ds.pid) {
+          refresh();
+          return;
+        }
+        if (CLUB_COUNTRY2) {
+          const projected = countSquadForeigners() + (isForeigner2(player2) && !getPlayerSlot(player2) ? 1 : 0) - (targetPlayer && isForeigner2(targetPlayer) ? 1 : 0);
+          if (projected > 5) {
+            TmAlert.show({ message: "Foreign player limit is 5 (squad of 16)", tone: "warning", duration: 3e3 });
+            return;
+          }
+        }
+        const sourceSlot = getPlayerSlot(player2);
+        const changed = {};
+        setPlayerSlot(player2, targetSlot);
+        changed[ds.pid] = targetSlot;
+        if (targetPlayer) {
+          setPlayerSlot(targetPlayer, sourceSlot);
+          changed[String(targetPlayer.id)] = sourceSlot != null ? sourceSlot : "out";
+        }
+        if (isFieldSlot(targetSlot)) {
+          fieldApi.normalizeAll(changed);
+        } else if (sourceSlot && isFieldSlot(sourceSlot)) {
+          fieldApi.normalizeZone(POSKEY_TO_ZONE2[sourceSlot], changed);
+        }
+        ctx.refreshAll();
+        await save(changed);
+      });
+    }
     function refresh() {
       tblWrap == null ? void 0 : tblWrap.refresh({ items: sortedPlayers() });
     }
@@ -47376,7 +47344,13 @@ order:initial
   // src/components/tactics/tm-tactics-lineup.js
   var { BENCH_SLOTS: BENCH_SLOTS3, SPECIAL_SLOTS: SPECIAL_SLOTS2 } = TmConst;
   function mountTacticsLineup(container, tactics, opts = {}) {
-    const { reserves = 0, national = 0, miniGameId = 0 } = opts;
+    const {
+      CLUB_COUNTRY: CLUB_COUNTRY2 = null,
+      isForeigner: isForeigner2 = () => false,
+      squadContainer = null,
+      onSave = async () => {
+      }
+    } = opts;
     const { players, specialRoles } = tactics;
     const players_by_id = Object.fromEntries(players.map((p) => [String(p.id), p]));
     const getPlayerSlot = (p) => {
@@ -47398,31 +47372,14 @@ order:initial
       pos.playing = true;
     }
     function countSquadForeigners() {
-      return players.filter((p) => getPlayerSlot(p) && isForeigner(p)).length;
-    }
-    function buildAssocForSave() {
-      const result = {};
-      for (const pk of Object.keys(TmConst.POSITION_MAP)) result[pk] = 0;
-      for (const p of players) {
-        const slot = getPlayerSlot(p);
-        if (slot) result[slot] = p.id;
-      }
-      for (const [role, pid] of Object.entries(specialRoles)) {
-        if (pid != null) result[role] = pid;
-      }
-      return result;
+      return players.filter((p) => getPlayerSlot(p) && isForeigner2(p)).length;
     }
     const changeListeners = [];
     const notifyChange = () => changeListeners.forEach((fn) => fn());
     const drag = { state: null };
     async function save(changed) {
-      try {
-        await TmTacticsService.postLineupSave(buildAssocForSave(), changed, reserves, national, miniGameId);
-        TmAlert.show({ message: "Saved", tone: "success" });
-        notifyChange();
-      } catch (e) {
-        TmAlert.show({ message: "Save failed", tone: "error" });
-      }
+      await onSave(changed);
+      notifyChange();
     }
     const layout = document.createElement("div");
     layout.className = "tmtc-lineup-2col";
@@ -47430,16 +47387,15 @@ order:initial
     const fieldCol = document.createElement("div");
     fieldCol.className = "tmtc-field-col";
     layout.appendChild(fieldCol);
-    const externalSquadContainer = opts.squadContainer || null;
     const squadCol = document.createElement("div");
     squadCol.className = "tmtc-squad-col";
-    if (!externalSquadContainer) layout.appendChild(squadCol);
+    if (!squadContainer) layout.appendChild(squadCol);
     const ctx = {
       players,
       players_by_id,
       specialRoles,
-      CLUB_COUNTRY,
-      isForeigner,
+      CLUB_COUNTRY: CLUB_COUNTRY2,
+      isForeigner: isForeigner2,
       getPlayerSlot,
       getPlayerAtSlot,
       setPlayerSlot,
@@ -47455,7 +47411,7 @@ order:initial
       }
     };
     const fieldApi = mountTacticsField(fieldCol, ctx);
-    const squadApi = mountTacticsSquadList(externalSquadContainer || squadCol, ctx, fieldApi);
+    const squadApi = mountTacticsSquadList2(squadContainer || squadCol, ctx, fieldApi);
     ctx.refreshAll = () => {
       fieldApi.refresh();
       squadApi.refresh();
@@ -47565,7 +47521,6 @@ order:initial
     return {
       refresh: ctx.refreshAll,
       applyAssignment,
-      getAssignment: buildAssocForSave,
       getActiveKeys: getOccupiedFieldKeys,
       subscribe: (fn) => {
         changeListeners.push(fn);
@@ -47743,10 +47698,10 @@ order:initial
   function computeAssignmentR5(assignment, players_by_id) {
     var _a2;
     let total = 0;
-    for (const [posKey2, pid] of Object.entries(assignment)) {
+    for (const [posKey, pid] of Object.entries(assignment)) {
       if (!pid) continue;
       const p = players_by_id[String(pid)];
-      const posId = (_a2 = TmConst.POSITION_MAP[posKey2]) == null ? void 0 : _a2.id;
+      const posId = (_a2 = TmConst.POSITION_MAP[posKey]) == null ? void 0 : _a2.id;
       if (!(p == null ? void 0 : p.positions) || posId == null) continue;
       const r = p.positions.find((rt) => rt.id === posId);
       if (r) total += parseFloat(r.r5) || 0;
@@ -48505,6 +48460,19 @@ order:initial
   function getTacticsRoute(pathname = window.location.pathname, teamMode = getTacticsTeamMode(pathname)) {
     return teamMode === "reserves" ? "/tactics/reserves/" : "/tactics/";
   }
+  function buildAssocForSave(tactics) {
+    var _a2, _b, _c;
+    const result = {};
+    for (const pk of Object.keys(TmConst.POSITION_MAP)) result[pk] = 0;
+    for (const p of tactics.players) {
+      const slot = (_c = (_b = (_a2 = p.positions) == null ? void 0 : _a2.find((pos) => pos.playing)) == null ? void 0 : _b.key) != null ? _c : null;
+      if (slot) result[slot] = p.id;
+    }
+    for (const [role, pid] of Object.entries(tactics.specialRoles)) {
+      if (pid != null) result[role] = pid;
+    }
+    return result;
+  }
   function captureNativeSettings() {
     const getVal = (id) => {
       var _a2;
@@ -48591,7 +48559,21 @@ order:initial
     });
     (_e = (_d = TmUI).setActive) == null ? void 0 : _e.call(_d, teamTabs, activeTeamTab);
     rightSwitch.appendChild(teamTabs);
-    const lineupApi = mountTacticsLineup(leftPanel, tactics, { ...opts, squadContainer: midPanel });
+    const lineupApi = mountTacticsLineup(leftPanel, tactics, {
+      ...opts,
+      squadContainer: midPanel,
+      CLUB_COUNTRY,
+      isForeigner,
+      async onSave(changed) {
+        try {
+          await TmTacticsService.postLineupSave(buildAssocForSave(tactics), changed, reserves, national, miniGameId);
+          TmAlert.show({ message: "Saved", tone: "success" });
+        } catch (e) {
+          TmAlert.show({ message: "Save failed", tone: "error" });
+        }
+      }
+    });
+    lineupApi.getAssignment = () => buildAssocForSave(tactics);
     const panelApi = mountTacticsPanel(statsPanel, tactics, opts, lineupApi);
     mountTacticsOrders(ordersHost, tactics, opts);
     lineupApi.refresh();

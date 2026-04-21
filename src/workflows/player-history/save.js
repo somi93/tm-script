@@ -7,7 +7,7 @@ import { TmPlayerDB } from '../../lib/tm-playerdb.js';
  */
 export const saveHistoryRecords = async (players, { writeFullySynced = true } = {}) => {
     const tasks = players
-        .filter(p => p.needSync && p.records)
+        .filter(p => (p.needSync && p.records || true))
         .map(async (player) => {
             const { DBPlayer, records, ageMonthsString } = player;
 

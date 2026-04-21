@@ -28,13 +28,12 @@ export const runSyncPipeline = async (players, onProgress, { mode = 'full' } = {
 
     // Step 3: Attach needSync + DBPlayer
     const withSync = await attachSyncStatus(active, { mode });
-    if (!withSync.filter(p => p.needSync).length) return withSync;
+    // if (!withSync.filter(p => p.needSync).length) return withSync;
     // Step 4: Fetch graphs + training for needSync players
     const withData = await buildHistorySkeletons(withSync, onProgress);
 
     // Step 5: Fill TI and ASI per month
     fillTIandASI(withData);
-
     // Step 7a: Find anchor + apply decimal skills forward
     attachSkillsAnchor(withData);
 
@@ -42,7 +41,7 @@ export const runSyncPipeline = async (players, onProgress, { mode = 'full' } = {
     attachRoutine(withData);
 
     // Step 10+11: R5/REC per month + mark fullySynced on current month (full mode only)
-    const needSync = withData.filter(p => p.needSync);
+    const needSync = withData.filter(p => p.needSync || true);
     for (const player of needSync) {
         attachR5Rec([player]);
         if (mode === 'full') {

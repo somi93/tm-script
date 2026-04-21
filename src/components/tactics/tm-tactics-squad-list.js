@@ -48,13 +48,16 @@ export function mountTacticsSquadList(container, ctx, fieldApi) {
 
     // ── Squad table ─────────────────────────────────────────────────────
 
-    const stateOf = p => p._isBenchPlaceholder ? 'bench' : isFieldSlot(getPlayerSlot(p)) ? 'active' : 'off';
+    const stateOf = p => (ctx.stateOf ?? (p => p._isBenchPlaceholder ? 'bench' : isFieldSlot(getPlayerSlot(p)) ? 'active' : 'off'))(p);
 
     const tblWrap = TmTable.table({
         items: sortedPlayers(),
         density: 'tight',
         sortKey: null,
         rowAttrs: p => {
+            if (ctx.readOnly) return p._isBenchPlaceholder
+                ? { 'data-bench-role': p._benchRole }
+                : { 'data-player-id': p.id };
             if (p._isBenchPlaceholder && p._benchSlotFilled)
                 return { draggable: 'true', 'data-player-id': p.id, 'data-bench-role': p._benchRole };
             if (p._isBenchPlaceholder)
@@ -101,99 +104,101 @@ export function mountTacticsSquadList(container, ctx, fieldApi) {
         },
     });
 
-    // ── Drag: start ─────────────────────────────────────────────────────
-
-    tblWrap.addEventListener('dragstart', e => {
-        const tr = e.target.closest('tr[data-player-id]');
-        if (!tr || !tblWrap.contains(tr)) return;
-        const pid = tr.dataset.playerId;
-        if (!pid || pid.startsWith('_bench_')) return;
-        const fromRoleKey = tr.dataset.benchRole || null;
-        drag.state = { pid, fromType: 'sidebar', fromRoleKey };
-        e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('text/plain', pid);
-        tr.classList.add('tmtc-drag-source');
-        const player = players_by_id[pid];
-        const playerSlot = player ? getPlayerSlot(player) : null;
-        if (isFieldSlot(playerSlot) || getOccupiedFieldKeys().size < 11) fieldApi.setDragging(true);
-    });
-
-    // ── Drag: over / leave ──────────────────────────────────────────────
-
-    let _hovRow = null;
-    const _setHovRow = tr => {
-        if (_hovRow === tr) return;
-        if (_hovRow) _hovRow.classList.remove('tmtc-drag-over');
-        _hovRow = tr;
-        if (tr) tr.classList.add('tmtc-drag-over');
-    };
-    tblWrap.addEventListener('dragover', e => {
-        if (!drag.state) return;
-        const tr = e.target.closest('tr[data-bench-role], tr[data-player-id]');
-        if (tr) { e.preventDefault(); _setHovRow(tr); }
-    });
-    tblWrap.addEventListener('dragleave', e => {
-        if (_hovRow && !tblWrap.contains(e.relatedTarget)) _setHovRow(null);
-    });
-
-    // ── Drag: drop ──────────────────────────────────────────────────────
-
-    tblWrap.addEventListener('drop', async e => {
-        _setHovRow(null);
-        const benchTr = e.target.closest('tr[data-bench-role]');
-        const playerTr = !benchTr && e.target.closest('tr[data-player-id]');
-        if (!benchTr && !playerTr) return;
-        e.preventDefault();
-        fieldApi.clearDragVisuals();
-        const ds = drag.state; drag.state = null;
-        if (!ds) return;
-
-        const player = players_by_id[ds.pid];
-        if (!player) return;
-
-        let targetSlot, targetPlayer;
-        if (benchTr) {
-            targetSlot = benchTr.dataset.benchRole;
-            targetPlayer = getPlayerAtSlot(targetSlot);
-        } else {
-            targetPlayer = players_by_id[playerTr.dataset.playerId];
-            if (!targetPlayer) { refresh(); return; }
-            targetSlot = getPlayerSlot(targetPlayer);
-            if (!targetSlot) { refresh(); return; } // out-player row, no-op
-        }
-
-        if (targetPlayer && String(targetPlayer.id) === ds.pid) { refresh(); return; }
-
-        if (CLUB_COUNTRY) {
-            const projected = countSquadForeigners()
-                + (isForeigner(player) && !getPlayerSlot(player) ? 1 : 0)
-                - (targetPlayer && isForeigner(targetPlayer) ? 1 : 0);
-            if (projected > 5) {
-                TmAlert.show({ message: 'Foreign player limit is 5 (squad of 16)', tone: 'warning', duration: 3000 });
-                return;
-            }
-        }
-
-        const sourceSlot = getPlayerSlot(player);
-        const changed = {};
-        setPlayerSlot(player, targetSlot);
-        changed[ds.pid] = targetSlot;
-        if (targetPlayer) {
-            setPlayerSlot(targetPlayer, sourceSlot);
-            changed[String(targetPlayer.id)] = sourceSlot ?? 'out';
-        }
-
-        if (isFieldSlot(targetSlot)) {
-            fieldApi.normalizeAll(changed);
-        } else if (sourceSlot && isFieldSlot(sourceSlot)) {
-            fieldApi.normalizeZone(POSKEY_TO_ZONE[sourceSlot], changed);
-        }
-
-        ctx.refreshAll();
-        await save(changed);
-    });
-
     container.appendChild(tblWrap);
+
+    if (!ctx.readOnly) {
+        // ── Drag: start ─────────────────────────────────────────────────────
+
+        tblWrap.addEventListener('dragstart', e => {
+            const tr = e.target.closest('tr[data-player-id]');
+            if (!tr || !tblWrap.contains(tr)) return;
+            const pid = tr.dataset.playerId;
+            if (!pid || pid.startsWith('_bench_')) return;
+            const fromRoleKey = tr.dataset.benchRole || null;
+            drag.state = { pid, fromType: 'sidebar', fromRoleKey };
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', pid);
+            tr.classList.add('tmtc-drag-source');
+            const player = players_by_id[pid];
+            const playerSlot = player ? getPlayerSlot(player) : null;
+            if (isFieldSlot(playerSlot) || getOccupiedFieldKeys().size < 11) fieldApi.setDragging(true);
+        });
+
+        // ── Drag: over / leave ──────────────────────────────────────────────
+
+        let _hovRow = null;
+        const _setHovRow = tr => {
+            if (_hovRow === tr) return;
+            if (_hovRow) _hovRow.classList.remove('tmtc-drag-over');
+            _hovRow = tr;
+            if (tr) tr.classList.add('tmtc-drag-over');
+        };
+        tblWrap.addEventListener('dragover', e => {
+            if (!drag.state) return;
+            const tr = e.target.closest('tr[data-bench-role], tr[data-player-id]');
+            if (tr) { e.preventDefault(); _setHovRow(tr); }
+        });
+        tblWrap.addEventListener('dragleave', e => {
+            if (_hovRow && !tblWrap.contains(e.relatedTarget)) _setHovRow(null);
+        });
+
+        // ── Drag: drop ──────────────────────────────────────────────────────
+
+        tblWrap.addEventListener('drop', async e => {
+            _setHovRow(null);
+            const benchTr = e.target.closest('tr[data-bench-role]');
+            const playerTr = !benchTr && e.target.closest('tr[data-player-id]');
+            if (!benchTr && !playerTr) return;
+            e.preventDefault();
+            fieldApi.clearDragVisuals();
+            const ds = drag.state; drag.state = null;
+            if (!ds) return;
+
+            const player = players_by_id[ds.pid];
+            if (!player) return;
+
+            let targetSlot, targetPlayer;
+            if (benchTr) {
+                targetSlot = benchTr.dataset.benchRole;
+                targetPlayer = getPlayerAtSlot(targetSlot);
+            } else {
+                targetPlayer = players_by_id[playerTr.dataset.playerId];
+                if (!targetPlayer) { refresh(); return; }
+                targetSlot = getPlayerSlot(targetPlayer);
+                if (!targetSlot) { refresh(); return; } // out-player row, no-op
+            }
+
+            if (targetPlayer && String(targetPlayer.id) === ds.pid) { refresh(); return; }
+
+            if (CLUB_COUNTRY) {
+                const projected = countSquadForeigners()
+                    + (isForeigner(player) && !getPlayerSlot(player) ? 1 : 0)
+                    - (targetPlayer && isForeigner(targetPlayer) ? 1 : 0);
+                if (projected > 5) {
+                    TmAlert.show({ message: 'Foreign player limit is 5 (squad of 16)', tone: 'warning', duration: 3000 });
+                    return;
+                }
+            }
+
+            const sourceSlot = getPlayerSlot(player);
+            const changed = {};
+            setPlayerSlot(player, targetSlot);
+            changed[ds.pid] = targetSlot;
+            if (targetPlayer) {
+                setPlayerSlot(targetPlayer, sourceSlot);
+                changed[String(targetPlayer.id)] = sourceSlot ?? 'out';
+            }
+
+            if (isFieldSlot(targetSlot)) {
+                fieldApi.normalizeAll(changed);
+            } else if (sourceSlot && isFieldSlot(sourceSlot)) {
+                fieldApi.normalizeZone(POSKEY_TO_ZONE[sourceSlot], changed);
+            }
+
+            ctx.refreshAll();
+            await save(changed);
+        });
+    } // end if (!ctx.readOnly)
 
     function refresh() {
         tblWrap?.refresh({ items: sortedPlayers() });

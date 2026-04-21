@@ -58,22 +58,6 @@ function injectStyles() {
             display: flex; flex-direction: column;
             overflow-y: auto; padding: 0 4px;
         }
-
-        /* ── Lineups tab wrap ── */
-        .mp-lu-tab-wrap {
-            height: 100%;
-        }
-        .mp-lu-tab-wrap .mp-lu-tactics-col {
-            flex: 0 0 auto;
-            height: 100%;
-            width: auto;
-            aspect-ratio: 2 / 3;
-        }
-        .mp-lu-tab-wrap .mp-lu-tactics-col .tmtc-field {
-            height: 100%;
-            width: auto;
-            aspect-ratio: 2 / 3;
-        }
     `;
     document.head.appendChild(s);
 }
@@ -195,8 +179,17 @@ export const TmMatchLineup = {
         // ── Lineups-tab instances (separate DOM, shared posMap) ───────
         const luHomeField = TmMatchField.create(homePosMap, match.home.lineup);
         const luAwayField = TmMatchField.create(awayPosMap, match.away.lineup);
-        const luHomeList  = TmMatchSquadList.create('home', match.home.lineup);
-        const luAwayList  = TmMatchSquadList.create('away', match.away.lineup);
+
+        const luHomeCtx = makeMatchSquadCtx(match.home.lineup, 'home');
+        const luAwayCtx = makeMatchSquadCtx(match.away.lineup, 'away');
+
+        const luHomeListEl = document.createElement('div');
+        luHomeListEl.className = 'mp-lu-col mp-lu-col-home';
+        const luAwayListEl = document.createElement('div');
+        luAwayListEl.className = 'mp-lu-col mp-lu-col-away';
+
+        const luHomeSquad = mountTacticsSquadList(luHomeListEl, luHomeCtx, NOOP_FIELD_API);
+        const luAwaySquad = mountTacticsSquadList(luAwayListEl, luAwayCtx, NOOP_FIELD_API);
 
         const starterHomePids = new Set(match.home.lineup.filter(p => POSITION_MAP[(p.position||'').toLowerCase()]).map(p => String(p.id)));
         const starterAwayPids = new Set(match.away.lineup.filter(p => POSITION_MAP[(p.position||'').toLowerCase()]).map(p => String(p.id)));
@@ -244,15 +237,18 @@ export const TmMatchLineup = {
             luHomeField.refresh();
             luAwayField.refresh();
 
-            const applyStates = (playerEls, starterPids) => {
-                for (const [pid, el] of playerEls) {
-                    TmPlayerRow.setState(el, playerSlot.has(pid)
-                        ? (starterPids.has(pid) ? 'active' : 'sub-in')
-                        : (starterPids.has(pid) ? 'off'    : 'bench'));
-                }
+            const makeStateOf = (pitchPids, starterPids) => p => {
+                const pid = String(p.id);
+                return pitchPids.has(pid)
+                    ? (starterPids.has(pid) ? 'active' : 'sub-in')
+                    : (starterPids.has(pid) ? 'off'    : 'bench');
             };
-            applyStates(luHomeList.playerEls, starterHomePids);
-            applyStates(luAwayList.playerEls, starterAwayPids);
+            const homePitchPids = new Set([...playerSlot].filter(([, s]) => s.startsWith('home:')).map(([pid]) => pid));
+            const awayPitchPids = new Set([...playerSlot].filter(([, s]) => s.startsWith('away:')).map(([pid]) => pid));
+            luHomeCtx.stateOf = makeStateOf(homePitchPids, starterHomePids);
+            luAwayCtx.stateOf = makeStateOf(awayPitchPids, starterAwayPids);
+            luHomeSquad.refresh();
+            luAwaySquad.refresh();
         }
 
         // Initial render at minute 0 (all starters on pitch)
@@ -260,8 +256,8 @@ export const TmMatchLineup = {
 
         return {
             homePanel: { el: homePanel }, awayPanel: { el: awayPanel },
-            luHomeListEl: luHomeList.el, luHomeFieldEl: luHomeField.el,
-            luAwayFieldEl: luAwayField.el, luAwayListEl: luAwayList.el,
+            luHomeListEl, luHomeFieldEl: luHomeField.el,
+            luAwayFieldEl: luAwayField.el, luAwayListEl,
             update,
         };
     },

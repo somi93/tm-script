@@ -1,12 +1,12 @@
 import { POSITION_MAP, BENCH_SLOTS } from '../../constants/player.js';
 import { TmPlayerRow } from '../shared/tm-player-row.js';
-import { TmPosition }  from '../../lib/tm-position.js';
+import { TmPosition } from '../../lib/tm-position.js';
 
 'use strict';
 
 const isStarter = p => !!POSITION_MAP[(p.position || '').toLowerCase()];
-const isBench   = p => BENCH_SLOTS.includes((p.position || '').toLowerCase());
-const posKey    = p => (p.position || p.fp || '').toLowerCase().split(',')[0].replace(/^sub\d*/i, '');
+const isBench = p => BENCH_SLOTS.includes((p.position || '').toLowerCase());
+const posKey = p => (p.position || p.fp || '').toLowerCase().split(',')[0].replace(/^sub\d*/i, '');
 
 /**
  * TmMatchSquadList — player list column for the match lineup panel.

@@ -8,7 +8,6 @@ import { fetchRawPlayers } from '../models/club_new.js';
 import { runSyncPipeline } from '../workflows/player-history/sync-pipeline.js';
 import { TmProgress } from '../components/shared/tm-progress.js';
 import { injectPlayersPageStyles } from './players-styles.js';
-import { TmSquadTable } from '../components/squad/tm-squad-table.js';
 import { CountryFlag } from '../components/shared/country-flag.js';
 
 const parseSquadPageSkillChanges = (doc = document) => {
@@ -215,7 +214,7 @@ export function initPlayersPage(main) {
                 render: (_, item) => {
                     const num = item.number ?? item.no ?? '';
                     const reserves = item.b ? 1 : 0;
-                    return `<span class="tmvu-players-no" onclick="pop_player_number(${item.id},${Number(num)||0},&quot;${escapeHtml(item.name)}&quot;,${reserves})" title="Change number">${escapeHtml(String(num || ''))}</span>`;
+                    return `<span class="tmvu-players-no" onclick="pop_player_number(${item.id},${Number(num) || 0},&quot;${escapeHtml(item.name)}&quot;,${reserves})" title="Change number">${escapeHtml(String(num || ''))}</span>`;
                 },
             },
             {
@@ -491,7 +490,7 @@ export function initPlayersPage(main) {
             weeklyChanges: skillChangesMap.get(player.id) || null,
         }));
 
-        console.group('[Step 2] Players loaded — total:', allPlayers.length);
+        console.group('[Step 2] Players loaded — total:', allPlayers.map(p => p.weeklyChanges));
         console.log(allPlayers);
         console.groupEnd();
 

@@ -1,10 +1,13 @@
 import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmUI } from '../components/shared/tm-ui.js';
+import { TmAlert } from '../components/shared/tm-alert.js';
+import { TmConst } from '../lib/tm-constants.js';
 import { injectTacticsStyles } from '../components/tactics/tm-tactics-styles.js';
 import { mountTacticsLineup } from '../components/tactics/tm-tactics-lineup.js';
 import { mountTacticsPanel } from '../components/tactics/tm-tactics-panel.js';
 import { mountTacticsOrders } from '../components/tactics/tm-tactics-orders.js';
 import { TmTacticsModel } from '../models/tactics.js';
+import { TmTacticsService, CLUB_COUNTRY, isForeigner } from '../services/tactics.js';
 
 'use strict';
 
@@ -26,6 +29,20 @@ function getTacticsTeamMode(pathname = window.location.pathname) {
 
 function getTacticsRoute(pathname = window.location.pathname, teamMode = getTacticsTeamMode(pathname)) {
     return teamMode === 'reserves' ? '/tactics/reserves/' : '/tactics/';
+}
+
+// Rebuild the full assoc object expected by the TM API save endpoint.
+function buildAssocForSave(tactics) {
+    const result = {};
+    for (const pk of Object.keys(TmConst.POSITION_MAP)) result[pk] = 0;
+    for (const p of tactics.players) {
+        const slot = p.positions?.find(pos => pos.playing)?.key ?? null;
+        if (slot) result[slot] = p.id;
+    }
+    for (const [role, pid] of Object.entries(tactics.specialRoles)) {
+        if (pid != null) result[role] = pid;
+    }
+    return result;
 }
 
 // ── Capture native setting values before page replacement ───────────────────
@@ -134,7 +151,19 @@ export async function initTacticsPage(main) {
     TmUI.setActive?.(teamTabs, activeTeamTab);
     rightSwitch.appendChild(teamTabs);
 
-    const lineupApi = mountTacticsLineup(leftPanel, tactics, { ...opts, squadContainer: midPanel });
+    const lineupApi = mountTacticsLineup(leftPanel, tactics, {
+        ...opts, squadContainer: midPanel,
+        CLUB_COUNTRY, isForeigner,
+        async onSave(changed) {
+            try {
+                await TmTacticsService.postLineupSave(buildAssocForSave(tactics), changed, reserves, national, miniGameId);
+                TmAlert.show({ message: 'Saved', tone: 'success' });
+            } catch {
+                TmAlert.show({ message: 'Save failed', tone: 'error' });
+            }
+        },
+    });
+    lineupApi.getAssignment = () => buildAssocForSave(tactics);
     const panelApi  = mountTacticsPanel(statsPanel, tactics, opts, lineupApi);
     mountTacticsOrders(ordersHost, tactics, opts);
 

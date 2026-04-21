@@ -156,7 +156,7 @@ const fillSkillsForward = (player) => {
     }
 
     let curSkills = records[skillsAnchorKey].skills.map(Number);
-
+    console.log(monthKeys);
     for (let i = anchorIdx + 1; i < monthKeys.length; i++) {
         const key = monthKeys[i];
         const record = records[key];
@@ -178,6 +178,7 @@ const fillSkillsForward = (player) => {
                 .filter(idx => idx >= 0);
             if (upIdxs.length > 0 || downIdxs.length > 0) {
                 gain = new Array(N).fill(0);
+                console.log(`Applying weeklyChanges for ${player.name} at ${key}:`, wc.skillChanges, upIdxs, downIdxs);
                 if (upIdxs.length > 0 && downIdxs.length > 0) {
                     // nominal: every changed skill gets ±0.10
                     // excess vs nominal goes to ups (if positive) or downs (if negative)
@@ -264,6 +265,9 @@ const fillSkillsForward = (player) => {
  * Mutates players in-place.
  */
 export const attachSkillsAnchor = (players) => {
+    players.forEach(player => {
+        console.log(player.name, player.monthKeys);
+    })
     for (const player of players) {
         if (!player.needSync) continue;
         player.skillsAnchorKey = findSkillsAnchor(player.monthKeys, player.records);

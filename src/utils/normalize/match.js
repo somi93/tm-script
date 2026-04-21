@@ -70,6 +70,15 @@ export const normalizeRawMatchClub = (rawClub) => ({
  */
 const applyMatchContext = (player, p, captainId) => {
     player.position   = p.position || null;
+    // Reflect match slot in positions[] so getPlayerSlot() works (same pattern as tactics)
+    if (player.position) {
+        player.positions = player.positions || [];
+        for (const pos of player.positions) pos.playing = false;
+        const key = player.position.toLowerCase();
+        let pos = player.positions.find(pos => pos.key === key);
+        if (!pos) player.positions.push(pos = { key });
+        pos.playing = true;
+    }
     player.captain    = Number(p.player_id) === captainId;
     player.rating     = (typeof p.rating === 'number' && p.rating > 0) ? p.rating : null;
     player.mom        = p.mom ?? 0;

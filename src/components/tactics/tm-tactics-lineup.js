@@ -1,6 +1,4 @@
 import { TmConst } from '../../lib/tm-constants.js';
-import { TmAlert } from '../shared/tm-alert.js';
-import { TmTacticsService, CLUB_COUNTRY, isForeigner } from '../../services/tactics.js';
 import { mountTacticsField } from './tm-tactics-field.js';
 import { mountTacticsSquadList } from './tm-tactics-squad-list.js';
 
@@ -15,7 +13,11 @@ const { BENCH_SLOTS, SPECIAL_SLOTS } = TmConst;
  * @param {object}      opts     � { reserves, national, miniGameId, squadContainer? }
  */
 export function mountTacticsLineup(container, tactics, opts = {}) {
-    const { reserves = 0, national = 0, miniGameId = 0 } = opts;
+    const {
+        CLUB_COUNTRY = null, isForeigner = () => false,
+        squadContainer = null,
+        onSave = async () => {},
+    } = opts;
     const { players, specialRoles } = tactics;
     const players_by_id = Object.fromEntries(players.map(p => [String(p.id), p]));
 
@@ -42,20 +44,6 @@ export function mountTacticsLineup(container, tactics, opts = {}) {
         return players.filter(p => getPlayerSlot(p) && isForeigner(p)).length;
     }
 
-    // Rebuild the full assoc object expected by the TM API save endpoint.
-    function buildAssocForSave() {
-        const result = {};
-        for (const pk of Object.keys(TmConst.POSITION_MAP)) result[pk] = 0;
-        for (const p of players) {
-            const slot = getPlayerSlot(p);
-            if (slot) result[slot] = p.id;
-        }
-        for (const [role, pid] of Object.entries(specialRoles)) {
-            if (pid != null) result[role] = pid;
-        }
-        return result;
-    }
-
     // == Change listeners + save ==========================================
 
     const changeListeners = [];
@@ -63,13 +51,8 @@ export function mountTacticsLineup(container, tactics, opts = {}) {
     const drag = { state: null };
 
     async function save(changed) {
-        try {
-            await TmTacticsService.postLineupSave(buildAssocForSave(), changed, reserves, national, miniGameId);
-            TmAlert.show({ message: 'Saved', tone: 'success' });
-            notifyChange();
-        } catch {
-            TmAlert.show({ message: 'Save failed', tone: 'error' });
-        }
+        await onSave(changed);
+        notifyChange();
     }
 
     // == Layout DOM =======================================================
@@ -82,10 +65,9 @@ export function mountTacticsLineup(container, tactics, opts = {}) {
     fieldCol.className = 'tmtc-field-col';
     layout.appendChild(fieldCol);
 
-    const externalSquadContainer = opts.squadContainer || null;
     const squadCol = document.createElement('div');
     squadCol.className = 'tmtc-squad-col';
-    if (!externalSquadContainer) layout.appendChild(squadCol);
+    if (!squadContainer) layout.appendChild(squadCol);
 
     // == Shared context ===================================================
 
@@ -102,7 +84,7 @@ export function mountTacticsLineup(container, tactics, opts = {}) {
     // == Mount components =================================================
 
     const fieldApi = mountTacticsField(fieldCol, ctx);
-    const squadApi = mountTacticsSquadList(externalSquadContainer || squadCol, ctx, fieldApi);
+    const squadApi = mountTacticsSquadList(squadContainer || squadCol, ctx, fieldApi);
     ctx.refreshAll = () => { fieldApi.refresh(); squadApi.refresh(); };
     ctx.clearDragVisuals = fieldApi.clearDragVisuals;
 
@@ -217,7 +199,6 @@ export function mountTacticsLineup(container, tactics, opts = {}) {
     return {
         refresh: ctx.refreshAll,
         applyAssignment,
-        getAssignment: buildAssocForSave,
         getActiveKeys: getOccupiedFieldKeys,
         subscribe: fn => {
             changeListeners.push(fn);
