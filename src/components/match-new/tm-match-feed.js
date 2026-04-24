@@ -44,6 +44,12 @@ const injectStyles = () => {
             padding: 0 4px; white-space: nowrap; flex-shrink: 0;
         }
         .mp-feed-text { color: var(--tmu-text-main); }
+
+        .mp-feed-play {
+            display: flex; flex-direction: column;
+            border-left: 2px solid var(--tmu-border-soft-alpha);
+            padding: 2px 0 2px 8px;
+        }
     `;
     document.head.appendChild(s);
 };
@@ -111,4 +117,27 @@ export const TmMatchFeed = {
 
         return { el, sync, clear };
     },
+
+    /**
+     * Render all commentary lines of a single play as a feed-styled block.
+     * @returns {HTMLElement}
+     */
+    renderPlay(play, min) {
+        injectStyles();
+        const block = document.createElement('div');
+        block.className = 'mp-feed-play';
+        for (const clip of (play.clips || [])) {
+            for (const line of (clip.text || [])) {
+                if (!line.trim()) continue;
+                const div = document.createElement('div');
+                div.className = 'mp-feed-line';
+                div.innerHTML =
+                    `<span class="mp-feed-min">${min}'</span>` +
+                    `<span class="mp-feed-text">${line.replace(/\[\w+\]/g, '').trim()}</span>`;
+                block.appendChild(div);
+            }
+        }
+        return block;
+    },
+
 };

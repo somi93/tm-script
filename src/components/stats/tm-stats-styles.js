@@ -206,10 +206,6 @@ export const TmStatsStyles = {
             .tsa-card-host .tmu-cstat.tsa-stat-compare {
                 padding: var(--tmu-space-sm) 0;
             }
-            .tsa-stat-divider {
-                height: 1px; margin: 0;
-                background: linear-gradient(90deg, transparent, var(--tmu-border-embedded) 20%, var(--tmu-border-embedded) 80%, transparent);
-            }
 
             /* ── Section titles ── */
             .tsa-section-title {

@@ -126,11 +126,14 @@ export const TmMatchHeader = {
         el.appendChild(closeBtn);
 
         // ── Score row ─────────────────────────────────────────────────
+        const homeLogoSrc = match.home.club.logo || '';
+        const awayLogoSrc = match.away.club.logo || '';
+
         const headRow = document.createElement('div');
         headRow.className = 'mp-head-row';
         headRow.innerHTML = `
             <div class="mp-team home">
-                <img src="/pics/club_logos/${homeId}.png" class="mp-team-logo">
+                <img src="${homeLogoSrc}" class="mp-team-logo"${!homeLogoSrc ? ' style="display:none"' : ''}>
                 <div class="mp-team-info">
                     <span class="mp-team-name">${homeName}</span>
                     <div class="mp-team-chips"></div>
@@ -141,7 +144,7 @@ export const TmMatchHeader = {
                 <div class="mp-minute">0:00</div>
             </div>
             <div class="mp-team away">
-                <img src="/pics/club_logos/${awayId}.png" class="mp-team-logo">
+                <img src="${awayLogoSrc}" class="mp-team-logo"${!awayLogoSrc ? ' style="display:none"' : ''}>
                 <div class="mp-team-info">
                     <span class="mp-team-name">${awayName}</span>
                     <div class="mp-team-chips"></div>

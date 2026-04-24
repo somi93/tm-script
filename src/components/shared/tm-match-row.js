@@ -224,8 +224,10 @@ const bindScopeNavigation = (scope) => {
     scope.addEventListener('click', (event) => {
         const row = event.target.closest('.tmvu-match-row[data-mid]');
         if (!row || !scope.contains(row) || event.target.closest('a')) return;
-        const matchId = row.dataset.mid;
-        if (matchId) window.location.href = `/matches/${matchId}/`;
+        const mid = row.dataset.mid;
+        if (!mid) return;
+        const urlPath = /^nt(\d+)$/.test(mid) ? 'nt/' + mid.slice(2) : mid;
+        window.location.href = `/matches/${urlPath}/`;
     });
 };
 

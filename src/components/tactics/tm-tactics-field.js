@@ -207,7 +207,7 @@ export function mountTacticsField(container, ctx) {
             const moodPenalty = TmPosition.moodPenalty(player, posKey);
             slotEl.innerHTML = `
                 <span class="tmtc-slot-no">${escHtml(slotRating)}</span>
-                <span class="tmtc-slot-name">${escHtml(player.lastname || player.name || '')}${playerStatusIconsHtml(player)}</span>
+                <span class="tmtc-slot-name">${escHtml(player.lastname || player.name || '')}${player.captain ? '<span class="tmtc-capt-badge">C</span>' : ''}${playerStatusIconsHtml(player)}</span>
                 ${TmPosition.chip([posKey || ''])}
                 <span class="tmtc-slot-meta">
                     <span class="tmtc-slot-rec">${TmStars.recommendation(slotRec, 'tmtc-rec-stars tmtc-rec-stars-sm') || '<span class="tmtc-slot-rec-empty">—</span>'}</span>

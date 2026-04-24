@@ -3,7 +3,9 @@ import { TmUI } from '../components/shared/tm-ui.js';
 import { TmAlert } from '../components/shared/tm-alert.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { injectTacticsStyles } from '../components/tactics/tm-tactics-styles.js';
-import { mountTacticsLineup } from '../components/tactics/tm-tactics-lineup.js';
+import { mountTacticsField } from '../components/tactics/tm-tactics-field.js';
+import { mountTacticsSquadList } from '../components/tactics/tm-tactics-squad-list.js';
+import { createTacticsCtx, mountTacticsSpecialRoles, applyTacticsAssignment } from '../components/tactics/tm-tactics-ctx.js';
 import { mountTacticsPanel } from '../components/tactics/tm-tactics-panel.js';
 import { mountTacticsOrders } from '../components/tactics/tm-tactics-orders.js';
 import { TmTacticsModel } from '../models/tactics.js';
@@ -151,20 +153,38 @@ export async function initTacticsPage(main) {
     TmUI.setActive?.(teamTabs, activeTeamTab);
     rightSwitch.appendChild(teamTabs);
 
-    const lineupApi = mountTacticsLineup(leftPanel, tactics, {
-        ...opts, squadContainer: midPanel,
-        CLUB_COUNTRY, isForeigner,
-        async onSave(changed) {
-            try {
-                await TmTacticsService.postLineupSave(buildAssocForSave(tactics), changed, reserves, national, miniGameId);
-                TmAlert.show({ message: 'Saved', tone: 'success' });
-            } catch {
-                TmAlert.show({ message: 'Save failed', tone: 'error' });
-            }
-        },
-    });
-    lineupApi.getAssignment = () => buildAssocForSave(tactics);
-    const panelApi  = mountTacticsPanel(statsPanel, tactics, opts, lineupApi);
+    const lineupApi = (() => {
+        const fieldCol = document.createElement('div');
+        fieldCol.className = 'tmtc-field-col';
+        leftPanel.appendChild(fieldCol);
+
+        const ctx = createTacticsCtx(tactics, {
+            CLUB_COUNTRY, isForeigner,
+            async onSave(changed) {
+                try {
+                    await TmTacticsService.postLineupSave(buildAssocForSave(tactics), changed, reserves, national, miniGameId);
+                    TmAlert.show({ message: 'Saved', tone: 'success' });
+                } catch {
+                    TmAlert.show({ message: 'Save failed', tone: 'error' });
+                }
+            },
+        });
+
+        const fieldApi = mountTacticsField(fieldCol, ctx);
+        const squadApi = mountTacticsSquadList(midPanel, ctx, fieldApi);
+        ctx.refreshAll = () => { fieldApi.refresh(); squadApi.refresh(); };
+        ctx.rebuildAll = () => { fieldApi.rebuild(); squadApi.refresh(); };
+        ctx.clearDragVisuals = fieldApi.clearDragVisuals;
+
+        return {
+            refresh: ctx.refreshAll,
+            getAssignment: () => buildAssocForSave(tactics),
+            getActiveKeys: ctx.getOccupiedFieldKeys,
+            applyAssignment: slotMap => applyTacticsAssignment(ctx, slotMap),
+            mountSpecialRoles: target => mountTacticsSpecialRoles(target, ctx),
+        };
+    })();
+    const panelApi = mountTacticsPanel(statsPanel, tactics, opts, lineupApi);
     mountTacticsOrders(ordersHost, tactics, opts);
 
     lineupApi.refresh();

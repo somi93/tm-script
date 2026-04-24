@@ -222,7 +222,8 @@ function fillSubstitutes(baseFBP, players_by_id) {
 export function mountTacticsPanel(container, tactics, opts, lineupApi) {
     const { players = [] } = tactics;
     const players_by_id = Object.fromEntries(players.map(p => [String(p.id), p]));
-    const { getAssignment, getActiveKeys, applyAssignment } = lineupApi;
+    const { getAssignment, getActiveKeys } = lineupApi;
+    const applyAssignment = slotMap => applyTacticsAssignment(lineupApi.ctx, slotMap);
 
     // Pick Best 11
     const pickBtn = TmButton.button({

@@ -201,7 +201,7 @@ export const TmMatchService = {
                     clips[clips.length - 1].actions.push({ action: 'setpiece', by: evt.set_piece, style: gPrefix });
                 if (evt.mentality_change && clips.length > 0)
                     clips[clips.length - 1].actions.push({ action: 'mentality_change', team: String(evt.mentality_change.team), mentality: Number(evt.mentality_change.mentality) });
-                plays.push({ team: evt.club, style: gPrefix, outcome, clips, reportEventIndex, severity: evt.severity });
+                plays.push({ team: evt.club, style: gPrefix, outcome, clips, segments: clips, reportEventIndex, severity: evt.severity });
             });
 
             if (plays.length) result[String(min)] = plays;
@@ -250,6 +250,11 @@ export const TmMatchService = {
         this.normalizeReport(mData.report);
         mData.plays = this.buildNormalizedPlays(mData.report, lineup);
 
+        // Expose match-shape accessors so a single snapshot function works on both
+        // this object and the primary match object from normalizeRawMatch.
+        mData.home = { club: { id: mData.teams.home.id, name: mData.teams.home.club_name }, playerIds: mData.homePlayerSet, lineup: mData.teams.home.lineup };
+        mData.away = { club: { id: mData.teams.away.id, name: mData.teams.away.club_name }, playerIds: mData.awayPlayerSet, lineup: mData.teams.away.lineup };
+
         // Fire-and-forget: enrich lineup players with profile data
         const allPids = new Set(mData.allPlayers.map(p => String(p.id)));
         const homeClubId = mData.teams.home.id;
@@ -263,7 +268,7 @@ export const TmMatchService = {
                     fetchRawPlayers(awayClubId).catch(() => null),
                 ]);
 
-                console.log('Squad data fetched', { homeData, awayData });
+
                 // Build pid → normalized player map from squad results
                 const squadMap = {};
                 [homeData, awayData].forEach(squad => {
@@ -315,10 +320,6 @@ export const TmMatchService = {
      * @param {string|number} matchId
      * @returns {Promise<object|null>}
      */
-    async fetchMatchLite(matchId) {
-        return this.fetchMatch(matchId, { dbSync: false });
-    },
-
     /**
      * Fetch a match via the standard match normalization path and return
      * the stats-ready payload consumed by the club statistics page.

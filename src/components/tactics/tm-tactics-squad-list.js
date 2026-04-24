@@ -15,7 +15,7 @@ const { BENCH_SLOTS, POSKEY_TO_ZONE } = TmConst;
  * @param {object}      ctx      — shared context from mountTacticsLineup
  * @param {object}      fieldApi — { normalizeZone, renderSlot, setDragging, clearDragVisuals, refresh }
  */
-export function mountTacticsSquadList(container, ctx, fieldApi) {
+export function mountTacticsSquadList(container, ctx, fieldApi, { compact = false } = {}) {
     const {
         players, players_by_id,
         CLUB_COUNTRY, isForeigner, countSquadForeigners,
@@ -93,7 +93,7 @@ export function mountTacticsSquadList(container, ctx, fieldApi) {
                 if (!player) return;
                 const slot = getPlayerSlot(player);
                 const posKey = isFieldSlot(slot) ? slot : null;
-                const row = TmPlayerRow.build(player, { posKey, state });
+                const row = TmPlayerRow.build(player, { posKey, state, compact });
                 if (benchRole) {
                     const num = benchRole.replace('sub', '');
                     const posWrap = row.querySelector('.tm-pr-pos');

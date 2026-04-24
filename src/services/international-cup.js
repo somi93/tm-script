@@ -88,7 +88,7 @@ function findNearestStageTitle(node, boundaryRoot) {
     return '';
 }
 
-function parseSections(doc) {
+export function parseSections(doc) {
     const root = doc.querySelector(MAIN_BOX_SELECTOR) || doc.body || doc.documentElement;
     const matchLists = Array.from(root.querySelectorAll(MATCH_LIST_SELECTOR)).filter(node => {
         return !!node.querySelector('.hometeam a[club_link], .hometeam a[href*="/club/"]')
@@ -111,7 +111,7 @@ function parseSections(doc) {
     return Array.from(groupedSections.values()).filter(section => section.nodes.length);
 }
 
-function classifyStage(title, passedGroupStage) {
+export function classifyStage(title, passedGroupStage) {
     const text = cleanText(title).toLowerCase();
     if (/group stage|groups?/.test(text)) return 'group';
     if (/qualification|qualifying|play\s*-?\s*off|preliminary/.test(text)) return 'qualification';

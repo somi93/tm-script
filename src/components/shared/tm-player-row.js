@@ -68,13 +68,13 @@ export function injectTmPlayerRowStyles() {
         .tm-pr-rtn { min-width: 24px; text-align: right; }
 
         /* states */
-        .tm-pr[data-state="active"] { opacity: 1; }
-        .tm-pr[data-state="sub-in"] { opacity: 1; }
         .tm-pr[data-state="sub-in"] .tm-pr-icon { color: #4caf50; }
-        .tm-pr[data-state="bench"]  { opacity: 0.4; }
-        .tm-pr[data-state="off"]    { opacity: 0.4; }
-        .tm-pr[data-state="off"] .tm-pr-name  { color: var(--tmu-danger); }
         .tm-pr[data-state="off"] .tm-pr-icon  { color: var(--tmu-danger); }
+        /* badges */
+        .tm-pr-badge { font-size: 10px; font-weight: 800; line-height: 1; flex-shrink: 0; padding: 0 2px; }
+        .tm-pr-badge-yc { color: #f5c518; }
+        .tm-pr-badge-rc { color: var(--tmu-danger); }
+        .tm-pr-badge-inj { color: var(--tmu-danger); font-size: 11px; }
     `;
     document.head.appendChild(s);
 }
@@ -114,7 +114,7 @@ export const TmPlayerRow = {
      *   @param {string}  [opts.state]   — 'active' | 'bench' | 'off' | 'sub-in'  (default: 'active')
      * @returns {HTMLDivElement}
      */
-    build(player, { posKey, state = 'active' } = {}) {
+    build(player, { posKey, state = 'active', compact = false } = {}) {
         injectTmPlayerRowStyles();
 
         // Resolve the actual playing slot — explicit posKey or player.position (match ctx).
@@ -155,6 +155,30 @@ export const TmPlayerRow = {
 
         el.append(bar, no, posWrap, name);
 
+        // Badges: injury / card status
+        const ban = player.ban;
+        const injury = player.injury && player.injury !== '0' && player.injury !== 0 ? player.injury : null;
+        if (injury) {
+            const b = document.createElement('span');
+            b.className = 'tm-pr-badge tm-pr-badge-inj';
+            b.title = typeof injury === 'string' ? injury : 'Injured';
+            b.textContent = '✚';
+            el.appendChild(b);
+        } else if (ban && ban !== '0') {
+            const b = document.createElement('span');
+            if (ban === 'g') {
+                b.className = 'tm-pr-badge tm-pr-badge-yc';
+                b.title = 'Yellow card suspension';
+                b.textContent = '▬';
+            } else {
+                b.className = 'tm-pr-badge tm-pr-badge-rc';
+                const matches = ban.replace('r', '');
+                b.title = `Red card — ${matches} match ban`;
+                b.textContent = `■${matches}`;
+            }
+            el.appendChild(b);
+        }
+
         // Stats: resolve rec/r5/routine from already-normalized player.positions[]
         const posId = slot ? TmConst.POSITION_MAP[slot]?.id : null;
         const posRating = posId != null
@@ -162,12 +186,12 @@ export const TmPlayerRow = {
             : (player.positions?.find(p => p.preferred) ?? player.positions?.[0]);
         const rec = posRating?.rec != null && Number.isFinite(+posRating.rec) ? +posRating.rec : null;
         const r5  = posRating?.r5  != null && Number.isFinite(+posRating.r5)  ? +posRating.r5  : null;
-        const rtn = player.routine > 0 && Number.isFinite(+player.routine) ? +player.routine : null;
+        const rtn = player.routine != null && Number.isFinite(+player.routine) ? +player.routine : null;
 
         if (rec != null || r5 != null || rtn != null) {
             const stats = document.createElement('span');
             stats.className = 'tm-pr-stats';
-            if (rec != null) {
+            if (!compact && rec != null) {
                 const s = document.createElement('span');
                 s.className = 'tm-pr-stars';
                 s.innerHTML = TmStars.recommendation(rec, '') || '';
@@ -185,7 +209,7 @@ export const TmPlayerRow = {
                 rv.textContent = TmUtils.formatR5(r5);
                 stats.appendChild(rv);
             }
-            if (rtn != null) {
+            if (!compact && rtn != null) {
                 const rv = document.createElement('span');
                 rv.className = 'tm-pr-rtn';
                 rv.style.color = TmUtils.getColor(rtn, TmConst.RTN_THRESHOLDS);

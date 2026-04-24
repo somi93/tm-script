@@ -13,7 +13,7 @@ import { scoreAt }  from './tm-match-header.js';
 // ── Style injection ───────────────────────────────────────────────────────────
 
 const REPORT_STYLE_ID = 'mp-report-style';
-const ensureReportStyles = () => {
+const ensureReportStylesInternal = () => {
     if (document.getElementById(REPORT_STYLE_ID)) return;
     const s = document.createElement('style');
     s.id = REPORT_STYLE_ID;
@@ -161,6 +161,9 @@ const buildPlayHtml = (play, min, match, nameMap) => {
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
+export const ensureReportStyles = ensureReportStylesInternal;
+export { buildPlayHtml };
+
 export const TmMatchReportNew = {
     /**
      * @param {object} match  — normalized match
@@ -168,7 +171,7 @@ export const TmMatchReportNew = {
      * @returns {{ el: HTMLElement, update(state): void }}
      */
     create(match, state = null) {
-        ensureReportStyles();
+        ensureReportStylesInternal();
 
         const nameMap = {};
         [...match.home.lineup, ...match.away.lineup].forEach(p => {

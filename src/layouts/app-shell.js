@@ -656,7 +656,7 @@ function initCurrentPage() {
     if (/^\/league\//.test(currentPath)) {
         initLeaguePage(main);
     }
-    if (/^\/matches\/\d+/.test(currentPath)) {
+    if (/^\/matches\/(?:nt\/)?\d+/.test(currentPath)) {
         initMatchPage(main);
     }
     if (/^\/cup\/?$/i.test(currentPath)) {

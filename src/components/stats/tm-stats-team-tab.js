@@ -1,11 +1,7 @@
-import { TmStatsAdvTable } from './tm-stats-adv-table.js';
-import { TmStatsFilterGroup } from './tm-stats-filter-group.js';
 import { TmStatsMatchList } from './tm-stats-match-list.js';
 import { TmStatsTacticDropdown } from './tm-stats-tactic-dropdown.js';
 import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
-import { TmUI } from '../shared/tm-ui.js';
-
-const fix2 = v => (Math.round(v * 100) / 100).toFixed(2);
+import { TmStatsBarsSection } from './tm-stats-bars-section.js';
 const TACTIC_DROPDOWN_GROUPS = {
     our: [
         { filterKey: 'ourFormation', valuesKey: 'ourFormations', label: 'Form', icon: '📋' },
@@ -126,67 +122,29 @@ export const TmStatsTeamTab = {
             { label: 'Goal Diff', value: `${gdSign}${gd}`, valueStyle: `color:${gdColor}` },
         ], { cls: 'tsa-summary-strip', variant: 'boxed', valueFirst: true, align: 'center' });
 
-        // Helper to apply avg/total filter to bar values
-        const bv = (val) => tf === 'average' ? fix2(val / m) : val;
-
-        // Bar stats – For vs Against
-        const barRow = (label, forVal, agVal, suffix) => {
-            const fv = tf === 'average' ? Number(fix2(forVal / m)) : forVal;
-            const av = tf === 'average' ? Number(fix2(agVal / m)) : agVal;
-            const fDisplay = tf === 'average' ? fix2(forVal / m) : forVal;
-            const aDisplay = tf === 'average' ? fix2(agVal / m) : agVal;
-            const sfx = suffix || '';
-            return TmUI.compareStat({
-                label,
-                leftValue: `${fDisplay}${sfx}`,
-                rightValue: `${aDisplay}${sfx}`,
-                leftNumber: fv,
-                rightNumber: av,
-                leftTone: 'for',
-                rightTone: 'against',
-                size: 'sm',
-                cls: 'tsa-stat-compare',
-            });
-        };
-
-        const statLabel = tf === 'average' ? 'Match Statistics — Per Match Average (For vs Against)' : 'Match Statistics (For vs Against)';
-        html += `<div class="tsa-section-title">${statLabel}</div>`;
-
-        html += barRow('Goals', t.goalsFor, t.goalsAgainst);
-        html += '<div class="tsa-stat-divider"></div>';
-        if (t.possCount > 0) {
-            const avgPossFor = Math.round(t.possFor / t.possCount);
-            const avgPossAgainst = Math.round(t.possAgainst / t.possCount);
-            html += barRow('Avg Possession', avgPossFor, avgPossAgainst, '%');
-            html += '<div class="tsa-stat-divider"></div>';
-        }
-        html += barRow('Shots', t.shotsFor, t.shotsAgainst);
-        html += barRow('On Target', t.soTFor, t.soTAgainst);
-        html += '<div class="tsa-stat-divider"></div>';
-        html += barRow('Yellow Cards', t.yellowFor, t.yellowAgainst);
-        html += barRow('Red Cards', t.redFor, t.redAgainst);
-        html += '<div class="tsa-stat-divider"></div>';
-        html += barRow('Free Kicks', t.setPiecesFor, t.setPiecesAgainst);
-        html += barRow('Penalties', t.penaltiesFor, t.penaltiesAgainst);
-
-        // Attacking Styles – Our attacks
-        html += '<div class="tsa-section-title">Our Attacking Styles</div>';
-        html += '<div id="tsa-adv-tbl-for"></div>';
-
-        // Attacking Styles – Opponent attacks
-        html += '<div class="tsa-section-title">Opponent Attacking Styles</div>';
-        html += '<div id="tsa-adv-tbl-against"></div>';
-
-        // ── Match list ──
+        const { html: statsHtml, mountAdvTables } = TmStatsBarsSection.render({
+            bars: {
+                goals:     [t.goalsFor, t.goalsAgainst],
+                poss:      t.possCount > 0 ? [Math.round(t.possFor / t.possCount), Math.round(t.possAgainst / t.possCount)] : null,
+                shots:     [t.shotsFor, t.shotsAgainst],
+                sot:       [t.soTFor, t.soTAgainst],
+                yellow:    [t.yellowFor, t.yellowAgainst],
+                red:       [t.redFor, t.redAgainst],
+                freekicks: [t.setPiecesFor, t.setPiecesAgainst],
+                penalties: [t.penaltiesFor, t.penaltiesAgainst],
+            },
+            advLeft:   opts.getTeamAggFor(),
+            advRight:  opts.getTeamAggAgainst(),
+            leftTone:  'for',
+            rightTone: 'against',
+            tf, mCount: m,
+        });
+        html += statsHtml;
         html += '<div id="tsa-ml"></div>';
 
         body.innerHTML = html;
 
-        // Inject adv-table components
-        const phFor = body.querySelector('#tsa-adv-tbl-for');
-        if (phFor) phFor.replaceWith(TmStatsAdvTable.build(opts.getTeamAggFor(), { tf, mCount: m }));
-        const phAgainst = body.querySelector('#tsa-adv-tbl-against');
-        if (phAgainst) phAgainst.replaceWith(TmStatsAdvTable.build(opts.getTeamAggAgainst(), { tf, mCount: m }));
+        mountAdvTables(body);
         const phMl = body.querySelector('#tsa-ml');
         if (phMl) phMl.replaceWith(TmStatsMatchList.build(opts.getLastFilteredMatches()));
 

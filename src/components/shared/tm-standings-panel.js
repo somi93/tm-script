@@ -23,16 +23,16 @@ function injectStyles() {
         .tsa-std-controls [data-tmu-form-n] { line-height: 1.2; }
         .form-badge {
             display: inline-flex; align-items: center; justify-content: center;
-            width: 16px; height: 16px; border-radius: var(--tmu-space-xs);
-            font-size: var(--tmu-font-xs); font-weight: 700; cursor: pointer;
+            width: 18px; height: 18px; border-radius: 4px;
+            font-size: 10px; font-weight: 700; cursor: pointer;
             transition: opacity 0.15s; text-decoration: none; flex: 0 0 auto;
         }
         .form-badge:hover { opacity: 0.75; }
         .std-form-row { display: inline-flex; align-items: center; gap: 2px; flex-wrap: nowrap; white-space: nowrap; }
-        .form-w { background: var(--tmu-success); color: var(--tmu-text-inverse); }
-        .form-d { background: var(--tmu-warning); color: var(--tmu-text-inverse); }
-        .form-l { background: var(--tmu-danger); color: var(--tmu-text-inverse); }
-        .form-u { background: var(--tmu-info-fill); color: var(--tmu-text-inverse); }
+        .form-w { background: var(--tmu-success); color: #fff; }
+        .form-d { background: var(--tmu-warning); color: #fff; }
+        .form-l { background: var(--tmu-danger); color: #fff; }
+        .form-u { background: var(--tmu-border-soft); color: var(--tmu-text-faint); }
         .std-hover-opp td { background: var(--tmu-success-fill-strong) !important; outline: 1px solid var(--tmu-success); }
         .std-hover-opp td:first-child { border-left: 3px solid var(--tmu-success) !important; }
         .tmu-std-tooltip {

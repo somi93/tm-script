@@ -6,7 +6,7 @@ import { TmPlayerAge } from '../../../lib/tm-player-age.js';
 
 const CSS = `
 .tmpt-tip {
-    display: none; position: fixed; z-index: 9999;
+    display: none; position: fixed; z-index: 10100;
     background: var(--tmu-color-accent);
     isolation: isolate;
     border-radius: var(--tmu-space-sm);

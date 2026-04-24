@@ -245,6 +245,22 @@ export function injectTacticsStyles() {
             text-overflow: ellipsis;
             max-width: 100%;
         }
+        .tmtc-capt-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 12px;
+            height: 12px;
+            margin-left: 3px;
+            border-radius: 2px;
+            background: var(--tmu-warning);
+            color: #000;
+            font-size: 8px;
+            font-weight: 800;
+            line-height: 1;
+            vertical-align: middle;
+            flex-shrink: 0;
+        }
         .tmtc-slot-pos {
             font-key: var(--tmu-font-2xs);
         }
@@ -565,7 +581,6 @@ export function injectTacticsStyles() {
             background: rgba(70,140,200,0.06) !important;
         }
         .tmtc-row-out td {
-            opacity: 0.45;
         }
         .tmtc-sub-badge {
             display: inline-block;

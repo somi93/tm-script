@@ -3952,7 +3952,7 @@ scrollbar-color:var(--tmu-tabs-scrollbar,var(--tmu-tabs-primary-border,#3d6828))
       if (t.possCount > 0) {
         const avgPossFor = Math.round(t.possFor / t.possCount);
         const avgPossAgainst = Math.round(t.possAgainst / t.possCount);
-        html += barRow("Avg Possession", avgPossFor, avgPossAgainst, "%");
+        html += barRow("Possession", avgPossFor, avgPossAgainst, "%");
         html += '<div class="tsa-stat-divider"></div>';
       }
       html += barRow("Shots", t.shotsFor, t.shotsAgainst);

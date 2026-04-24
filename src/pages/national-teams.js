@@ -4,6 +4,8 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmMatchHoverCard } from '../components/shared/tm-match-hover-card.js';
 import { TmMatchRow } from '../components/shared/tm-match-row.js';
 import { TmTournamentCards } from '../components/shared/tm-tournament-cards.js';
+import { TmFixtureMatchRow } from '../components/shared/tm-fixture-match-row.js';
+import { TmFixturesList } from '../components/shared/tm-fixtures-list.js';
 import { mountNationalTeamsSideMenu } from '../components/national-teams/tm-national-teams-side-menu.js';
 import { TmTable } from '../components/shared/tm-table.js';
 import { TmUI } from '../components/shared/tm-ui.js';
@@ -160,7 +162,6 @@ export function initNationalTeamsPage(main) {
 
             .tmvu-nt-standings-wrap a,
             .tmvu-nt-squad-wrap a,
-            .tmvu-nt-fixture-team a,
             .tmvu-nt-trophy-title a {
                 color: var(--tmu-text-strong);
                 text-decoration: none;
@@ -168,7 +169,6 @@ export function initNationalTeamsPage(main) {
 
             .tmvu-nt-standings-wrap a:hover,
             .tmvu-nt-squad-wrap a:hover,
-            .tmvu-nt-fixture-team a:hover,
             .tmvu-nt-trophy-title a:hover {
                 text-decoration: underline;
             }
@@ -180,84 +180,7 @@ export function initNationalTeamsPage(main) {
                 filter: drop-shadow(0 4px 10px var(--tmu-surface-overlay));
             }
 
-            .tmvu-nt-fixture-row {
-                position: relative;
-                display: grid;
-                grid-template-columns: 58px minmax(0, 1fr) auto minmax(0, 1fr) 54px;
-                gap: var(--tmu-space-md);
-                align-items: center;
-                padding: var(--tmu-space-md) var(--tmu-space-md);
-                border-radius: var(--tmu-space-md);
-                border: 1px solid var(--tmu-border-soft-alpha);
-                background: var(--tmu-surface-dark-mid);
-            }
 
-            .tmvu-nt-fixture-date {
-                color: var(--tmu-text-muted);
-                font-size: var(--tmu-font-xs);
-                font-weight: 700;
-            }
-
-            .tmvu-nt-fixture-team {
-                min-width: 0;
-                display: inline-flex;
-                align-items: center;
-                gap: var(--tmu-space-sm);
-                color: var(--tmu-text-main);
-                font-size: var(--tmu-font-sm);
-            }
-
-            .tmvu-nt-fixture-team.home {
-                justify-content: flex-end;
-                text-align: right;
-            }
-
-            .tmvu-nt-fixture-team.away {
-                justify-content: flex-start;
-                text-align: left;
-            }
-
-            .tmvu-nt-fixture-team.is-focus {
-                color: var(--tmu-text-strong);
-                font-weight: 800;
-            }
-
-            .tmvu-nt-fixture-team a.normal {
-                flex: 1 1 auto;
-                min-width: 0;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-            }
-
-            .tmvu-nt-fixture-score a,
-            .tmvu-nt-fixture-score span {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                min-width: 58px;
-                min-height: 30px;
-                padding: 0 var(--tmu-space-md);
-                border-radius: 999px;
-                background: var(--tmu-surface-accent-soft);
-                color: var(--tmu-text-strong);
-                font-size: var(--tmu-font-sm);
-                font-weight: 800;
-                text-decoration: none;
-            }
-
-            .tmvu-nt-fixture-type {
-                justify-self: end;
-                min-width: 40px;
-                padding: var(--tmu-space-xs) var(--tmu-space-sm);
-                border-radius: 999px;
-                background: var(--tmu-preview-fill);
-                color: var(--tmu-text-preview);
-                font-size: var(--tmu-font-xs);
-                font-weight: 800;
-                text-align: center;
-                letter-spacing: .06em;
-            }
 
             .tmvu-nt-trophy-item {
                 display: grid;
@@ -436,9 +359,8 @@ export function initNationalTeamsPage(main) {
     function parseFixtures(table) {
         const extractTeam = (cell) => {
             const teamAnchor = cell.querySelector('a[href*="/national-teams/"]');
-            const countryAnchor = cell.querySelector('a.country_link, a[href*="/national-teams/"][class*="country"]');
             const flagEl = cell.querySelector('ib[class*="flag-img-"], img[class*="flag-img-"]');
-            const flagHtml = countryAnchor ? countryAnchor.innerHTML : (flagEl ? flagEl.outerHTML : '');
+            const flagHtml = flagEl ? flagEl.outerHTML : '';
             return {
                 id: '',
                 name: cleanText(teamAnchor?.textContent || cell.textContent || ''),
@@ -455,14 +377,16 @@ export function initNationalTeamsPage(main) {
             const awayCell = row.querySelector('td.away') || cells[3];
             const resultCell = cells[2];
             const matchHref = resultCell.querySelector('a')?.getAttribute('href') || '';
-            const matchId = matchHref.match(/\/(?:matches\/nt|matches)\/(\d+)\//)?.[1] || '';
+            const ntM = matchHref.match(/\/matches\/(?:(nt)\/)?(\d+)\//);
+            const matchId = ntM ? (ntM[1] || '') + ntM[2] : '';
             const scoreText = cleanText(resultCell.textContent || 'vs') || 'vs';
+            const scoreHref = ntM ? `/matches/${ntM[1] ? ntM[1] + '/' + ntM[2] : ntM[2]}/` : '';
 
             return {
                 matchId,
                 season: CURRENT_SEASON,
                 scoreText,
-                scoreHref: matchId ? `/matches/${matchId}/` : '',
+                scoreHref,
                 isPlayed: /\d+\s*-\s*\d+/.test(scoreText),
                 isHighlight: homeCell.classList.contains('bold') || awayCell.classList.contains('bold'),
                 home: extractTeam(homeCell),
@@ -523,15 +447,14 @@ export function initNationalTeamsPage(main) {
     const loadSquadPlayers = async (squad) => {
         const players = await Promise.all(squad.rows.map(async row => {
             try {
-                const response = await TmPlayerModel.fetchPlayerTooltip(row.playerId);
-                const player = response?.player;
+                const player = await TmPlayerModel.fetchPlayerTooltip(row.playerId);
                 if (!player) return null;
                 return {
                     id: String(player.id || row.playerId),
                     href: `/players/${player.id || row.playerId}/`,
                     name: decodeHtmlEntities(player.name || row.name),
                     age: formatAge(player),
-                    posHtml: TmPosition.chip(player.positions || []),
+                    posHtml: TmPosition.chip((player.positions || []).filter(p => p.preferred)),
                     r5Html: formatR5(player.r5),
                 };
             } catch {
@@ -624,9 +547,22 @@ export function initNationalTeamsPage(main) {
 
     const renderFixturesCard = (title, rows) => {
         const wrap = document.createElement('section');
+        const rowsHtml = rows.length
+            ? `<div class="tmvu-fix-list">${rows.map((row, index) => TmFixtureMatchRow.render({
+                matchId: row.matchId,
+                matchHref: row.scoreHref,
+                homeName: row.home.name,
+                homeHref: row.home.href,
+                homeFlagHtml: row.home.flagHtml,
+                awayName: row.away.name,
+                awayHref: row.away.href,
+                awayFlagHtml: row.away.flagHtml,
+                scoreText: row.scoreText,
+            }, { index, season: CURRENT_SEASON })).join('')}</div>`
+            : TmUI.empty('No matches listed.', true);
         TmUI.render(wrap, `
             <tm-card data-title="${escapeHtml(title)}" data-icon="📅" data-flush>
-                ${rows.length ? TmTournamentCards.buildFixtureList(rows, { season: CURRENT_SEASON }) : TmUI.empty('No matches listed.', true)}
+                ${rowsHtml}
             </tm-card>
         `);
         return wrap.firstElementChild || wrap;
@@ -706,6 +642,8 @@ export function initNationalTeamsPage(main) {
         main.append(mainColumn, sideColumn);
         hydrateSquadCard(squadCard.querySelector('[data-ref="squad-host"]'), squad);
         TmMatchRow.enhance(main, { season: CURRENT_SEASON });
+        TmFixturesList.bindRowNav(main);
+        TmFixturesList.bindHover(main, { season: CURRENT_SEASON });
     };
 
     render();

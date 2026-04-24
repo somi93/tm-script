@@ -39,10 +39,6 @@ export const TmMatchModel = {
      * @param {string|number} matchId
      * @returns {Promise<object|null>}
      */
-    async fetchMatchLite(matchId) {
-        return TmMatchService.fetchMatchLite(matchId);
-    },
-
     /**
      * Fetch a match and process it through the stats pipeline.
      *
@@ -126,9 +122,7 @@ export const TmMatchModel = {
                 playersById.set(r.value.id, r.value);
         });
 
-        const match = normalizeRawMatch(raw, playersById);
-        TmMatchService.normalizeReport(match.report);
-        match.plays = TmMatchService.buildNormalizedPlays(match.report, raw.lineup || {});
-        return match;
+        // plays are now built inside normalizeRawMatch
+        return normalizeRawMatch(raw, playersById, String(matchId));
     },
 };

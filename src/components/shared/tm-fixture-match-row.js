@@ -28,7 +28,7 @@ const injectStyles = () => {
         .tmvu-fixture-team { flex: 1; display: flex; align-items: center; gap: var(--tmu-space-xs); color: var(--tmu-text-main); min-width: 0; }
         .tmvu-fixture-team-home { justify-content: flex-end; }
         .tmvu-fixture-team-away { justify-content: flex-start; }
-        .tmvu-fixture-team-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .tmvu-fixture-team-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--tmu-text-main); text-decoration: none; }
         .tmvu-fixture-team-winner .tmvu-fixture-team-name { color: var(--tmu-text-strong); font-weight: 700; }
         .tmvu-fixture-team-loser  .tmvu-fixture-team-name { color: var(--tmu-text-faint); }
         .tmvu-fixture-my-team .tmvu-fixture-team-name { color: var(--tmu-text-strong); font-weight: 600; }

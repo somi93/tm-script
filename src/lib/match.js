@@ -46,6 +46,7 @@ const createCompetition = () => ({
     typeRaw: null,      // raw API code: "l", "fl", "f", "fq", "p1"–"p9",
                         //   "ueg", "ue1", "ue2", "clg", "cl1", "cl2", "ntq"
     division: null,     // 1, 2, 3 … (for league matches)
+    url: null,          // canonical URL for the competition page
 });
 
 // ─── Venue ────────────────────────────────────────────────────────────────

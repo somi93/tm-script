@@ -17,9 +17,9 @@
  */
 
 import { POSITION_MAP } from '../../constants/player.js';
-import { TmMatchField }     from './tm-match-field.js';
-import { TmMatchSquadList } from './tm-match-squad-list.js';
-import { TmPlayerRow }      from '../shared/tm-player-row.js';
+import { TmConst } from '../../lib/tm-constants.js';
+import { TmMatchField }           from './tm-match-field.js';
+import { mountTacticsSquadList }  from '../tactics/tm-tactics-squad-list.js';
 
 const STYLE_ID = 'mp-lineup-style';
 
@@ -156,6 +156,49 @@ function rebuildPosMap(map, side, playerSlot, allPlayersById) {
     }
 }
 
+// ── Readonly tactics-squad ctx from a match lineup ────────────────────────────
+
+function makeMatchSquadCtx(lineup) {
+    const { BENCH_SLOTS, POSITION_MAP: PM } = TmConst;
+    const players = lineup.map(p => ({ ...p, positions: p.positions || [] }));
+    const players_by_id = Object.fromEntries(players.map(p => [String(p.id), p]));
+
+    const getPlayerSlot  = p => p.positions.find(pos => pos.playing)?.key ?? null;
+    const isFieldSlot    = slot => slot != null && PM[slot] != null;
+    const isBenchSlot    = slot => BENCH_SLOTS.includes(slot);
+    const getPlayerAtSlot = slot => players.find(p => getPlayerSlot(p) === slot) ?? null;
+    const getOccupiedFieldKeys = () => new Set(players.map(getPlayerSlot).filter(isFieldSlot));
+
+    // Seed playing:true from p.position (match slot)
+    for (const p of players) {
+        const key = (p.position || '').toLowerCase();
+        if (PM[key]) {
+            for (const pos of p.positions) pos.playing = false;
+            let pos = p.positions.find(pos => pos.key === key);
+            if (!pos) p.positions.push(pos = { key });
+            pos.playing = true;
+        }
+    }
+
+    return {
+        players, players_by_id,
+        specialRoles: {},
+        CLUB_COUNTRY: null, isForeigner: () => false,
+        countSquadForeigners: () => 0,
+        getPlayerSlot, getPlayerAtSlot,
+        setPlayerSlot: () => {},
+        isFieldSlot, isBenchSlot,
+        getOccupiedFieldKeys,
+        drag: { state: null },
+        save: async () => {},
+        changeListeners: [],
+        notifyChange: () => {},
+        refreshAll: () => {},
+        readOnly: true,
+        stateOf: null,   // set per tick by update()
+    };
+}
+
 // ── Export ────────────────────────────────────────────────────────────────────
 
 export const TmMatchLineup = {
@@ -180,19 +223,20 @@ export const TmMatchLineup = {
         const luHomeField = TmMatchField.create(homePosMap, match.home.lineup);
         const luAwayField = TmMatchField.create(awayPosMap, match.away.lineup);
 
-        const luHomeCtx = makeMatchSquadCtx(match.home.lineup, 'home');
-        const luAwayCtx = makeMatchSquadCtx(match.away.lineup, 'away');
+        const starterHomePids = new Set(match.home.lineup.filter(p => POSITION_MAP[(p.position||'').toLowerCase()]).map(p => String(p.id)));
+        const starterAwayPids = new Set(match.away.lineup.filter(p => POSITION_MAP[(p.position||'').toLowerCase()]).map(p => String(p.id)));
+
+        const luHomeCtx = makeMatchSquadCtx(match.home.lineup);
+        const luAwayCtx = makeMatchSquadCtx(match.away.lineup);
 
         const luHomeListEl = document.createElement('div');
         luHomeListEl.className = 'mp-lu-col mp-lu-col-home';
         const luAwayListEl = document.createElement('div');
         luAwayListEl.className = 'mp-lu-col mp-lu-col-away';
 
-        const luHomeSquad = mountTacticsSquadList(luHomeListEl, luHomeCtx, NOOP_FIELD_API);
-        const luAwaySquad = mountTacticsSquadList(luAwayListEl, luAwayCtx, NOOP_FIELD_API);
-
-        const starterHomePids = new Set(match.home.lineup.filter(p => POSITION_MAP[(p.position||'').toLowerCase()]).map(p => String(p.id)));
-        const starterAwayPids = new Set(match.away.lineup.filter(p => POSITION_MAP[(p.position||'').toLowerCase()]).map(p => String(p.id)));
+        const NOOP_FIELD_API = { setDragging: ()=>{}, clearDragVisuals: ()=>{}, normalizeAll: ()=>{}, normalizeZone: ()=>{} };
+        const luHomeSquad = mountTacticsSquadList(luHomeListEl, luHomeCtx, NOOP_FIELD_API, { compact: true });
+        const luAwaySquad = mountTacticsSquadList(luAwayListEl, luAwayCtx, NOOP_FIELD_API, { compact: true });
 
         // ── Panels ────────────────────────────────────────────────────
         homePanel.append(homeField.el);
@@ -204,24 +248,6 @@ export const TmMatchLineup = {
         ]);
 
         let lastMinute = -1;
-
-        function deriveLiveMentality(side, upToMinute) {
-            const clubId = String(match[side].club.id);
-            let mentality = match[side].tactics.mentality ?? 4;
-            for (const min of Object.keys(match.plays).map(Number).sort((a, b) => a - b)) {
-                if (min > upToMinute) break;
-                for (const play of match.plays[String(min)]) {
-                    for (const clip of (play.clips || [])) {
-                        for (const act of (clip.actions || [])) {
-                            if (act.action === 'mentality_change' && String(act.team) === clubId)
-                                mentality = act.mentality;
-                        }
-                    }
-                }
-            }
-            return mentality;
-        }
-        void deriveLiveMentality; // kept for future use
 
         function update(replayState) {
             const minute = replayState?.currentMinute ?? 0;
@@ -237,16 +263,15 @@ export const TmMatchLineup = {
             luHomeField.refresh();
             luAwayField.refresh();
 
-            const makeStateOf = (pitchPids, starterPids) => p => {
-                const pid = String(p.id);
-                return pitchPids.has(pid)
-                    ? (starterPids.has(pid) ? 'active' : 'sub-in')
-                    : (starterPids.has(pid) ? 'off'    : 'bench');
-            };
             const homePitchPids = new Set([...playerSlot].filter(([, s]) => s.startsWith('home:')).map(([pid]) => pid));
             const awayPitchPids = new Set([...playerSlot].filter(([, s]) => s.startsWith('away:')).map(([pid]) => pid));
-            luHomeCtx.stateOf = makeStateOf(homePitchPids, starterHomePids);
-            luAwayCtx.stateOf = makeStateOf(awayPitchPids, starterAwayPids);
+
+            luHomeCtx.stateOf = p => homePitchPids.has(String(p.id))
+                ? (starterHomePids.has(String(p.id)) ? 'active' : 'sub-in')
+                : (starterHomePids.has(String(p.id)) ? 'off' : 'bench');
+            luAwayCtx.stateOf = p => awayPitchPids.has(String(p.id))
+                ? (starterAwayPids.has(String(p.id)) ? 'active' : 'sub-in')
+                : (starterAwayPids.has(String(p.id)) ? 'off' : 'bench');
             luHomeSquad.refresh();
             luAwaySquad.refresh();
         }

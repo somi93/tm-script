@@ -19,6 +19,8 @@
  */
 
 import { Match } from '../../lib/match.js';
+import { resolveIntCupUrl, resolveCupName } from '../../constants/countries.js';
+import { TmMatchService } from '../../services/match.js';
 
 // ─── Competition type resolver ────────────────────────────────────────────
 // Maps the raw matchtype code from the API to a semantic type string.
@@ -27,7 +29,7 @@ const resolveCompetitionType = (typeRaw) => {
     if (typeRaw === 'l')                        return 'league';
     if (typeRaw === 'fl')                       return 'friendly_league';
     if (typeRaw === 'f' || typeRaw === 'fq')   return 'friendly';
-    if (/^p\d+$/.test(typeRaw))                return 'cup';
+    if (typeRaw === 'c' || /^p\d+$/.test(typeRaw)) return 'cup';
     if (typeRaw === 'ntq')                      return 'ntq';
     // ueg, ue1, ue2, clg, cl1, cl2 etc.
     if (/^(ue|cl)\w*$/.test(typeRaw))          return 'international_cup';
@@ -46,18 +48,26 @@ const resolveCompetitionType = (typeRaw) => {
  * @param {object} rawClub  raw.club.home or raw.club.away
  * @returns {object}
  */
-export const normalizeRawMatchClub = (rawClub) => ({
-    id: rawClub.id || null,
-    name: rawClub.club_name || null,
-    nick: rawClub.club_nick || null,
-    country: rawClub.country || null,
-    division: rawClub.division ? Number(rawClub.division) : null,
-    group: rawClub.group || null,
-    manager_name: rawClub.manager_name || null,
-    fanclub: rawClub.fanclub || null,
-    stadium: rawClub.stadium || null,
-    city: rawClub.city || null,
-});
+export const normalizeRawMatchClub = (rawClub, isNt = false) => {
+    const id = rawClub.id || null;
+    const country = rawClub.country || null;
+    const logo = isNt
+        ? (country ? `/pics/nt_logos/140px/${country}.png` : '')
+        : (id ? (rawClub.logo || `/pics/club_logos/${id}_140.png`) : '');
+    return {
+        id: isNt ? null : id,
+        name: rawClub.club_name || null,
+        nick: rawClub.club_nick || null,
+        country,
+        logo,
+        division: rawClub.division ? Number(rawClub.division) : null,
+        group: rawClub.group || null,
+        manager_name: rawClub.manager_name || null,
+        fanclub: rawClub.fanclub || null,
+        stadium: rawClub.stadium || null,
+        city: rawClub.city || null,
+    };
+};
 
 // ─── Match normalizer ─────────────────────────────────────────────────────
 /**
@@ -91,14 +101,17 @@ const applyMatchContext = (player, p, captainId) => {
 /**
  * @param {object} raw         raw match.ajax.php response
  * @param {Map<number,object>} playersById  pid → normalized player from fetchPlayerTooltip
+ * @param {string|number} [matchId]  original match ID (e.g. 'nt55669') used to detect NT matches
  */
-export const normalizeRawMatch = (raw, playersById = new Map()) => {
+export const normalizeRawMatch = (raw, playersById = new Map(), matchId = null) => {
+    const ntMatch = typeof matchId === 'string' && matchId.startsWith('nt');
     const match = Match.create();
     const md = raw.match_data || {};
     const venue = md.venue || {};
 
     // ── Identity ─────────────────────────────────────────────────────────
     match.id = raw.match_id ?? raw.id ?? null;
+    match.ntMatch = ntMatch;
     match.season = raw.season ?? null;
 
     // ── When ─────────────────────────────────────────────────────────────
@@ -113,9 +126,10 @@ export const normalizeRawMatch = (raw, playersById = new Map()) => {
     // venue.tournament + venue.matchtype are COMPETITION facts, not venue facts.
     // They tell us who organised the match, not where it was played.
     const typeRaw = venue.matchtype || null;
-    match.competition.name = venue.tournament || null;
+    match.competition.name = venue.tournament || resolveCupName(typeRaw, raw.club?.home?.country ?? null) || null;
     match.competition.typeRaw = typeRaw;
     match.competition.type = resolveCompetitionType(typeRaw);
+    match.competition.url  = resolveIntCupUrl(typeRaw, raw.club?.home?.country ?? null);
     // Division comes from the club data — use home side as the source of truth
     const homeDivision = raw.club?.home?.division;
     match.competition.division = homeDivision ? Number(homeDivision) : null;
@@ -183,7 +197,7 @@ export const normalizeRawMatch = (raw, playersById = new Map()) => {
         const color = '#' + (rawClub.colors?.club_color1 || (side === 'home' ? '4a9030' : '5b9bff'));
 
         // Club identity — who they are, independent of this match
-        match[side].club = normalizeRawMatchClub(rawClub);
+        match[side].club = normalizeRawMatchClub(rawClub, ntMatch);
 
         // Match-specific side data
         match[side].color = color;
@@ -205,10 +219,9 @@ export const normalizeRawMatch = (raw, playersById = new Map()) => {
     }
 
     // ── Engine data ───────────────────────────────────────────────────────
-    // report is kept as-is; plays are built separately by
-    // TmMatchService.buildNormalizedPlays() after normalizeReport() runs.
     match.report = raw.report || {};
-    match.plays = {};
+    TmMatchService.normalizeReport(match.report);
+    match.plays = TmMatchService.buildNormalizedPlays(match.report, raw.lineup || {});
 
     return match;
 };
