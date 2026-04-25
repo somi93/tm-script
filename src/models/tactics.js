@@ -53,9 +53,22 @@ export const TmTacticsModel = {
         return {
             players,
             specialRoles,
+            formation_assoc: assoc,
             mentality: Number(initialSettings.mentality) || 4,
             attacking: Number(initialSettings.style) || 1,
             focus: Number(initialSettings.focus) || 1,
         };
+    },
+
+    fetchCondOrders(reserves, national, miniGameId) {
+        return TmTacticsService.fetchCondOrders(reserves, national, miniGameId);
+    },
+
+    saveCondOrder(coData, reserves, national, miniGameId) {
+        return TmTacticsService.saveCondOrder(coData, reserves, national, miniGameId);
+    },
+
+    deleteCondOrder(num, reserves, national, miniGameId) {
+        return TmTacticsService.deleteCondOrder(num, reserves, national, miniGameId);
     },
 };

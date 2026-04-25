@@ -52,6 +52,8 @@ function posBarCol() {
 export function buildPlayerHeaders(opts = {}) {
     const showAsi = opts.asi !== false;
     const showRtn = opts.rtn !== false;
+    const showRec = opts.rec !== false;
+    const nameWidth = opts.nameWidth || null;
     const showTimeleft = opts.timeleft !== false && !opts.lastSeen;
     const showCurbid = opts.curbid !== false && !opts.lastSeen;
     const showLastSeen = !!opts.lastSeen;
@@ -65,6 +67,7 @@ export function buildPlayerHeaders(opts = {}) {
         posBarCol(),
         {
             key: 'name', label: 'Player',
+            ...(nameWidth ? { width: nameWidth } : {}),
             sort: (a, b) => String(a.name).localeCompare(String(b.name)),
             render: (_, p) => {
                 const country = (p.country || p.countryCode || '').toLowerCase();
@@ -114,12 +117,12 @@ export function buildPlayerHeaders(opts = {}) {
                 ? `<span class="tmu-tabular" style="color:${gc(p.r5, R5_THRESHOLDS)};font-weight:700">${p.r5}</span>`
                 : '<span style="color:var(--tmu-text-dim)">—</span>',
         },
-        {
+        ...(showRec ? [{
             key: 'rec', label: 'REC', align: 'r',
             render: (_, p) => p.rec != null
                 ? `<span class="tmu-tabular" style="color:${gc(p.rec, REC_THRESHOLDS)};font-weight:700">${p.rec}</span>`
                 : '<span style="color:var(--tmu-text-dim)">—</span>',
-        },
+        }] : []),
         {
             key: 'ti', label: tiLabel, align: 'r',
             sort: (a, b) => (a.ti ?? -Infinity) - (b.ti ?? -Infinity),

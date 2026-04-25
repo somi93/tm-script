@@ -1,6 +1,7 @@
 import { TmStandingsPanel } from '../shared/tm-standings-panel.js';
 import { TmLeagueFixtures } from './tm-league-fixtures.js';
 import { TmUI } from '../shared/tm-ui.js';
+import { getLeaguePromoColumns } from '../../constants/countries.js';
 
 /**
  * TmLeagueStandings
@@ -46,12 +47,15 @@ const getOrInitPanel = () => {
     if (!container) return null;
 
     const s = window.TmLeagueCtx;
+    const { direct: promoDirectCount, playoff: promoPlayoffCount } = getLeaguePromoColumns(s.panelCountry, s.panelDivision);
     leaguePanelRef = TmStandingsPanel.mount(container, {
         rows: s.standingsRows,
         liveZoneMap: s.liveZoneMap,
         venue: s.stdVenue,
         formN: s.stdFormN,
         tooltip: true,
+        promoDirectCount,
+        promoPlayoffCount,
         onVenueChange: (v) => { s.stdVenue = v; leaguePanelRef.update(getLeagueState()); },
         onFormNChange: (n) => { s.stdFormN = n; leaguePanelRef.update(getLeagueState()); },
         onFormOlder: () => { s.formOffset += 6; leaguePanelRef.update(getLeagueState()); },

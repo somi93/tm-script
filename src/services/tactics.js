@@ -47,4 +47,31 @@ export const TmTacticsService = {
             body: new URLSearchParams(body).toString(),
         });
     },
+
+    fetchCondOrders(reserves, national, miniGameId) {
+        return new Promise(resolve => {
+            window.jQuery.post(
+                '/ajax/tactics_co_get.ajax.php',
+                { get: 'cond_orders', reserves, national, miniGameId },
+                d => resolve(d),
+                'json'
+            ).fail(() => resolve(null));
+        });
+    },
+
+    saveCondOrder(coRaw, reserves, national, miniGameId) {
+        return fetch('/ajax/tactics_co_post.ajax.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ ...coRaw, reserves, national, miniGameId }),
+        });
+    },
+
+    deleteCondOrder(num, reserves, national, miniGameId) {
+        return fetch('/ajax/tactics_co_post.ajax.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ num, type: 'delete', reserves, national, miniGameId }),
+        });
+    },
 };

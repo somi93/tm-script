@@ -36,14 +36,14 @@ export const TMU_BUTTON_CSS = `
 .tmu-btn:hover:not(:disabled) { transform: none; }
 .tmu-btn:focus-visible { outline: 1px solid var(--tmu-border-pill-active); outline-offset: 2px; }
 .tmu-btn-primary   { background: var(--tmu-color-secondary); color: var(--tmu-text-inverse); }
-.tmu-btn-primary:hover:not(:disabled)   { background: var(--tmu-color-primary); border-color: var(--tmu-color-primary); }
+.tmu-btn-primary:hover:not(:disabled)   { background: var(--tmu-color-primary); }
 .tmu-btn-secondary { background: var(--tmu-color-surface) !important; color: var(--tmu-text-panel-label); border: none !important; }
 .tmu-btn-secondary:hover:not(:disabled) { background: var(--tmu-surface-item-hover) !important; color: var(--tmu-text-strong); border: none !important; }
-.tmu-btn-danger    { background: var(--tmu-danger-fill); color: var(--tmu-danger); border-color: var(--tmu-border-danger); }
+.tmu-btn-danger    { background: var(--tmu-danger-fill); color: var(--tmu-danger); }
 .tmu-btn-danger:hover:not(:disabled)    { background: var(--tmu-border-danger); color: var(--tmu-text-inverse); }
-.tmu-btn-lime      { background: var(--tmu-success-fill); border-color: var(--tmu-border-success); color: var(--tmu-text-accent-soft); display: flex; align-items: center; justify-content: center; gap: var(--tmu-space-sm); }
+.tmu-btn-lime      { background: var(--tmu-success-fill); color: var(--tmu-text-accent-soft); display: flex; align-items: center; justify-content: center; gap: var(--tmu-space-sm); }
 .tmu-btn-lime:hover:not(:disabled)      { background: var(--tmu-color-primary); color: var(--tmu-text-inverse); }
-.tmu-btn-active { background: var(--tmu-color-primary) !important; border-color: var(--tmu-color-primary) !important; }
+.tmu-btn-active { background: var(--tmu-color-primary) !important; }
 `;
 
 export function injectTmButtonCss(target = document.head) {

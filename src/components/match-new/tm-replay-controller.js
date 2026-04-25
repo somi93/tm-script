@@ -44,6 +44,8 @@ export const TmReplayController = {
             postDelay = 3,
             clipRevealDelay = 1,
             initialMode = 'all',
+            startAtMinute = null,
+            startAtSecond = 0,
             onTick, onMinuteAdvanced, onEnded,
         } = opts;
 
@@ -55,13 +57,19 @@ export const TmReplayController = {
 
         const initialPlayMinutes = initialMode === 'key' ? keyPlayMinutes : allPlayMinutes;
 
+        // In live mode we start at the exact live minute (may have no plays yet).
+        // Regular replay starts at the first play minute.
+        const isLiveMode = startAtMinute != null;
+        const initialMinuteIndex = 0;
+        const initialCurrentMinute = isLiveMode ? startAtMinute : (initialPlayMinutes[0] ?? 0);
+
         const replayState = {
             mode: initialMode,
             playMinutes: initialPlayMinutes,
             schedule,
-            playMinuteIndex: 0,
-            currentMinute: initialPlayMinutes[0] ?? 0,
-            seconds: 0,
+            playMinuteIndex: initialMinuteIndex,
+            currentMinute: initialCurrentMinute,
+            seconds: startAtMinute != null ? startAtSecond : 0,
             currentActionIndex: -1,
             currentActionLineIndex: -1,
             committedActionIndex: -1,
@@ -160,8 +168,14 @@ export const TmReplayController = {
             onTick?.(snapshot());
 
             const lastScheduledSecond = entries.length ? entries[entries.length - 1].seconds : -1;
-            if (replayState.seconds >= 60 || replayState.seconds > lastScheduledSecond + postDelay) {
-                advanceMinute();
+            // In live mode: never fast-skip an empty minute — wait the full 60 s so
+            // the clock ticks naturally until a minute with plays is reached.
+            const shouldAdvance = replayState.seconds >= 60 || (
+                replayState.seconds > lastScheduledSecond + postDelay &&
+                (!isLiveMode || entries.length > 0)
+            );
+            if (shouldAdvance) {
+                (isLiveMode ? advanceMinuteLive : advanceMinute)();
                 return;
             }
 
@@ -169,6 +183,50 @@ export const TmReplayController = {
         };
 
         // ── Minute advancement ────────────────────────────────────────
+
+        // Live mode: advance one minute at a time (including empty minutes).
+        const advanceMinuteLive = () => {
+            clearTimeout(replayState.tickTimer);
+            clearTimeout(replayState.advanceTimer);
+            clearTimeout(replayState.clipRevealTimer);
+            replayState.tickTimer = null;
+            replayState.advanceTimer = null;
+            replayState.clipRevealTimer = null;
+
+            const nextMinute = replayState.currentMinute + 1;
+            if (nextMinute > maximumMinute) {
+                replayState.currentMinute = maximumMinute;
+                replayState.seconds = 59;
+                replayState.currentActionIndex = 999;
+                replayState.currentActionLineIndex = 999;
+                replayState.committedActionIndex = 999;
+                replayState.committedClipIndex = 999;
+                replayState.playing = false;
+                replayState.ended = true;
+                onEnded?.(snapshot());
+                return;
+            }
+
+            replayState.currentMinute = nextMinute;
+            replayState.seconds = 0;
+            replayState.currentActionIndex = -1;
+            replayState.currentActionLineIndex = -1;
+            replayState.committedActionIndex = -1;
+            replayState.committedClipIndex = -1;
+            clipMap = [];
+
+            // Keep playMinuteIndex in sync so setMode stays consistent.
+            const pmIdx = replayState.playMinutes.indexOf(nextMinute);
+            if (pmIdx !== -1) replayState.playMinuteIndex = pmIdx;
+
+            if (unity.isAvailable() && unity.isReady()) {
+                const loaded = unity.load(match.report, replayState.currentMinute);
+                if (loaded) buildClipMap(replayState.currentMinute);
+            }
+
+            onMinuteAdvanced?.(snapshot());
+            replayState.tickTimer = setTimeout(tick, replayState.speed);
+        };
 
         const advanceMinute = () => {
             clearTimeout(replayState.tickTimer);
@@ -246,7 +304,10 @@ export const TmReplayController = {
             replayState.committedActionIndex = 999;
             replayState.committedClipIndex = 999;
             onTick?.(snapshot());
-            replayState.advanceTimer = setTimeout(advanceMinute, postDelay * 1000);
+            replayState.advanceTimer = setTimeout(
+                isLiveMode ? advanceMinuteLive : advanceMinute,
+                postDelay * 1000
+            );
         };
 
         // ── Public controls ───────────────────────────────────────────

@@ -140,6 +140,11 @@ const createSquadModel = (key, label, defaultVisible) => ({
 
 export function initPlayersPage(main) {
     if (!/^\/players\/?$/i.test(window.location.pathname)) return;
+    if (!window.location.hash) {
+        window.location.replace('/players/#/a/true/b/true/');
+        window.location.reload();
+        return;
+    }
     if (document.getElementById('tmvu-players-shell')) return;
 
     injectPlayersPageStyles();

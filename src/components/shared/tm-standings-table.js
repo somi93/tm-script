@@ -92,15 +92,11 @@ function injectStyles() {
             font-weight: 700;
         }
 
-        .std-sep-green td {
+        .std-sep td {
             border-bottom: 2px solid var(--tmu-success) !important;
         }
 
-        .std-sep-orange td {
-            border-bottom: 2px solid var(--tmu-warning-soft) !important;
-        }
-
-        .std-sep-red td {
+        .std-sep-rel td {
             border-bottom: 2px solid var(--tmu-danger) !important;
         }
 
@@ -166,7 +162,7 @@ function escapeHtml(value) {
         .replace(/'/g, '&#39;');
 }
 
-function buildHtml({ rows = [], liveZoneMap = {}, isFiltered = false, showForm = false, formHtml = () => '', canOlder = false, canNewer = false, promotionCount = 1, nameLabel = 'Club' } = {}) {
+function buildHtml({ rows = [], liveZoneMap = {}, isFiltered = false, showForm = false, formHtml = () => '', canOlder = false, canNewer = false, promotionCount = 1, promoDirectCount = 0, promoPlayoffCount = 0, nameLabel = 'Club' } = {}) {
     injectStyles();
 
     const headerForm = showForm
@@ -188,9 +184,11 @@ function buildHtml({ rows = [], liveZoneMap = {}, isFiltered = false, showForm =
 
     const bodyRows = rows.map((row, index) => {
         let bg, color;
-        if (row.rank <= promotionCount) {
+        const effectiveDirect = promoDirectCount || promotionCount;
+        const effectivePlayoff = promoPlayoffCount || 4;
+        if (row.rank <= effectiveDirect) {
             bg = 'var(--tmu-success-fill-hover)'; color = 'var(--tmu-success)';
-        } else if (row.rank <= 4) {
+        } else if (row.rank <= effectivePlayoff) {
             bg = 'rgba(56,189,248,0.10)'; color = 'var(--tmu-info-strong)';
         } else {
             const zone = isFiltered ? (liveZoneMap[row.rank] || '') : row.zone;
@@ -216,14 +214,16 @@ function buildHtml({ rows = [], liveZoneMap = {}, isFiltered = false, showForm =
         const clubCell = `<td class="std-left">${clubInner}</td>`;
 
         const nextRow = rows[index + 1];
-        const nextZone = isFiltered ? (liveZoneMap[nextRow?.rank] || null) : (nextRow?.zone ?? null);
-        const sepClass = isFiltered ? '' : (() => {
-            if (row.zone === nextZone || nextZone === null) return '';
-            if (nextZone === 'rel') return ' std-sep-red';
-            if (nextZone === 'rel-po') return ' std-sep-orange';
-            if (row.zone === 'promo' || row.zone === 'promo-po') return ' std-sep-green';
-            return '';
-        })();
+        const nextZone = nextRow?.zone || '';
+        const curZone = row.zone || '';
+        let sepClass = '';
+        if (!isFiltered) {
+            if ((promoDirectCount > 0 && row.rank === promoDirectCount) || (promoPlayoffCount > 0 && row.rank === promoPlayoffCount)) {
+                sepClass = ' std-sep';
+            } else if (nextZone && nextZone !== curZone && (nextZone === 'rel-po' || nextZone === 'rel')) {
+                sepClass = ' std-sep-rel';
+            }
+        }
         const rowCls = `${row.isMe ? 'std-me' : ''}${sepClass}`.trim();
 
         const dataCells = [

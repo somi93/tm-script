@@ -5,17 +5,18 @@ import { TmModal } from '../shared/tm-modal.js';
 import { TmButton } from '../shared/tm-button.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 import { MENTALITY_MAP_LONG, STYLE_MAP } from '../../constants/match.js';
+import { TmTacticsModel } from '../../models/tactics.js';
 
 'use strict';
 
 const { escHtml } = TmUtils;
 
-const EVENT_LABELS     = { 1: 'Minute', 2: 'Injury', 3: 'Yellow Card', 4: 'Red Card', 5: 'Goal Scored' };
+const EVENT_LABELS = { 1: 'Minute', 2: 'Injury', 3: 'Yellow Card', 4: 'Red Card', 5: 'Goal Scored' };
 const CONDITION_LABELS = { 1: 'Winning', 2: 'Draw', 3: 'Losing', 4: 'Any' };
-const ORDER_LABELS     = { 1: 'Substitution', 2: 'Change Mentality', 3: 'Change Style', 4: 'Change Position' };
+const ORDER_LABELS = { 1: 'Substitution', 2: 'Change Mentality', 3: 'Change Style', 4: 'Change Position' };
 
-const POSITIONS = ['GK','DC','DCL','DCR','DL','DR','DMC','DMCL','DMCR','DML','DMR','MC','MCL','MCR','ML','MR','OMC','OMCL','OMCR','OML','OMR','FC','FCL','FCR'];
-const SUB_ROLES = ['sub1','sub2','sub3','sub4','sub5'];
+const POSITIONS = ['GK', 'DC', 'DCL', 'DCR', 'DL', 'DR', 'DMC', 'DMCL', 'DMCR', 'DML', 'DMR', 'MC', 'MCL', 'MCR', 'ML', 'MR', 'OMC', 'OMCL', 'OMCR', 'OML', 'OMR', 'FC', 'FCL', 'FCR'];
+const SUB_ROLES = ['sub1', 'sub2', 'sub3', 'sub4', 'sub5'];
 
 function actionCell(typeLabel, value) {
     if (!typeLabel) return '<span style="color:var(--tmu-text-disabled)">—</span>';
@@ -49,9 +50,16 @@ function orderPar(orderId, par1, par2, par3, players_by_id) {
 
 function showOrderDialog(co, data, opts, onSaved) {
     const { reserves, national, miniGameId } = opts;
-    const players_by_id    = data.players_by_id    || {};
-    const formation_by_pos = data.formation_by_pos || {};
-    const formation_assoc  = data.formation_assoc  || {};
+    const players_by_id = data.players_by_id
+        || Object.fromEntries((data.players || []).map(p => [String(p.id), p]));
+    const formation_assoc = data.formation_assoc || {};
+    const POSITION_KEYS_LC = new Set(POSITIONS.map(p => p.toLowerCase()));
+    const NON_POS_KEYS = new Set([...SUB_ROLES, 'captain', 'corner', 'penalty', 'freekick']);
+    const formation_by_pos = data.formation_by_pos
+        || Object.fromEntries(
+            Object.entries(formation_assoc)
+                .filter(([k]) => !NON_POS_KEYS.has(k) && POSITION_KEYS_LC.has(k.toLowerCase()))
+        );
     const activePositions = [...new Set(Object.keys(formation_by_pos)
         .map(pos => String(pos || '').toUpperCase())
         .filter(pos => POSITIONS.includes(pos)))];
@@ -69,18 +77,18 @@ function showOrderDialog(co, data, opts, onSaved) {
 
     const state = {
         COND_ORDER_NUM: co.COND_ORDER_NUM,
-        EVENT_ID:   Number(co.EVENT_ID)  || 0,
-        EVENT_PAR:  co.EVENT_PAR  || 0,
-        COND_ID:    Number(co.COND_ID)   || 0,
-        COND_PAR:   co.COND_PAR   || 0,
-        ORDER_ID:   Number(co.ORDER_ID)  || 0,
+        EVENT_ID: Number(co.EVENT_ID) || 0,
+        EVENT_PAR: co.EVENT_PAR || 0,
+        COND_ID: Number(co.COND_ID) || 0,
+        COND_PAR: co.COND_PAR || 0,
+        ORDER_ID: Number(co.ORDER_ID) || 0,
         ORDER_PAR1: co.ORDER_PAR1 || 0,
         ORDER_PAR2: co.ORDER_PAR2 || 0,
         ORDER_PAR3: co.ORDER_PAR3 || '',
     };
 
     const getFieldPositionForPlayer = pid => Object.entries(formation_by_pos)
-        .find(([, playerId]) => String(playerId) === String(pid))?.[0]?.toLowerCase() || '';
+        .find(([, playerId]) => String(playerId) === String(pid))?.[0]?.toUpperCase() || '';
 
     let destroy;
 
@@ -110,7 +118,7 @@ function showOrderDialog(co, data, opts, onSaved) {
         el.className = 'tmtc-co-chips';
         const mkBtn = (label, pid) => el.appendChild(pickBtn(label, getCurrent() == pid, () => onPick(pid), el));
         if (allowAny) mkBtn('Any Player', 0);
-        players.forEach(p => mkBtn(p.lastname || p.name || p.player_id, p.player_id));
+        players.forEach(p => mkBtn(p.lastname || p.name || p.id, p.id));
         return el;
     }
 
@@ -118,7 +126,7 @@ function showOrderDialog(co, data, opts, onSaved) {
         const el = document.createElement('div');
         el.className = 'tmtc-co-chips';
         options.forEach(pos => el.appendChild(
-            pickBtn(pos, getCurrent() === pos.toLowerCase(), () => onPick(pos.toLowerCase()), el)
+            pickBtn(pos, String(getCurrent()).toUpperCase() === pos.toUpperCase(), () => onPick(pos.toUpperCase()), el)
         ));
         return el;
     }
@@ -296,7 +304,7 @@ function showOrderDialog(co, data, opts, onSaved) {
             label: 'Clear', color: 'danger', size: 'sm',
             onClick: () => {
                 state.EVENT_ID = 0; state.EVENT_PAR = 0;
-                state.COND_ID = 0;  state.COND_PAR = 0;
+                state.COND_ID = 0; state.COND_PAR = 0;
                 state.ORDER_ID = 0; state.ORDER_PAR1 = 0; state.ORDER_PAR2 = 0; state.ORDER_PAR3 = '';
                 save();
             },
@@ -315,24 +323,20 @@ function showOrderDialog(co, data, opts, onSaved) {
         const orderPar3 = state.ORDER_ID === 1 && !state.ORDER_PAR3
             ? getFieldPositionForPlayer(state.ORDER_PAR1)
             : state.ORDER_PAR3;
-        const payload = new URLSearchParams({
+        const coData = {
+            ...co,
             COND_ORDER_NUM: state.COND_ORDER_NUM,
-            EVENT_ID:   state.EVENT_ID   || 0,
-            EVENT_PAR:  state.EVENT_PAR  || 0,
-            COND_ID:    state.COND_ID    || 0,
-            COND_PAR:   state.COND_PAR   || 0,
-            ORDER_ID:   state.ORDER_ID   || 0,
+            EVENT_ID: state.EVENT_ID || 0,
+            EVENT_PAR: state.EVENT_PAR || 0,
+            COND_ID: state.COND_ID || 0,
+            COND_PAR: state.COND_PAR || 0,
+            ORDER_ID: state.ORDER_ID || 0,
             ORDER_PAR1: state.ORDER_PAR1 || 0,
             ORDER_PAR2: state.ORDER_PAR2 || 0,
             ORDER_PAR3: orderPar3 || 0,
-            reserves, national, miniGameId,
-        });
+        };
         try {
-            await fetch('/ajax/tactics_co_post.ajax.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: payload,
-            });
+            await TmTacticsModel.saveCondOrder(coData, reserves, national, miniGameId);
         } catch (e) {
             console.error('[tactics] co save failed', e);
         }
@@ -350,40 +354,36 @@ export async function mountTacticsOrders(container, data, opts = {}) {
     const players_by_id = Object.fromEntries((data.players || []).map(p => [String(p.id), p]));
 
     const refs = TmSectionCard.mount(container, {
-        flush:      true,
+        flush: true,
         cardVariant: 'soft',
     });
     const body = refs.body;
 
     body.innerHTML = TmUI.loading();
 
-    const $ = window.jQuery;
-    if (!$) { body.innerHTML = TmUI.error('jQuery not available.'); return; }
+    if (!window.jQuery) { body.innerHTML = TmUI.error('jQuery not available.'); return; }
 
     const load = async () => {
         body.innerHTML = '';
 
-        const raw = await new Promise(resolve => {
-            $.post('/ajax/tactics_co_get.ajax.php', { get: 'cond_orders', reserves, national, miniGameId }, d => resolve(d), 'json')
-             .fail(() => resolve(null));
-        });
+        const raw = await TmTacticsModel.fetchCondOrders(reserves, national, miniGameId);
 
         if (!raw) { body.innerHTML = TmUI.error('Could not load conditional orders.'); return; }
 
         const items = Object.values(raw).map(co => {
             const eventId = Number(co.EVENT_ID);
-            const condId  = Number(co.COND_ID);
-            const ordId   = Number(co.ORDER_ID);
+            const condId = Number(co.COND_ID);
+            const ordId = Number(co.ORDER_ID);
             return {
-                num:       Number(co.COND_ORDER_NUM) + 1,
-                _raw:      co,
-                event:     EVENT_LABELS[eventId]     || '',
-                eventPar:  eventPar(eventId, co.EVENT_PAR, players_by_id),
-                condition: CONDITION_LABELS[condId]  || '',
-                condPar:   co.COND_PAR ? String(co.COND_PAR) : '',
-                order:     ORDER_LABELS[ordId]       || '',
-                orderPar:  orderPar(ordId, co.ORDER_PAR1, co.ORDER_PAR2, co.ORDER_PAR3, players_by_id),
-                _empty:    !eventId && !condId && !ordId,
+                num: Number(co.COND_ORDER_NUM) + 1,
+                _raw: co,
+                event: EVENT_LABELS[eventId] || '',
+                eventPar: eventPar(eventId, co.EVENT_PAR, players_by_id),
+                condition: CONDITION_LABELS[condId] || '',
+                condPar: co.COND_PAR ? String(co.COND_PAR) : '',
+                order: ORDER_LABELS[ordId] || '',
+                orderPar: orderPar(ordId, co.ORDER_PAR1, co.ORDER_PAR2, co.ORDER_PAR3, players_by_id),
+                _empty: !eventId && !condId && !ordId,
             };
         });
 
@@ -392,17 +392,41 @@ export async function mountTacticsOrders(container, data, opts = {}) {
             sortKey: 'num',
             sortDir: 1,
             density: 'tight',
-            rowCls:    o => o._empty ? 'tmtc-co-row-empty' : '',
+            rowCls: o => o._empty ? 'tmtc-co-row-empty' : '',
             onRowClick: o => showOrderDialog(o._raw, data, { reserves, national, miniGameId }, load),
             headers: [
-                { key: 'num',       label: '#',     align: 'c', width: '28px', sortable: false },
-                { key: 'event',     label: 'Event', sortable: false, render: (v, o) => actionCell(v, o.eventPar) },
+                { key: 'num', label: '#', align: 'c', width: '28px', sortable: false },
+                { key: 'event', label: 'Event', sortable: false, render: (v, o) => actionCell(v, o.eventPar) },
                 { key: 'condition', label: 'Score', sortable: false, render: (v, o) => actionCell(v, o.condPar) },
-                { key: 'order',     label: 'Order', sortable: false, render: (v, o) => actionCell(v, o.orderPar) },
+                { key: 'order', label: 'Order', sortable: false, render: (v, o) => actionCell(v, o.orderPar) },
+                {
+                    key: '_del', label: '', width: '32px', align: 'c', sortable: false,
+                    render: (v, o) => o._empty ? '' : '<span class="tmtc-co-del-btn" title="Clear">×</span>',
+                },
             ],
         });
 
         body.appendChild(tbl);
+
+        // --- Delete buttons ---
+        tbl.querySelectorAll('.tmtc-co-del-btn').forEach(btn => {
+            const tr = btn.closest('tr[data-ri]');
+            if (!tr) return;
+            const item = items[Number(tr.dataset.ri)];
+            if (!item || item._empty) return;
+            btn.addEventListener('click', e => {
+                e.stopPropagation();
+                const tr = btn.closest('tr');
+                if (tr) {
+                    // reset cells to empty state visually
+                    tr.querySelectorAll('td:not(:first-child):not(:last-child)').forEach(td => { td.innerHTML = ''; });
+                    tr.classList.add('tmtc-co-row-empty');
+                    btn.remove();
+                }
+                TmTacticsModel.deleteCondOrder(item._raw.COND_ORDER_NUM, reserves, national, miniGameId)
+                    .catch(err => console.error('[tactics] co delete failed', err));
+            });
+        });
 
         // --- Drag-and-drop reorder ---
         let dragSrcNum = null;
@@ -440,22 +464,9 @@ export async function mountTacticsOrders(container, data, opts = {}) {
 
                 body.innerHTML = TmUI.loading();
 
-                const postOrder = (raw, newNum) => fetch('/ajax/tactics_co_post.ajax.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams({
-                        COND_ORDER_NUM: newNum,
-                        EVENT_ID:   raw.EVENT_ID   || 0,
-                        EVENT_PAR:  raw.EVENT_PAR  || 0,
-                        COND_ID:    raw.COND_ID    || 0,
-                        COND_PAR:   raw.COND_PAR   || 0,
-                        ORDER_ID:   raw.ORDER_ID   || 0,
-                        ORDER_PAR1: raw.ORDER_PAR1 || 0,
-                        ORDER_PAR2: raw.ORDER_PAR2 || 0,
-                        ORDER_PAR3: raw.ORDER_PAR3 || 0,
-                        reserves, national, miniGameId,
-                    }),
-                });
+                const postOrder = (raw, newNum) => TmTacticsModel.saveCondOrder(
+                    { ...raw, COND_ORDER_NUM: newNum }, reserves, national, miniGameId
+                );
                 try {
                     await Promise.all([postOrder(srcRaw, dropNum), postOrder(dstRaw, dragSrcNum)]);
                 } catch (err) {

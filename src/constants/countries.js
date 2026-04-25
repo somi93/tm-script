@@ -12,7 +12,7 @@
 
 export const COUNTRIES = {
     // -- Europe ----------------------------------------------------------
-    Albania: { suffix: 'al', region: 'Europe' },
+    Albania: { suffix: 'al', region: 'Europe', ueta: [2, 3] },
     Andorra: { suffix: 'ad', region: 'Europe' },
     Armenia: { suffix: 'am', region: 'Europe' },
     Austria: { suffix: 'at', region: 'Europe' },
@@ -20,24 +20,24 @@ export const COUNTRIES = {
     Belarus: { suffix: 'by', region: 'Europe' },
     Belgium: { suffix: 'be', region: 'Europe' },
     'Bosnia-Herzegovina': { suffix: 'ba', region: 'Europe' },
-    Bulgaria: { suffix: 'bg', region: 'Europe' },
-    Croatia: { suffix: 'hr', region: 'Europe' },
-    Cyprus: { suffix: 'cy', region: 'Europe' },
-    'Czech Republic': { suffix: 'cz', region: 'Europe' },
-    Denmark: { suffix: 'dk', region: 'Europe' },
-    England: { suffix: 'en', region: 'Europe' },
+    Bulgaria: { suffix: 'bg', region: 'Europe', ueta: [3, 3] },
+    Croatia: { suffix: 'hr', region: 'Europe', ueta: [2, 3] },
+    Cyprus: { suffix: 'cy', region: 'Europe', ueta: [2, 3] },
+    'Czech Republic': { suffix: 'cz', region: 'Europe', ueta: [4, 3] },
+    Denmark: { suffix: 'dk', region: 'Europe', ueta: [2, 3] },
+    England: { suffix: 'en', region: 'Europe', ueta: [3, 3] },
     Estonia: { suffix: 'ee', region: 'Europe' },
     'Faroe Islands': { suffix: 'fo', region: 'Europe' },
     Finland: { suffix: 'fi', region: 'Europe' },
     France: { suffix: 'fr', region: 'Europe' },
     Georgia: { suffix: 'ge', region: 'Europe' },
-    Germany: { suffix: 'de', region: 'Europe' },
+    Germany: { suffix: 'de', region: 'Europe', ueta: [2, 4] },
     Greece: { suffix: 'gr', region: 'Europe' },
-    Hungary: { suffix: 'hu', region: 'Europe' },
+    Hungary: { suffix: 'hu', region: 'Europe', ueta: [3, 3] },
     Iceland: { suffix: 'is', region: 'Europe' },
     Ireland: { suffix: 'ie', region: 'Europe' },
     Israel: { suffix: 'il', region: 'Europe' },
-    Italy: { suffix: 'it', region: 'Europe' },
+    Italy: { suffix: 'it', region: 'Europe', ueta: [4, 3] },
     Kazakhstan: { suffix: 'kz', region: 'Europe' },
     Latvia: { suffix: 'lv', region: 'Europe' },
     Lithuania: { suffix: 'lt', region: 'Europe' },
@@ -48,20 +48,20 @@ export const COUNTRIES = {
     Netherlands: { suffix: 'nl', region: 'Europe' },
     'North Macedonia': { suffix: 'mk', region: 'Europe' },
     'Northern Ireland': { suffix: 'rt', region: 'Europe' },
-    Norway: { suffix: 'no', region: 'Europe' },
-    Poland: { suffix: 'pl', region: 'Europe' },
-    Portugal: { suffix: 'pt', region: 'Europe' },
+    Norway: { suffix: 'no', region: 'Europe', ueta: [2, 4] },
+    Poland: { suffix: 'pl', region: 'Europe', ueta: [2, 3] },
+    Portugal: { suffix: 'pt', region: 'Europe', ueta: [2, 3] },
     Romania: { suffix: 'ro', region: 'Europe' },
     Russia: { suffix: 'ru', region: 'Europe' },
     'San Marino': { suffix: 'sm', region: 'Europe' },
     Scotland: { suffix: 'ct', region: 'Europe' },
-    Serbia: { suffix: 'cs', region: 'Europe' },
+    Serbia: { suffix: 'cs', region: 'Europe', ueta: [2, 4] },
     Slovakia: { suffix: 'sk', region: 'Europe' },
     Slovenia: { suffix: 'si', region: 'Europe' },
     Spain: { suffix: 'es', region: 'Europe' },
     Sweden: { suffix: 'se', region: 'Europe' },
     Switzerland: { suffix: 'he', region: 'Europe' },
-    Turkey: { suffix: 'tr', region: 'Europe' },
+    Turkey: { suffix: 'tr', region: 'Europe', ueta: [4, 3] },
     Ukraine: { suffix: 'ua', region: 'Europe' },
     Wales: { suffix: 'wa', region: 'Europe' },
 
@@ -158,6 +158,18 @@ export const COUNTRY_BY_SUFFIX = Object.fromEntries(
 const _REGION_BY_SUFFIX = Object.fromEntries(
     Object.entries(COUNTRIES).map(([, c]) => [c.suffix, c.region])
 );
+
+/**
+ * Returns promo column counts for standings separators.
+ * div 1: direct = cl spots, playoff = cl+ue spots (from ueta property, default 2+3).
+ * other divs: direct = 1, playoff = 4 (1 auto-promotion + 3 playoff spots).
+ */
+export const getLeaguePromoColumns = (countrySuffix, division) => {
+    if (String(division) !== '1') return { direct: 1, playoff: 4 };
+    const name = COUNTRY_BY_SUFFIX[countrySuffix];
+    const [cl = 2, ue = 3] = (name && COUNTRIES[name]?.ueta) || [2, 3];
+    return { direct: cl, playoff: cl + ue };
+};
 // -- International Cup URL resolver ----------------------------------------
 // Europe        cl* ? /1/   ue* ? /2/
 // Asia+Oce+Afr  cl* ? /3/   ue* ? /4/

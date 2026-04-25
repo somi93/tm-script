@@ -47,9 +47,20 @@ const injectShellStyles = () => {
 
 const openPlayer = async (matchId) => {
     const match = await TmMatchModel.fetchMatchWithProfiles(matchId);
-    if (!match || match.status === 'future') return;
+    if (!match) return;
+    const isFuture = match.status === 'future';
+    const isLive = match.status === 'live';
 
-    const initialMode = match.status === 'live' ? 'all' : 'key';
+    const initialMode = isLive ? 'all' : 'key';
+
+    // For live matches: live_min from the API IS the match clock (e.g. 86.5 = 86'30")
+    // so we use it directly — no kickoff/HT-break calculation needed.
+    let liveStartMinute = null;
+    let liveStartSecond = 0;
+    if (isLive && match.liveMin != null && match.liveMin > 0) {
+        liveStartMinute = Math.floor(match.liveMin);
+        liveStartSecond = Math.round((match.liveMin % 1) * 60);
+    }
 
     const { schedule } = TmMatchService.buildSchedule(match.plays);
     const playMinutes = Object.keys(match.plays).map(Number).sort((a, b) => a - b);
@@ -251,6 +262,7 @@ const openPlayer = async (matchId) => {
     const ctrl = TmReplayController.create({
         match, maximumMinute, schedule, unity,
         initialMode,
+        ...(liveStartMinute != null ? { startAtMinute: liveStartMinute, startAtSecond: liveStartSecond } : {}),
         onTick: (replayState) => {
             unity.updateHUD(); header.update(match, replayState, maximumMinute);
             lineup.update(replayState);
@@ -291,7 +303,7 @@ const openPlayer = async (matchId) => {
     center.appendChild(unity.el);
 
     body.appendChild(lineup.homePanel.el);
-    body.appendChild(center);
+    if (!isFuture) body.appendChild(center);
     body.appendChild(lineup.awayPanel.el);
 
     const tabContent = document.createElement('div');
@@ -373,15 +385,14 @@ const openPlayer = async (matchId) => {
     document.body.appendChild(overlay);
     document.body.style.overflow = 'hidden';
 
-    unity.init();
+    if (!isFuture) unity.init();
 
     let canvasRO = null; // kept for close() compatibility
 
     // ── Close + keyboard ──────────────────────────────────────────────
     const close = () => {
         canvasRO?.disconnect();
-        ctrl.destroy();
-        unity.saveCanvas();
+        if (!isFuture) { ctrl.destroy(); unity.saveCanvas(); }
         document.removeEventListener('keydown', onKey);
         overlay.remove();
         document.body.style.overflow = '';
@@ -395,10 +406,11 @@ const openPlayer = async (matchId) => {
     overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
 
     // Initial render, then auto-start if Unity won't fire onReady
-    header.update(match, ctrl.getState(), maximumMinute);
-    setTimeout(() => {
-        if (!unity.isAvailable()) ctrl.play();
-    }, 800);
+    const initState = isFuture
+        ? { currentMinute: 0, seconds: 0, currentActionIndex: -1, committedActionIndex: 999, committedClipIndex: -1, playing: false, ended: false, mode: 'key', unityActive: false }
+        : ctrl.getState();
+    header.update(match, initState, maximumMinute);
+    if (!isFuture) setTimeout(() => { if (!unity.isAvailable()) ctrl.play(); }, 800);
 };
 
 // ── Page entry point ──────────────────────────────────────────────────────────

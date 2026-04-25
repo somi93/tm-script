@@ -33,7 +33,7 @@ export const TmTrainingMod = (() => {
 
         if (player.isGK) return mountGkTraining(container);
 
-        const customOn = player.training.custom.some(v => v !== null);
+        const customOn = player.training.custom.some(v => v > 0);
 
         container.innerHTML = '';
         const host = document.createElement('div');

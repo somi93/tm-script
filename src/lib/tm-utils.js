@@ -265,7 +265,8 @@ const getOwnClubIds = () => {
 const applySquadSkills = (player, postPlayer) => {
     if (!Array.isArray(player?.skills)) return player;
     // post data uses 'setpieces' but SKILL_DEFS uses 'set_pieces'
-    const remap = { set_pieces: 'setpieces' };
+    // youth API uses 'aerial' but SKILL_DEFS uses 'arialability'
+    const remap = { set_pieces: 'setpieces', arialability: 'aerial' };
     player.skills = player.skills.map(skill => {
         const postKey = remap[skill.key] ?? skill.key;
         const value = postPlayer[postKey] ?? (skill.key2 ? postPlayer[remap[skill.key2] ?? skill.key2] ?? null : null);

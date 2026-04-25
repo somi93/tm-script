@@ -145,6 +145,8 @@ export const TmStandingsPanel = {
             historyBanner: opts.historyBanner || null,
             canOlder: opts.canOlder || false,
             canNewer: opts.canNewer || false,
+            promoDirectCount: opts.promoDirectCount || 0,
+            promoPlayoffCount: opts.promoPlayoffCount || 0,
             onVenueChange: opts.onVenueChange || null,
             onFormNChange: opts.onFormNChange || null,
             onFormOlder: opts.onFormOlder || null,
@@ -166,7 +168,7 @@ export const TmStandingsPanel = {
         };
 
         const render = () => {
-            const { rows, liveZoneMap, formMap, playedCountMap, venue, formN, formOffset, historyBanner, canOlder, canNewer } = state;
+            const { rows, liveZoneMap, formMap, playedCountMap, venue, formN, formOffset, historyBanner, canOlder, canNewer, promoDirectCount, promoPlayoffCount } = state;
             const hasForm = formMap != null;
             const isHistory = !!historyBanner;
             const isFiltered = hasForm && !isHistory && (venue !== 'total' || formN > 0);
@@ -220,6 +222,8 @@ export const TmStandingsPanel = {
                 formHtml: formHtmlFn,
                 canOlder,
                 canNewer,
+                promoDirectCount,
+                promoPlayoffCount,
             });
 
             container.innerHTML = historyHtml + controlsHtml + tableHtml;

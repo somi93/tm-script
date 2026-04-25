@@ -20,6 +20,8 @@ export const TRAINING_GROUPS_GK = [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]];
 
 /* Human-readable names for standard training type IDs 1-6 */
 export const TRAINING_NAMES = { '1': 'Technical', '2': 'Fitness', '3': 'Tactical', '4': 'Finishing', '5': 'Defending', '6': 'Wings' };
+/* Short labels for the 6 custom training groups (parallel to TRAINING_CUSTOM) */
+export const TRAINING_LABELS = ['Str/Wor/Sta', 'Mar/Tac', 'Cro/Pac', 'Pas/Tec/Set', 'Hea/Pos', 'Fin/Lon'];
 /* Per-group meta (parallel to TRAINING_GROUPS_OUT) */
 export const TRAINING_CUSTOM = [
    { label: 'Strength/Workrate/Stamina', color: 'var(--tmu-success)' },

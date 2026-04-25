@@ -297,7 +297,7 @@ export const normalizeTransferPlayer = (raw) => {
     player.ageMonths = years * 12 + months;
     player.ageMonthsString = `${years}.${months}`;
     player.asi = raw.asi || null;
-    player.routine = raw.routine ?? null;
+    player.routine = raw.routine != null ? Number(raw.routine) : null;
 
     const fp = Array.isArray(raw.fp)
         ? raw.fp.map(s => String(s).trim().toLowerCase()).filter(Boolean)
@@ -314,7 +314,8 @@ export const normalizeTransferPlayer = (raw) => {
         .map(skill => ({ ...skill, value: rawSkillMap.get(skill.key) ?? null }))
         .filter(skill => skill.value != null);
 
-    TmUtils.applyPlayerPositions(player, fp.join(','));
+    // favposition = preferred positions (2-3); fp = all playable positions
+    TmUtils.applyPlayerPositions(player, raw.favposition || '');
     applyPlayerPositionRatings(player);
     player.isOwnPlayer = TmUtils.getOwnClubIds().includes(String(player.club_id));
 

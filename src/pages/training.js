@@ -3,11 +3,10 @@ import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js
 import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmTable } from '../components/shared/tm-table.js';
-import { TmConst } from '../lib/tm-constants.js';
 import { TmPosition } from '../lib/tm-position.js';
 import { TmTrainingMod } from '../components/player/training/tm-player-training.js';
 import { PlayerTrainingDots } from '../components/shared/tm-training-dots.js';
-import { TmClubService } from '../services/club.js';
+import { fetchRawPlayers } from '../models/club_new.js';
 import { TmTrainingService } from '../services/training.js';
 
 'use strict';
@@ -210,34 +209,24 @@ const injectStyles = () => {
     document.head.appendChild(style);
 };
 
-const getPlayerPositions = (player) => String(player?.favposition || '')
-    .split(',')
-    .map(pos => String(pos || '').trim().toLowerCase())
-    .filter(Boolean)
-    .map(pos => {
-        const entry = TmConst.POSITION_MAP[pos] || TmConst.POSITION_MAP[pos.replace(/[lrc]$/, '')];
-        return {
-            position: entry?.position || TmPosition.label(pos),
-            color: entry?.color || 'var(--tmu-text-dim)',
-            ordering: Number(entry?.ordering) || 999,
-        };
-    });
-
-const decoratePlayer = (player, clubId) => ({
-    ...player,
-    id: parseInt(player?.player_id || player?.id, 10) || 0,
-    name: player?.player_name || player?.name || '',
-    age: parseInt(player?.age, 10) || 0,
-    months: parseInt(player?.month || player?.months, 10) || 0,
-    favposition: String(player?.favposition || ''),
-    club_id: clubId,
-    positions: getPlayerPositions(player),
-    trainingState: TmTrainingService.normalizeTrainingState(TmTrainingService.adaptSquadTraining(player)),
-    trainingLoaded: true,
-    trainingLoading: false,
-    trainingError: '',
-    saving: false,
-});
+const decorateTraining = (player) => {
+    const preferred = player.positions.filter(p => p.preferred);
+    const custom6 = player.training.custom.length === 6
+        ? player.training.custom
+        : Array.from({ length: 6 }, (_, i) => player.training.custom[i] ?? 0);
+    return {
+        ...player,
+        months: player.month,
+        positions: preferred.length ? preferred : player.positions.slice(0, 1),
+        favposition: preferred.map(p => p.key).join(','),
+        training: { standard: player.training.standard, custom: custom6 },
+        trainingState: TmTrainingService.normalizeTrainingState(TmTrainingService.adaptSquadTraining(player)),
+        trainingLoaded: true,
+        trainingLoading: false,
+        trainingError: '',
+        saving: false,
+    };
+};
 
 const getFilteredPlayers = () => {
     const query = cleanText(state.query).toLowerCase();
@@ -437,18 +426,21 @@ const mountEditor = (host) => {
     const editorMount = document.createElement('div');
     body.appendChild(editorMount);
 
-    TmTrainingMod.render(editorMount, TmTrainingService.adaptSquadTraining(player), {
-        playerId: player.id,
+    TmTrainingMod.render(editorMount, {
+        player,
         readOnly: false,
-        // TODO: onStateChange now receives player.training { standard, custom } — update this to use new format
-        onStateChange: (trainingState) => {
-            updatePlayer(player.id, {
+        onStateChange: (rawTraining) => {
+            // rawTraining = player.training = { standard, custom } emitted by sub-components
+            const trainingState = TmTrainingService.normalizeTrainingState(
+                TmTrainingService.adaptSquadTraining({ isGK: player.isGK, training: rawTraining })
+            );
+            updatePlayer(player.id, p => ({
+                ...p,
+                training: rawTraining,
                 trainingState,
-                training: trainingState.currentType,
-                training_custom: trainingState.customOn ? trainingState.dots : '',
                 trainingLoaded: true,
                 trainingError: '',
-            });
+            }));
         },
     });
 };
@@ -496,12 +488,11 @@ const init = async () => {
         throw new Error('Training club context was not available yet.');
     }
 
-    const squadData = await TmClubService.fetchSquadPost(ownClubId);
-    const youthData = bTeamClubId ? await TmClubService.fetchSquadPost(bTeamClubId) : null;
-    const squadPlayers = Object.values(squadData || {}).map(player => decoratePlayer(player, ownClubId));
-    const youthPlayers = Object.values(youthData || {}).map(player => decoratePlayer(player, bTeamClubId));
-    const allPlayers = [...squadPlayers, ...youthPlayers];
-    state.players = allPlayers;
+    const [squadPlayers, youthPlayers] = await Promise.all([
+        fetchRawPlayers(ownClubId),
+        bTeamClubId ? fetchRawPlayers(bTeamClubId) : Promise.resolve([]),
+    ]);
+    state.players = [...squadPlayers, ...youthPlayers].map(decorateTraining);
     if (state.players.length) {
         state.selectedPlayerId = String(state.players[0].id);
     }

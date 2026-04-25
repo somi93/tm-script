@@ -618,6 +618,14 @@ export function injectTacticsStyles() {
         .tmu-tbl tbody tr[data-ri]:hover td { background: var(--tmu-surface-hover) !important; }
         .tmu-tbl tbody tr.tmtc-co-row-dragging td { opacity: 0.4; }
         .tmu-tbl tbody tr.tmtc-co-row-drag-over td { background: var(--tmu-primary-muted) !important; outline: 2px dashed var(--tmu-primary); }
+        .tmtc-co-del-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 18px; height: 18px; border-radius: 50%;
+            font-size: 13px; line-height: 1; cursor: pointer;
+            color: var(--tmu-text-disabled);
+            transition: color 0.15s, background 0.15s;
+        }
+        .tmtc-co-del-btn:hover { color: var(--tmu-danger); background: var(--tmu-danger-fill); }
 
         /* ── conditional orders dialog ── */
         .tmtc-co-dialog-body {
