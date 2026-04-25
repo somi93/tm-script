@@ -1,6 +1,6 @@
 'use strict';
 
-import { TmTrainingService } from '../../../services/training.js';
+import { TmTrainingModel } from '../../../models/training.js';
 import { TRAINING_NAMES } from '../../../constants/training.js';
 
 export const mountStandardTraining = (el, player, { readOnly = false, onStateChange = null } = {}) => {
@@ -25,7 +25,7 @@ export const mountStandardTraining = (el, player, { readOnly = false, onStateCha
         if (value !== currentType) {
             currentType = value;
             player.training.standard = value;
-            TmTrainingService.saveTrainingType(player.id, value);
+            TmTrainingModel.saveTrainingType(player.id, value);
             onStateChange?.(player.training);
         }
     };

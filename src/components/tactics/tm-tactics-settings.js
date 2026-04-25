@@ -1,5 +1,5 @@
 import { TmAutocomplete } from '../shared/tm-autocomplete.js';
-import { TmTacticsService } from '../../services/tactics.js';
+import { TmTacticsModel } from '../../models/tactics.js';
 import { MENTALITY_MAP_LONG, STYLE_MAP, FOCUS_MAP } from '../../constants/match.js';
 
 'use strict';
@@ -44,7 +44,7 @@ export function mountTacticsSettings(container, tactics = {}, opts = {}, lineupA
                         onSave?.(currentVal);
                         ac.setValue(text);
                         ac.hideDrop();
-                        TmTacticsService.saveSettingValue(saveKey, currentVal, reserves, national, miniGameId);
+                        TmTacticsModel.saveSettingValue(saveKey, currentVal, reserves, national, miniGameId);
                     },
                 }));
         };

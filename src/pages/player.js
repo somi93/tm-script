@@ -1,7 +1,7 @@
 import { TmAsiCalculator } from '../components/player/card/tm-asi-calculator.js';
 import { TmBestEstimate } from '../components/player/scout/tm-best-estimate.js';
 import { TmGraphsMod } from '../components/player/graphs/tm-graphs-mod.js';
-import { TmScoutsService } from '../services/scouts.js';
+import { TmScoutsModel } from '../models/scouts.js';
 import { TmHistoryMod } from '../components/player/history/tm-history-mod.js';
 import { TmPlayerCard } from '../components/player/card/tm-player-card.js';
 import { TmPlayerSidebar } from '../components/player/card/tm-player-sidebar.js';
@@ -191,7 +191,7 @@ export function initPlayerPage(main) {
         if (!col1) return;
         const el = ensureRailSlot(col1, 'tmbe-standalone', { prepend: true });
         if (!el) return;
-        TmScoutsService.fetchPlayerScouting(PLAYER_ID).then(data => {
+        TmScoutsModel.fetchPlayerScouting(PLAYER_ID).then(data => {
             if (!data) return;
             player.scoutReports = data.reports || [];
             player.scouts = data.scouts || {};

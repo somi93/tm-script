@@ -1,8 +1,29 @@
 import { TmPlayerDB } from '../lib/tm-playerdb.js';
 import { TmClubService } from '../services/club.js';
 import { applyPlayerPositionRatings, normalizeSquadPlayer } from '../utils/normalize/player.js';
+import { normalizeClubTransfers } from '../utils/normalize/club.js';
 
 export const TmClubModel = {
+    fetchClubFixtures(clubId) {
+        return TmClubService.fetchClubFixtures(clubId);
+    },
+
+    fetchClubMatchHistory(clubId, seasonId) {
+        return TmClubService.fetchClubMatchHistory(clubId, seasonId);
+    },
+
+    fetchClubLeagueHistory(clubId, seasonId) {
+        return TmClubService.fetchClubLeagueHistory(clubId, seasonId);
+    },
+
+    fetchClubRecords(clubId) {
+        return TmClubService.fetchClubRecords(clubId);
+    },
+
+    fetchClubPageHtml(clubId) {
+        return TmClubService.fetchClubPageHtml(clubId);
+    },
+
     async fetchSquadRaw(clubId, skillChangesMap = null) {
         const post = await TmClubService.fetchSquadPost(clubId);
         if (!post) return null;
@@ -33,4 +54,16 @@ export const TmClubModel = {
             return player;
         }));
     },
+};
+
+export const fetchRawPlayers = async (clubId) => {
+    if (!clubId) return [];
+    const post = await TmClubService.fetchSquadPost(clubId);
+    if (!post) return [];
+    return Object.values(post).map(normalizeSquadPlayer);
+};
+
+export const fetchClubTransfers = async (clubId, season, opts = {}) => {
+    const html = await TmClubService.fetchClubTransferHistory(clubId, season);
+    return html ? normalizeClubTransfers(html, opts) : null;
 };

@@ -4,7 +4,7 @@ import { TmTable } from './tm-table.js';
 import { TmTournamentPage } from './tm-tournament-page.js';
 import { TmTournamentCards } from './tm-tournament-cards.js';
 import { TmUI } from './tm-ui.js';
-import { TmInternationalCupService } from '../../services/international-cup.js';
+import { TmInternationalCupModel } from '../../models/international-cup.js';
 
 export function mountInternationalCupCoefficientsPage(main) {
     if (!main) main = document.querySelector('.tmvu-main, .main_center');
@@ -39,7 +39,7 @@ export function mountInternationalCupCoefficientsPage(main) {
             : node.querySelector?.('a.country_link[href*="/national-teams/"], a[href*="/national-teams/"]');
         const href = countryAnchor?.getAttribute('href') || '';
         const code = href.match(/\/national-teams\/([^/]+)\//)?.[1] || '';
-        return TmInternationalCupService.normalizeCountryKey(code || countryAnchor?.textContent || node.textContent || '');
+        return TmInternationalCupModel.normalizeCountryKey(code || countryAnchor?.textContent || node.textContent || '');
     };
     const escapeHtml = (value) => String(value || '')
         .replace(/&/g, '&amp;')
@@ -801,7 +801,7 @@ export function mountInternationalCupCoefficientsPage(main) {
     const hydrateCurrentSeasonCoefficientData = async ({ root, box, tournamentIds = [] }) => {
         if (!root || !box) return;
         if (tournamentIds?.length) {
-            const countryPoints = await TmInternationalCupService.calculateCurrentSeasonCountryPoints({ tournamentIds });
+            const countryPoints = await TmInternationalCupModel.calculateCurrentSeasonCountryPoints({ tournamentIds });
             if (!Object.keys(countryPoints || {}).length) {
                 console.warn('[TMVU][International Cup] Current-season coefficient calculation returned no country data.', {
                     tournamentIds,

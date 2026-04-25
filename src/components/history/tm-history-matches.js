@@ -1,5 +1,5 @@
-import { TmClubService } from '../../services/club.js';
-import { TmMatchService } from '../../services/match.js';
+import { TmClubModel } from '../../models/club.js';
+import { TmMatchModel } from '../../models/match.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmHistoryHelpers } from './tm-history-helpers.js';
 import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
@@ -48,7 +48,7 @@ function loadMatches(sid) {
 
     c.innerHTML = TmUI.loading('Loading Season ' + sid + ' matches…');
 
-    TmClubService.fetchClubMatchHistory(_clubId, sid).then(function (html) {
+    TmClubModel.fetchClubMatchHistory(_clubId, sid).then(function (html) {
         if (!html) { c.innerHTML = TmUI.error('Failed to load matches'); return; }
         const d = parseMatchesHtml(html);
         matchesCache[sid] = d;
@@ -249,14 +249,14 @@ function loadPlayerStats(data) {
         }
 
         const p = isCurrentSeason
-            ? TmMatchService.fetchMatch(mid).then(function (d) {
+            ? TmMatchModel.fetchMatch(mid).then(function (d) {
                 if (d) {
                     d._rich = true;
                     _matchDataCache[mid] = d;
                     results.push({ matchData: d, isRich: true, matchInfo: m });
                 }
             })
-            : TmMatchService.fetchMatchTooltip(mid, season).then(function (d) {
+            : TmMatchModel.fetchTooltip(mid, season).then(function (d) {
                 if (d) {
                     _matchDataCache[mid] = d;
                     results.push({ matchData: d, isRich: false, matchInfo: m });
@@ -290,10 +290,12 @@ function aggregateAndRender(results, c) {
         const d = r.matchData;
 
         if (r.isRich) {
-            const club = d.club || {};
-            const hId = String(club.home ? club.home.id || '' : '');
-            const aId = String(club.away ? club.away.id || '' : '');
+            const hId = String(d.home?.club?.id || '');
+            const aId = String(d.away?.club?.id || '');
             const report = d.report || {};
+            // Build pid → player map for lookups (new Match format has lineup as array)
+            const allLineup = [...(d.home?.lineup || []), ...(d.away?.lineup || [])];
+            const playerById = Object.fromEntries(allLineup.map(p => [String(p.id), p]));
             const allMins = Object.keys(report).map(Number).sort(function (a, b) { return a - b; });
 
             allMins.forEach(function (min) {
@@ -307,32 +309,28 @@ function aggregateAndRender(results, c) {
                     const params = Array.isArray(evt.parameters) ? evt.parameters : [evt.parameters];
                     params.forEach(function (p) {
                         if (p.goal) {
-                            const scorer = (d.lineup && d.lineup.home && d.lineup.home[p.goal.player]) ||
-                                (d.lineup && d.lineup.away && d.lineup.away[p.goal.player]);
+                            const scorer = playerById[String(p.goal.player)];
                             if (scorer) {
                                 const sp = getPlayer(scorer.nameLast || scorer.name);
                                 if (sp) sp.goals++;
                             }
                         }
                         if (p.yellow) {
-                            const pl = (d.lineup && d.lineup.home && d.lineup.home[p.yellow]) ||
-                                (d.lineup && d.lineup.away && d.lineup.away[p.yellow]);
+                            const pl = playerById[String(p.yellow)];
                             if (pl) {
                                 const pp = getPlayer(pl.nameLast || pl.name);
                                 if (pp) pp.yellows++;
                             }
                         }
                         if (p.yellow_red) {
-                            const pl2 = (d.lineup && d.lineup.home && d.lineup.home[p.yellow_red]) ||
-                                (d.lineup && d.lineup.away && d.lineup.away[p.yellow_red]);
+                            const pl2 = playerById[String(p.yellow_red)];
                             if (pl2) {
                                 const pp2 = getPlayer(pl2.nameLast || pl2.name);
                                 if (pp2) pp2.reds++;
                             }
                         }
                         if (p.red) {
-                            const pl3 = (d.lineup && d.lineup.home && d.lineup.home[p.red]) ||
-                                (d.lineup && d.lineup.away && d.lineup.away[p.red]);
+                            const pl3 = playerById[String(p.red)];
                             if (pl3) {
                                 const pp3 = getPlayer(pl3.nameLast || pl3.name);
                                 if (pp3) pp3.reds++;
@@ -342,14 +340,9 @@ function aggregateAndRender(results, c) {
                 });
             });
 
-            let allPlrs = [];
-            if (d.lineup) {
-                if (d.lineup.home) allPlrs = allPlrs.concat(Object.values(d.lineup.home));
-                if (d.lineup.away) allPlrs = allPlrs.concat(Object.values(d.lineup.away));
-            }
-            const mom = allPlrs.find(function (p) { return p.mom === 1 || p.mom === '1'; });
+            const mom = allLineup.find(function (p) { return p.mom === 1 || p.mom === '1'; });
             if (mom) {
-                const momInHome = d.lineup && d.lineup.home && Object.values(d.lineup.home).indexOf(mom) !== -1;
+                const momInHome = d.home?.playerIds?.has(String(mom.id));
                 const momClub = momInHome ? hId : aId;
                 if (momClub === String(_clubId)) {
                     const mp = getPlayer(mom.nameLast || mom.name);

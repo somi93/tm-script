@@ -2,7 +2,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
 import { TmFixturesList } from '../components/shared/tm-fixtures-list.js';
 import { TmSummaryStrip } from '../components/shared/tm-summary-strip.js';
 import { TmClubFixturesStyles } from '../components/club/tm-club-fixtures-styles.js';
-import { TmClubService } from '../services/club.js';
+import { TmClubModel } from '../models/club.js';
 import { initClubLayout, normalizeClubHref } from '../components/club/tm-club-layout.js';
 
 export function initFixturesPage(main) {
@@ -231,7 +231,7 @@ export function initFixturesPage(main) {
         container.innerHTML = TmUI.loading('Loading club fixtures...');
 
         try {
-            const data = await TmClubService.fetchClubFixtures(CLUB_ID);
+            const data = await TmClubModel.fetchClubFixtures(CLUB_ID);
             if (!data) throw new Error('Failed to fetch club fixtures');
             fixturesData = data;
             render();

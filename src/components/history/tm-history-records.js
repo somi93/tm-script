@@ -1,4 +1,4 @@
-import { TmClubService } from '../../services/club.js';
+import { TmClubModel } from '../../models/club.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmMetric } from '../shared/tm-metric.js';
 
@@ -92,7 +92,7 @@ function renderRecords() {
     const el = _el;
     if (recordsCache) { el.innerHTML = recordsCache; return; }
     el.innerHTML = TmUI.loading('Loading records…');
-    TmClubService.fetchClubRecords(_clubId).then(function(html) {
+    TmClubModel.fetchClubRecords(_clubId).then(function(html) {
         if (!html) { el.innerHTML = TmUI.error('Failed to load records'); return; }
         const doc = document.createElement('div');
         doc.innerHTML = html;

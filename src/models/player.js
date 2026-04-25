@@ -65,7 +65,7 @@ export const TmPlayerModel = {
 		return TmPlayerService.fetchPlayerTraining(...args);
 	},
 
-	normalizeSquadPlayer(...args) {
-		return TmPlayerService.normalizeSquadPlayer(...args);
+	fetchPlayerTrainingForSync(player) {
+		return TmPlayerService.fetchPlayerTrainingForSync(player);
 	},
 };

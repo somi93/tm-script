@@ -1,6 +1,6 @@
 import { TmConst } from '../../lib/tm-constants.js';
 import { TmUtils } from '../../lib/tm-utils.js';
-import { TmPlayerService } from '../../services/player.js';
+import { TmPlayerModel } from '../../models/player.js';
 
 const { GRAPH_KEYS_OUT, GRAPH_KEYS_GK } = TmConst;
 const { skillValue } = TmUtils;
@@ -117,8 +117,8 @@ export const buildHistorySkeletons = async (players, onProgress) => {
                 return { graphData: null, training: null };
             }
             const [graphData, training] = await Promise.all([
-                TmPlayerService.fetchPlayerGraphs(player),
-                TmPlayerService.fetchPlayerTrainingForSync(player),
+                TmPlayerModel.fetchPlayerGraphs(player),
+                TmPlayerModel.fetchPlayerTrainingForSync(player),
             ]);
             done++;
             onProgress?.(done, total);

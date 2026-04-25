@@ -1,4 +1,4 @@
-import { TmScoutsService } from '../../../services/scouts.js';
+import { TmScoutsModel } from '../../../models/scouts.js';
 import { TmUI } from '../../shared/tm-ui.js';
 import { mountScoutReport } from './scout-report.js';
 import { mountScoutScouts } from './scout-scouts.js';
@@ -77,7 +77,7 @@ export const TmScoutMod = (() => {
             return;
         }
         container.innerHTML = TmUI.loading();
-        TmScoutsService.fetchPlayerScouting(player.id).then(data => {
+        TmScoutsModel.fetchPlayerScouting(player.id).then(data => {
             if (!data) {
                 container.innerHTML = TmUI.error('Failed to load data');
                 return;

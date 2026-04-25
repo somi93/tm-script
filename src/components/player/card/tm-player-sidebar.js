@@ -1,5 +1,5 @@
 import { TmConst } from '../../../lib/tm-constants.js';
-import { TmTransferService } from '../../../services/transfer.js';
+import { TmTransferModel } from '../../../models/transfer.js';
 import { TmUtils } from '../../../lib/tm-utils.js';
 import { TmUI } from '../../shared/tm-ui.js';
 
@@ -136,7 +136,7 @@ const mountLiveTransfer = (tfCard, transferListed) => {
     fetchTransfer = () => {
         refs.reload.innerHTML = '<span class="tmu-spinner tmu-spinner-sm ml-1"></span>';
         refs.reload.disabled = true;
-        TmTransferService.fetchTransfer(transferListed.playerId).then(d => {
+        TmTransferModel.fetchTransfer(transferListed.playerId).then(d => {
             refs.reload.innerHTML = '↻';
             refs.reload.disabled = false;
             if (d?.success) renderTransfer(d);

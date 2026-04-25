@@ -1,7 +1,7 @@
 import { TmUI } from '../../shared/tm-ui.js';
 import { SKILL_DEFS_OUT, SKILL_DEFS_GK, GRAPH_KEYS_OUT, GRAPH_KEYS_GK } from '../../../constants/skills.js';
 import { TmUtils } from '../../../lib/tm-utils.js';
-import { TmPlayerService } from '../../../services/player.js';
+import { TmPlayerModel } from '../../../models/player.js';
 import { buildAges, drawMultiLine, attachMultiTooltip, checkboxHtml, buildEnableCard } from './tm-graph-utils.js';
 
 'use strict';
@@ -11,7 +11,7 @@ const SKILL_META_GK = SKILL_DEFS_GK.map(s => ({ key: s.key2 || s.key, label: s.n
 
 export const buildSkillsChart = async (el, player) => {
     if (player.isOwnPlayer) {
-        const graphData = await TmPlayerService.fetchPlayerGraphs(player);
+        const graphData = await TmPlayerModel.fetchPlayerGraphs(player);
         if (graphData?.graphs?.strength == null) {
             buildEnableCard(el, 'skills', player.id);
             return;

@@ -4,7 +4,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
 import { TmUtils } from '../lib/tm-utils.js';
 import { TmYouthPlayerCard } from '../components/youth/tm-youth-player-card.js';
 import { TmYouthHero } from '../components/youth/tm-youth-hero.js';
-import { TmYouthService } from '../services/youth.js';
+import { TmYouthModel } from '../models/youth.js';
 
 'use strict';
 
@@ -143,7 +143,7 @@ const handlePullNewPlayers = async () => {
     if (state.busy || !state.pull.available || !state.pull.visible) return;
     setBusy(true);
     try {
-        const result = await TmYouthService.fetchNewYouthPlayers({
+        const result = await TmYouthModel.fetchNewYouthPlayers({
             age: state.selectedAge,
             position: state.selectedPosition,
             skipSync: true,
@@ -188,7 +188,7 @@ const handleHirePlayer = async (playerId) => {
 
     setBusy(true);
     try {
-        const result = await TmYouthService.actOnYouthPlayer({ playerId, action: 'hire' });
+        const result = await TmYouthModel.actOnYouthPlayer({ playerId, action: 'hire' });
         if (result?.yes === 'yes') {
             state.cash -= Number(player.youthFee) || 0;
             markPlayer(playerId, {
@@ -221,7 +221,7 @@ const handleFirePlayer = async (playerId) => {
 
     setBusy(true);
     try {
-        const result = await TmYouthService.actOnYouthPlayer({ playerId, action: 'fire' });
+        const result = await TmYouthModel.actOnYouthPlayer({ playerId, action: 'fire' });
         if (result?.yes === 'yes') {
             markPlayer(playerId, { _status: 'fired' });
             state.notice = `${player.name} was released.`;
@@ -250,7 +250,7 @@ const handleFireAllPlayers = async () => {
 
     setBusy(true);
     try {
-        const result = await TmYouthService.actOnYouthPlayer({ playerId: 'all', action: 'fire' });
+        const result = await TmYouthModel.actOnYouthPlayer({ playerId: 'all', action: 'fire' });
         if (result?.yes === 'yes') {
             setPlayers(state.players.map(player => player._status === 'active'
                 ? { ...player, _status: 'fired', _revealed: true }
@@ -357,7 +357,7 @@ export async function initYouthDevelopmentPage(main) {
     mountedMain = main;
 
     const pullControls = parsePullControls(sourceRoot);
-    const initialData = await TmYouthService.fetchYouthPlayers({ skipSync: true });
+    const initialData = await TmYouthModel.fetchYouthPlayers({ skipSync: true });
     state = {
         busy: false,
         notice: '',

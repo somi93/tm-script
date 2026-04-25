@@ -28,8 +28,19 @@ export const TmMatchModel = {
      * @param {{ dbSync?: boolean }} [options]
      * @returns {Promise<object|null>}
      */
-    async fetchMatch(matchId, options = {}) {
-        return TmMatchService.fetchMatch(matchId, options);
+    async fetchMatch(matchId) {
+        return TmMatchService.fetchMatch(matchId);
+    },
+
+    /**
+     * Fetch a match from cache (compresses and stores on first load).
+     * Returns a canonical Match object.
+     *
+     * @param {string|number} matchId
+     * @returns {Promise<object|null>}
+     */
+    async fetchMatchCached(matchId) {
+        return TmMatchService.fetchMatchCached(matchId);
     },
 
     /**
@@ -47,8 +58,19 @@ export const TmMatchModel = {
      * @param {{ dbSync?: boolean }} [options]
      * @returns {Promise<object|null>}
      */
-    async fetchMatchForStats(matchInfo, clubId, options = {}) {
-        return TmMatchService.fetchMatchForStats(matchInfo, clubId, options);
+    async fetchMatchForStats(matchInfo, clubId) {
+        return TmMatchService.fetchMatchForStats(matchInfo, clubId);
+    },
+
+    /**
+     * Build a play-by-play schedule from a raw plays array.
+     *
+     * @param {Array} plays
+     * @param {number} [lineInterval=3]
+     * @returns {object}
+     */
+    buildSchedule(plays, lineInterval = 3) {
+        return TmMatchService.buildSchedule(plays, lineInterval);
     },
 
     /**

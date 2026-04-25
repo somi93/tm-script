@@ -92,27 +92,6 @@ export const TmTrainingService = {
         };
     },
 
-    buildCustomTrainingPayload(playerId, trainingState) {
-        const payload = {
-            type: 'custom',
-            on: 1,
-            player_id: playerId,
-            'custom[points_spend]': 0,
-            'custom[player_id]': playerId,
-            'custom[saved]': '',
-        };
-
-        (trainingState?.teams || []).forEach((team, index) => {
-            const key = `custom[team${index + 1}]`;
-            payload[`${key}[num]`] = index + 1;
-            payload[`${key}[label]`] = team.label || TmConst.TRAINING_LABELS[index] || `Team ${index + 1}`;
-            payload[`${key}[points]`] = parseInt(team.points, 10) || 0;
-            payload[`${key}[skills][]`] = team.skills || [];
-        });
-
-        return payload;
-    },
-
     /**
      * Save a custom training plan.
      * The caller is responsible for building the full training_post payload.

@@ -119,8 +119,6 @@ const skillEff = (lvl) => {
 
 const getMainContainer = (root = document) => root.querySelector('.tmvu-main');
 
-const getMainContainers = (root = document) => Array.from(root.querySelectorAll('.tmvu-main'));
-
 const extractFaceUrl = (appearance, fallback = null) => {
     const src = String(appearance || '').match(/src=['"]([^'"]+)['"]/i)?.[1] || fallback;
     if (!src) return null;
@@ -156,11 +154,6 @@ const sortAgeKeys = (keys) => Array.from(new Set(keys || []))
         const [by, bm] = String(b).split('.').map(Number);
         return ay * 12 + am - (by * 12 + bm);
     });
-
-const safeGrowthSkills = (skills) => (Array.isArray(skills) ? skills : []).map((value) => {
-    const numeric = typeof value === 'object' ? value.value : value;
-    return Number.isFinite(numeric) ? Math.floor(numeric) : 0;
-});
 
 const applyTooltipSkills = (player, tooltipSkills) => {
     if (!Array.isArray(player?.skills) || !Array.isArray(tooltipSkills)) return player;
@@ -277,5 +270,5 @@ const applySquadSkills = (player, postPlayer) => {
 
 const escHtml = v => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-export const TmUtils = { getColor, parseNum, ageToMonths, monthsToAge, classifyPosition, posLabel, fix2, formatR5, fmtCoins, ratingColor, r5Color, toggleSort, skillColor, skillEff, getMainContainer, getMainContainers, extractFaceUrl, parseSkillValue, skillValue, sortAgeKeys, safeGrowthSkills, applyTooltipSkills, applyPlayerPositions, applySquadSkills, getOwnClubIds, escHtml };
+export const TmUtils = { getColor, parseNum, ageToMonths, monthsToAge, classifyPosition, posLabel, fix2, formatR5, fmtCoins, ratingColor, r5Color, toggleSort, skillColor, skillEff, getMainContainer, extractFaceUrl, skillValue, sortAgeKeys, applyTooltipSkills, applyPlayerPositions, applySquadSkills, getOwnClubIds, escHtml };
 

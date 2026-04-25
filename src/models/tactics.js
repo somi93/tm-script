@@ -71,4 +71,14 @@ export const TmTacticsModel = {
     deleteCondOrder(num, reserves, national, miniGameId) {
         return TmTacticsService.deleteCondOrder(num, reserves, national, miniGameId);
     },
+
+    postLineupSave(assoc, changedPlayers, reserves, national, miniGameId) {
+        return TmTacticsService.postLineupSave(assoc, changedPlayers, reserves, national, miniGameId);
+    },
+
+    saveSettingValue(saveKey, value, reserves, national, miniGameId) {
+        return TmTacticsService.saveSettingValue(saveKey, value, reserves, national, miniGameId);
+    },
 };
+
+export { CLUB_COUNTRY, isForeigner, isUnavailable } from '../services/tactics.js';

@@ -206,13 +206,26 @@ export const normalizeRawMatch = (raw, playersById = new Map(), matchId = null) 
         match[side].tactics.style = md.attacking_style?.[side] || null;
         match[side].tactics.focus = md.focus_side?.[side] || null;
 
-        // Lineup: use pre-fetched tooltip players, apply match context on top
+        // Lineup: use pre-fetched tooltip players; fall back to minimal object from raw
         match[side].lineup = Object.values(rawLineup).map(p => {
             const pid = Number(p.player_id);
-            const player = playersById.get(pid);
-            if (!player) return null;
+            const player = playersById.get(pid) || {
+                id: pid,
+                name: p.name || p.nameLast || null,
+                nameLast: p.nameLast || null,
+                age: p.age || null,
+                month: null,
+                fp: p.fp || null,
+                no: p.no || null,
+                routine: p.routine ? Number(p.routine) : null,
+                rec: p.rec || null,
+                udseende2: p.udseende2 || null,
+                skills: [],
+                positions: [],
+                asi: null,
+            };
             return applyMatchContext(player, p, captainId);
-        }).filter(Boolean);
+        });
 
         // Player set for O(1) side lookup (key = string player_id)
         match[side].playerIds = new Set(Object.keys(rawLineup));

@@ -4,7 +4,7 @@ import { TmUI } from '../components/shared/tm-ui.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmPosition } from '../lib/tm-position.js';
 import { TmUtils } from '../lib/tm-utils.js';
-import { fetchRawPlayers } from '../models/club_new.js';
+import { fetchRawPlayers } from '../models/club.js';
 import { runSyncPipeline } from '../workflows/player-history/sync-pipeline.js';
 import { TmProgress } from '../components/shared/tm-progress.js';
 import { injectPlayersPageStyles } from './players-styles.js';

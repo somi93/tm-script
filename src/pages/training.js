@@ -6,8 +6,8 @@ import { TmTable } from '../components/shared/tm-table.js';
 import { TmPosition } from '../lib/tm-position.js';
 import { TmTrainingMod } from '../components/player/training/tm-player-training.js';
 import { PlayerTrainingDots } from '../components/shared/tm-training-dots.js';
-import { fetchRawPlayers } from '../models/club_new.js';
-import { TmTrainingService } from '../services/training.js';
+import { fetchRawPlayers } from '../models/club.js';
+import { TmTrainingModel } from '../models/training.js';
 
 'use strict';
 
@@ -220,7 +220,7 @@ const decorateTraining = (player) => {
         positions: preferred.length ? preferred : player.positions.slice(0, 1),
         favposition: preferred.map(p => p.key).join(','),
         training: { standard: player.training.standard, custom: custom6 },
-        trainingState: TmTrainingService.normalizeTrainingState(TmTrainingService.adaptSquadTraining(player)),
+        trainingState: TmTrainingModel.normalizeTrainingState(TmTrainingModel.adaptSquadTraining(player)),
         trainingLoaded: true,
         trainingLoading: false,
         trainingError: '',
@@ -431,8 +431,8 @@ const mountEditor = (host) => {
         readOnly: false,
         onStateChange: (rawTraining) => {
             // rawTraining = player.training = { standard, custom } emitted by sub-components
-            const trainingState = TmTrainingService.normalizeTrainingState(
-                TmTrainingService.adaptSquadTraining({ isGK: player.isGK, training: rawTraining })
+            const trainingState = TmTrainingModel.normalizeTrainingState(
+                TmTrainingModel.adaptSquadTraining({ isGK: player.isGK, training: rawTraining })
             );
             updatePlayer(player.id, p => ({
                 ...p,

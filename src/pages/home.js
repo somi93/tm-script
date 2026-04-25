@@ -4,7 +4,7 @@ import { TmNativeFeed } from '../components/shared/tm-native-feed.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmButton } from '../components/shared/tm-button.js';
 import { createSocialFeedComponent } from '../components/shared/tm-social-feed.js';
-import { TmApi } from '../services/index.js';
+import { TmMessagesModel } from '../models/messages.js';
 import { buildHomeFeedModel } from '../utils/home-feed.js';
 import { buildNativeHomeFeedPostMap, queryVisibleNativeFeedPosts } from '../utils/home-feed-native.js';
 
@@ -889,7 +889,7 @@ export function initHomePage(main) {
             if (!panel) return;
             panel.innerHTML = TmUI.loading('Loading messages...', true);
 
-            const payload = await TmApi.fetchPmMessages('inbox');
+            const payload = await TmMessagesModel.fetchPmMessages('inbox');
             const items = normalizePmConversationItems(payload).map((item) => ({
                 title: item.subject,
                 sub: item.senderName,
@@ -945,11 +945,11 @@ export function initHomePage(main) {
             : null;
 
         const fetchApiHomeFeedModel = async (feedRoot, { lastPost = '' } = {}) => {
-            const payload = await TmApi.fetchDetailedUserFeed({ lastPost });
+            const payload = await TmMessagesModel.fetchDetailedUserFeed({ lastPost });
             return buildHomeFeedModel({
                 payload,
                 nativePostMap: buildNativeHomeFeedPostMap(feedRoot),
-                fetchFeedNames: TmApi.fetchFeedNames,
+                fetchFeedNames: TmMessagesModel.fetchFeedNames.bind(TmMessagesModel),
             });
         };
 

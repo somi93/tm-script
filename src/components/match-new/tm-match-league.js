@@ -3,8 +3,8 @@
  * Returns { el, update(replayState) } — update() called by match.js on every tick.
  */
 
-import { TMLeagueService } from '../../services/league.js';
-import { TmMatchService } from '../../services/match.js';
+import { TmLeagueModel } from '../../models/league.js';
+import { TmMatchModel } from '../../models/match.js';
 import { deriveStats } from './tm-match-stats.js';
 import { TmStandingsTable } from '../shared/tm-standings-table.js';
 import { TmFixtureMatchRow } from '../shared/tm-fixture-match-row.js';
@@ -343,7 +343,7 @@ export const TmMatchLeagueNew = {
 
             const fetches = missingIds.map(mid => {
                 if (!cache.matchPromisesById[mid]) {
-                    cache.matchPromisesById[mid] = TmMatchService.fetchMatch(mid, { dbSync: false })
+                    cache.matchPromisesById[mid] = TmMatchModel.fetchMatch(mid)
                         .then(mData => { if (mData) cache.matchDataById[mid] = mData; else cache.failedIds[mid] = true; })
                         .catch(() => { cache.failedIds[mid] = true; })
                         .finally(() => { delete cache.matchPromisesById[mid]; });
@@ -361,7 +361,7 @@ export const TmMatchLeagueNew = {
         } else {
             el.innerHTML = TmUI.loading('Loading league data…');
             if (!cache.fixturesPromise) {
-                cache.fixturesPromise = TMLeagueService
+                cache.fixturesPromise = TmLeagueModel
                     .fetchLeagueFixtures('league', { var1: country, var2: division, var3: group })
                     .then(fixtures => { if (!fixtures) throw new Error('No fixtures returned'); cache.fixtures = fixtures; return fixtures; })
                     .finally(() => { cache.fixturesPromise = null; });

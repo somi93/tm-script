@@ -1,7 +1,7 @@
 import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { mountNationalTeamsSideMenu } from '../components/national-teams/tm-national-teams-side-menu.js';
 import { TmUI } from '../components/shared/tm-ui.js';
-import { TmNationalTeamsService } from '../services/national-teams.js';
+import { TmNationalTeamsModel } from '../models/national-teams.js';
 
 const STYLE_ID = 'tmvu-national-teams-election-style';
 
@@ -83,7 +83,7 @@ const showErrorModal = (message) => TmUI.modal({
 
 const handleNominationSelection = async (clubId) => {
     if (!clubId) return;
-    const data = await TmNationalTeamsService.fetchElectionNomination(clubId);
+    const data = await TmNationalTeamsModel.fetchElectionNomination(clubId);
     if (!data?.success) {
         await showErrorModal(data?.error || 'Could not load nomination details.');
         return;
@@ -99,7 +99,7 @@ const handleNominationSelection = async (clubId) => {
     });
     if (choice !== 'confirm') return;
 
-    const result = await TmNationalTeamsService.addElectionNomination(clubId);
+    const result = await TmNationalTeamsModel.addElectionNomination(clubId);
     if (!result?.success) {
         await showErrorModal(result?.error || 'Nomination failed.');
         return;
@@ -126,7 +126,7 @@ const handleNominationResponse = async ({ country, response }) => {
     });
     if (choice !== 'confirm') return;
 
-    const result = await TmNationalTeamsService.respondToElectionNomination(country, response);
+    const result = await TmNationalTeamsModel.respondToElectionNomination(country, response);
     if (!result?.success) {
         await showErrorModal(result?.error || 'Response failed.');
         return;
@@ -142,7 +142,7 @@ const handleNominationResponse = async ({ country, response }) => {
 
 const handleVote = async (clubId) => {
     if (!clubId) return;
-    const data = await TmNationalTeamsService.fetchElectionVote(clubId);
+    const data = await TmNationalTeamsModel.fetchElectionVote(clubId);
     if (!data?.success) {
         await showErrorModal(data?.error || 'Could not load vote details.');
         return;
@@ -158,7 +158,7 @@ const handleVote = async (clubId) => {
     });
     if (choice !== 'confirm') return;
 
-    const result = await TmNationalTeamsService.addElectionVote(clubId);
+    const result = await TmNationalTeamsModel.addElectionVote(clubId);
     if (!result?.success) {
         await showErrorModal(result?.error || 'Vote failed.');
         return;
@@ -605,7 +605,7 @@ export function initNationalTeamsElectionPage(main) {
             }
             suggestTimer = window.setTimeout(async () => {
                 const token = ++suggestToken;
-                const data = await TmNationalTeamsService.fetchElectionSuggestions(query);
+                const data = await TmNationalTeamsModel.fetchElectionSuggestions(query);
                 if (token !== suggestToken) return;
                 const suggestions = normalizeElectionSuggestions(data?.clubs);
                 autocomplete.setItems(suggestions.map(option => TmUI.autocompleteItem({

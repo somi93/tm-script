@@ -2,9 +2,8 @@ import { _post, _get } from './engine.js';
 import { TmStatsMatchProcessor } from '../components/stats/tm-stats-match-processor.js';
 import { TmConst } from '../lib/tm-constants.js';
 import { TmMatchCacheDB } from '../lib/tm-playerdb.js';
-import { fetchRawPlayers } from '../models/club_new.js';
-import { TmPlayerModel } from '../models/player.js';
 import { TmMatchUtils } from '../utils/match.js';
+import { normalizeRawMatch } from '../utils/normalize/match.js';
 
 export const TmMatchService = {
 
@@ -211,125 +210,26 @@ export const TmMatchService = {
     },
 
     /**
-     * Enrich a raw mData object with derived fields. Mutates in place.
-     * Adds: club colors, plays.
-     * @param {object} mData — raw or compressed match API response
-     * @returns {object} mData (mutated)
-     */
-    normalizeMatchData(mData, { dbSync = true } = {}) {
-        const { club, lineup } = mData;
-
-        mData.teams = { home: {}, away: {} };
-        ['home', 'away'].forEach(side => {
-            const color = '#' + (club[side].colors?.club_color1 || (side === 'home' ? '4a9030' : '5b9bff'));
-            const captainId = Number(mData.match_data?.captain?.[side]);
-
-            // Mutate source lineup dict items so buildActiveLineup inherits all fields
-            Object.values(lineup[side]).forEach(p => {
-                p.id = Number(p.player_id);
-                p.faceUrl = TmMatchUtils.faceUrl(p, color);
-                p.captain = Number(p.player_id) === captainId;
-                p.skills = p.skills || [];
-                p.routine = p.routine ? Number(p.routine) : null;
-            });
-
-            mData.teams[side] = {
-                ...club[side],
-                color,
-                lineup: Object.values(lineup[side]),
-                mentality: Number(mData.match_data?.mentality?.[side] ?? 4),
-                attackingStyle: mData.match_data?.attacking_style?.[side] ?? null,
-                focusSide: mData.match_data?.focus_side?.[side] ?? null,
-            };
-        });
-
-        mData.homePlayerSet = new Set(Object.keys(lineup.home));
-        mData.awayPlayerSet = new Set(Object.keys(lineup.away));
-        mData.allPlayers = [...Object.values(lineup.home), ...Object.values(lineup.away)];
-
-        this.normalizeReport(mData.report);
-        mData.plays = this.buildNormalizedPlays(mData.report, lineup);
-
-        // Expose match-shape accessors so a single snapshot function works on both
-        // this object and the primary match object from normalizeRawMatch.
-        mData.home = { club: { id: mData.teams.home.id, name: mData.teams.home.club_name }, playerIds: mData.homePlayerSet, lineup: mData.teams.home.lineup };
-        mData.away = { club: { id: mData.teams.away.id, name: mData.teams.away.club_name }, playerIds: mData.awayPlayerSet, lineup: mData.teams.away.lineup };
-
-        // Fire-and-forget: enrich lineup players with profile data
-        const allPids = new Set(mData.allPlayers.map(p => String(p.id)));
-        const homeClubId = mData.teams.home.id;
-        const awayClubId = mData.teams.away.id;
-
-        if (dbSync) {
-            (async () => {
-                // Fetch both squads in parallel — covers the vast majority of players
-                const [homeData, awayData] = await Promise.all([
-                    fetchRawPlayers(homeClubId).catch(() => null),
-                    fetchRawPlayers(awayClubId).catch(() => null),
-                ]);
-
-
-                // Build pid → normalized player map from squad results
-                const squadMap = {};
-                [homeData, awayData].forEach(squad => {
-                    if (!Array.isArray(squad)) return;
-                    squad.forEach(p => { squadMap[String(p.id)] = p; });
-                });
-
-                // Split into found (in squad) and missing (sold/released)
-                const players = [];
-                const missingPids = [];
-                for (const pid of allPids) {
-                    const p = squadMap[pid];
-                    if (p) players.push(p);
-                    else missingPids.push(pid);
-                }
-
-                // Fetch tooltips only for players not found in squad
-                if (missingPids.length > 0) {
-                    await Promise.all(missingPids.map(pid =>
-                        TmPlayerModel.fetchPlayerTooltip(pid)
-                            .then(data => { if (data) players.push(data); })
-                            .catch(() => { })
-                    ));
-                }
-
-                window.dispatchEvent(new CustomEvent('tm:match-profiles-ready', { detail: { players } }));
-            })();
-        }
-
-        return mData;
-    },
-
-    /**
-     * Fetch the full match data object for a given match ID.
-     * Automatically normalizes the response (report promotion, plays, colors, player sets).
+     * Fetch and normalize a match.
+     * Returns a canonical Match object (lib/match.js shape).
      * @param {string|number} matchId
-     * @param {{dbSync?: boolean}} [options]
      * @returns {Promise<object|null>}
      */
-    async fetchMatch(matchId, options = {}) {
+    async fetchMatch(matchId) {
         const raw = await _get(`/ajax/match.ajax.php?id=${matchId}`);
         if (!raw) return null;
-        return this.normalizeMatchData(raw, options);
+        return normalizeRawMatch(raw, new Map(), String(matchId));
     },
 
-    /**
-     * Fetch match data without cache usage or async player profile enrichment.
-     * Intended for pages that only need the raw match payload and lineup/report data.
-     * @param {string|number} matchId
-     * @returns {Promise<object|null>}
-     */
     /**
      * Fetch a match via the standard match normalization path and return
      * the stats-ready payload consumed by the club statistics page.
      * @param {object} matchInfo
      * @param {string|number} clubId
-     * @param {{dbSync?: boolean}} [options]
      * @returns {Promise<object|null>}
      */
-    async fetchMatchForStats(matchInfo, clubId, options = {}) {
-        const mData = await this.fetchMatch(matchInfo.id, options);
+    async fetchMatchForStats(matchInfo, clubId) {
+        const mData = await this.fetchMatch(matchInfo.id);
         if (!mData) return null;
         return TmStatsMatchProcessor.process(matchInfo, mData, clubId);
     },
@@ -340,7 +240,7 @@ export const TmMatchService = {
      * colors/logos/form/meta from club sections.
      * Result is ~30% smaller and fully compatible with all scripts.
      * @param {object} raw — raw response from match.ajax.php
-     * @returns {object} compressed match object
+     * @returns {object} compressed raw (still raw shape, not a Match object)
      */
     compressMatch(raw) {
         const cPlayer = p => ({
@@ -377,7 +277,6 @@ export const TmMatchService = {
                         e.chance = {};
                         if (evt.chance.video) e.chance.video = evt.chance.video;
                         if (evt.chance.text) e.chance.text = evt.chance.text;
-                        // text_team dropped — not used by any script
                     }
                     return e;
                 });
@@ -427,18 +326,17 @@ export const TmMatchService = {
      * First call: fetches from TM API, compresses, stores, returns.
      * Subsequent calls: returns stored compressed record instantly.
      * @param {string|number} matchId
-     * @param {{dbSync?: boolean}} [options]
      * @returns {Promise<object|null>}
      */
-    async fetchMatchCached(matchId, options = {}) {
+    async fetchMatchCached(matchId) {
         const db = TmMatchCacheDB;
         const cached = await db.get(matchId);
-        if (cached) return this.normalizeMatchData(cached, options);
+        if (cached) return normalizeRawMatch(cached, new Map(), String(matchId));
         const raw = await _get(`/ajax/match.ajax.php?id=${matchId}`);
         if (!raw) return null;
         const compressed = this.compressMatch(raw);
         db.set(matchId, compressed); // fire-and-forget
-        return this.normalizeMatchData(compressed, options);
+        return normalizeRawMatch(compressed, new Map(), String(matchId));
     },
 
     /**

@@ -1,6 +1,6 @@
 import { TmFixtureRoundCards } from '../shared/tm-fixture-round-cards.js';
-import { TmMatchService } from '../../services/match.js';
-import { TMLeagueService } from '../../services/league.js';
+import { TmMatchModel } from '../../models/match.js';
+import { TmLeagueModel } from '../../models/league.js';
 import { TmLeagueFixtures } from './tm-league-fixtures.js';
 import { TmLeagueSkillTable } from './tm-league-skill-table.js';
 import { TmLeagueStandings } from './tm-league-standings.js';
@@ -87,7 +87,7 @@ const fetchRoundRatings = (round) => {
         const mid = String(m.id);
         if (roundMatchCache.has(mid) || roundFetchInFlight.has(mid)) return;
         roundFetchInFlight.add(mid);
-        TmMatchService.fetchMatchCached(mid, { dbSync: false })
+        TmMatchModel.fetchMatchCached(mid)
             .then(data => {
                 roundFetchInFlight.delete(mid);
                 if (data) processRoundMatchData(mid, data);
@@ -116,12 +116,14 @@ const fillRatingCells = (matchId, homeR5, awayR5) => {
 /** Processes a single match for the Rounds panel only (never touches totalProcessed). */
 const processRoundMatchData = (matchId, data) => {
     const s = window.TmLeagueCtx;
-    const homeId = String(data.club.home.id);
-    const awayId = String(data.club.away.id);
-    Promise.all([s.fetchSquad(homeId, data.club.home.club_name), s.fetchSquad(awayId, data.club.away.club_name)]).then(([homeSquad, awaySquad]) => {
+    const homeId = String(data.home.club.id);
+    const awayId = String(data.away.club.id);
+    const homeLineupMap = Object.fromEntries(data.home.lineup.map(p => [String(p.id), p]));
+    const awayLineupMap = Object.fromEntries(data.away.lineup.map(p => [String(p.id), p]));
+    Promise.all([s.fetchSquad(homeId, data.home.club.name), s.fetchSquad(awayId, data.away.club.name)]).then(([homeSquad, awaySquad]) => {
         return Promise.all([
-            s.computeTeamStats(Object.keys(data.lineup.home), data.lineup.home, homeSquad),
-            s.computeTeamStats(Object.keys(data.lineup.away), data.lineup.away, awaySquad)
+            s.computeTeamStats(Object.keys(homeLineupMap), homeLineupMap, homeSquad),
+            s.computeTeamStats(Object.keys(awayLineupMap), awayLineupMap, awaySquad)
         ]);
     }).then(([homeResult, awayResult]) => {
         const homeR5 = Number((homeResult.totals.R5 / 11).toFixed(2));
@@ -141,30 +143,29 @@ const showLoading = () => {
 /** Processes a match for the full analysis (updates clubDatas, clubPlayersMap, totalProcessed). */
 const processMatchData = (matchId, data) => {
     const s = window.TmLeagueCtx;
-    const homeId = String(data.club.home.id);
-    const awayId = String(data.club.away.id);
+    const homeId = String(data.home.club.id);
+    const awayId = String(data.away.club.id);
 
     // Capture tournament name from first available match
-    if (!s.panelLeagueName && data.match_data?.venue?.tournament) {
-        s.panelLeagueName = data.match_data.venue.tournament;
+    if (!s.panelLeagueName && data.competition.name) {
+        s.panelLeagueName = data.competition.name;
         const el = document.getElementById('tsa-panel-league-name');
         if (el) el.textContent = s.panelLeagueName;
     }
 
-    const homeLineup = data.lineup.home;
-    const awayLineup = data.lineup.away;
-    const homeKeys = Object.keys(homeLineup || {});
-    const awayKeys = Object.keys(awayLineup || {});
-    const homeStarters = homeKeys.filter(id => !homeLineup[id]?.position?.includes('sub'));
-    const awayStarters = awayKeys.filter(id => !awayLineup[id]?.position?.includes('sub'));
+    const homeLineupArr = data.home.lineup;
+    const awayLineupArr = data.away.lineup;
+    const homeLineupMap = Object.fromEntries(homeLineupArr.map(p => [String(p.id), p]));
+    const awayLineupMap = Object.fromEntries(awayLineupArr.map(p => [String(p.id), p]));
+    const homeStarters = homeLineupArr.filter(p => !p.position?.includes('sub'));
+    const awayStarters = awayLineupArr.filter(p => !p.position?.includes('sub'));
     if (!homeStarters.length || !awayStarters.length) {
-        console.warn(`[League] match=${matchId} lineup problem — home keys=${homeKeys.length} starters=${homeStarters.length}, away keys=${awayKeys.length} starters=${awayStarters.length}`);
-        console.log('[League] homeLineup sample:', homeKeys.slice(0, 3).map(id => ({ id, pos: homeLineup[id]?.position })));
+        console.warn(`[League] match=${matchId} lineup problem — home=${homeLineupArr.length} starters=${homeStarters.length}, away=${awayLineupArr.length} starters=${awayStarters.length}`);
     }
-    Promise.all([s.fetchSquad(homeId, data.club.home.club_name), s.fetchSquad(awayId, data.club.away.club_name)]).then(([homeSquad, awaySquad]) => {
+    Promise.all([s.fetchSquad(homeId, data.home.club.name), s.fetchSquad(awayId, data.away.club.name)]).then(([homeSquad, awaySquad]) => {
         return Promise.all([
-            s.computeTeamStats(Object.keys(homeLineup), homeLineup, homeSquad),
-            s.computeTeamStats(Object.keys(awayLineup), awayLineup, awaySquad)
+            s.computeTeamStats(Object.keys(homeLineupMap), homeLineupMap, homeSquad),
+            s.computeTeamStats(Object.keys(awayLineupMap), awayLineupMap, awaySquad)
         ]).then(([homeResult, awayResult]) => ({ homeResult, awayResult, homeSquad, awaySquad }));
     }).then(({ homeResult, awayResult, homeSquad, awaySquad }) => {
         if(homeResult.totals.R5 === 0) {
@@ -195,7 +196,7 @@ const processMatchData = (matchId, data) => {
         const homeR5 = Number((homeResult.totals.R5 / 11).toFixed(2));
         const awayR5 = Number((awayResult.totals.R5 / 11).toFixed(2));
         if(!homeR5) {
-            console.warn(`[League] Home team ${data.club.home.club_name} has R5=0 in match ${matchId}`);
+            console.warn(`[League] Home team ${data.home.club.name} has R5=0 in match ${matchId}`);
         }
         roundMatchCache.set(String(matchId), { homeR5, awayR5, data });
         fillRatingCells(String(matchId), homeR5, awayR5);
@@ -246,7 +247,7 @@ const startAnalysis = n => {
             s.updateProgress(`Loading ${matchIds.length} matches (${dates.length} rounds)...`);
 
             matchIds.forEach(id => {
-                TmMatchService.fetchMatchCached(id, { dbSync: false })
+                TmMatchModel.fetchMatchCached(id)
                     .then(data => {
                         if (data) processMatchData(id, data);
                         else s.totalProcessed += 2;
@@ -270,7 +271,7 @@ const startAnalysis = n => {
     if (s.fixturesCache) {
         doAnalysis(s.fixturesCache);
     } else {
-        TMLeagueService.fetchLeagueFixtures('league', { var1: s.leagueCountry, var2: s.leagueDivision, var3: s.leagueGroup })
+        TmLeagueModel.fetchLeagueFixtures('league', { var1: s.leagueCountry, var2: s.leagueDivision, var3: s.leagueGroup })
             .then(data => {
                 if (!data) return;
                 s.fixturesCache = data;

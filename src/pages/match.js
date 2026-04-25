@@ -1,6 +1,5 @@
 import { TmMatchModel } from '../models/match.js';
-import { TmMatchService } from '../services/match.js';
-import { TmClubService } from '../services/club.js';
+import { TmClubModel } from '../models/club.js';
 import { TmMatchHeader } from '../components/match-new/tm-match-header.js';
 import { scoreAt } from '../components/match-new/tm-match-header.js';
 import { TmMatchFeed } from '../components/match-new/tm-match-feed.js';
@@ -62,7 +61,7 @@ const openPlayer = async (matchId) => {
         liveStartSecond = Math.round((match.liveMin % 1) * 60);
     }
 
-    const { schedule } = TmMatchService.buildSchedule(match.plays);
+    const { schedule } = TmMatchModel.buildSchedule(match.plays);
     const playMinutes = Object.keys(match.plays).map(Number).sort((a, b) => a - b);
     const maximumMinute = playMinutes.length ? playMinutes[playMinutes.length - 1] : 90;
 
@@ -121,8 +120,8 @@ const openPlayer = async (matchId) => {
         try {
             const matchId = String(match.id);
             const [homeFixtures, awayFixtures] = await Promise.all([
-                TmClubService.fetchClubFixtures(match.home.club.id),
-                TmClubService.fetchClubFixtures(match.away.club.id),
+                TmClubModel.fetchClubFixtures(match.home.club.id),
+                TmClubModel.fetchClubFixtures(match.away.club.id),
             ]);
 
             const numericMatchId = Number(matchId);
@@ -145,10 +144,11 @@ const openPlayer = async (matchId) => {
             const matchCounts = {};
             await Promise.all(pastMatchIds.map(async (id) => {
                 try {
-                    const mData = await TmMatchService.fetchMatch(id, { dbSync: false });
+                    const mData = await TmMatchModel.fetchMatch(id);
                     if (!mData?.report) return;
                     // Count appearances
-                    (mData.allPlayers || []).forEach(p => {
+                    const allPlayers = [...(mData.home?.lineup || []), ...(mData.away?.lineup || [])];
+                    allPlayers.forEach(p => {
                         const pid = String(p.id || p.player_id || '');
                         if (pid) matchCounts[pid] = (matchCounts[pid] || 0) + 1;
                     });

@@ -7,8 +7,8 @@ import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { createSocialFeedController } from '../components/shared/tm-social-feed.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmConst } from '../lib/tm-constants.js';
-import { fetchRawPlayers } from '../models/club_new.js';
-import { TmApi } from '../services/index.js';
+import { fetchRawPlayers } from '../models/club.js';
+import { TmMessagesModel } from '../models/messages.js';
 import { TmPlayerModel } from '../models/player.js';
 import { TmUtils } from '../lib/tm-utils.js';
 
@@ -347,7 +347,7 @@ export function initLeaguePage(main) {
                 getFeedRoot: () => document.querySelector('#feed'),
                 fetchFeedPayload: ({ lastPost }) => {
                     const params = getLeagueFeedParams();
-                    return TmApi.fetchDetailedUserFeed({
+                    return TmMessagesModel.fetchDetailedUserFeed({
                         feedId: '0',
                         buddies: false,
                         personal: false,

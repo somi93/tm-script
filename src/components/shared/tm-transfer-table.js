@@ -1,5 +1,5 @@
 import { TmLeagueTable } from '../league/tm-league-table.js';
-import { fetchClubTransfers } from '../../models/club_new.js';
+import { fetchClubTransfers } from '../../models/club.js';
 import { TmStars } from './tm-stars.js';
 
 export const TmTransferTable = {

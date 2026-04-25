@@ -15,7 +15,7 @@
  *   unity.isAvailable() / isReady() / isPlaying() / getActiveMinute()
  */
 
-import { TmUnityEngine } from '../match/tm-unity-engine.js';
+import { TmUnityEngine } from './tm-unity-engine.js';
 
 const STYLE_ID = 'mp-unity-style';
 

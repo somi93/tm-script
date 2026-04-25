@@ -1,6 +1,6 @@
 import { TmAppShellHeader } from './tm-app-shell-header.js';
 import { TmUI } from './tm-ui.js';
-import { TmApi } from '../../services/index.js';
+import { TmMessagesModel } from '../../models/messages.js';
 
 const STYLE_ID = 'tmvu-shell-pm-styles';
 
@@ -675,7 +675,7 @@ async function normalizeFeedItems(payload) {
     const playerIds = [...new Set(items.flatMap(item => extractFeedPlayerIds(item?.text)))];
     const clubIds = [...new Set(items.flatMap(item => extractFeedClubIds(item)))];
     const namesPayload = playerIds.length || clubIds.length
-        ? await TmApi.fetchFeedNames({ playerIds, clubIds })
+        ? await TmMessagesModel.fetchFeedNames({ playerIds, clubIds })
         : null;
     const nameMaps = normalizeFeedNames(namesPayload);
 
@@ -1012,7 +1012,7 @@ async function submitPmReply(pmState) {
     textarea.disabled = true;
     setPmReplyStatus(pmState, 'Sending reply...', 'muted');
 
-    const response = await TmApi.sendPmMessage({
+    const response = await TmMessagesModel.sendPmMessage({
         recipient: replyMeta.recipientName,
         subject: replyMeta.subject,
         message,
@@ -1192,7 +1192,7 @@ async function loadPmDialogDetail(pmState, item) {
         return;
     }
 
-    const response = await TmApi.fetchPmMessageText(item.id, item.conversationId || '0');
+    const response = await TmMessagesModel.fetchPmMessageText(item.id, item.conversationId || '0');
     const thread = normalizePmThreadItems(response);
     if (!thread.length) {
         dialog.replyMeta = null;
@@ -1220,7 +1220,7 @@ async function loadPmDialogFolder(pmState, place = 'inbox', selected = null) {
 
     let items = dialog.listCache.get(place);
     if (!items) {
-        const response = await TmApi.fetchPmMessages(place);
+        const response = await TmMessagesModel.fetchPmMessages(place);
         items = normalizePmFolderItems(response, place);
         dialog.listCache.set(place, items);
     }
@@ -1255,7 +1255,7 @@ async function loadPmConversations(pmState) {
     setPmListPlaceholder(pmState, 'Loading latest conversations...');
 
     try {
-        const pmResponse = await TmApi.fetchPmMessages('inbox');
+        const pmResponse = await TmMessagesModel.fetchPmMessages('inbox');
         const pmItems = normalizePmConversationItems(pmResponse);
 
         if (pmItems.length) {
@@ -1279,7 +1279,7 @@ async function loadFeedNotifications(feedState) {
     setFeedListPlaceholder(feedState, 'Loading notifications...');
 
     try {
-        const response = await TmApi.fetchTopUserFeed();
+        const response = await TmMessagesModel.fetchTopUserFeed();
         const items = await normalizeFeedItems(response);
         feedState.items = items;
 
@@ -1504,8 +1504,8 @@ export function createAppShellPmController({ clubId = '', initialCount = 0, init
 
         async refreshCount() {
             const [topUserInfo, topUserFeed] = await Promise.all([
-                TmApi.fetchTopUserInfo(),
-                TmApi.fetchTopUserFeed(),
+                TmMessagesModel.fetchTopUserInfo(),
+                TmMessagesModel.fetchTopUserFeed(),
             ]);
             setPmCount(getTopUserInfoPmCount(topUserInfo, pmState.count));
             setFeedCount(getTopUserInfoFeedCount(topUserInfo, feedState.count));

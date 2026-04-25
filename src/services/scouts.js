@@ -3,11 +3,6 @@ import { normalizeScout, normalizeScoutReport, normalizeBestEstimate } from '../
 import { normalizeClubFromScoutReport } from '../utils/normalize/club.js';
 
 export const TmScoutsService = {
-    async fetchScouts() {
-        const data = await _post('/ajax/scouts_get_scouts.ajax.php', {});
-        if (!data) return null;
-        return Object.values(data).map(raw => normalizeScout(raw));
-    },
     async fetchPlayerScouting(playerId) {
         const data = await _post('/ajax/players_get_info.ajax.php', {
             player_id: playerId,

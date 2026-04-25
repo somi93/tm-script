@@ -8,8 +8,7 @@ import { mountTacticsSquadList } from '../components/tactics/tm-tactics-squad-li
 import { createTacticsCtx, mountTacticsSpecialRoles, applyTacticsAssignment } from '../components/tactics/tm-tactics-ctx.js';
 import { mountTacticsPanel } from '../components/tactics/tm-tactics-panel.js';
 import { mountTacticsOrders } from '../components/tactics/tm-tactics-orders.js';
-import { TmTacticsModel } from '../models/tactics.js';
-import { TmTacticsService, CLUB_COUNTRY, isForeigner } from '../services/tactics.js';
+import { TmTacticsModel, CLUB_COUNTRY, isForeigner } from '../models/tactics.js';
 
 'use strict';
 
@@ -162,7 +161,7 @@ export async function initTacticsPage(main) {
             CLUB_COUNTRY, isForeigner,
             async onSave(changed) {
                 try {
-                    await TmTacticsService.postLineupSave(buildAssocForSave(tactics), changed, reserves, national, miniGameId);
+                    await TmTacticsModel.postLineupSave(buildAssocForSave(tactics), changed, reserves, national, miniGameId);
                     TmAlert.show({ message: 'Saved', tone: 'success' });
                 } catch {
                     TmAlert.show({ message: 'Save failed', tone: 'error' });

@@ -3,7 +3,7 @@ import { TmAlert } from '../shared/tm-alert.js';
 import { TmModal } from '../shared/tm-modal.js';
 import { TmConst } from '../../lib/tm-constants.js';
 import { mountTacticsSettings } from './tm-tactics-settings.js';
-import { CLUB_COUNTRY as clubCountry, isForeigner, isUnavailable } from '../../services/tactics.js';
+import { CLUB_COUNTRY as clubCountry, isForeigner, isUnavailable } from '../../models/tactics.js';
 import { getTargetRanks } from './tm-tactics-field.js';
 
 'use strict';

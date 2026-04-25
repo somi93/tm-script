@@ -1,7 +1,6 @@
 import { _post } from './engine.js';
 import {
     normalizeTooltipPlayer,
-    normalizeSquadPlayer,
     normalizePlayerStats,
     normalizePlayerGraphs,
     normalizePlayerTraining,
@@ -55,11 +54,4 @@ export const TmPlayerService = {
         return normalizeSquadPlayerTraining(data?.post?.[player.id]);
     },
 
-    normalizeSquadPlayer(postPlayer) {
-        return normalizeSquadPlayer(postPlayer);
-    },
-
-    normalizePlayer(player) {
-        return player;
-    },
 };

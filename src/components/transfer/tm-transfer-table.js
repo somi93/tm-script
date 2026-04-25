@@ -47,6 +47,7 @@ const MOUNT_OPTIONS = {
     columns: { rtn: false },
     sortKey: 'timeleft',
     sortDir: 1,
+    onRowClick: null,
     rowCls(player) { return player.timeleft > 0 ? 'tmpt-row-clickable' : null; },
     rowAttrs(player) { return { 'data-pid': String(player.id) }; },
     nameDecorator(player) {

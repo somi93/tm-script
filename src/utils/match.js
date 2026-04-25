@@ -7,36 +7,6 @@ import { POSITION_MAP } from '../constants/player.js';
 
 export const TmMatchUtils = {
 
-    cloneMatchData(mData) {
-        if (!mData) return mData;
-        if (typeof structuredClone === 'function') {
-            return structuredClone(mData);
-        }
-        const cloned = JSON.parse(JSON.stringify(mData));
-        cloned.homePlayerSet = new Set(Array.from(mData.homePlayerSet || []));
-        cloned.awayPlayerSet = new Set(Array.from(mData.awayPlayerSet || []));
-        return cloned;
-    },
-
-    /**
-     * Check if a match has not started yet.
-     * Negative live_min means countdown to kickoff.
-     * @param {object} mData
-     * @returns {boolean}
-     */
-    isMatchFuture(mData) {
-        const md = mData?.match_data;
-        const liveMin = md?.live_min;
-        if (typeof liveMin === 'number' && liveMin < 0) return true;
-        if (typeof liveMin === 'number' && liveMin > 0) return false;
-        const kickoff = md?.venue?.kickoff;
-        if (kickoff) {
-            const now = Math.floor(Date.now() / 1000);
-            return Number(kickoff) > now;
-        }
-        return false;
-    },
-
     /**
      * Returns true if the given player id is in the home side's lineup.
      * @param {Set<string>} homeIds — Set of home player ids as strings
@@ -48,7 +18,7 @@ export const TmMatchUtils = {
     },
 
     extractStats(mData, teamData) {
-        const teamId = String(teamData.id);
+        const teamId = String(teamData.club?.id ?? teamData.id);
         const acts = (mData.actions || []).filter(a => String(a.teamId) === teamId);
 
         // Build per-style advanced breakdown from visiblePlays
@@ -92,14 +62,13 @@ export const TmMatchUtils = {
         };
     },
     getMatchEndMin(mData) {
-        const md = mData?.match_data || {};
         const playMins = Object.keys(mData?.plays || {}).map(Number).filter(Number.isFinite);
         const reportMins = Object.keys(mData?.report || {}).map(Number).filter(Number.isFinite);
         const actionMins = (mData?.actions || []).map(a => Number(a.min)).filter(Number.isFinite);
         const candidates = [
-            Number(md.last_min),
-            Number(md.regular_last_min),
-            Number(md.live_min),
+            Number(mData?.duration?.total),
+            Number(mData?.duration?.regular),
+            Number(mData?.liveMin),
             ...playMins,
             ...reportMins,
             ...actionMins,
@@ -273,15 +242,6 @@ export const TmMatchUtils = {
     },
 
     /**
-     * Flatten all actions from a play into a single array.
-     * @param {object} play
-     * @returns {Array<object>}
-     */
-    getPlayActions(play) {
-        return (play?.segments || []).flatMap(seg => seg.actions || []);
-    },
-
-    /**
      * Check if an event or event line is visible at the current live step.
      * @param {number} evtMin    — minute of the event
      * @param {number} evtIdx    — event index within that minute
@@ -300,22 +260,6 @@ export const TmMatchUtils = {
     },
 
     /**
-     * Build a playerId → displayName lookup from match lineup data.
-     * @param {object} mData — match data with .lineup.home and .lineup.away
-     * @returns {{ [playerId: string]: string }}
-     */
-    buildPlayerNames(mData) {
-        const names = {};
-        ['home', 'away'].forEach(side => {
-            const lineup = mData.lineup?.[side] || mData.teams?.[side]?.lineup || {};
-            Object.values(lineup).forEach(p => {
-                names[p.player_id] = p.name;
-            });
-        });
-        return names;
-    },
-
-    /**
      * Build the active lineup map for a side at the given live step.
      * Starts from the original XI and applies visible substitutions and red cards.
      * @param {object} mData
@@ -327,10 +271,10 @@ export const TmMatchUtils = {
      */
     buildActiveLineup(liveState, side) {
         const { mData } = liveState;
-        const sourceLineup = mData.lineup?.[side] || mData.teams?.[side]?.lineup || {};
+        const sourceLineup = mData[side]?.lineup || [];
         // Deep-copy all players and record original position for minsPlayed calculation
-        const players = Object.values(sourceLineup).map(p => ({ ...p, originalPosition: p.position }));
-        const teamId = String(mData.teams[side].id);
+        const players = sourceLineup.map(p => ({ ...p, originalPosition: p.position }));
+        const teamId = String(mData[side].club.id);
         const teamActions = (mData.actions || []).filter(a => String(a.teamId) === String(teamId));
         // Track which sub slots are already occupied in the original lineup
         const usedSubSlots = new Set(
@@ -345,7 +289,7 @@ export const TmMatchUtils = {
         };
         // Process actions in order: subOut/red → demote to bench; positionChange → set position
         for (const act of teamActions) {
-            const p = players.find(x => String(x.player_id) === String(act.by));
+            const p = players.find(x => String(x.id) === String(act.by));
             if (!p) continue;
             if (act.action === 'subOut' || act.action === 'red' || act.action === 'yellowRed') {
                 p.position = getNextSubSlot();
@@ -365,28 +309,10 @@ export const TmMatchUtils = {
      */
     buildLiveTeamTactics(liveState, side) {
         const { mData } = liveState || {};
-        const mentalityActions = mData.actions.filter(a => a.action === 'mentality_change' && String(a.team) === String(mData.teams?.[side]?.id));
+        const teamId = String(mData[side]?.club?.id);
+        const mentalityActions = mData.actions.filter(a => a.action === 'mentality_change' && String(a.team) === teamId);
         if (!mentalityActions.length) return null;
         return mentalityActions[mentalityActions.length - 1].mentality;
-    },
-
-    /**
-     * Resolve the live score at the current match step.
-     * @param {object} mData
-     * @param {number} [curMin]
-     * @param {number} [curEvtIdx]
-     * @param {number} [curLineIdx]
-     * @returns {{ homeGoals: number, awayGoals: number }}
-     */
-    buildLiveScore(liveState) {
-        const { mData } = liveState;
-        const homeId = String(mData.teams.home.id);
-        const awayId = String(mData.teams.away.id);
-        const goals = (mData.actions || []).filter(a => a.action === 'shot' && a.goal);
-        return {
-            homeGoals: goals.filter(g => String(g.teamId) === homeId).length,
-            awayGoals: goals.filter(g => String(g.teamId) === awayId).length,
-        };
     },
 
     getVisiblePlays(liveState) {
@@ -414,6 +340,8 @@ export const TmMatchUtils = {
     deriveMatchData(liveState) {
         liveState.mData.visiblePlays = this.getVisiblePlays(liveState);
         liveState.mData.actions = [];
+        const homeId = String(liveState.mData.home.club.id);
+        const awayId = String(liveState.mData.away.club.id);
         Object.entries(liveState.mData.visiblePlays || {}).forEach(([minKey, plays]) => {
             const min = Number(minKey);
             plays.forEach(play => {
@@ -421,17 +349,18 @@ export const TmMatchUtils = {
                     seg.actions.forEach(act => {
                         let teamId = null;
                         const playerInvolved = act.by;
-                        let playerName = "";
+                        let playerName = '';
                         if (playerInvolved) {
-                            if (liveState.mData.teams.home.lineup.some(p => Number(p.id) === Number(playerInvolved))) {
-                                teamId = liveState.mData.teams.home.id;
-                                playerName = liveState.mData.teams.home.lineup.find(p => Number(p.id) === Number(playerInvolved))?.name ?? null;
+                            const inHome = liveState.mData.home.lineup.some(p => String(p.id) === String(playerInvolved));
+                            if (inHome) {
+                                teamId = homeId;
+                                playerName = liveState.mData.home.lineup.find(p => String(p.id) === String(playerInvolved))?.name ?? null;
                             } else {
-                                teamId = liveState.mData.teams.away.id;
-                                playerName = liveState.mData.teams.away.lineup.find(p => Number(p.id) === Number(playerInvolved))?.name ?? null;
+                                teamId = awayId;
+                                playerName = liveState.mData.away.lineup.find(p => String(p.id) === String(playerInvolved))?.name ?? null;
                             }
                         }
-                        const home = teamId !== null && String(teamId) === String(liveState.mData.teams.home.id);
+                        const home = teamId !== null && teamId === homeId;
                         liveState.mData.actions.push({ ...act, teamId, home, player: playerName, min, evtIdx: play.reportEventIndex });
                     });
                 });
@@ -449,7 +378,8 @@ export const TmMatchUtils = {
     generateTeamData(liveState) {
         const { mData } = liveState;
         const buildTeam = side => {
-            const teamData = mData.teams[side];
+            const sideData = mData[side]; // canonical Match side
+            const clubId = String(sideData.club.id);
             const avg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
 
             // Build all players with live positions applied, then enrich with event data
@@ -472,22 +402,21 @@ export const TmMatchUtils = {
             const onPitch = lineup.filter(p => !/^sub\d+$/.test(p.position));
             const onBench = lineup.filter(p => /^sub\d+$/.test(p.position));
             const newMentality = this.buildLiveTeamTactics(liveState, side);
-            if (newMentality !== null) {
-                liveState.mData.teams[side].mentality = newMentality;
-            }
+            const mentality = (newMentality !== null ? newMentality : sideData.tactics.mentality) ?? 4;
+            const attackingStyle = sideData.tactics.style ?? null;
+            const focusSide = sideData.tactics.focus ?? null;
 
-            const goals = liveState.mData.actions.filter(a => a.goal);
-            const mentality = liveState.mData.teams[side].mentality ?? 4;
-            const attackingStyle = teamData.attackingStyle ?? null;
-            const focusSide = teamData.focusSide ?? null;
+            // teamData shape expected by extractStats
+            const teamData = { id: sideData.club.id };
             const stats = this.extractStats(mData, teamData);
 
-            const team = {
-                id: teamData.id,
-                name: teamData.club_name || teamData.name,
-                color: teamData.color,
-                goals: goals.filter(g => String(g.teamId) === String(teamData.id)).length,
-                goalsAgainst: goals.filter(g => String(g.teamId) !== String(teamData.id)).length,
+            const goals = liveState.mData.actions.filter(a => a.goal);
+            return {
+                id: sideData.club.id,
+                name: sideData.club.name,
+                color: sideData.color,
+                goals: goals.filter(g => String(g.teamId) === clubId).length,
+                goalsAgainst: goals.filter(g => String(g.teamId) !== clubId).length,
                 lineup,
                 stats,
                 avgAge: avg(onPitch.map(p => {
@@ -500,7 +429,6 @@ export const TmMatchUtils = {
                 avgR5: avg(onPitch.map(p => p.r5)),
                 subsR5: avg(onBench.map(p => p.r5)),
                 formation: '4-4-2', // TODO: derive from lineup positions
-                form: teamData.form || [],
                 mentality,
                 attackingStyle,
                 focusSide,
@@ -508,14 +436,12 @@ export const TmMatchUtils = {
                 attackingStyleLabel: TmConst.STYLE_MAP?.[attackingStyle] || '?',
                 focusSideLabel: TmConst.FOCUS_MAP?.[focusSide] || '?',
             };
-            return team;
-        }
+        };
 
-        liveState.mData.teams.home = buildTeam('home');
-        liveState.mData.teams.away = buildTeam('away');
-
-
-        return liveState.mData.teams;
+        if (!mData.teams) mData.teams = {};
+        mData.teams.home = buildTeam('home');
+        mData.teams.away = buildTeam('away');
+        return mData.teams;
     },
 
     /**

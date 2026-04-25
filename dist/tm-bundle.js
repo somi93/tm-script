@@ -2304,7 +2304,6 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
     return bracket ? bracket[1] : 0.15;
   };
   var getMainContainer = (root2 = document) => root2.querySelector(".tmvu-main");
-  var getMainContainers = (root2 = document) => Array.from(root2.querySelectorAll(".tmvu-main"));
   var extractFaceUrl = (appearance, fallback = null) => {
     var _a2;
     const src = ((_a2 = String(appearance || "").match(/src=['"]([^'"]+)['"]/i)) == null ? void 0 : _a2[1]) || fallback;
@@ -2334,10 +2333,6 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
     const [ay, am] = String(a).split(".").map(Number);
     const [by, bm] = String(b).split(".").map(Number);
     return ay * 12 + am - (by * 12 + bm);
-  });
-  var safeGrowthSkills = (skills) => (Array.isArray(skills) ? skills : []).map((value) => {
-    const numeric = typeof value === "object" ? value.value : value;
-    return Number.isFinite(numeric) ? Math.floor(numeric) : 0;
   });
   var applyTooltipSkills = (player2, tooltipSkills) => {
     if (!Array.isArray(player2 == null ? void 0 : player2.skills) || !Array.isArray(tooltipSkills)) return player2;
@@ -2466,7 +2461,7 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
     return player2;
   };
   var escHtml = (v) => String(v != null ? v : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  var TmUtils = { getColor, parseNum, ageToMonths, monthsToAge, classifyPosition, posLabel, fix2, formatR5, fmtCoins, ratingColor, r5Color, toggleSort, skillColor, skillEff, getMainContainer, getMainContainers, extractFaceUrl, parseSkillValue, skillValue, sortAgeKeys, safeGrowthSkills, applyTooltipSkills, applyPlayerPositions, applySquadSkills, getOwnClubIds, escHtml };
+  var TmUtils = { getColor, parseNum, ageToMonths, monthsToAge, classifyPosition, posLabel, fix2, formatR5, fmtCoins, ratingColor, r5Color, toggleSort, skillColor, skillEff, getMainContainer, extractFaceUrl, skillValue, sortAgeKeys, applyTooltipSkills, applyPlayerPositions, applySquadSkills, getOwnClubIds, escHtml };
 
   // src/components/shared/tm-skill.js
   var TmSkill = {
@@ -3591,11 +3586,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   };
 
   // src/services/engine.js
-  var _errors = [];
   var _logError = (context, err) => {
-    const entry = { context, err, time: Date.now() };
-    _errors.push(entry);
-    if (typeof (TmApiEngine == null ? void 0 : TmApiEngine.onError) === "function") TmApiEngine.onError(entry);
     console.warn(`[TmApi] ${context}`, err);
   };
   var _post = (url, data) => new Promise((resolve) => {
@@ -3663,3081 +3654,6 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     _inflight.set(key, p);
     return p;
   };
-  var TmApiEngine = {
-    errors: _errors,
-    onError: null
-  };
-
-  // src/lib/tm-lib.js
-  var {
-    WEIGHT_R5: WEIGHT_R52,
-    WEIGHT_RB: WEIGHT_RB2,
-    WAGE_RATE: WAGE_RATE2,
-    _TRAINING1: _TRAINING12,
-    _SEASON_DAYS: _SEASON_DAYS2,
-    POS_MULTIPLIERS: POS_MULTIPLIERS2,
-    ASI_WEIGHT_OUTFIELD: ASI_WEIGHT_OUTFIELD2,
-    ASI_WEIGHT_GK: ASI_WEIGHT_GK2,
-    GRAPH_KEYS_OUT: GRAPH_KEYS_OUT2,
-    GRAPH_KEYS_GK: GRAPH_KEYS_GK2,
-    TRAINING_GROUPS_OUT: TRAINING_GROUPS_OUT2,
-    TRAINING_GROUPS_GK: TRAINING_GROUPS_GK2,
-    ROUTINE_DECAY: ROUTINE_DECAY2,
-    STD_FOCUS: STD_FOCUS2,
-    SMOOTH_WEIGHT: SMOOTH_WEIGHT2
-  } = TmConst;
-  var { ageToMonths: ageToMonths2, skillValue: skillValue2 } = TmUtils;
-  var _fix2 = (v) => (Math.round(v * 100) / 100).toFixed(2);
-  var _sv = skillValue2;
-  var _calcRemainderRaw = (posIdx, skills, asi) => {
-    const weight = posIdx === 9 ? ASI_WEIGHT_GK2 : ASI_WEIGHT_OUTFIELD2;
-    const skillSum = skills.reduce((s6, v) => s6 + parseFloat(v), 0);
-    const remainder = Math.round((Math.pow(2, Math.log(weight * asi) / Math.log(128)) - skillSum) * 10) / 10;
-    let rec = 0, ratingR = 0, rW1 = 0, rW2 = 0, not20 = 0;
-    for (let i = 0; i < WEIGHT_RB2[posIdx].length; i++) {
-      rec += skills[i] * WEIGHT_RB2[posIdx][i];
-      ratingR += skills[i] * WEIGHT_R52[posIdx][i];
-      if (skills[i] !== 20) {
-        rW1 += WEIGHT_RB2[posIdx][i];
-        rW2 += WEIGHT_R52[posIdx][i];
-        not20++;
-      }
-    }
-    if (remainder / not20 > 0.9 || !not20) {
-      not20 = posIdx === 9 ? 11 : 14;
-      rW1 = 1;
-      rW2 = 5;
-    }
-    return { remainder, remainderW2: rW2, not20, ratingR, rec: parseFloat(_fix2((rec + remainder * rW1 / not20 - 2) / 3)) };
-  };
-  var calcR5 = (posIdx, skills, asi, rou) => {
-    const r = _calcRemainderRaw(posIdx, skills, asi);
-    const { pow, E } = Math;
-    const routineBonus = 3 / 100 * (100 - 100 * pow(E, -(rou || 0) * 0.035));
-    let rating = parseFloat(_fix2(r.ratingR + r.remainder * r.remainderW2 / r.not20 + routineBonus * 5));
-    const goldstar = skills.filter((s6) => s6 === 20).length;
-    const denom = skills.length - goldstar || 1;
-    const skillsB = skills.map((s6) => s6 === 20 ? 20 : s6 + r.remainder / denom);
-    const sr = skillsB.map((s6, i) => i === 1 ? s6 : s6 + routineBonus);
-    if (skills.length !== 11) {
-      const hb = sr[10] > 12 ? parseFloat(_fix2((pow(E, (sr[10] - 10) ** 3 / 1584.77) - 1) * 0.8 + pow(E, sr[0] ** 2 * 7e-3 / 8.73021) * 0.15 + pow(E, sr[6] ** 2 * 7e-3 / 8.73021) * 0.05)) : 0;
-      const fk = parseFloat(_fix2(pow(E, (sr[13] + sr[12] + sr[9] * 0.5) ** 2 * 2e-3) / 327.92526));
-      const ck = parseFloat(_fix2(pow(E, (sr[13] + sr[8] + sr[9] * 0.5) ** 2 * 2e-3) / 983.6577));
-      const pk = parseFloat(_fix2(pow(E, (sr[13] + sr[11] + sr[9] * 0.5) ** 2 * 2e-3) / 1967.31409));
-      const ds = sr[0] ** 2 + sr[1] ** 2 * 0.5 + sr[2] ** 2 * 0.5 + sr[3] ** 2 + sr[4] ** 2 + sr[5] ** 2 + sr[6] ** 2;
-      const os = sr[0] ** 2 * 0.5 + sr[1] ** 2 * 0.5 + sr[2] ** 2 + sr[3] ** 2 + sr[4] ** 2 + sr[5] ** 2 + sr[6] ** 2;
-      const m = POS_MULTIPLIERS2[posIdx];
-      return parseFloat(_fix2(rating + hb + fk + ck + pk + parseFloat(_fix2(ds / 6 / 22.9 ** 2)) * m + parseFloat(_fix2(os / 6 / 22.9 ** 2)) * m));
-    }
-    return parseFloat(_fix2(rating));
-  };
-  var calcRec = (posIdx, skills, asi) => _calcRemainderRaw(posIdx, skills, asi).rec;
-  var calculatePlayerR5 = (position, player2) => {
-    return calcR5(position.id, player2.skills.map(_sv), player2.asi, player2.routine || 0).toFixed(2);
-  };
-  var calculatePlayerREC = (position, player2) => calcRec(position.id, player2.skills.map(_sv), player2.asi).toFixed(2);
-  var _getCurrentSession = () => {
-    const now = /* @__PURE__ */ new Date();
-    let day = (now.getTime() - _TRAINING12.getTime()) / 1e3 / 3600 / 24;
-    while (day > _SEASON_DAYS2 - 16 / 24) day -= _SEASON_DAYS2;
-    const s6 = Math.floor(day / 7) + 1;
-    return s6 <= 0 ? 12 : s6;
-  };
-  var calculateTIPerSession = (player2) => {
-    const totalTI = calculateTI(player2);
-    const session = _getCurrentSession();
-    return totalTI !== null && session > 0 ? Number((totalTI / session).toFixed(1)) : null;
-  };
-  var calculateTI = (player2) => {
-    const { asi, wage, isGK } = player2;
-    if (!asi || !wage || wage <= TmConst.MIN_WAGE_FOR_TI) return null;
-    const w = isGK ? ASI_WEIGHT_GK2 : ASI_WEIGHT_OUTFIELD2;
-    const { pow, log, round } = Math;
-    const log27 = log(pow(2, 7));
-    return round((pow(2, log(w * asi) / log27) - pow(2, log(w * wage / WAGE_RATE2) / log27)) * 10);
-  };
-  var calcASIProjection = ({ player: player2, trainings, avgTI }) => {
-    const { asi, isGK = false, ageMonths = 0 } = player2;
-    const K = ASI_WEIGHT_OUTFIELD2;
-    const base = Math.pow(asi * K, 1 / 7);
-    const added = avgTI * trainings / 10;
-    let newASI;
-    let curSkillSum, futSkillSum;
-    if (isGK) {
-      const ss11 = base / 14 * 11;
-      const fs11 = ss11 + added;
-      newASI = Math.round(Math.pow(fs11 / 11 * 14, 7) / K);
-      curSkillSum = ss11;
-      futSkillSum = fs11;
-    } else {
-      newASI = Math.round(Math.pow(base + added, 7) / K);
-      curSkillSum = base;
-      futSkillSum = base + added;
-    }
-    const _agentVal = (si, totMonths) => {
-      const a = totMonths / 12;
-      if (a < 18) return 0;
-      let p = Math.round(si * 500 * Math.pow(25 / a, 2.5));
-      if (isGK) p = Math.round(p * 0.75);
-      return p;
-    };
-    const curAgentVal = _agentVal(asi, ageMonths);
-    const futAgentVal = _agentVal(newASI, ageMonths + trainings);
-    return {
-      newASI,
-      asiDiff: newASI - asi,
-      curSkillSum,
-      futSkillSum,
-      curAgentVal,
-      futAgentVal,
-      agentDiff: futAgentVal - curAgentVal
-    };
-  };
-  var calcAsiSkillSum = (player2) => {
-    const K = player2.isGK ? ASI_WEIGHT_GK2 : ASI_WEIGHT_OUTFIELD2;
-    return Math.pow(2, Math.log(K * player2.asi) / Math.log(128));
-  };
-  var sumSkillValues = (skills) => Array.isArray(skills) ? skills.reduce((sum, skill) => sum + skillValue2(skill), 0) : 0;
-  var calcASIFromSkillSum = (skillSum, isGK) => {
-    const weight = isGK ? ASI_WEIGHT_GK2 : ASI_WEIGHT_OUTFIELD2;
-    return Math.max(0, Math.round(Math.pow(Math.max(0, skillSum), 7) / weight));
-  };
-  var calcSkillDecimalsSimple = (player2) => {
-    const K = player2.isGK ? ASI_WEIGHT_GK2 : ASI_WEIGHT_OUTFIELD2;
-    const skills = player2.skills;
-    const nums = skills.map((s6) => parseFloat(s6.value) || 0);
-    const allSum = nums.reduce((s6, v) => s6 + v, 0);
-    const remainder = Math.round((Math.pow(2, Math.log(K * player2.asi) / Math.log(128)) - allSum) * 10) / 10;
-    const nonStar = nums.filter((v) => v < 20).length;
-    let result;
-    if (remainder <= 0) result = nums;
-    else if (nonStar === 0) result = nums.map((v) => v + remainder / nums.length);
-    else result = nums.map((v) => v === 20 ? 20 : v + remainder / nonStar);
-    return skills.map((s6, i) => ({ ...s6, value: result[i] }));
-  };
-  var calcSkillDecimals = (intSkills, asi, isGK, gw, { maxIntegers } = {}) => {
-    const N = intSkills.length;
-    const GRP = isGK ? TRAINING_GROUPS_GK2 : TRAINING_GROUPS_OUT2;
-    const GRP_COUNT = GRP.length;
-    if (!gw) gw = new Array(GRP_COUNT).fill(1 / GRP_COUNT);
-    const KASIW = isGK ? ASI_WEIGHT_GK2 : ASI_WEIGHT_OUTFIELD2;
-    const totalPts = Math.pow(2, Math.log(KASIW * asi) / Math.log(128));
-    const remainder = totalPts - intSkills.reduce((a, b) => a + b, 0);
-    const eff = TmUtils.skillEff;
-    const base = new Array(N).fill(0);
-    let overflow = 0;
-    for (let gi = 0; gi < GRP_COUNT; gi++) {
-      const grp = GRP[gi], perSk = gw[gi] / grp.length;
-      for (const si of grp) {
-        if (si >= N) continue;
-        if (intSkills[si] >= 20) overflow += perSk;
-        else base[si] = perSk;
-      }
-    }
-    const nonMax = intSkills.filter((v) => v < 20).length;
-    const ovfEach = nonMax > 0 ? overflow / nonMax : 0;
-    const wE = base.map((b, i) => intSkills[i] >= 20 ? 0 : (b + ovfEach) * eff(intSkills[i]));
-    const tot = wE.reduce((a, b) => a + b, 0);
-    const shares = tot > 0 ? wE.map((x) => x / tot) : new Array(N).fill(nonMax > 0 ? 1 / nonMax : 0);
-    let dec = shares.map((s6) => Math.max(0, remainder * s6));
-    const CAP = 0.99;
-    let passes = 0;
-    do {
-      let ovfl = 0, freeCount = 0;
-      for (let i = 0; i < N; i++) {
-        if (intSkills[i] >= 20) {
-          dec[i] = 0;
-          continue;
-        }
-        const cap = maxIntegers ? Math.max(0, maxIntegers[i] - intSkills[i]) + CAP : CAP;
-        if (dec[i] > cap) {
-          ovfl += dec[i] - cap;
-          dec[i] = cap;
-        } else if (dec[i] < cap) freeCount++;
-      }
-      if (ovfl > 1e-4 && freeCount > 0) {
-        const add = ovfl / freeCount;
-        for (let i = 0; i < N; i++) {
-          const cap = maxIntegers ? Math.max(0, maxIntegers[i] - intSkills[i]) + CAP : CAP;
-          if (intSkills[i] < 20 && dec[i] < cap) dec[i] += add;
-        }
-      } else break;
-    } while (++passes < 20);
-    return intSkills.map((v, i) => v >= 20 ? 20 : v + dec[i]);
-  };
-  var buildRoutineMap = (liveRou, liveAgeY, liveAgeM, gpData, ageKeys) => {
-    const map = {};
-    if (!gpData) {
-      ageKeys.forEach((k) => {
-        map[k] = liveRou;
-      });
-      return map;
-    }
-    const { gpBySeason, curSeason } = gpData;
-    const curWeek = _getCurrentSession();
-    const curAgeMonths = liveAgeY * 12 + liveAgeM;
-    for (const ageKey of ageKeys) {
-      const recMon = ageToMonths2(ageKey);
-      const weeksBack = curAgeMonths - recMon;
-      if (weeksBack <= 0) {
-        map[ageKey] = liveRou;
-        continue;
-      }
-      let gamesAfter = 0;
-      for (let w = 0; w < weeksBack; w++) {
-        const absWeek = (curSeason - 65) * 12 + (curWeek - 1) - w;
-        const season = 65 + Math.floor(absWeek / 12);
-        const gp = gpBySeason[season] || 0;
-        gamesAfter += season === curSeason ? curWeek > 0 ? gp / curWeek : 0 : gp / 12;
-      }
-      map[ageKey] = Math.max(0, Math.round((liveRou - gamesAfter * ROUTINE_DECAY2) * 10) / 10);
-    }
-    return map;
-  };
-  var getPositionIndex = (pos) => {
-    const p = (pos || "").split(",")[0].toLowerCase().replace(/[^a-z]/g, "");
-    switch (p) {
-      case "gk":
-        return 9;
-      case "dc":
-      case "dcl":
-      case "dcr":
-        return 0;
-      case "dl":
-      case "dr":
-        return 1;
-      case "dmc":
-      case "dmcl":
-      case "dmcr":
-        return 2;
-      case "dml":
-      case "dmr":
-        return 3;
-      case "mc":
-      case "mcl":
-      case "mcr":
-        return 4;
-      case "ml":
-      case "mr":
-        return 5;
-      case "omc":
-      case "omcl":
-      case "omcr":
-        return 6;
-      case "oml":
-      case "omr":
-        return 7;
-      default:
-        return 8;
-    }
-  };
-  var TmLib = {
-    getPositionIndex,
-    calcR5,
-    calcRec,
-    calcAsiSkillSum,
-    calcASIFromSkillSum,
-    calcSkillDecimalsSimple,
-    calcSkillDecimals,
-    buildRoutineMap,
-    calculatePlayerR5,
-    calculatePlayerREC,
-    calcASIProjection,
-    getCurrentSession: _getCurrentSession,
-    calculateTI,
-    calculateTIPerSession,
-    sumSkillValues
-  };
-
-  // src/utils/match.js
-  var TmMatchUtils = {
-    cloneMatchData(mData) {
-      if (!mData) return mData;
-      if (typeof structuredClone === "function") {
-        return structuredClone(mData);
-      }
-      const cloned = JSON.parse(JSON.stringify(mData));
-      cloned.homePlayerSet = new Set(Array.from(mData.homePlayerSet || []));
-      cloned.awayPlayerSet = new Set(Array.from(mData.awayPlayerSet || []));
-      return cloned;
-    },
-    /**
-     * Check if a match has not started yet.
-     * Negative live_min means countdown to kickoff.
-     * @param {object} mData
-     * @returns {boolean}
-     */
-    isMatchFuture(mData) {
-      var _a2;
-      const md = mData == null ? void 0 : mData.match_data;
-      const liveMin = md == null ? void 0 : md.live_min;
-      if (typeof liveMin === "number" && liveMin < 0) return true;
-      if (typeof liveMin === "number" && liveMin > 0) return false;
-      const kickoff = (_a2 = md == null ? void 0 : md.venue) == null ? void 0 : _a2.kickoff;
-      if (kickoff) {
-        const now = Math.floor(Date.now() / 1e3);
-        return Number(kickoff) > now;
-      }
-      return false;
-    },
-    /**
-     * Returns true if the given player id is in the home side's lineup.
-     * @param {Set<string>} homeIds — Set of home player ids as strings
-     * @param {string|number} pid
-     * @returns {boolean}
-     */
-    isHome(homeIds, pid) {
-      return homeIds.has(String(pid));
-    },
-    extractStats(mData, teamData) {
-      const teamId = String(teamData.id);
-      const acts = (mData.actions || []).filter((a) => String(a.teamId) === teamId);
-      const { ATTACK_STYLES: ATTACK_STYLES2, STYLE_ORDER: STYLE_ORDER5 } = TmConst;
-      const advanced = {};
-      STYLE_ORDER5.forEach((s6) => {
-        advanced[s6] = { a: 0, sh: 0, l: 0, g: 0, events: [] };
-      });
-      for (const [minKey, plays] of Object.entries(mData.visiblePlays || {})) {
-        const eMin = Number(minKey);
-        (plays || []).forEach((play) => {
-          if (String(play.team) !== teamId) return;
-          let label;
-          if (/^p_/.test(play.style)) {
-            label = "Penalties";
-          } else {
-            const entry = ATTACK_STYLES2.find((s6) => s6.key === play.style);
-            if (!entry) return;
-            label = entry.label;
-          }
-          const d = advanced[label];
-          d.a++;
-          if (play.outcome === "goal") {
-            d.g++;
-            d.sh++;
-          } else if (play.outcome === "shot") d.sh++;
-          else d.l++;
-          d.events.push({ min: eMin, evt: play, evtIdx: play.reportEventIndex, result: play.outcome });
-        });
-      }
-      return {
-        goals: acts.filter((a) => a.action === "shot" && a.goal).length,
-        shots: acts.filter((a) => a.action === "shot").length,
-        shotsOnTarget: acts.filter((a) => a.action === "shot" && a.onTarget).length,
-        saves: acts.filter((a) => a.action === "save").length,
-        passes: acts.filter((a) => a.action === "pass").length,
-        passesCompleted: acts.filter((a) => a.action === "pass" && a.success).length,
-        crosses: acts.filter((a) => a.action === "cross").length,
-        crossesCompleted: acts.filter((a) => a.action === "cross" && a.success).length,
-        fouls: acts.filter((a) => a.action === "foul").length,
-        yellowCards: acts.filter((a) => a.action === "yellow" || a.action === "yellowRed").length,
-        redCards: acts.filter((a) => a.action === "red" || a.action === "yellowRed").length,
-        advanced
-      };
-    },
-    getMatchEndMin(mData) {
-      const md = (mData == null ? void 0 : mData.match_data) || {};
-      const playMins = Object.keys((mData == null ? void 0 : mData.plays) || {}).map(Number).filter(Number.isFinite);
-      const reportMins = Object.keys((mData == null ? void 0 : mData.report) || {}).map(Number).filter(Number.isFinite);
-      const actionMins = ((mData == null ? void 0 : mData.actions) || []).map((a) => Number(a.min)).filter(Number.isFinite);
-      const candidates = [
-        Number(md.last_min),
-        Number(md.regular_last_min),
-        Number(md.live_min),
-        ...playMins,
-        ...reportMins,
-        ...actionMins
-      ].filter((n) => Number.isFinite(n) && n > 0);
-      return candidates.length ? Math.max(90, ...candidates) : 90;
-    },
-    getPlayerStats(liveState, player2) {
-      var _a2;
-      const { mData } = liveState;
-      const pid = String(player2.id || player2.player_id);
-      const actions = (mData.actions || []).filter((a) => String(a.by) === pid);
-      const perMinute = actions.map(({ action, by, teamId, ...rest }) => ({ [action]: true, ...rest }));
-      const _test = {
-        goals: (e) => e.shot && e.goal,
-        assists: (e) => e.assist,
-        keyPasses: (e) => e.keyPass,
-        shots: (e) => e.shot,
-        saves: (e) => e.save,
-        shotsOnTarget: (e) => e.shot && e.onTarget,
-        goalsFoot: (e) => e.shot && e.goal && e.foot,
-        goalsHead: (e) => e.shot && e.goal && e.head,
-        passesCompleted: (e) => e.pass && e.success,
-        passesFailed: (e) => e.pass && !e.success,
-        crossesCompleted: (e) => e.cross && e.success,
-        crossesFailed: (e) => e.cross && !e.success,
-        interceptions: (e) => e.interception,
-        tackles: (e) => e.tackle,
-        headerClearances: (e) => e.headerClear,
-        tackleFails: (e) => e.tackleFail,
-        duelsWon: (e) => e.duelWon,
-        duelsLost: (e) => e.duelLost,
-        fouls: (e) => e.foul,
-        yellowCards: (e) => e.yellow,
-        yellowRedCards: (e) => e.yellowRed,
-        redCards: (e) => e.red,
-        injured: (e) => e.injury,
-        subIn: (e) => e.subIn,
-        subOut: (e) => e.subOut
-      };
-      const grouped = TmConst.PLAYER_STAT_COLS.flatMap((col) => {
-        const fn = _test[col.key];
-        if (!fn) return [];
-        const count = col.lineupBool ? perMinute.some(fn) ? 1 : 0 : perMinute.filter(fn).length;
-        return count ? [{ ...col, count }] : [];
-      });
-      const matchEndMin = this.getMatchEndMin(mData);
-      const subInAct = actions.find((a) => a.action === "subIn");
-      const subOutAct = actions.find((a) => a.action === "subOut");
-      const originalPos = player2.originalPosition || player2.position;
-      let minsPlayed;
-      if (subInAct) {
-        minsPlayed = (subOutAct ? subOutAct.min : matchEndMin) - (subInAct.min || 0);
-      } else if (/^sub/.test(originalPos)) {
-        minsPlayed = 0;
-      } else {
-        minsPlayed = subOutAct ? subOutAct.min : matchEndMin;
-      }
-      const entry = { perMinute, grouped, minsPlayed };
-      const posKey = (player2.position || "").split(",")[0].toLowerCase().replace(/[^a-z]/g, "");
-      const posEntry = POSITION_MAP[posKey] || POSITION_MAP[(player2.fp || "").split(",")[0].toLowerCase().replace(/[^a-z]/g, "")];
-      const r5 = posEntry && ((_a2 = player2.skills) == null ? void 0 : _a2.length) && player2.asi ? Number(TmLib.calculatePlayerR5(posEntry, player2)) : null;
-      return {
-        ...player2,
-        grouped: entry.grouped || [],
-        perMinute: entry.perMinute || [],
-        statsArray: entry.perMinute || [],
-        minsPlayed: entry.minsPlayed || 0,
-        r5
-      };
-    },
-    /**
-     * Render the goals+cards events section HTML from legacy tooltip API data.
-     * (tooltip.ajax.php format — events have .minute, .scorer_name, .score, .assist_id)
-     * @param {Array} goals  — sorted goal event objects with .isHome flag
-     * @param {Array} cards  — sorted card event objects with .isHome flag
-     * @returns {string} HTML string (empty string if no events)
-     */
-    renderLegacyEvents(goals, cards) {
-      const all = [
-        ...goals.map((e) => ({ ...e, _type: "goal" })),
-        ...cards.map((e) => ({ ...e, _type: "card" }))
-      ].sort((a, b) => Number(a.minute) - Number(b.minute));
-      if (!all.length) return "";
-      let t = '<div class="rnd-h2h-tooltip-events">';
-      all.forEach((e) => {
-        const sideClass = e.isHome ? "" : " away-evt";
-        t += `<div class="rnd-h2h-tooltip-evt${sideClass}">`;
-        t += `<span class="rnd-h2h-tooltip-evt-min">${e.minute}'</span>`;
-        if (e._type === "goal") {
-          t += `<span class="rnd-h2h-tooltip-evt-icon">\u26BD</span>`;
-          t += `<span class="rnd-h2h-tooltip-evt-text">${e.scorer_name || ""}`;
-          if (e.assist_id && e.assist_id !== "") {
-            t += ` <span class="rnd-h2h-tooltip-evt-assist">(${e.score})</span>`;
-          } else {
-            t += ` <span class="rnd-h2h-tooltip-evt-assist">${e.score}</span>`;
-          }
-          t += `</span>`;
-        } else {
-          const icon = e.score === "yellow" ? "\u{1F7E1}" : e.score === "orange" ? "\u{1F7E1}\u{1F7E1}\u2192\u{1F534}" : "\u{1F534}";
-          t += `<span class="rnd-h2h-tooltip-evt-icon">${icon}</span>`;
-          t += `<span class="rnd-h2h-tooltip-evt-text">${e.scorer_name || ""}</span>`;
-        }
-        t += `</div>`;
-      });
-      t += "</div>";
-      return t;
-    },
-    /**
-     * Render the goals+cards events section HTML from full match API data.
-     * (match.ajax.php format — events have .min, .name, .assist, .type)
-     * @param {Array} goals  — goal event objects with .isHome flag
-     * @param {Array} cards  — card event objects with .isHome flag
-     * @returns {string} HTML string (empty string if no events)
-     */
-    renderRichEvents(goals, cards) {
-      const all = [...goals, ...cards].sort((a, b) => a.min - b.min);
-      if (!all.length) return "";
-      let t = '<div class="rnd-h2h-tooltip-events">';
-      all.forEach((e) => {
-        const sideClass = e.isHome ? "" : " away-evt";
-        t += `<div class="rnd-h2h-tooltip-evt${sideClass}">`;
-        t += `<span class="rnd-h2h-tooltip-evt-min">${e.min}'</span>`;
-        if (e.type === "goal") {
-          t += `<span class="rnd-h2h-tooltip-evt-icon">\u26BD</span>`;
-          t += `<span class="rnd-h2h-tooltip-evt-text">${e.name}`;
-          if (e.assist) t += ` <span class="rnd-h2h-tooltip-evt-assist">(${e.assist})</span>`;
-          t += `</span>`;
-        } else {
-          const icon = e.type === "yellow" ? "\u{1F7E1}" : "\u{1F534}";
-          t += `<span class="rnd-h2h-tooltip-evt-icon">${icon}</span>`;
-          t += `<span class="rnd-h2h-tooltip-evt-text">${e.name}</span>`;
-        }
-        t += `</div>`;
-      });
-      t += "</div>";
-      return t;
-    },
-    /**
-     * Count non-empty text lines in a segment.
-     * @param {object} seg
-     * @returns {number}
-     */
-    countSegmentLines(seg) {
-      return Math.max(1, ((seg == null ? void 0 : seg.text) || []).filter((line) => line && line.trim()).length);
-    },
-    /**
-     * Return segment line ranges inside a play.
-     * @param {object} play
-     * @returns {Array<{ seg: object, startLineIdx: number, endLineIdx: number }>}
-     */
-    getSegmentRanges(play) {
-      let lineCursor = 0;
-      return ((play == null ? void 0 : play.segments) || []).map((seg) => {
-        const startLineIdx = lineCursor;
-        const endLineIdx = lineCursor + this.countSegmentLines(seg) - 1;
-        lineCursor = endLineIdx + 1;
-        return { seg, startLineIdx, endLineIdx };
-      });
-    },
-    /**
-     * Flatten all actions from a play into a single array.
-     * @param {object} play
-     * @returns {Array<object>}
-     */
-    getPlayActions(play) {
-      return ((play == null ? void 0 : play.segments) || []).flatMap((seg) => seg.actions || []);
-    },
-    /**
-     * Check if an event or event line is visible at the current live step.
-     * @param {number} evtMin    — minute of the event
-     * @param {number} evtIdx    — event index within that minute
-     * @param {number} curMin    — current live minute
-     * @param {number} curEvtIdx — current live event index
-     * @param {number} [curLineIdx=999] — current visible line index within the event
-     * @param {number} [evtLineIdx=-1]  — tested line index within the event
-     * @returns {boolean}
-     */
-    isEventVisible(evtMin, evtIdx, curMin, curEvtIdx, curLineIdx = 999, evtLineIdx = -1) {
-      if (evtMin < curMin) return true;
-      if (evtMin > curMin) return false;
-      if (evtIdx < curEvtIdx) return true;
-      if (evtIdx > curEvtIdx) return false;
-      return evtLineIdx <= curLineIdx;
-    },
-    /**
-     * Build a playerId → displayName lookup from match lineup data.
-     * @param {object} mData — match data with .lineup.home and .lineup.away
-     * @returns {{ [playerId: string]: string }}
-     */
-    buildPlayerNames(mData) {
-      const names = {};
-      ["home", "away"].forEach((side) => {
-        var _a2, _b, _c;
-        const lineup = ((_a2 = mData.lineup) == null ? void 0 : _a2[side]) || ((_c = (_b = mData.teams) == null ? void 0 : _b[side]) == null ? void 0 : _c.lineup) || {};
-        Object.values(lineup).forEach((p) => {
-          names[p.player_id] = p.name;
-        });
-      });
-      return names;
-    },
-    /**
-     * Build the active lineup map for a side at the given live step.
-     * Starts from the original XI and applies visible substitutions and red cards.
-     * @param {object} mData
-     * @param {string} side        — 'home' | 'away'
-     * @param {number} [curMin]
-      * @param {number} [curEvtIdx]
-      * @param {number} [curLineIdx]
-     * @returns {{ [playerId: string]: object }}
-     */
-    buildActiveLineup(liveState, side) {
-      var _a2, _b, _c;
-      const { mData } = liveState;
-      const sourceLineup = ((_a2 = mData.lineup) == null ? void 0 : _a2[side]) || ((_c = (_b = mData.teams) == null ? void 0 : _b[side]) == null ? void 0 : _c.lineup) || {};
-      const players = Object.values(sourceLineup).map((p) => ({ ...p, originalPosition: p.position }));
-      const teamId = String(mData.teams[side].id);
-      const teamActions = (mData.actions || []).filter((a) => String(a.teamId) === String(teamId));
-      const usedSubSlots = new Set(
-        players.filter((p) => /^sub\d+$/.test(p.position)).map((p) => p.position)
-      );
-      const getNextSubSlot = () => {
-        for (let i = 1; i <= 15; i++) {
-          const slot = `sub${i}`;
-          if (!usedSubSlots.has(slot)) {
-            usedSubSlots.add(slot);
-            return slot;
-          }
-        }
-        return "sub99";
-      };
-      for (const act of teamActions) {
-        const p = players.find((x) => String(x.player_id) === String(act.by));
-        if (!p) continue;
-        if (act.action === "subOut" || act.action === "red" || act.action === "yellowRed") {
-          p.position = getNextSubSlot();
-        } else if (act.action === "positionChange" && act.position) {
-          p.position = act.position;
-        }
-      }
-      return players;
-    },
-    /**
-     * Resolve live tactical settings for a side at the current match step.
-     * Currently mentality can change during the match; style and focus stay at base values.
-    * @param {object} liveState
-    * @param {string} side        — 'home' | 'away'
-     * @returns {{ mentality: number }}
-     */
-    buildLiveTeamTactics(liveState, side) {
-      const { mData } = liveState || {};
-      const mentalityActions = mData.actions.filter((a) => {
-        var _a2, _b;
-        return a.action === "mentality_change" && String(a.team) === String((_b = (_a2 = mData.teams) == null ? void 0 : _a2[side]) == null ? void 0 : _b.id);
-      });
-      if (!mentalityActions.length) return null;
-      return mentalityActions[mentalityActions.length - 1].mentality;
-    },
-    /**
-     * Resolve the live score at the current match step.
-     * @param {object} mData
-     * @param {number} [curMin]
-     * @param {number} [curEvtIdx]
-     * @param {number} [curLineIdx]
-     * @returns {{ homeGoals: number, awayGoals: number }}
-     */
-    buildLiveScore(liveState) {
-      const { mData } = liveState;
-      const homeId = String(mData.teams.home.id);
-      const awayId = String(mData.teams.away.id);
-      const goals = (mData.actions || []).filter((a) => a.action === "shot" && a.goal);
-      return {
-        homeGoals: goals.filter((g) => String(g.teamId) === homeId).length,
-        awayGoals: goals.filter((g) => String(g.teamId) === awayId).length
-      };
-    },
-    getVisiblePlays(liveState) {
-      const { mData, min: curMin, curEvtIdx, curLineIdx } = liveState;
-      const playedMinutes = Object.keys(mData.plays || {}).map(Number).filter((min) => min <= curMin);
-      const visiblePlays = {};
-      playedMinutes.forEach((min) => {
-        var _a2;
-        const plays = ((_a2 = mData.plays) == null ? void 0 : _a2[String(min)]) || [];
-        const visibleEvents = plays.filter((play) => {
-          var _a3;
-          const evtIdx = (_a3 = play.reportEventIndex) != null ? _a3 : null;
-          return this.isEventVisible(min, evtIdx, curMin, curEvtIdx, curLineIdx);
-        });
-        visibleEvents.forEach((ev) => {
-          var _a3;
-          const evtIdx = (_a3 = ev.reportEventIndex) != null ? _a3 : null;
-          const segRanges = this.getSegmentRanges(ev);
-          const visibleSegments = segRanges.filter(
-            (r) => this.isEventVisible(min, evtIdx, curMin, curEvtIdx, curLineIdx, r.endLineIdx + 1)
-          );
-          ev.visiblePlay = { ...ev, segments: visibleSegments.map((r) => r.seg) };
-        });
-        visiblePlays[String(min)] = visibleEvents.map((ev) => ev.visiblePlay);
-      });
-      return visiblePlays;
-    },
-    deriveMatchData(liveState) {
-      liveState.mData.visiblePlays = this.getVisiblePlays(liveState);
-      liveState.mData.actions = [];
-      Object.entries(liveState.mData.visiblePlays || {}).forEach(([minKey, plays]) => {
-        const min = Number(minKey);
-        plays.forEach((play) => {
-          play.segments.forEach((seg) => {
-            seg.actions.forEach((act) => {
-              var _a2, _b, _c, _d;
-              let teamId = null;
-              const playerInvolved = act.by;
-              let playerName = "";
-              if (playerInvolved) {
-                if (liveState.mData.teams.home.lineup.some((p) => Number(p.id) === Number(playerInvolved))) {
-                  teamId = liveState.mData.teams.home.id;
-                  playerName = (_b = (_a2 = liveState.mData.teams.home.lineup.find((p) => Number(p.id) === Number(playerInvolved))) == null ? void 0 : _a2.name) != null ? _b : null;
-                } else {
-                  teamId = liveState.mData.teams.away.id;
-                  playerName = (_d = (_c = liveState.mData.teams.away.lineup.find((p) => Number(p.id) === Number(playerInvolved))) == null ? void 0 : _c.name) != null ? _d : null;
-                }
-              }
-              const home = teamId !== null && String(teamId) === String(liveState.mData.teams.home.id);
-              liveState.mData.actions.push({ ...act, teamId, home, player: playerName, min, evtIdx: play.reportEventIndex });
-            });
-          });
-        });
-      });
-      liveState.mData.teams = this.generateTeamData(liveState);
-      return liveState.mData;
-    },
-    /**
-     * Compute enriched team data.
-     * @param {object} liveState
-     * @returns {object} team data object
-     */
-    generateTeamData(liveState) {
-      const { mData } = liveState;
-      const buildTeam = (side) => {
-        var _a2, _b, _c, _d, _e, _f;
-        const teamData = mData.teams[side];
-        const avg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
-        const lineup = this.buildActiveLineup(liveState, side).map((player2) => this.getPlayerStats(liveState, player2)).sort((a, b) => {
-          var _a3, _b2, _c2, _d2;
-          const aIsSub = /^sub\d+$/.test(a.position);
-          const bIsSub = /^sub\d+$/.test(b.position);
-          if (aIsSub !== bIsSub) return aIsSub ? 1 : -1;
-          if (aIsSub) {
-            return (parseInt(a.position.slice(3)) || 99) - (parseInt(b.position.slice(3)) || 99);
-          }
-          const aPosKey = (a.position || "").toLowerCase().replace(/[^a-z]/g, "");
-          const bPosKey = (b.position || "").toLowerCase().replace(/[^a-z]/g, "");
-          const aOrder = (_b2 = (_a3 = POSITION_MAP[aPosKey]) == null ? void 0 : _a3.ordering) != null ? _b2 : 99;
-          const bOrder = (_d2 = (_c2 = POSITION_MAP[bPosKey]) == null ? void 0 : _c2.ordering) != null ? _d2 : 99;
-          return aOrder - bOrder;
-        });
-        const onPitch = lineup.filter((p) => !/^sub\d+$/.test(p.position));
-        const onBench = lineup.filter((p) => /^sub\d+$/.test(p.position));
-        const newMentality = this.buildLiveTeamTactics(liveState, side);
-        if (newMentality !== null) {
-          liveState.mData.teams[side].mentality = newMentality;
-        }
-        const goals = liveState.mData.actions.filter((a) => a.goal);
-        const mentality = (_a2 = liveState.mData.teams[side].mentality) != null ? _a2 : 4;
-        const attackingStyle = (_b = teamData.attackingStyle) != null ? _b : null;
-        const focusSide = (_c = teamData.focusSide) != null ? _c : null;
-        const stats = this.extractStats(mData, teamData);
-        const team = {
-          id: teamData.id,
-          name: teamData.club_name || teamData.name,
-          color: teamData.color,
-          goals: goals.filter((g) => String(g.teamId) === String(teamData.id)).length,
-          goalsAgainst: goals.filter((g) => String(g.teamId) !== String(teamData.id)).length,
-          lineup,
-          stats,
-          avgAge: avg(onPitch.map((p) => {
-            const years = Number(p.age);
-            const months = Number(p.month);
-            if (!Number.isFinite(years) || years <= 0) return null;
-            return Number.isFinite(months) && months >= 0 ? years + months / 12 : years;
-          })),
-          avgRtn: avg(onPitch.map((p) => p.routine)),
-          avgR5: avg(onPitch.map((p) => p.r5)),
-          subsR5: avg(onBench.map((p) => p.r5)),
-          formation: "4-4-2",
-          // TODO: derive from lineup positions
-          form: teamData.form || [],
-          mentality,
-          attackingStyle,
-          focusSide,
-          mentalityLabel: ((_d = TmConst.MENTALITY_MAP_LONG) == null ? void 0 : _d[mentality]) || "?",
-          attackingStyleLabel: ((_e = TmConst.STYLE_MAP) == null ? void 0 : _e[attackingStyle]) || "?",
-          focusSideLabel: ((_f = TmConst.FOCUS_MAP) == null ? void 0 : _f[focusSide]) || "?"
-        };
-        return team;
-      };
-      liveState.mData.teams.home = buildTeam("home");
-      liveState.mData.teams.away = buildTeam("away");
-      return liveState.mData.teams;
-    },
-    /**
-     * Build a player face image URL from udseende2 appearance data.
-     * @param {object} p         — player object (needs .udseende2, .age)
-     * @param {string} colorHex  — club color hex (with or without #)
-     * @param {number} [w=96]    — image width in pixels
-     * @returns {string} full URL
-     */
-    faceUrl(p, colorHex, w = 96) {
-      const u = p && p.udseende2 || {};
-      const clr = String(colorHex).replace("#", "");
-      return `https://trophymanager.com/pics/player_pic2.php?face=${u.face || 1}&nose=${u.nose || 1}&eyes=${u.eyes || 1}&ears=${u.ears || 1}&mouth=${u.mouth || 1}&brows=${u.brows || 1}&hcolor=${u.hair_color || 1}&scolor=${u.skin_color || 1}&hair=${u.hair || 1}&age=${p && p.age || 25}&rgb=${clr}&w=${w}`;
-    }
-  };
-
-  // src/components/stats/tm-stats-match-processor.js
-  var {
-    STYLE_ORDER: STYLE_ORDER2,
-    STYLE_MAP: STYLE_MAP2,
-    MENTALITY_MAP: MENTALITY_MAP2,
-    PLAYER_STAT_ZERO: PLAYER_STAT_ZERO2
-  } = TmConst;
-  var getFormation = (lineup) => {
-    const positions = Object.values(lineup).map((p) => (p.position || "").toLowerCase()).filter((pos) => pos && !pos.startsWith("sub") && pos !== "gk");
-    let def = 0, dm = 0, mid = 0, am = 0, att = 0;
-    positions.forEach((p) => {
-      if (/^(d[^m]|sw|lb|rb|wb)/.test(p)) def++;
-      else if (/^dmc/.test(p)) dm++;
-      else if (/^(mc|ml|mr)/.test(p)) mid++;
-      else if (/^amc/.test(p)) am++;
-      else att++;
-    });
-    const lines = [def];
-    if (dm > 0) lines.push(dm);
-    if (mid > 0) lines.push(mid);
-    if (am > 0) lines.push(am);
-    lines.push(att);
-    return lines.join("-");
-  };
-  var classifyMatchType = (matchtype) => {
-    switch (matchtype) {
-      case "l":
-        return "league";
-      case "f":
-        return "friendly";
-      case "fl":
-        return "fl";
-      case "c":
-      case "cl":
-      case "cup":
-        return "cup";
-      default:
-        return "other";
-    }
-  };
-  var summarizePlayerStats = (entries = []) => {
-    const stats = { ...PLAYER_STAT_ZERO2 };
-    entries.forEach((e) => {
-      if (e.shot) {
-        stats.shots++;
-        if (e.onTarget) stats.shotsOnTarget++;
-        else stats.shotsOffTarget++;
-        if (e.head) {
-          stats.shotsHead++;
-          if (e.onTarget) stats.shotsOnTargetHead++;
-        }
-        if (e.foot) {
-          stats.shotsFoot++;
-          if (e.onTarget) stats.shotsOnTargetFoot++;
-        }
-        if (e.goal) {
-          stats.goals++;
-          if (e.head) stats.goalsHead++;
-          else stats.goalsFoot++;
-        }
-        if (e.penalty) stats.penaltiesTaken++;
-        if (e.goal && e.penalty) stats.penaltiesScored++;
-        if (e.goal && e.freekick) stats.freekickGoals++;
-      }
-      if (e.assist) stats.assists++;
-      if (e.keyPass) stats.keyPasses++;
-      if (e.pass) e.success ? stats.passesCompleted++ : stats.passesFailed++;
-      if (e.cross) e.success ? stats.crossesCompleted++ : stats.crossesFailed++;
-      if (e.save) stats.saves++;
-      if (e.foul) stats.fouls++;
-      if (e.duelWon) stats.duelsWon++;
-      if (e.duelLost) stats.duelsLost++;
-      if (e.tackle) stats.tackles++;
-      if (e.interception) stats.interceptions++;
-      if (e.headerClear) stats.headerClearances++;
-      if (e.tackleFail) stats.tackleFails++;
-      if (e.yellow) stats.yellowCards++;
-      if (e.yellowRed) stats.yellowRedCards++;
-      if (e.red) stats.redCards++;
-      if (e.setpiece) stats.setpieceTakes++;
-      if (e.subIn) stats.subIn = true;
-      if (e.subOut) stats.subOut = true;
-      if (e.injury) stats.injured = true;
-    });
-    return stats;
-  };
-  var getDisplayPosition = (player2) => {
-    const originalPosition = player2.originalPosition || player2.position || "";
-    const currentPosition = player2.position || "";
-    const perMinute = player2.perMinute || [];
-    const subIn = perMinute.some((e) => e.subIn);
-    const subOut = perMinute.some((e) => e.subOut);
-    if (subOut && originalPosition && !/^sub\d+$/i.test(originalPosition)) {
-      return originalPosition;
-    }
-    if (subIn) {
-      return !/^sub\d+$/i.test(currentPosition) ? currentPosition : (player2.fp || "").split(",")[0] || originalPosition || currentPosition;
-    }
-    if (/^sub\d+$/i.test(currentPosition) && !/^sub\d+$/i.test(originalPosition)) {
-      return originalPosition;
-    }
-    return currentPosition || originalPosition;
-  };
-  var countSetPieces = (actions = [], teamId) => actions.filter((a) => String(a.teamId) === String(teamId) && a.action === "setpiece").length;
-  var countPenalties = (advanced = {}) => {
-    var _a2;
-    return ((_a2 = advanced.Penalties) == null ? void 0 : _a2.a) || 0;
-  };
-  var mapAdvancedStats = (advanced = {}) => {
-    const out = {};
-    STYLE_ORDER2.forEach((style) => {
-      const entry = advanced[style] || {};
-      out[style] = {
-        a: entry.a || 0,
-        l: entry.l || 0,
-        sh: entry.sh || 0,
-        g: entry.g || 0
-      };
-    });
-    return out;
-  };
-  var TmStatsMatchProcessor = {
-    process(matchInfo, mData, clubId2) {
-      var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
-      void clubId2;
-      const matchEndMin = TmMatchUtils.getMatchEndMin(mData);
-      const derived = TmMatchUtils.deriveMatchData({
-        mData,
-        min: matchEndMin,
-        curEvtIdx: 999,
-        curLineIdx: 999
-      });
-      const isHome = matchInfo.isHome;
-      const ourSide = isHome ? "home" : "away";
-      const oppSide = isHome ? "away" : "home";
-      const homeTeam = ((_a2 = derived.teams) == null ? void 0 : _a2.home) || {};
-      const awayTeam = ((_b = derived.teams) == null ? void 0 : _b.away) || {};
-      const ourTeam = ((_c = derived.teams) == null ? void 0 : _c[ourSide]) || {};
-      const oppTeam = ((_d = derived.teams) == null ? void 0 : _d[oppSide]) || {};
-      const ourLineup = ourTeam.lineup || [];
-      const oppLineup = oppTeam.lineup || [];
-      const md = derived.match_data || {};
-      const matchType = classifyMatchType(matchInfo.matchtype);
-      const matchStats = {
-        homeYellow: 0,
-        awayYellow: 0,
-        homeRed: 0,
-        awayRed: 0,
-        homeShots: 0,
-        awayShots: 0,
-        homeSoT: 0,
-        awaySoT: 0,
-        homeSetPieces: 0,
-        awaySetPieces: 0,
-        homePenalties: 0,
-        awayPenalties: 0,
-        homePoss: 0,
-        awayPoss: 0,
-        homeGoalsReport: 0,
-        awayGoalsReport: 0
-      };
-      if (md.possession) {
-        matchStats.homePoss = Number(md.possession.home) || 0;
-        matchStats.awayPoss = Number(md.possession.away) || 0;
-      }
-      matchStats.homeYellow = ((_e = homeTeam.stats) == null ? void 0 : _e.yellowCards) || 0;
-      matchStats.awayYellow = ((_f = awayTeam.stats) == null ? void 0 : _f.yellowCards) || 0;
-      matchStats.homeRed = ((_g = homeTeam.stats) == null ? void 0 : _g.redCards) || 0;
-      matchStats.awayRed = ((_h = awayTeam.stats) == null ? void 0 : _h.redCards) || 0;
-      matchStats.homeShots = ((_i = homeTeam.stats) == null ? void 0 : _i.shots) || 0;
-      matchStats.awayShots = ((_j = awayTeam.stats) == null ? void 0 : _j.shots) || 0;
-      matchStats.homeSoT = ((_k = homeTeam.stats) == null ? void 0 : _k.shotsOnTarget) || 0;
-      matchStats.awaySoT = ((_l = awayTeam.stats) == null ? void 0 : _l.shotsOnTarget) || 0;
-      matchStats.homeSetPieces = countSetPieces(derived.actions, homeTeam.id);
-      matchStats.awaySetPieces = countSetPieces(derived.actions, awayTeam.id);
-      matchStats.homePenalties = countPenalties((_m = homeTeam.stats) == null ? void 0 : _m.advanced);
-      matchStats.awayPenalties = countPenalties((_n = awayTeam.stats) == null ? void 0 : _n.advanced);
-      matchStats.homeGoalsReport = homeTeam.goals || 0;
-      matchStats.awayGoalsReport = awayTeam.goals || 0;
-      const advFor = mapAdvancedStats((_o = ourTeam.stats) == null ? void 0 : _o.advanced);
-      const advAgainst = mapAdvancedStats((_p = oppTeam.stats) == null ? void 0 : _p.advanced);
-      const playerMatchData = {};
-      ourLineup.forEach((player2) => {
-        const position = getDisplayPosition(player2);
-        const isBench = /^sub\d+$/i.test(position || "");
-        if (isBench && !player2.minsPlayed) return;
-        const pid = String(player2.player_id || player2.id);
-        playerMatchData[pid] = {
-          name: player2.name || player2.nameLast || pid,
-          position,
-          isGK: position === "gk",
-          minutes: player2.minsPlayed || 0,
-          rating: player2.rating ? Number(player2.rating) : 0,
-          ...summarizePlayerStats(player2.perMinute || [])
-        };
-      });
-      const ourStyle = STYLE_MAP2[ourTeam.attackingStyle] || "Unknown";
-      const oppStyle = STYLE_MAP2[oppTeam.attackingStyle] || "Unknown";
-      const ourMentality = MENTALITY_MAP2[ourTeam.mentality] || "Unknown";
-      const oppMentality = MENTALITY_MAP2[oppTeam.mentality] || "Unknown";
-      const ourFormation = getFormation(ourLineup);
-      const oppFormation = getFormation(oppLineup);
-      return {
-        matchInfo,
-        matchType,
-        matchStats,
-        advFor,
-        advAgainst,
-        playerMatchData,
-        isHome,
-        unclassifiedGoals: [],
-        ourStyle,
-        oppStyle,
-        ourMentality,
-        oppMentality,
-        ourFormation,
-        oppFormation
-      };
-    }
-  };
-
-  // src/lib/tm-playerdb.js
-  var PlayerCacheDB = /* @__PURE__ */ (() => {
-    const DB_NAME = "TMPlayerData";
-    const STORE_NAME = "players";
-    const DB_VERSION = 1;
-    let db = null;
-    let openPromise = null;
-    const open = () => new Promise((resolve, reject) => {
-      const req = indexedDB.open(DB_NAME, DB_VERSION);
-      req.onupgradeneeded = (e) => {
-        const d = e.target.result;
-        if (!d.objectStoreNames.contains(STORE_NAME))
-          d.createObjectStore(STORE_NAME);
-      };
-      req.onsuccess = (e) => {
-        db = e.target.result;
-        resolve(db);
-      };
-      req.onerror = (e) => reject(e.target.error);
-    });
-    const ensureOpen = () => {
-      if (db) return Promise.resolve(db);
-      if (!openPromise) openPromise = open().catch((e) => {
-        openPromise = null;
-        console.warn("[PlayerCacheDB] open failed:", e);
-        return null;
-      });
-      return openPromise;
-    };
-    const get = (playerId) => ensureOpen().then((d) => {
-      if (!d) return null;
-      return new Promise((resolve) => {
-        const req = d.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).get(parseInt(playerId));
-        req.onsuccess = () => {
-          var _a2;
-          return resolve((_a2 = req.result) != null ? _a2 : null);
-        };
-        req.onerror = () => resolve(null);
-      });
-    });
-    const set = (playerId, data) => ensureOpen().then((d) => {
-      if (!d) return;
-      return new Promise((resolve) => {
-        const tx = d.transaction(STORE_NAME, "readwrite");
-        tx.objectStore(STORE_NAME).put(data, parseInt(playerId));
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => resolve();
-      });
-    });
-    return { get, set };
-  })();
-  var TmPlayerDB = PlayerCacheDB;
-  var ArchivedPlayerDB = /* @__PURE__ */ (() => {
-    const DB_NAME = "TMArchivedPlayers";
-    const STORE_NAME = "players";
-    const DB_VERSION = 1;
-    let db = null;
-    let openPromise = null;
-    const open = () => new Promise((resolve, reject) => {
-      const req = indexedDB.open(DB_NAME, DB_VERSION);
-      req.onupgradeneeded = (e) => {
-        const d = e.target.result;
-        if (!d.objectStoreNames.contains(STORE_NAME))
-          d.createObjectStore(STORE_NAME);
-      };
-      req.onsuccess = (e) => {
-        db = e.target.result;
-        resolve(db);
-      };
-      req.onerror = (e) => reject(e.target.error);
-    });
-    const ensureOpen = () => {
-      if (db) return Promise.resolve(db);
-      if (!openPromise) openPromise = open().catch((e) => {
-        openPromise = null;
-        console.warn("[ArchivedPlayerDB] open failed:", e);
-        return null;
-      });
-      return openPromise;
-    };
-    const get = (playerId) => ensureOpen().then((d) => {
-      if (!d) return null;
-      return new Promise((resolve) => {
-        const req = d.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).get(parseInt(playerId));
-        req.onsuccess = () => {
-          var _a2;
-          return resolve((_a2 = req.result) != null ? _a2 : null);
-        };
-        req.onerror = () => resolve(null);
-      });
-    });
-    const set = (playerId, data) => ensureOpen().then((d) => {
-      if (!d) return;
-      return new Promise((resolve) => {
-        const tx = d.transaction(STORE_NAME, "readwrite");
-        tx.objectStore(STORE_NAME).put(data, parseInt(playerId));
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => resolve();
-      });
-    });
-    return { get, set };
-  })();
-  var TmPlayerArchiveDB = ArchivedPlayerDB;
-  var archivePlayerRecord = async (playerId) => {
-    const record = await TmPlayerDB.get(playerId);
-    if (!record) return false;
-    await TmPlayerArchiveDB.set(playerId, { ...record, _archivedAt: Date.now() });
-    await new Promise((resolve) => {
-      const req = indexedDB.open("TMPlayerData", 1);
-      req.onsuccess = (e) => {
-        const d = e.target.result;
-        const tx = d.transaction("players", "readwrite");
-        tx.objectStore("players").delete(parseInt(playerId));
-        tx.oncomplete = () => {
-          d.close();
-          resolve();
-        };
-        tx.onerror = () => {
-          d.close();
-          resolve();
-        };
-      };
-      req.onerror = () => resolve();
-    });
-    return true;
-  };
-  var MatchCacheDB = /* @__PURE__ */ (() => {
-    const DB_NAME = "TMMatchCache";
-    const STORE_NAME = "matches";
-    const DB_VERSION = 1;
-    let db = null;
-    let openPromise = null;
-    const open = () => new Promise((resolve, reject) => {
-      const req = indexedDB.open(DB_NAME, DB_VERSION);
-      req.onupgradeneeded = (e) => {
-        const d = e.target.result;
-        if (!d.objectStoreNames.contains(STORE_NAME))
-          d.createObjectStore(STORE_NAME);
-      };
-      req.onsuccess = (e) => {
-        db = e.target.result;
-        resolve(db);
-      };
-      req.onerror = (e) => reject(e.target.error);
-    });
-    const ensureOpen = () => {
-      if (db) return Promise.resolve(db);
-      if (!openPromise) openPromise = open().catch((e) => {
-        openPromise = null;
-        console.warn("[MatchCacheDB] open failed:", e);
-        return null;
-      });
-      return openPromise;
-    };
-    const get = (matchId) => ensureOpen().then((d) => {
-      if (!d) return null;
-      return new Promise((resolve) => {
-        const req = d.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).get(parseInt(matchId));
-        req.onsuccess = () => {
-          var _a2;
-          return resolve((_a2 = req.result) != null ? _a2 : null);
-        };
-        req.onerror = () => resolve(null);
-      });
-    });
-    const set = (matchId, data) => ensureOpen().then((d) => {
-      if (!d) return;
-      return new Promise((resolve) => {
-        const tx = d.transaction(STORE_NAME, "readwrite");
-        tx.objectStore(STORE_NAME).put(data, parseInt(matchId));
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => resolve();
-      });
-    });
-    return { get, set };
-  })();
-  var TmMatchCacheDB = MatchCacheDB;
-
-  // src/services/club.js
-  var TmClubService = {
-    /**
-     * Fetch club fixtures (all matches for a given club this season).
-     * @param {string|number} clubId
-     * @returns {Promise<object|null>}
-     */
-    fetchClubFixtures(clubId2) {
-      return _post("/ajax/fixtures.ajax.php", { type: "club", var1: clubId2 });
-    },
-    /**
-     * Fetch the match history HTML page for a club in a given season.
-     * Returns the raw HTML string (not JSON) or null on failure.
-     * @param {string|number} clubId
-     * @param {string|number} seasonId
-     * @returns {Promise<string|null>}
-     */
-    fetchClubMatchHistory(clubId2, seasonId) {
-      return _getHtml(`/history/club/matches/${clubId2}/${seasonId}/`);
-    },
-    /**
-     * Fetch the club transfer history HTML page for a given season.
-     * @param {string|number} clubId
-     * @param {string|number} seasonId
-     * @returns {Promise<string|null>}
-     */
-    fetchClubTransferHistory(clubId2, seasonId) {
-      return _getHtml(`/history/club/transfers/${clubId2}/${seasonId}/`);
-    },
-    /**
-     * Fetch the club records HTML page.
-     * @param {string|number} clubId
-     * @returns {Promise<string|null>}
-     */
-    fetchClubRecords(clubId2) {
-      return _getHtml(`/history/club/records/${clubId2}/`);
-    },
-    /**
-     * Fetch the raw club page HTML.
-     * @param {string|number} clubId
-     * @returns {Promise<string|null>}
-     */
-    fetchClubPageHtml(clubId2) {
-      return _getHtml(`/club/${clubId2}/`);
-    },
-    /**
-     * Fetch the club league history HTML page for a given season.
-     * @param {string|number} clubId
-     * @param {string|number} seasonId
-     * @returns {Promise<string|null>}
-     */
-    fetchClubLeagueHistory(clubId2, seasonId) {
-      return _getHtml(`/history/club/league/${clubId2}/${seasonId}/`);
-    },
-    /**
-     * Fetch the players_get_select post map for a club (raw, no normalization).
-     * Returns a { [playerId: string]: player } map, or null on failure.
-     * @param {string|number} clubId
-     * @returns {Promise<object|null>}
-     */
-    async fetchSquadPost(clubId2) {
-      return _dedup(`club:squad-post:${clubId2}`, async () => {
-        const data = await _post("/ajax/players_get_select.ajax.php", { type: "change", club_id: clubId2 });
-        if (!(data == null ? void 0 : data.post)) return null;
-        const map = {};
-        for (const [id, p] of Object.entries(data.post)) map[String(id)] = p;
-        return map;
-      });
-    }
-  };
-
-  // src/lib/club.js
-  var Club = {
-    "id": null,
-    "name": null,
-    "nick": null,
-    "country": null,
-    "division": null,
-    "group": null,
-    "manager_name": null,
-    "fanclub": null,
-    "stadium": null,
-    "city": null,
-    "a_team": null,
-    "b_team": null,
-    "created": null,
-    "is_diamond": null,
-    "cash": null,
-    "online": null
-  };
-
-  // src/lib/player.js
-  var createSkills = () => SKILL_DEFS.map((skill) => ({
-    ...skill,
-    value: null
-  }));
-  var createPositions = (allPositions = false) => {
-    const entries = allPositions ? Object.entries(POSITION_MAP) : Object.entries(POSITION_MAP).filter(([, pos]) => pos.main);
-    const positions = entries.map(([key, pos]) => ({ ...pos, key, r5: null, rec: null, preferred: false }));
-    if (allPositions) {
-      for (const sub of BENCH_SLOTS) positions.push({ key: sub, playing: false });
-    }
-    return positions;
-  };
-  var Player = {
-    create({ allPositions = false } = {}) {
-      return {
-        id: null,
-        club_id: null,
-        club: { ...Club },
-        name: null,
-        firstname: null,
-        lastname: null,
-        country: null,
-        isGK: null,
-        age: null,
-        month: null,
-        ageMonths: null,
-        ageMonthsString: null,
-        asi: null,
-        routine: null,
-        r5: null,
-        ti: null,
-        wage: null,
-        retire: null,
-        ban: null,
-        injury: null,
-        faceUrl: null,
-        positions: createPositions(allPositions),
-        skills: createSkills(),
-        no: null,
-        note: null,
-        transfer: null,
-        training: {
-          custom: [null, null, null, null, null, null],
-          standard: null
-        },
-        stats: []
-      };
-    }
-  };
-
-  // src/utils/normalize/club.js
-  var normalizeClubTransfers = (html2, opts = {}) => {
-    const doc = new DOMParser().parseFromString(html2, "text/html");
-    let boughtTable = null, soldTable = null;
-    doc.querySelectorAll("h3").forEach((h3) => {
-      const text = h3.textContent.trim().toLowerCase();
-      let next = h3.nextElementSibling;
-      while (next && next.tagName !== "TABLE") next = next.nextElementSibling;
-      if (!next) return;
-      if (text.includes("bought")) boughtTable = next;
-      else if (text.includes("sold")) soldTable = next;
-    });
-    const parseRow = (tr) => {
-      const tds = tr.querySelectorAll("td");
-      if (tds.length < 4) return null;
-      const playerA = tds[0].querySelector("a[player_link]");
-      if (!playerA) return null;
-      const recTd = tds[1];
-      const isRetired = recTd.textContent.trim() === "Retired";
-      let stars = 0;
-      recTd.querySelectorAll("img").forEach((img) => {
-        const src = img.getAttribute("src") || "";
-        if (src.includes("half_star")) stars += 0.5;
-        else if (src.includes("star") && !src.includes("dark_star")) stars += 1;
-      });
-      const clubA = tds[2].querySelector("a[club_link]");
-      return {
-        pid: playerA.getAttribute("player_link"),
-        name: playerA.textContent.trim(),
-        url: playerA.getAttribute("href"),
-        rec: stars * 3.38,
-        isRetired,
-        clubId: clubA ? clubA.getAttribute("club_link") : null,
-        clubName: clubA ? clubA.textContent.trim() : tds[2].textContent.trim(),
-        price: parseFloat(tds[3].textContent.trim().replace(/,/g, "")) || 0,
-        ...opts
-      };
-    };
-    const parseRows2 = (table) => !table ? [] : Array.from(table.querySelectorAll("tr")).map(parseRow).filter(Boolean);
-    const bought = parseRows2(boughtTable);
-    const sold = parseRows2(soldTable);
-    let totalBought = 0, totalSold = 0, balance = 0;
-    doc.querySelectorAll("td[colspan]").forEach((td) => {
-      var _a2;
-      const val = parseFloat((((_a2 = td.querySelector("strong")) == null ? void 0 : _a2.textContent) || "0").replace(/,/g, "")) || 0;
-      const txt = td.textContent.trim();
-      if (/Total Bought/i.test(txt)) totalBought = val;
-      else if (/Total Sold/i.test(txt)) totalSold = val;
-      else if (/Balance/i.test(txt)) balance = val;
-    });
-    if (!totalBought && bought.length) totalBought = bought.reduce((s6, p) => s6 + p.price, 0);
-    if (!totalSold && sold.length) totalSold = sold.reduce((s6, p) => s6 + p.price, 0);
-    if (!balance) balance = totalSold - totalBought;
-    return { bought, sold, totalBought, totalSold, balance };
-  };
-  var normalizeClubFromTooltip = (raw) => {
-    var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
-    return {
-      id: (_a2 = raw.id) != null ? _a2 : null,
-      name: (_b = raw.club_name) != null ? _b : null,
-      nick: (_c = raw.club_nick) != null ? _c : null,
-      country: (_d = raw.country) != null ? _d : null,
-      division: (_e = raw.division) != null ? _e : null,
-      group: (_f = raw.group) != null ? _f : null,
-      manager_name: (_g = raw.manager_name) != null ? _g : null,
-      fanclub: (_h = raw.fanclub) != null ? _h : null,
-      stadium: (_i = raw.stadium) != null ? _i : null,
-      city: (_j = raw.city) != null ? _j : null,
-      a_team: (_k = raw.a_team) != null ? _k : null,
-      b_team: (_l = raw.b_team) != null ? _l : null,
-      created: (_m = raw.created) != null ? _m : null,
-      is_diamond: (_n = raw.is_diamond) != null ? _n : null,
-      cash: (_o = raw.cash) != null ? _o : null,
-      online: (_p = raw.online) != null ? _p : null
-    };
-  };
-  var normalizeClubFromScoutReport = (raw) => {
-    var _a2, _b, _c, _d, _e, _f, _g;
-    return {
-      id: (_a2 = raw.club) != null ? _a2 : null,
-      name: (_b = raw.klubnavn) != null ? _b : null,
-      nick: null,
-      country: (_c = raw.land) != null ? _c : null,
-      division: (_d = raw.division) != null ? _d : null,
-      group: (_e = raw.pulje) != null ? _e : null,
-      manager_name: null,
-      fanclub: null,
-      stadium: null,
-      city: null,
-      a_team: null,
-      b_team: null,
-      created: null,
-      is_diamond: null,
-      cash: (_f = raw.cash) != null ? _f : null,
-      online: (_g = raw.online) != null ? _g : null
-    };
-  };
-
-  // src/utils/normalize/player.js
-  var applyPlayerPositionRatings = (player2) => {
-    player2.positions = player2.positions.map((position) => ({
-      ...position,
-      r5: position.id != null ? TmLib.calculatePlayerR5(position, player2) : null,
-      rec: position.id != null ? TmLib.calculatePlayerREC(position, player2) : null
-    }));
-    const preferredPositions = player2.positions.filter((position) => position.preferred);
-    const positionsForRatings = preferredPositions.length ? preferredPositions : player2.positions;
-    player2.r5 = positionsForRatings.reduce((best, position) => {
-      const value = Number(position == null ? void 0 : position.r5);
-      if (!Number.isFinite(value)) return best;
-      return best == null || value > best ? value : best;
-    }, null);
-    player2.rec = positionsForRatings.reduce((best, position) => {
-      const value = Number(position == null ? void 0 : position.rec);
-      if (!Number.isFinite(value)) return best;
-      return best == null || value > best ? value : best;
-    }, null);
-    return player2;
-  };
-  var normalizeTooltipPlayer = (playerData) => {
-    var _a2;
-    const player2 = Player.create();
-    const rawClub = (_a2 = playerData.club) != null ? _a2 : {};
-    player2.club = normalizeClubFromTooltip(rawClub);
-    const { player: playerTooltip } = playerData;
-    player2.club_id = Number(player2.club.id);
-    player2.id = Number(playerTooltip.player_id);
-    player2.age = Number(playerTooltip.age);
-    player2.month = Number(playerTooltip.months);
-    player2.ageMonths = player2.age * 12 + player2.month;
-    player2.ageMonthsString = `${player2.age}.${player2.month}`;
-    player2.lastname = playerTooltip.lastname;
-    player2.name = playerTooltip.name;
-    player2.firstname = playerTooltip.name.split(" ").filter((n) => n !== player2.lastname).join(" ");
-    player2.country = playerTooltip.country;
-    player2.routine = Number(playerTooltip.routine);
-    player2.wage = TmUtils.parseNum(playerTooltip.wage, null);
-    player2.asi = TmUtils.parseNum(playerTooltip.skill_index, null);
-    player2.no = playerTooltip.no;
-    player2.retire = playerTooltip.isretirering;
-    player2.isGK = playerTooltip.fp === "GK";
-    player2.ti = TmLib.calculateTIPerSession(player2);
-    player2.faceUrl = TmUtils.extractFaceUrl(playerTooltip.appearance, playerTooltip.face_url);
-    TmUtils.applyTooltipSkills(player2, playerTooltip.skills);
-    TmUtils.applyPlayerPositions(player2, playerTooltip.favposition);
-    player2.skills = TmLib.calcSkillDecimalsSimple(player2);
-    applyPlayerPositionRatings(player2);
-    player2.allPositionRatings = player2.positions;
-    player2.isOwnPlayer = TmUtils.getOwnClubIds().includes(String(player2.club_id));
-    return player2;
-  };
-  var _parseTacticsBan = (status, banned) => {
-    if (!banned && !status) return "0";
-    const s6 = String(status || "");
-    if (s6.includes("yellow_card")) return "g";
-    if (s6.includes("red_card")) {
-      const m = s6.match(/^(\d+)/);
-      return `r${m ? parseInt(m[1]) : 1}`;
-    }
-    return banned ? "r1" : "0";
-  };
-  var normalizeTacticsPlayer = (p) => {
-    const player2 = Player.create({ allPositions: true });
-    player2.id = Number(p.player_id);
-    player2.club_id = Number(p.club_id);
-    player2.club.id = String(p.club_id);
-    player2.club.name = p.club_name || "";
-    player2.age = Number(p.age);
-    player2.month = Number(p.months);
-    player2.ageMonths = player2.age * 12 + player2.month;
-    player2.ageMonthsString = `${player2.age}.${player2.month}`;
-    player2.lastname = p.lastname;
-    player2.name = p.name;
-    player2.firstname = p.name.split(" ").filter((n) => n !== p.lastname).join(" ");
-    player2.country = p.country;
-    player2.routine = Number(p.routine) || 0;
-    player2.wage = TmUtils.parseNum(p.wage, null);
-    player2.asi = TmUtils.parseNum(p.skill_index, null);
-    player2.no = p.no;
-    player2.retire = p.isretirering;
-    player2.ban = _parseTacticsBan(p.status, p.banned);
-    player2.injury = p.injury;
-    player2.isGK = p.fp === "GK";
-    player2.rec_sort = p.rec_sort;
-    player2.faceUrl = TmUtils.extractFaceUrl(p.appearance, null);
-    TmUtils.applyTooltipSkills(player2, p.skills);
-    TmUtils.applyPlayerPositions(player2, p.favposition, true);
-    player2.skills = TmLib.calcSkillDecimalsSimple(player2);
-    applyPlayerPositionRatings(player2);
-    player2.allPositionRatings = player2.positions;
-    player2.ti = TmLib.calculateTIPerSession(player2);
-    player2.isOwnPlayer = TmUtils.getOwnClubIds().includes(String(player2.club_id));
-    return player2;
-  };
-  var normalizeSquadPlayer = (postPlayer) => {
-    const player2 = Player.create();
-    player2.id = Number(postPlayer.player_id || postPlayer.id);
-    player2.club_id = Number(postPlayer.club_id);
-    player2.club.id = postPlayer.club_id;
-    player2.age = Number(postPlayer.age);
-    player2.month = Number(postPlayer.month);
-    player2.ageMonths = player2.age * 12 + player2.month;
-    player2.ageMonthsString = `${player2.age}.${player2.month}`;
-    player2.lastname = postPlayer.lastname;
-    player2.name = postPlayer.player_name;
-    player2.firstname = postPlayer.player_name.split(" ").filter((n) => n !== postPlayer.lastname).join(" ");
-    player2.country = postPlayer.country;
-    player2.routine = TmUtils.parseNum(Number(postPlayer.rutine), 0);
-    player2.wage = TmUtils.parseNum(postPlayer.wage, null);
-    player2.asi = postPlayer.asi;
-    player2.no = postPlayer.no;
-    player2.retire = postPlayer.retire;
-    player2.ban = postPlayer.ban;
-    player2.injury = postPlayer.injury;
-    player2.isGK = postPlayer.fp === "GK";
-    player2.training.custom = String(postPlayer.training_custom || "").split("").map((v) => parseInt(v) || 0);
-    player2.training.standard = postPlayer.training;
-    player2.transfer = postPlayer.transfer;
-    TmUtils.applySquadSkills(player2, postPlayer);
-    TmUtils.applyPlayerPositions(player2, postPlayer.favposition);
-    applyPlayerPositionRatings(player2);
-    player2.ti = TmLib.calculateTIPerSession(player2);
-    player2.isOwnPlayer = TmUtils.getOwnClubIds().includes(String(player2.club_id));
-    return player2;
-  };
-  var _extractClub = (html2) => {
-    var _a2, _b;
-    if (!html2 || html2 === "-") return { name: null, href: null };
-    const name = (_a2 = (html2.match(/>([^<]+)<\/a>/) || [])[1]) != null ? _a2 : null;
-    const href = (_b = (html2.match(/href="([^"]+)"/) || [])[1]) != null ? _b : null;
-    return { name, href };
-  };
-  var _normalizeStatsRow = (raw, prev) => {
-    var _a2, _b, _c, _d, _e, _f, _g;
-    if (raw.season === "transfer") {
-      return { type: "transfer", amount: raw.transfer, transferamount: Number(raw.transferamount) || 0 };
-    }
-    const isTotal = raw.season === "total";
-    const games = Number(raw.games) || 0;
-    const { name, href } = _extractClub(raw.klubnavn);
-    return {
-      type: isTotal ? "total" : "season",
-      season: isTotal ? "total" : Number(raw.season),
-      club_id: isTotal ? null : (_b = (_a2 = raw.klub_id) != null ? _a2 : prev == null ? void 0 : prev.club_id) != null ? _b : null,
-      club_name: isTotal ? null : (_c = name != null ? name : prev == null ? void 0 : prev.club_name) != null ? _c : null,
-      club_href: isTotal ? null : (_d = href != null ? href : prev == null ? void 0 : prev.club_href) != null ? _d : null,
-      country: (_e = raw.country) != null ? _e : null,
-      division: (_f = raw.division) != null ? _f : null,
-      group: (_g = raw.group) != null ? _g : null,
-      games,
-      goals: Number(raw.goals) || 0,
-      conceded: Number(raw.conceded) || 0,
-      assists: Number(raw.assists) || 0,
-      cards: Number(raw.cards) || 0,
-      rating: games > 0 ? (Number(raw.rating) / games * 100 / 100).toFixed(2) : null,
-      productivity: Number(raw.productivity) || 0,
-      ...isTotal && { mom: Number(raw.mom) || 0 }
-    };
-  };
-  var _normalizeStatsTab = (rows) => {
-    if (!Array.isArray(rows)) return [];
-    let prev = null;
-    return rows.map((raw) => {
-      const row = _normalizeStatsRow(raw, prev);
-      if (row.type === "season") prev = row;
-      return row;
-    });
-  };
-  var normalizePlayerStats = (data) => {
-    var _a2, _b, _c, _d, _e;
-    return {
-      nat: _normalizeStatsTab((_a2 = data == null ? void 0 : data.table) == null ? void 0 : _a2.nat),
-      cup: _normalizeStatsTab((_b = data == null ? void 0 : data.table) == null ? void 0 : _b.cup),
-      int: _normalizeStatsTab((_c = data == null ? void 0 : data.table) == null ? void 0 : _c.int),
-      total: _normalizeStatsTab((_d = data == null ? void 0 : data.table) == null ? void 0 : _d.total),
-      current_season: (_e = data == null ? void 0 : data.current_season) != null ? _e : null
-    };
-  };
-  var populateSkillIndexFromTI = (tiHistory, currentAsi, isGK = false) => {
-    if (!Array.isArray(tiHistory) || !tiHistory.length || !Number.isFinite(Number(currentAsi))) return null;
-    tiHistory = tiHistory.slice(1);
-    const skillIndex = new Array(tiHistory.length).fill(null);
-    let currentSkillSum = TmLib.calcAsiSkillSum({ asi: Number(currentAsi), isGK });
-    skillIndex[tiHistory.length - 1] = Number(currentAsi);
-    for (let index = tiHistory.length - 2; index >= 0; index -= 1) {
-      const nextTI = Number(tiHistory[index + 1]);
-      if (!Number.isFinite(nextTI)) return null;
-      currentSkillSum -= nextTI / 10;
-      skillIndex[index] = TmLib.calcASIFromSkillSum(currentSkillSum, isGK);
-    }
-    return skillIndex;
-  };
-  var normalizePlayerGraphs = (graphs, player2) => {
-    var _a2, _b, _c, _d, _e, _f, _g;
-    if (!graphs) return null;
-    const TI = (_b = (_a2 = graphs.TI) != null ? _a2 : graphs.ti) != null ? _b : null;
-    return {
-      ...graphs,
-      TI,
-      skill_index: (_c = graphs.skill_index) != null ? _c : populateSkillIndexFromTI(TI, player2 == null ? void 0 : player2.asi, player2 == null ? void 0 : player2.isGK),
-      one_on_ones: (_e = (_d = graphs.one_on_ones) != null ? _d : graphs.oneonones) != null ? _e : null,
-      aerial_ability: (_g = (_f = graphs.aerial_ability) != null ? _f : graphs.arialability) != null ? _g : null
-    };
-  };
-  var normalizeSquadPlayerTraining = (data) => {
-    var _a2;
-    if (!data) return null;
-    const customRaw = String(data.training_custom || "").trim();
-    if (!customRaw) {
-      return {
-        custom: [null, null, null, null, null, null],
-        standard: (_a2 = data.training) != null ? _a2 : null
-      };
-    }
-    const customTraining = Array.from({ length: 6 }, (_, i) => {
-      const value = customRaw[i];
-      return value != null ? Number(value) || 0 : 0;
-    });
-    return { custom: customTraining, standard: null };
-  };
-  var normalizePlayerTraining = (data) => {
-    var _a2;
-    const { custom } = data;
-    if (!custom.custom_on) {
-      return {
-        custom: [null, null, null, null, null, null],
-        standard: (_a2 = custom.team) != null ? _a2 : null
-      };
-    }
-    const customTraining = Array.from({ length: 6 }, (_, i) => {
-      var _a3, _b;
-      const pts = (_b = (_a3 = custom.custom) == null ? void 0 : _a3[`team${i + 1}`]) == null ? void 0 : _b.points;
-      return pts != null ? Number(pts) : null;
-    });
-    return { custom: customTraining, standard: null };
-  };
-  var _TRANSFER_SHORT_TO_SKILL_KEY = {
-    str: "strength",
-    sta: "stamina",
-    pac: "pace",
-    mar: "marking",
-    tac: "tackling",
-    wor: "workrate",
-    pos: "positioning",
-    pas: "passing",
-    cro: "crossing",
-    tec: "technique",
-    hea: "heading",
-    fin: "finishing",
-    lon: "longshots",
-    set: "set_pieces",
-    han: "handling",
-    one: "oneonones",
-    ref: "reflexes",
-    ari: "arialability",
-    jum: "jumping",
-    com: "communication",
-    kic: "kicking",
-    thr: "throwing"
-  };
-  var _fmtTransferTime = (sec) => {
-    const s6 = Math.max(0, sec);
-    const d = Math.floor(s6 / 86400), h = Math.floor(s6 % 86400 / 3600), m = Math.floor(s6 % 3600 / 60);
-    if (d > 0) return `${d}d ${h}h`;
-    if (h > 0) return `${h}h ${m}m`;
-    return `${m}m ${s6 % 60}s`;
-  };
-  var normalizeTransferPlayer = (raw) => {
-    var _a2;
-    const player2 = Player.create();
-    const age = parseFloat(raw.age) || 0;
-    const years = Math.floor(age);
-    const months = Math.round((age - years) * 100);
-    player2.id = Number(raw.id);
-    player2.club_id = Number(raw.club_id);
-    player2.club.id = String(raw.club_id);
-    player2.club.name = raw.club_name || "";
-    player2.name = raw.name || raw.name_js || "";
-    player2.country = raw.nat || raw.country || null;
-    player2.age = years;
-    player2.month = months;
-    player2.ageMonths = years * 12 + months;
-    player2.ageMonthsString = `${years}.${months}`;
-    player2.asi = raw.asi || null;
-    player2.routine = raw.routine != null ? Number(raw.routine) : null;
-    const fp = Array.isArray(raw.fp) ? raw.fp.map((s6) => String(s6).trim().toLowerCase()).filter(Boolean) : String(raw.fp || "").split(",").map((s6) => s6.trim().toLowerCase()).filter(Boolean);
-    player2.isGK = fp[0] === "gk";
-    const rawSkillMap = new Map(
-      Object.entries(_TRANSFER_SHORT_TO_SKILL_KEY).filter(([short]) => raw[short] != null && Number(raw[short]) > 0).map(([short, longKey]) => [longKey, Number(raw[short])])
-    );
-    player2.skills = player2.skills.map((skill) => {
-      var _a3;
-      return { ...skill, value: (_a3 = rawSkillMap.get(skill.key)) != null ? _a3 : null };
-    }).filter((skill) => skill.value != null);
-    TmUtils.applyPlayerPositions(player2, raw.favposition || "");
-    applyPlayerPositionRatings(player2);
-    player2.isOwnPlayer = TmUtils.getOwnClubIds().includes(String(player2.club_id));
-    player2.r5 = null;
-    player2.r5Lo = null;
-    player2.r5Hi = null;
-    if (player2.asi && player2.skills.length) {
-      const preferredPositions = player2.positions.filter((p) => p.preferred).map((p) => p.key);
-      if (preferredPositions.length) {
-        const routineMax = Math.max(0, TmConst.ROUTINE_SCALE * ((player2.age || 20) - TmConst.ROUTINE_AGE_MIN));
-        const skillOrder = player2.isGK ? TmConst.SKILL_KEYS_GK_WEIGHT : TmConst.SKILL_KEYS_OUT;
-        const longKeyMap = new Map(player2.skills.map((s6) => [s6.key, Math.floor(Number(s6.value) || 0)]));
-        const skillArr = skillOrder.map((short) => {
-          var _a3;
-          return (_a3 = longKeyMap.get(_TRANSFER_SHORT_TO_SKILL_KEY[short])) != null ? _a3 : 0;
-        });
-        if (skillArr.some((v) => v > 0)) {
-          for (const pos of preferredPositions) {
-            const pi = TmLib.getPositionIndex(pos);
-            const lo = TmLib.calcR5(pi, skillArr, player2.asi, 0);
-            const hi = TmLib.calcR5(pi, skillArr, player2.asi, routineMax);
-            if (player2.r5Lo === null || lo > player2.r5Lo) player2.r5Lo = lo;
-            if (player2.r5Hi === null || hi > player2.r5Hi) player2.r5Hi = hi;
-          }
-        }
-      }
-    }
-    player2.tooltipFetched = false;
-    player2.timeleft = Math.max(0, raw.time || 0);
-    player2.timeleft_string = player2.timeleft > 0 ? _fmtTransferTime(player2.timeleft) : "";
-    player2.bid = TmUtils.parseNum(raw.bid, 0);
-    player2.curbid = player2.bid ? TmUtils.fmtCoins(player2.bid) : "";
-    player2.next_bid = raw.next_bid || null;
-    player2.is_pro = !!raw.pro;
-    player2.bump = !!raw.bump;
-    player2.shortlisted = (_a2 = raw.shortlisted) != null ? _a2 : null;
-    player2.note = raw.txt || "";
-    return player2;
-  };
-
-  // src/models/club_new.js
-  var fetchRawPlayers = async (clubId2) => {
-    if (!clubId2) return [];
-    const post = await TmClubService.fetchSquadPost(clubId2);
-    if (!post) return [];
-    return Object.values(post).map(normalizeSquadPlayer);
-  };
-  var fetchClubTransfers = async (clubId2, season, opts = {}) => {
-    const html2 = await TmClubService.fetchClubTransferHistory(clubId2, season);
-    return html2 ? normalizeClubTransfers(html2, opts) : null;
-  };
-
-  // src/services/player.js
-  var TmPlayerService = {
-    async fetchPlayerTooltip(playerId) {
-      const data = await _post("/ajax/tooltip.ajax.php", { player_id: playerId });
-      return data ? normalizeTooltipPlayer(data) : null;
-    },
-    async fetchPlayerInfo(pid, type, extra = {}) {
-      return _post("/ajax/players_get_info.ajax.php", {
-        player_id: pid,
-        type,
-        show_non_pro_graphs: true,
-        ...extra
-      });
-    },
-    async fetchPlayerGraphs(player2) {
-      var _a2;
-      const data = await this.fetchPlayerInfo(player2.id, "graphs");
-      if (!data) return null;
-      return {
-        graphs: normalizePlayerGraphs(data == null ? void 0 : data.graphs, player2),
-        player: player2,
-        skillpoints: (_a2 = data == null ? void 0 : data.skillpoints) != null ? _a2 : null
-      };
-    },
-    async fetchPlayerHistory(playerId) {
-      const data = await this.fetchPlayerInfo(playerId, "history");
-      return data ? normalizePlayerStats(data) : null;
-    },
-    async fetchPlayerTraining(playerId) {
-      const data = await this.fetchPlayerInfo(playerId, "training");
-      return data ? normalizePlayerTraining(data) : null;
-    },
-    async fetchPlayerTrainingForSync(player2) {
-      var _a2;
-      if (player2 == null ? void 0 : player2.isOwnPlayer) {
-        return this.fetchPlayerTraining(player2.id);
-      }
-      const data = await _post("/ajax/players_get_select.ajax.php", {
-        type: "change",
-        club_id: player2 == null ? void 0 : player2.club_id
-      });
-      return normalizeSquadPlayerTraining((_a2 = data == null ? void 0 : data.post) == null ? void 0 : _a2[player2.id]);
-    },
-    normalizeSquadPlayer(postPlayer) {
-      return normalizeSquadPlayer(postPlayer);
-    },
-    normalizePlayer(player2) {
-      return player2;
-    }
-  };
-
-  // src/models/player.js
-  var tooltipCache = /* @__PURE__ */ new Map();
-  var refreshPlayerSkills = (player2) => {
-    var _a2, _b;
-    const latestRecord = (_a2 = player2.records) == null ? void 0 : _a2[player2.ageMonthsString];
-    if (!Array.isArray(latestRecord == null ? void 0 : latestRecord.skills) || !((_b = player2.skills) == null ? void 0 : _b.length)) return;
-    player2.skills = player2.skills.map((skill, index) => ({
-      ...skill,
-      value: latestRecord.skills[index] != null ? Number(latestRecord.skills[index]) : skill.value
-    }));
-    applyPlayerPositionRatings(player2);
-  };
-  var TmPlayerModel = {
-    async fetchPlayerTooltip(playerId) {
-      var _a2, _b;
-      const [player2, dbPlayer] = await Promise.all([
-        TmPlayerService.fetchPlayerTooltip(playerId),
-        TmPlayerDB.get(playerId)
-      ]);
-      if (!player2) return null;
-      player2.records = (dbPlayer == null ? void 0 : dbPlayer.records) || {};
-      const latestRecord = (_a2 = dbPlayer == null ? void 0 : dbPlayer.records) == null ? void 0 : _a2[player2.ageMonthsString];
-      if (Array.isArray(latestRecord == null ? void 0 : latestRecord.skills) && ((_b = player2.skills) == null ? void 0 : _b.length)) {
-        player2.skills = player2.skills.map((skill, index) => ({
-          ...skill,
-          value: latestRecord.skills[index] != null ? Number(latestRecord.skills[index]) : skill.value
-        }));
-        applyPlayerPositionRatings(player2);
-      }
-      return player2;
-    },
-    fetchTooltipCached(playerId) {
-      if (!tooltipCache.has(playerId)) {
-        tooltipCache.set(playerId, this.fetchPlayerTooltip(playerId).finally(() => {
-          tooltipCache.delete(playerId);
-        }));
-      }
-      return tooltipCache.get(playerId);
-    },
-    fetchPlayerInfo(...args) {
-      return TmPlayerService.fetchPlayerInfo(...args);
-    },
-    fetchPlayerGraphs(...args) {
-      return TmPlayerService.fetchPlayerGraphs(...args);
-    },
-    fetchPlayerHistory(...args) {
-      return TmPlayerService.fetchPlayerHistory(...args);
-    },
-    fetchPlayerTraining(...args) {
-      return TmPlayerService.fetchPlayerTraining(...args);
-    },
-    normalizeSquadPlayer(...args) {
-      return TmPlayerService.normalizeSquadPlayer(...args);
-    }
-  };
-
-  // src/services/match.js
-  var TmMatchService = {
-    /**
-     * Fetch the match tooltip (past seasons) from tooltip.ajax.php.
-     * @param {string|number} matchId
-     * @param {string|number} season
-     * @returns {Promise<object|null>}
-     */
-    fetchMatchTooltip(matchId, season) {
-      return _post("/ajax/tooltip.ajax.php", { type: "match", match_id: matchId, season });
-    },
-    /**
-     * Fetch head-to-head match history between two clubs.
-     * @param {string|number} homeId
-     * @param {string|number} awayId
-     * @param {number} date — Unix timestamp of kickoff
-     * @returns {Promise<object|null>}
-     */
-    fetchMatchH2H(homeId, awayId, date) {
-      return _get(`/ajax/match_h2h.ajax.php?home_team=${homeId}&away_team=${awayId}&date=${date}`);
-    },
-    /**
-     * Fetch the player tooltip endpoint.
-     * Returns the full parsed response (contains .player, .club, etc.) or null.
-     * @param {string|number} pid
-     * @returns {Promise<{player: object, club: object, [key: string]: any}|null>}
-     */
-    /**
-     * Promote each event's `parameters` array into direct properties on the event object.
-     * Mutates in place. After normalization callers read evt.goal, evt.shot, etc. directly.
-     * @param {object} report — mData.report keyed by minute string
-     */
-    normalizeReport(report) {
-      for (const evts of Object.values(report || {})) {
-        for (const evt of evts) {
-          if (!evt.parameters) continue;
-          for (const p of evt.parameters) {
-            if (p.goal !== void 0) evt.goal = p.goal;
-            if (p.shot !== void 0) evt.shot = p.shot;
-            if (p.yellow !== void 0) evt.yellow = p.yellow;
-            if (p.yellow_red !== void 0) evt.yellow_red = p.yellow_red;
-            if (p.red !== void 0) evt.red = p.red;
-            if (p.injury !== void 0) evt.injury = p.injury;
-            if (p.sub !== void 0) evt.sub = p.sub;
-            if (p.penalty !== void 0) evt.penalty = p.penalty;
-            if (p.set_piece !== void 0) evt.set_piece = p.set_piece;
-            if (p.mentality_change !== void 0) evt.mentality_change = p.mentality_change;
-          }
-        }
-      }
-    },
-    /**
-     * Build the normalized plays structure from a raw match report.
-     * Requires normalizeReport() to have been called first.
-     * @param {object} report — mData.report (post-normalizeReport)
-     * @param {object} lineup — mData.lineup with .home and .away player maps
-     * @returns {object} normalized plays keyed by minute string
-     */
-    buildNormalizedPlays(report, lineup) {
-      const { PASS_VIDS: PASS_VIDS2, CROSS_VIDS: CROSS_VIDS2, DEFWIN_VIDS: DEFWIN_VIDS2, FINISH_VIDS: FINISH_VIDS2, RUN_DUEL_VIDS: RUN_DUEL_VIDS2 } = TmConst;
-      const nameMap = {};
-      ["home", "away"].forEach((side) => {
-        Object.values((lineup == null ? void 0 : lineup[side]) || {}).forEach((p) => {
-          nameMap[String(p.player_id)] = p.nameLast || p.name || "?";
-        });
-      });
-      const resolveText = (lines) => (lines || []).map((l) => l.replace(/\[player=(\d+)\]/g, (_, pid) => nameMap[pid] || pid));
-      const result = {};
-      const sortedMins = Object.keys(report || {}).map(Number).sort((a, b) => a - b);
-      for (const min of sortedMins) {
-        const evts = report[String(min)] || [];
-        const plays = [];
-        evts.forEach((evt, reportEventIndex) => {
-          var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
-          const gPrefix = evt.type ? evt.type.replace(/[0-9]+.*/, "") : "";
-          const vids = (_a2 = evt.chance) == null ? void 0 : _a2.video;
-          if (!(vids == null ? void 0 : vids.length)) return;
-          const evtHasShot = !!evt.shot;
-          const evtShotOnTarget = ((_b = evt.shot) == null ? void 0 : _b.target) === "on";
-          const outcome = evt.goal ? "goal" : evt.shot ? "shot" : "lost";
-          const clips = [];
-          for (let vi = 0; vi < vids.length; vi++) {
-            const v = vids[vi];
-            const clip = v.video;
-            const text = resolveText((_d = (_c = evt.chance) == null ? void 0 : _c.text) == null ? void 0 : _d[vi]);
-            const nextClip = vi + 1 < vids.length ? vids[vi + 1].video : null;
-            const prevClip = vi > 0 ? vids[vi - 1].video : null;
-            const nextIsDefwin = !!(nextClip && DEFWIN_VIDS2.test(nextClip));
-            const nextIsFinish = !!(nextClip && FINISH_VIDS2.test(nextClip));
-            const prevIsCornerkick = !!(prevClip && /^cornerkick/.test(prevClip));
-            const actions = [];
-            if (/^penaltyshot$/.test(clip)) {
-              const shooter = evt.penalty || ((_e = evt.goal) == null ? void 0 : _e.player) || v.att1;
-              if (shooter) {
-                const isGoal = !!(evt.goal && String(evt.goal.player) === String(shooter));
-                const onTarget = isGoal || /^save/.test(nextClip || "") || /^goal_/.test(nextClip || "");
-                actions.push({ action: "shot", by: shooter, onTarget, head: false, foot: true, goal: isGoal, freekick: false, penalty: true });
-              }
-            } else if (PASS_VIDS2.test(clip)) {
-              const isGkDist = /^gk(throw|kick)/.test(clip);
-              const by = isGkDist ? v.gk : v.att1;
-              if (by) {
-                const isPreshort = /^preshort/.test(clip);
-                const rawLines = ((_g = (_f = evt.chance) == null ? void 0 : _f.text) == null ? void 0 : _g[vi]) || [];
-                const preshortSkip = isPreshort && !rawLines.some((l) => l.includes("[player=" + by + "]"));
-                if (!preshortSkip) {
-                  const failed = nextIsDefwin;
-                  actions.push({ action: "pass", success: !failed, by });
-                  if (!failed && evtHasShot) actions.push({ action: "keyPass", by });
-                }
-              }
-            } else if (CROSS_VIDS2.test(clip) && v.att1) {
-              if (/^freekick/.test(clip) && evtHasShot) {
-                const isGoal = !!(evt.goal && String(evt.goal.player) === String(v.att1));
-                const onTarget = isGoal || evtShotOnTarget;
-                const penalty = /^p_/.test(gPrefix);
-                const freekick = gPrefix === "dire";
-                actions.push({ action: "shot", by: v.att1, onTarget, head: false, foot: true, goal: isGoal, freekick, penalty });
-                if (isGoal && evt.goal.assist) actions.push({ action: "assist", by: evt.goal.assist });
-              } else {
-                const failed = nextIsDefwin;
-                actions.push({ action: "cross", success: !failed, by: v.att1 });
-                if (!failed && evtHasShot) actions.push({ action: "keyPass", by: v.att1 });
-              }
-            } else if (FINISH_VIDS2.test(clip) && v.att1) {
-              if (!nextIsFinish) {
-                const isHead = /^header/.test(clip);
-                const isGoal = !!(evt.goal && String(evt.goal.player) === String(v.att1));
-                const onTarget = isGoal || evtShotOnTarget;
-                const penalty = /^p_/.test(gPrefix);
-                const freekick = gPrefix === "dire";
-                actions.push({ action: "shot", by: v.att1, onTarget, head: isHead, foot: !isHead, goal: isGoal, freekick, penalty });
-                if (isGoal && evt.goal.assist) actions.push({ action: "assist", by: evt.goal.assist });
-              }
-            } else if (DEFWIN_VIDS2.test(clip)) {
-              const tAll = (((_h = evt.chance) == null ? void 0 : _h.text) || []).flat();
-              const winner = [v.def1, v.def2].find((d) => d && tAll.some((l) => l.includes("[player=" + d + "]")));
-              if (winner) {
-                if (!prevIsCornerkick) actions.push({ action: "duelWon", by: winner });
-                const tSeg = ((_j = (_i = evt.chance) == null ? void 0 : _i.text) == null ? void 0 : _j[vi]) || [];
-                const isHeader = /^defwin5$/.test(clip) || tSeg.some((l) => /\bheader\b|\bhead(ed|s)?\b/i.test(l));
-                const isTackle = /^defwin(3|6)$/.test(clip);
-                actions.push({ action: isHeader ? "headerClear" : isTackle ? "tackle" : "interception", by: winner });
-              }
-            } else if (RUN_DUEL_VIDS2.test(clip)) {
-              if (!nextIsDefwin) {
-                if (!prevIsCornerkick) {
-                  const tAll = (((_k = evt.chance) == null ? void 0 : _k.text) || []).flat();
-                  [v.def1, v.def2].forEach((d) => {
-                    if (d && tAll.some((l) => l.includes("[player=" + d + "]")))
-                      actions.push({ action: "duelLost", by: d });
-                  });
-                }
-                if (nextIsFinish && v.def1) actions.push({ action: "tackleFail", by: v.def1 });
-              }
-            } else if (/^save/.test(clip) && v.gk) {
-              actions.push({ action: "save", by: v.gk });
-            } else if (/^foulcall/.test(clip) && v.def1) {
-              actions.push({ action: "foul", by: v.def1 });
-            } else if (/^yellow/.test(clip)) {
-              const pid = evt.yellow || evt.yellow_red || v.def1;
-              if (pid) actions.push({ action: evt.yellow_red ? "yellowRed" : "yellow", by: pid });
-            } else if (/^red/.test(clip)) {
-              const pid = evt.red || v.def1;
-              if (pid) actions.push({ action: "red", by: pid });
-            } else if (/^sub/.test(clip) && evt.sub) {
-              actions.push({ action: "subIn", by: evt.sub.player_in });
-              actions.push({ action: "subOut", by: evt.sub.player_out });
-              if (evt.sub.player_position) actions.push({ action: "positionChange", by: evt.sub.player_in, position: evt.sub.player_position });
-            } else if (/^injury_sub/.test(clip) && evt.sub) {
-              actions.push({ action: "subIn", by: evt.sub.player_in });
-              actions.push({ action: "subOut", by: evt.sub.player_out });
-              if (evt.sub.player_position) actions.push({ action: "positionChange", by: evt.sub.player_in, position: evt.sub.player_position });
-            } else if (/^injurystart/.test(clip)) {
-            } else if (/^injury/.test(clip) && evt.injury) {
-              actions.push({ action: "injury", by: evt.injury });
-            }
-            clips.push({ video: clip, text, actions });
-          }
-          if (evt.set_piece && clips.length > 0)
-            clips[clips.length - 1].actions.push({ action: "setpiece", by: evt.set_piece, style: gPrefix });
-          if (evt.mentality_change && clips.length > 0)
-            clips[clips.length - 1].actions.push({ action: "mentality_change", team: String(evt.mentality_change.team), mentality: Number(evt.mentality_change.mentality) });
-          plays.push({ team: evt.club, style: gPrefix, outcome, clips, segments: clips, reportEventIndex, severity: evt.severity });
-        });
-        if (plays.length) result[String(min)] = plays;
-      }
-      return result;
-    },
-    /**
-     * Enrich a raw mData object with derived fields. Mutates in place.
-     * Adds: club colors, plays.
-     * @param {object} mData — raw or compressed match API response
-     * @returns {object} mData (mutated)
-     */
-    normalizeMatchData(mData, { dbSync = true } = {}) {
-      const { club, lineup } = mData;
-      mData.teams = { home: {}, away: {} };
-      ["home", "away"].forEach((side) => {
-        var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l;
-        const color = "#" + (((_a2 = club[side].colors) == null ? void 0 : _a2.club_color1) || (side === "home" ? "4a9030" : "5b9bff"));
-        const captainId = Number((_c = (_b = mData.match_data) == null ? void 0 : _b.captain) == null ? void 0 : _c[side]);
-        Object.values(lineup[side]).forEach((p) => {
-          p.id = Number(p.player_id);
-          p.faceUrl = TmMatchUtils.faceUrl(p, color);
-          p.captain = Number(p.player_id) === captainId;
-          p.skills = p.skills || [];
-          p.routine = p.routine ? Number(p.routine) : null;
-        });
-        mData.teams[side] = {
-          ...club[side],
-          color,
-          lineup: Object.values(lineup[side]),
-          mentality: Number((_f = (_e = (_d = mData.match_data) == null ? void 0 : _d.mentality) == null ? void 0 : _e[side]) != null ? _f : 4),
-          attackingStyle: (_i = (_h = (_g = mData.match_data) == null ? void 0 : _g.attacking_style) == null ? void 0 : _h[side]) != null ? _i : null,
-          focusSide: (_l = (_k = (_j = mData.match_data) == null ? void 0 : _j.focus_side) == null ? void 0 : _k[side]) != null ? _l : null
-        };
-      });
-      mData.homePlayerSet = new Set(Object.keys(lineup.home));
-      mData.awayPlayerSet = new Set(Object.keys(lineup.away));
-      mData.allPlayers = [...Object.values(lineup.home), ...Object.values(lineup.away)];
-      this.normalizeReport(mData.report);
-      mData.plays = this.buildNormalizedPlays(mData.report, lineup);
-      mData.home = { club: { id: mData.teams.home.id, name: mData.teams.home.club_name }, playerIds: mData.homePlayerSet, lineup: mData.teams.home.lineup };
-      mData.away = { club: { id: mData.teams.away.id, name: mData.teams.away.club_name }, playerIds: mData.awayPlayerSet, lineup: mData.teams.away.lineup };
-      const allPids = new Set(mData.allPlayers.map((p) => String(p.id)));
-      const homeClubId = mData.teams.home.id;
-      const awayClubId = mData.teams.away.id;
-      if (dbSync) {
-        (async () => {
-          const [homeData, awayData] = await Promise.all([
-            fetchRawPlayers(homeClubId).catch(() => null),
-            fetchRawPlayers(awayClubId).catch(() => null)
-          ]);
-          const squadMap = {};
-          [homeData, awayData].forEach((squad) => {
-            if (!Array.isArray(squad)) return;
-            squad.forEach((p) => {
-              squadMap[String(p.id)] = p;
-            });
-          });
-          const players = [];
-          const missingPids = [];
-          for (const pid of allPids) {
-            const p = squadMap[pid];
-            if (p) players.push(p);
-            else missingPids.push(pid);
-          }
-          if (missingPids.length > 0) {
-            await Promise.all(missingPids.map(
-              (pid) => TmPlayerModel.fetchPlayerTooltip(pid).then((data) => {
-                if (data) players.push(data);
-              }).catch(() => {
-              })
-            ));
-          }
-          window.dispatchEvent(new CustomEvent("tm:match-profiles-ready", { detail: { players } }));
-        })();
-      }
-      return mData;
-    },
-    /**
-     * Fetch the full match data object for a given match ID.
-     * Automatically normalizes the response (report promotion, plays, colors, player sets).
-     * @param {string|number} matchId
-     * @param {{dbSync?: boolean}} [options]
-     * @returns {Promise<object|null>}
-     */
-    async fetchMatch(matchId, options = {}) {
-      const raw = await _get(`/ajax/match.ajax.php?id=${matchId}`);
-      if (!raw) return null;
-      return this.normalizeMatchData(raw, options);
-    },
-    /**
-     * Fetch match data without cache usage or async player profile enrichment.
-     * Intended for pages that only need the raw match payload and lineup/report data.
-     * @param {string|number} matchId
-     * @returns {Promise<object|null>}
-     */
-    /**
-     * Fetch a match via the standard match normalization path and return
-     * the stats-ready payload consumed by the club statistics page.
-     * @param {object} matchInfo
-     * @param {string|number} clubId
-     * @param {{dbSync?: boolean}} [options]
-     * @returns {Promise<object|null>}
-     */
-    async fetchMatchForStats(matchInfo, clubId2, options = {}) {
-      const mData = await this.fetchMatch(matchInfo.id, options);
-      if (!mData) return null;
-      return TmStatsMatchProcessor.process(matchInfo, mData, clubId2);
-    },
-    /**
-     * Strip unnecessary fields from a raw match API response.
-     * Removes: udseende2/looks from lineup, text_team from report events,
-     * colors/logos/form/meta from club sections.
-     * Result is ~30% smaller and fully compatible with all scripts.
-     * @param {object} raw — raw response from match.ajax.php
-     * @returns {object} compressed match object
-     */
-    compressMatch(raw) {
-      var _a2, _b;
-      const cPlayer = (p) => ({
-        player_id: Number(p.player_id),
-        id: Number(p.player_id),
-        name: p.name,
-        nameLast: p.nameLast,
-        position: p.position,
-        fp: p.fp,
-        no: p.no,
-        rating: p.rating,
-        mom: p.mom,
-        rec: p.rec,
-        routine: p.routine,
-        age: p.age,
-        udseende2: p.udseende2
-      });
-      const cLineupSide = (side) => {
-        var _a3;
-        const out = {};
-        for (const [pid, p] of Object.entries(((_a3 = raw.lineup) == null ? void 0 : _a3[side]) || {}))
-          out[pid] = cPlayer(p);
-        return out;
-      };
-      const cReport = (report) => {
-        const out = {};
-        for (const [min, events] of Object.entries(report || {})) {
-          out[min] = events.map((evt) => {
-            const e = {};
-            if (evt.type !== void 0) e.type = evt.type;
-            if (evt.club !== void 0) e.club = evt.club;
-            if (evt.severity !== void 0) e.severity = evt.severity;
-            if (evt.parameters) e.parameters = evt.parameters;
-            if (evt.chance) {
-              e.chance = {};
-              if (evt.chance.video) e.chance.video = evt.chance.video;
-              if (evt.chance.text) e.chance.text = evt.chance.text;
-            }
-            return e;
-          });
-        }
-        return out;
-      };
-      const cClub = (c) => ({
-        id: c.id,
-        club_name: c.club_name,
-        club_nick: c.club_nick,
-        fanclub: c.fanclub,
-        stadium: c.stadium,
-        manager_name: c.manager_name,
-        country: c.country,
-        division: c.division,
-        group: c.group
-      });
-      const md = raw.match_data || {};
-      return {
-        match_data: {
-          attacking_style: md.attacking_style,
-          mentality: md.mentality,
-          focus_side: md.focus_side,
-          possession: md.possession,
-          attendance: md.attendance,
-          regular_last_min: md.regular_last_min,
-          extra_time: md.extra_time,
-          last_min: md.last_min,
-          halftime: md.halftime,
-          captain: md.captain,
-          venue: md.venue
-        },
-        lineup: {
-          home: cLineupSide("home"),
-          away: cLineupSide("away")
-        },
-        report: cReport(raw.report),
-        club: {
-          home: ((_a2 = raw.club) == null ? void 0 : _a2.home) ? cClub(raw.club.home) : void 0,
-          away: ((_b = raw.club) == null ? void 0 : _b.away) ? cClub(raw.club.away) : void 0
-        }
-      };
-    },
-    /**
-     * Fetch a match, using TmMatchCacheDB as a cache.
-     * First call: fetches from TM API, compresses, stores, returns.
-     * Subsequent calls: returns stored compressed record instantly.
-     * @param {string|number} matchId
-     * @param {{dbSync?: boolean}} [options]
-     * @returns {Promise<object|null>}
-     */
-    async fetchMatchCached(matchId, options = {}) {
-      const db = TmMatchCacheDB;
-      const cached = await db.get(matchId);
-      if (cached) return this.normalizeMatchData(cached, options);
-      const raw = await _get(`/ajax/match.ajax.php?id=${matchId}`);
-      if (!raw) return null;
-      const compressed = this.compressMatch(raw);
-      db.set(matchId, compressed);
-      return this.normalizeMatchData(compressed, options);
-    },
-    /**
-     * Build a per-minute text schedule from match.plays.
-     * Used by the replay loop to know at which second each commentary line appears.
-     *
-     * @param {object} plays  — match.plays from buildNormalizedPlays
-     * @param {number} lineInterval  — seconds between consecutive lines (default 3)
-     * @returns {{ schedule: object, eventMins: number[] }}
-     */
-    buildSchedule(plays, lineInterval = 3) {
-      const schedule = {};
-      for (const [minStr, minPlays] of Object.entries(plays)) {
-        let seconds = 0;
-        const entries = [];
-        for (const action of minPlays) {
-          const lineCount = Math.max(
-            1,
-            action.clips.reduce((s6, clip) => s6 + clip.text.filter((l) => l.trim()).length, 0)
-          );
-          for (let actionLineIndex = 0; actionLineIndex < lineCount; actionLineIndex++) {
-            entries.push({ actionIndex: action.reportEventIndex, lineIndex: actionLineIndex, seconds });
-            seconds += lineInterval;
-          }
-        }
-        if (entries.length) {
-          schedule[Number(minStr)] = entries;
-        }
-      }
-      return { schedule };
-    }
-  };
-
-  // src/services/transfer.js
-  var TmTransferService = {
-    /**
-     * Fetch transfer bid dialog data for a player.
-     * @param {string|number} playerId
-     * @param {string|number} sessionId
-     * @returns {Promise<object|null>}
-     */
-    fetchTransferBidDialog(playerId, sessionId) {
-      return _post("/ajax/transfer_bids.ajax.php", {
-        type: "get_transfer_bid",
-        player_id: playerId,
-        session_id: sessionId
-      });
-    },
-    /**
-     * Fetch the current transfer status for a listed player.
-     * @param {string|number} playerId
-     * @returns {Promise<object|null>}
-     */
-    fetchTransfer(playerId) {
-      return _post("/ajax/transfer_get.ajax.php", { type: "transfer_reload", player_id: playerId });
-    },
-    /**
-     * Search the transfer market by a pre-built hash string.
-     * Returns the raw API response { list: [], refresh: bool } or null on error.
-     * The `list` array contains raw TM transfer player objects — call
-     * normalizeTransferPlayer() on each entry before use.
-     * @param {string} hash   — path-style hash built by buildHash() / buildHashRaw()
-     * @param {string|number} clubId — SESSION.id (used by TM to exclude own players)
-     * @returns {Promise<{list: object[], refresh: boolean}|null>}
-     */
-    fetchTransferSearch(hash, clubId2) {
-      return _post("/ajax/transfer.ajax.php", { search: hash, club_id: clubId2 });
-    },
-    /**
-     * Normalise a raw transfer-list player object into a standard Player model.
-     * Delegates to normalizeTransferPlayer in utils/normalize/player.js.
-     * @param {object} p — raw player from transfer list
-     * @returns {object} normalized Player model with r5Lo/r5Hi/rec pre-estimated
-     */
-    normalizeTransferPlayer(p) {
-      return normalizeTransferPlayer(p);
-    },
-    /**
-     * Merge normalized tooltip player data into a transfer player — mutates in place.
-     * Tooltip is already fully normalized (skills, r5, rec, ti, wage, routine) by
-     * normalizeTooltipPlayer + applyPlayerPositionRatings. We just spread it over
-     * the transfer player, preserving transfer-specific fields that tooltip lacks
-     * (timeleft, next_bid, r5Lo, r5Hi, note, tooltipFetched, etc.).
-     * @param {object} player       — normalized transfer player
-     * @param {object} tooltipPlayer — normalized player from TmPlayerModel.fetchTooltipCached
-     * @returns {object|null} player on success, null if tooltipPlayer is invalid
-     */
-    enrichTransferFromTooltip(player2, tooltipPlayer) {
-      if (!tooltipPlayer) return null;
-      const { note } = player2;
-      Object.assign(player2, tooltipPlayer);
-      if (note) player2.note = note;
-      player2.tooltipFetched = true;
-      return player2;
-    }
-  };
-
-  // src/services/league.js
-  var TMLeagueService = {
-    /**
-     * Fetch fixtures via fixtures.ajax.php.
-     * @param {string} type
-     * @param {object} params
-     * @returns {Promise<object|null>}
-     */
-    fetchLeagueFixtures(type, params = {}) {
-      return _post("/ajax/fixtures.ajax.php", { type, ...params });
-    },
-    /**
-     * Fetch available league divisions for a given country.
-     * @param {string} country — country suffix (e.g. 'cs', 'de')
-     * @returns {Promise<object|null>}
-     */
-    fetchLeagueDivisions(country) {
-      return _post("https://trophymanager.com/ajax/league_get_divisions.ajax.php", { get: "new", country });
-    },
-    /**
-     * Fetch the raw league page HTML for a division/group.
-     * @param {string} country
-     * @param {string|number} division
-     * @param {string|number} group
-     * @returns {Promise<string|null>}
-     */
-    fetchLeaguePageHtml(country, division, group) {
-      return _getHtml(`/league/${country}/${division}/${group}/`);
-    },
-    /**
-     * Fetch the raw league transfer history HTML page for a given season.
-     * @param {string} country
-     * @param {string|number} division
-     * @param {string|number} group
-     * @param {string|number} season
-     * @returns {Promise<string|null>}
-     */
-    fetchLeagueTransferHistory(country, division, group, season) {
-      return _getHtml(`/history/league/${country}/${division}/${group}/transfers/${season}/`);
-    },
-    fetchFriendlyLeaguePageHtml(leagueId) {
-      return _getHtml(`/friendly-league/${leagueId}/`);
-    },
-    fetchFriendlyLeagueStatisticsHtml(leagueId, stat = "goals") {
-      return _getHtml(`/statistics/friendly-league/${leagueId}/${stat}`);
-    },
-    fetchFriendlyLeagueHistoryHtml(type = "standings", seasonValue = "") {
-      const cleanType = String(type || "standings").replace(/^\/+|\/+$/g, "");
-      const cleanSeason = String(seasonValue || "").replace(/^\/+|\/+$/g, "");
-      return _getHtml(`/history/friendly-league/${cleanType}/${cleanSeason ? `${cleanSeason}/` : ""}`);
-    }
-  };
-
-  // src/services/quickmatch.js
-  var TmQuickmatchService = {
-    fetchRankings(show3 = "national") {
-      return _post("/ajax/quickmatch_get_content.ajax.php", { show: show3 });
-    },
-    queue(type, opponent = null) {
-      const payload = { type };
-      if (opponent !== null && opponent !== void 0 && opponent !== "") payload.opponent = opponent;
-      return _post("/ajax/quickmatch_queue.ajax.php", payload);
-    },
-    waitForMatch() {
-      return _post("/ajax/quickmatch_queue.ajax.php", { type: "wait" });
-    },
-    fetchLatestMatches() {
-      return _getHtml("/quickmatch/latest-matches/");
-    }
-  };
-
-  // src/lib/scout.js
-  var Scout = {
-    create() {
-      return {
-        id: null,
-        firstname: null,
-        lastname: null,
-        name: null,
-        country: null,
-        age: null,
-        wage: null,
-        seniors: null,
-        youths: null,
-        physical: null,
-        tactical: null,
-        technical: null,
-        development: null,
-        psychology: null,
-        last_action: null,
-        away: false,
-        returns: null
-      };
-    },
-    createReport() {
-      return {
-        scout: null,
-        date: null,
-        age: null,
-        rec: null,
-        currentSkill: null,
-        specialist: { label: "Specialty", reliability: null, value: null },
-        development: [
-          { key: "potential", label: "Potential", reliability: null, value: null },
-          { key: "bloom", label: "Bloom", reliability: null, value: null },
-          { key: "devStatus", label: "Development status", reliability: null, value: null }
-        ],
-        peaks: [
-          { key: "physical", label: "Physique", reliability: null, value: null },
-          { key: "tactical", label: "Tactical", reliability: null, value: null },
-          { key: "technical", label: "Technical", reliability: null, value: null }
-        ],
-        personality: [
-          { key: "leadership", label: "Leadership", reliability: null, value: null },
-          { key: "professionalism", label: "Professionalism", reliability: null, value: null },
-          { key: "aggression", label: "Aggression", reliability: null, value: null }
-        ]
-      };
-    }
-  };
-
-  // src/utils/normalize/scout.js
-  var _confPct = (skill) => Math.round((parseInt(skill, 10) || 0) / 20 * 100);
-  var _extractTierVal = (txt) => {
-    const m = txt ? txt.match(/\((\d+)\/(\d+)\)/) : null;
-    return m ? { value: parseInt(m[1], 10), max: parseInt(m[2], 10) } : null;
-  };
-  var normalizeScout = (raw) => {
-    var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
-    const scout = Scout.create();
-    scout.id = (_a2 = raw.id) != null ? _a2 : null;
-    scout.firstname = (_b = raw.name) != null ? _b : null;
-    scout.lastname = (_c = raw.surname) != null ? _c : null;
-    scout.name = raw.name && raw.surname ? `${raw.name} ${raw.surname}` : null;
-    scout.country = (_d = raw.nationality) != null ? _d : null;
-    scout.age = (_e = raw.age) != null ? _e : null;
-    scout.wage = (_f = raw.wage) != null ? _f : null;
-    scout.seniors = (_g = raw.seniors) != null ? _g : null;
-    scout.youths = (_h = raw.youths) != null ? _h : null;
-    scout.physical = (_i = raw.physical) != null ? _i : null;
-    scout.tactical = (_j = raw.tactical) != null ? _j : null;
-    scout.technical = (_k = raw.technical) != null ? _k : null;
-    scout.development = (_l = raw.development) != null ? _l : null;
-    scout.psychology = (_m = raw.psychology) != null ? _m : null;
-    scout.last_action = (_n = raw.last_action) != null ? _n : null;
-    scout.away = (_o = raw.away) != null ? _o : false;
-    scout.returns = (_p = raw.returns) != null ? _p : null;
-    return scout;
-  };
-  var normalizeScoutReport = (raw, rawScoutsMap = {}) => {
-    var _a2, _b, _c, _d;
-    const report = Scout.createReport();
-    const scoutRaw = (_a2 = rawScoutsMap[String(raw.scoutid)]) != null ? _a2 : null;
-    report.scout = scoutRaw ? normalizeScout(scoutRaw) : Scout.create();
-    report.date = (_b = raw.done) != null ? _b : null;
-    report.age = raw.report_age != null ? parseFloat(raw.report_age) : null;
-    let potRel = null, bloomRel = null, phyRel = null, tacRel = null, tecRel = null, psyRel = null;
-    if (scoutRaw) {
-      const age = parseInt(raw.report_age, 10) || 0;
-      const senYth = age < 20 ? parseInt(scoutRaw.youths, 10) || 0 : parseInt(scoutRaw.seniors, 10) || 0;
-      const dev = parseInt(scoutRaw.development, 10) || 0;
-      potRel = _confPct(Math.min(senYth, dev));
-      bloomRel = _confPct(dev);
-      phyRel = _confPct(parseInt(scoutRaw.physical, 10) || 0);
-      tacRel = _confPct(parseInt(scoutRaw.tactical, 10) || 0);
-      tecRel = _confPct(parseInt(scoutRaw.technical, 10) || 0);
-      psyRel = _confPct(parseInt(scoutRaw.psychology, 10) || 0);
-    }
-    report.specialist = { label: "Specialty", reliability: null, value: raw.specialist != null ? parseInt(raw.specialist, 10) : null };
-    report.rec = raw.rec != null ? parseFloat(raw.rec) : null;
-    report.currentSkill = raw.current_skill != null ? parseInt(raw.current_skill, 10) : null;
-    report.development[0] = { key: "potential", label: "Potential", reliability: potRel, value: raw.old_pot != null ? parseInt(raw.old_pot, 10) : null };
-    report.development[1] = { key: "bloom", label: "Bloom", reliability: bloomRel, value: (_c = raw.bloom_status_txt) != null ? _c : null };
-    report.development[2] = { key: "devStatus", label: "Development status", reliability: bloomRel, value: (_d = raw.dev_status) != null ? _d : null };
-    report.peaks[0] = { key: "physical", label: "Physique", reliability: phyRel, value: _extractTierVal(raw.peak_phy_txt) };
-    report.peaks[1] = { key: "tactical", label: "Tactical", reliability: tacRel, value: _extractTierVal(raw.peak_tac_txt) };
-    report.peaks[2] = { key: "technical", label: "Technical", reliability: tecRel, value: _extractTierVal(raw.peak_tec_txt) };
-    report.personality[0] = { key: "leadership", label: "Leadership", reliability: psyRel, value: raw.charisma != null ? parseInt(raw.charisma, 10) : null };
-    report.personality[1] = { key: "professionalism", label: "Professionalism", reliability: psyRel, value: raw.professionalism != null ? parseInt(raw.professionalism, 10) : null };
-    report.personality[2] = { key: "aggression", label: "Aggression", reliability: psyRel, value: raw.aggression != null ? parseInt(raw.aggression, 10) : null };
-    return report;
-  };
-  var normalizeBestEstimate = (reports) => {
-    var _a2, _b, _c;
-    const regular = (reports || []).filter((r) => {
-      var _a3;
-      return ((_a3 = r.scout) == null ? void 0 : _a3.id) && r.scout.id !== "0";
-    });
-    if (!regular.length) return null;
-    const _pickBest = (getEntry) => {
-      var _a3;
-      let best = null, bestRel = -1, bestDate = "";
-      for (const r of regular) {
-        const entry = getEntry(r);
-        if (!entry) continue;
-        const rel = (_a3 = entry.reliability) != null ? _a3 : -1;
-        const d = r.date || "";
-        if (rel > bestRel || rel === bestRel && d > bestDate) {
-          best = r;
-          bestRel = rel;
-          bestDate = d;
-        }
-      }
-      return best;
-    };
-    const potReport = _pickBest((r) => {
-      var _a3;
-      return (_a3 = r.development) == null ? void 0 : _a3[0];
-    });
-    const bloomReport = _pickBest((r) => {
-      var _a3;
-      return (_a3 = r.development) == null ? void 0 : _a3[1];
-    });
-    const phyReport = _pickBest((r) => {
-      var _a3;
-      return (_a3 = r.peaks) == null ? void 0 : _a3[0];
-    });
-    const tacReport = _pickBest((r) => {
-      var _a3;
-      return (_a3 = r.peaks) == null ? void 0 : _a3[1];
-    });
-    const tecReport = _pickBest((r) => {
-      var _a3;
-      return (_a3 = r.peaks) == null ? void 0 : _a3[2];
-    });
-    const psyReport = _pickBest((r) => {
-      var _a3;
-      return (_a3 = r.personality) == null ? void 0 : _a3[0];
-    });
-    const estimate = Scout.createReport();
-    estimate.rec = (_a2 = potReport == null ? void 0 : potReport.rec) != null ? _a2 : null;
-    let specVal = null;
-    for (const r of [phyReport, tacReport, tecReport]) {
-      if (r && ((_c = (_b = r.specialist) == null ? void 0 : _b.value) != null ? _c : 0) > 0) {
-        specVal = r.specialist.value;
-        break;
-      }
-    }
-    estimate.specialist = { label: "Specialty", reliability: null, value: specVal };
-    if (potReport) estimate.development[0] = { ...potReport.development[0] };
-    if (bloomReport) estimate.development[1] = { ...bloomReport.development[1] };
-    if (bloomReport) estimate.development[2] = { ...bloomReport.development[2] };
-    if (phyReport) estimate.peaks[0] = { ...phyReport.peaks[0] };
-    if (tacReport) estimate.peaks[1] = { ...tacReport.peaks[1] };
-    if (tecReport) estimate.peaks[2] = { ...tecReport.peaks[2] };
-    if (psyReport) {
-      estimate.personality[0] = { ...psyReport.personality[0] };
-      estimate.personality[1] = { ...psyReport.personality[1] };
-      estimate.personality[2] = { ...psyReport.personality[2] };
-    }
-    return estimate;
-  };
-
-  // src/services/scouts.js
-  var TmScoutsService = {
-    async fetchScouts() {
-      const data = await _post("/ajax/scouts_get_scouts.ajax.php", {});
-      if (!data) return null;
-      return Object.values(data).map((raw) => normalizeScout(raw));
-    },
-    async fetchPlayerScouting(playerId) {
-      var _a2;
-      const data = await _post("/ajax/players_get_info.ajax.php", {
-        player_id: playerId,
-        type: "scout",
-        show_non_pro_graphs: true
-      });
-      if (!data) return null;
-      const rawScouts = (_a2 = data.scouts) != null ? _a2 : {};
-      const scouts = Object.fromEntries(
-        Object.entries(rawScouts).map(([id, raw]) => [id, normalizeScout(raw)])
-      );
-      const reports = Array.isArray(data.reports) ? data.reports.map((raw) => normalizeScoutReport(raw, rawScouts)) : [];
-      const interested = Array.isArray(data.interested) ? data.interested.map((club) => normalizeClubFromScoutReport(club)) : [];
-      const bestEstimate = normalizeBestEstimate(reports);
-      return { reports, scouts, interested, bestEstimate };
-    },
-    fetchReports() {
-      return _post("/ajax/scouts_get_reports.ajax.php", {});
-    }
-  };
-
-  // src/services/shortlist.js
-  function cleanText(value) {
-    return String(value || "").replace(/\s+/g, " ").trim();
-  }
-  function getOwnClubId() {
-    var _a2, _b, _c;
-    return cleanText(((_a2 = window.SESSION) == null ? void 0 : _a2.main_id) || ((_b = window.SESSION) == null ? void 0 : _b.club_id) || ((_c = window.SESSION) == null ? void 0 : _c.id));
-  }
-  function extractArrayLiteral(html2, varName) {
-    const marker = `var ${varName}`;
-    const startIndex = html2.indexOf(marker);
-    if (startIndex === -1) return "";
-    const arrayStart = html2.indexOf("[", startIndex);
-    if (arrayStart === -1) return "";
-    let depth = 0;
-    let inString = false;
-    let escaped = false;
-    for (let index = arrayStart; index < html2.length; index += 1) {
-      const char = html2[index];
-      if (inString) {
-        if (escaped) {
-          escaped = false;
-          continue;
-        }
-        if (char === "\\") {
-          escaped = true;
-          continue;
-        }
-        if (char === '"') inString = false;
-        continue;
-      }
-      if (char === '"') {
-        inString = true;
-        continue;
-      }
-      if (char === "[") depth += 1;
-      if (char === "]") {
-        depth -= 1;
-        if (depth === 0) return html2.slice(arrayStart, index + 1);
-      }
-    }
-    return "";
-  }
-  function buildPlayerHref(player2) {
-    if (!(player2 == null ? void 0 : player2.id)) return "#";
-    if (player2.name_js) return `/players/${player2.id}/${player2.name_js}/`;
-    return `/players/${player2.id}/`;
-  }
-  function normalizeBidValue(value) {
-    if (value == null || value === "") return "";
-    if (typeof value === "string") return cleanText(value);
-    return new Intl.NumberFormat("en-US").format(Number(value) || 0);
-  }
-  function isActiveBid(player2) {
-    return Boolean(player2 && (player2.timeleft_string || player2.curbid));
-  }
-  function parseTimeleft(str) {
-    const m = String(str || "").trim().match(/^(\d+)\s*(d|h|m)$/i);
-    if (!m) return 0;
-    const v = parseInt(m[1]);
-    if (/d/i.test(m[2])) return v * 86400;
-    if (/h/i.test(m[2])) return v * 3600;
-    return v * 60;
-  }
-  function parseBidText(str) {
-    const s6 = String(str || "").replace(/,/g, "").trim();
-    if (!s6 || s6 === "0") return 0;
-    const m = s6.match(/^([\d.]+)(M|K)?$/i);
-    if (!m) return 0;
-    const v = parseFloat(m[1]);
-    if (/M/i.test(m[2] || "")) return Math.round(v * 1e6);
-    if (/K/i.test(m[2] || "")) return Math.round(v * 1e3);
-    return Math.round(v);
-  }
-  function parseHomeBidRows(doc, selector, direction) {
-    const containers = doc.querySelectorAll(selector);
-    console.log(`[TM Bids] parseHomeBidRows selector="${selector}" containers=${containers.length}`);
-    const rows = Array.from(doc.querySelectorAll(`${selector} .player-row`));
-    console.log(`[TM Bids] parseHomeBidRows direction=${direction} player-rows=${rows.length}`);
-    return rows.map((li) => {
-      var _a2, _b, _c, _d, _e;
-      const id = String(li.id || "").replace("pid", "").trim();
-      if (!id) return null;
-      const bidSpan = li.querySelector(".cell-bid span");
-      const bidText = bidSpan ? ((_b = (_a2 = bidSpan.childNodes[0]) == null ? void 0 : _a2.textContent) == null ? void 0 : _b.trim()) || "" : "";
-      const clubA = li.querySelector(".cell-club a[club_link]");
-      const tlSpan = li.querySelector(".cell-timeleft span");
-      const timeleft_string = tlSpan ? ((_d = (_c = tlSpan.childNodes[0]) == null ? void 0 : _c.textContent) == null ? void 0 : _d.trim()) || "" : "";
-      const row = {
-        id,
-        direction,
-        curbid: bidText || "0",
-        bid: parseBidText(bidText),
-        club_id: clubA ? Number(clubA.getAttribute("club_link")) || 0 : 0,
-        club_name: ((_e = clubA == null ? void 0 : clubA.textContent) == null ? void 0 : _e.trim()) || "",
-        timeleft: parseTimeleft(timeleft_string),
-        timeleft_string
-      };
-      console.log(`[TM Bids] parsed ${direction} id=${id} bid="${bidText}" timeleft="${timeleft_string}"`);
-      return row;
-    }).filter(Boolean);
-  }
-  function waitForBidRows(timeoutMs = 8e3) {
-    return new Promise((resolve) => {
-      const check = () => document.querySelector(".transfers-in-box .player-row, .transfers-out-box .player-row");
-      if (check()) {
-        resolve();
-        return;
-      }
-      const obs = new MutationObserver(() => {
-        if (check()) {
-          obs.disconnect();
-          resolve();
-        }
-      });
-      obs.observe(document.body, { childList: true, subtree: true });
-      setTimeout(() => {
-        obs.disconnect();
-        resolve();
-      }, timeoutMs);
-    });
-  }
-  function buildBidSections(rawPlayers) {
-    const players = Array.isArray(rawPlayers) ? rawPlayers.map(normalizeTransferPlayer) : [];
-    const activePlayers = players.filter(isActiveBid);
-    const outfield = activePlayers.filter((p) => !p.isGK);
-    const goalkeepers = activePlayers.filter((p) => p.isGK);
-    const rows = [...outfield, ...goalkeepers].map((p) => ({ ...p, href: buildPlayerHref(p) }));
-    return rows.length ? [{ title: "Shortlist", rows }] : [];
-  }
-  function isActiveOwnSale(player2) {
-    if (!player2) return false;
-    const expiry = cleanText(player2.expiry).toLowerCase();
-    const transferBid = cleanText(player2.transfer_bid);
-    const nextBid = Number(player2.next_bid) || 0;
-    return Boolean(
-      expiry && expiry !== "expired" || transferBid && transferBid !== "-" || nextBid > 0
-    );
-  }
-  function toOwnSaleRow(player2) {
-    return {
-      ...player2,
-      href: `/players/${player2.id}/`,
-      timeleft: 1,
-      timeleft_string: cleanText(player2.expiry) || "",
-      curbid: normalizeBidValue(player2.transfer_bid) || normalizeBidValue(player2.next_bid) || ""
-    };
-  }
-  var TmShortlistService = {
-    /**
-     * Fetch a shortlist page and return the parsed players_ar array.
-     * @param {number} [start] — page offset (omit for first/random page)
-     * @returns {Promise<Array>}
-     */
-    async fetchShortlistPage(start3) {
-      const url = start3 != null ? `/shortlist/?start=${start3}` : "/shortlist/";
-      const html2 = await _getHtml(url);
-      if (!html2) return [];
-      const arrayLiteral = extractArrayLiteral(html2, "players_ar");
-      if (!arrayLiteral) return [];
-      try {
-        return JSON.parse(arrayLiteral);
-      } catch (e) {
-        return [];
-      }
-    },
-    async fetchShortlistBidSections() {
-      return _dedup("shortlist:bid-sections", async () => {
-        const players = await this.fetchShortlistPage();
-        return buildBidSections(players);
-      });
-    },
-    async fetchOwnSaleBidSections() {
-      return _dedup("bids:own-sale-sections", async () => {
-        const clubId2 = getOwnClubId();
-        if (!clubId2) return [];
-        const squadPost = await TmClubService.fetchSquadPost(clubId2);
-        const players = Object.values(squadPost || {}).map((raw) => ({
-          ...normalizeSquadPlayer(raw),
-          expiry: raw.expiry,
-          transfer_bid: raw.transfer_bid,
-          next_bid: raw.next_bid
-        }));
-        if (!players.length) return [];
-        const saleRows = players.filter(isActiveOwnSale).map(toOwnSaleRow);
-        if (!saleRows.length) return [];
-        return [{ title: "My Players", rows: saleRows }];
-      });
-    },
-    async fetchBidSections() {
-      return _dedup("bids:sections", async () => {
-        const [saleSections, shortlistSections] = await Promise.all([
-          this.fetchOwnSaleBidSections(),
-          this.fetchShortlistBidSections()
-        ]);
-        return [...saleSections, ...shortlistSections];
-      });
-    },
-    addToShortlist(playerId) {
-      return _post("/ajax/players_shortlist.ajax.php", { player_id: playerId });
-    },
-    removeFromShortlist(playerId) {
-      return _post("/ajax/players_shortlist.ajax.php", { type: "remove", player_id: playerId });
-    },
-    async fetchHomeBids() {
-      return _dedup("bids:home", async () => {
-        console.log("[TM Bids] fetchHomeBids: waiting for bid rows in DOM");
-        await waitForBidRows();
-        console.log("[TM Bids] fetchHomeBids: parsing live DOM");
-        const ins = parseHomeBidRows(document, ".transfers-in-box", "in");
-        const outs = parseHomeBidRows(document, ".transfers-out-box", "out");
-        const result = [...ins, ...outs];
-        console.log("[TM Bids] fetchHomeBids: total rows=", result.length, result);
-        return result;
-      });
-    }
-  };
-
-  // src/services/tactics.js
-  var _a;
-  var CLUB_COUNTRY = String(((_a = window.SESSION) == null ? void 0 : _a.country) || "").trim().toLowerCase();
-  var isForeigner = (p) => !!CLUB_COUNTRY && String((p == null ? void 0 : p.country) || "").trim().toLowerCase() !== CLUB_COUNTRY;
-  var isUnavailable = (p) => (p == null ? void 0 : p.ban) && String(p.ban).startsWith("r") || (p == null ? void 0 : p.injury) && p.injury !== "0" && Number(p.injury) !== 0;
-  function encodeNested(obj, prefix = "") {
-    const parts = [];
-    for (const [key, val] of Object.entries(obj)) {
-      const k = prefix ? `${prefix}[${key}]` : key;
-      if (val !== null && val !== void 0 && typeof val === "object") {
-        parts.push(encodeNested(val, k));
-      } else if (val !== null && val !== void 0) {
-        parts.push(`${encodeURIComponent(k)}=${encodeURIComponent(val)}`);
-      }
-    }
-    return parts.join("&");
-  }
-  var TmTacticsService = {
-    fetchTacticsRaw(reserves, national, miniGameId) {
-      return _dedup(
-        `tactics:get:${reserves}:${national}:${miniGameId}`,
-        () => _post("/ajax/tactics_get.ajax.php", { reserves, national, miniGameId })
-      );
-    },
-    postLineupSave(assoc, changedPlayers, reserves, national, miniGameId) {
-      return fetch("/ajax/tactics_post.ajax.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" },
-        body: encodeNested({ on_field: assoc, players: changedPlayers, reserves, national, miniGameId })
-      });
-    },
-    saveSettingValue(saveKey, value, reserves, national, miniGameId) {
-      var _a2, _b, _c;
-      const clubId2 = String(((_a2 = window.SESSION) == null ? void 0 : _a2.id) || ((_b = window.SESSION) == null ? void 0 : _b.main_id) || ((_c = window.SESSION) == null ? void 0 : _c.club_id) || "");
-      const body = { save: saveKey, value: String(value), reserves, national, club_id: clubId2 };
-      if (saveKey !== "focus") body.miniGameId = miniGameId;
-      return fetch("/ajax/tactics_post.ajax.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" },
-        body: new URLSearchParams(body).toString()
-      });
-    },
-    fetchCondOrders(reserves, national, miniGameId) {
-      return new Promise((resolve) => {
-        window.jQuery.post(
-          "/ajax/tactics_co_get.ajax.php",
-          { get: "cond_orders", reserves, national, miniGameId },
-          (d) => resolve(d),
-          "json"
-        ).fail(() => resolve(null));
-      });
-    },
-    saveCondOrder(coRaw, reserves, national, miniGameId) {
-      return fetch("/ajax/tactics_co_post.ajax.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ ...coRaw, reserves, national, miniGameId })
-      });
-    },
-    deleteCondOrder(num, reserves, national, miniGameId) {
-      return fetch("/ajax/tactics_co_post.ajax.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ num, type: "delete", reserves, national, miniGameId })
-      });
-    }
-  };
-
-  // src/services/training.js
-  var TRAINING_SKILL_NAMES = {
-    strength: "Strength",
-    stamina: "Stamina",
-    pace: "Pace",
-    marking: "Marking",
-    tackling: "Tackling",
-    workrate: "Workrate",
-    positioning: "Positioning",
-    passing: "Passing",
-    crossing: "Crossing",
-    technique: "Technique",
-    heading: "Heading",
-    finishing: "Finishing",
-    longshots: "Longshots",
-    set_pieces: "Set Pieces"
-  };
-  var TmTrainingService = {
-    adaptSquadTraining(player2) {
-      var _a2, _b;
-      if (player2 == null ? void 0 : player2.isGK) return { custom: { gk: true } };
-      const customArr = Array.isArray((_a2 = player2 == null ? void 0 : player2.training) == null ? void 0 : _a2.custom) ? player2.training.custom : [];
-      const isCustom = customArr.length === 6 && customArr.some((v) => v > 0);
-      const custom = {};
-      for (let index = 0; index < 6; index++) {
-        custom[`team${index + 1}`] = {
-          points: isCustom ? customArr[index] || 0 : 0,
-          skills: [],
-          label: TmConst.TRAINING_LABELS[index] || `Team ${index + 1}`
-        };
-      }
-      custom.points_spend = 0;
-      return {
-        custom: {
-          gk: false,
-          custom_on: isCustom ? 1 : 0,
-          team: String(((_b = player2 == null ? void 0 : player2.training) == null ? void 0 : _b.standard) || "3"),
-          custom
-        }
-      };
-    },
-    normalizeTrainingState(data) {
-      const custom = data == null ? void 0 : data.custom;
-      if (!custom || custom.gk) {
-        return {
-          isGK: true,
-          customOn: false,
-          currentType: "",
-          maxPool: 0,
-          totalAllocated: 0,
-          remaining: 0,
-          teams: [],
-          modeLabel: "Goalkeeper",
-          typeLabel: "Automatic",
-          dots: ""
-        };
-      }
-      const customData = custom.custom || {};
-      const teams = Array.from({ length: 6 }, (_, index) => {
-        const team = customData[`team${index + 1}`] || {};
-        return {
-          num: index + 1,
-          label: team.label || TmConst.TRAINING_LABELS[index] || `Team ${index + 1}`,
-          points: parseInt(team.points, 10) || 0,
-          skills: Array.isArray(team.skills) ? team.skills : [],
-          skillLabels: Array.isArray(team.skills) ? team.skills.map((skill) => TRAINING_SKILL_NAMES[skill] || skill) : []
-        };
-      });
-      const totalAllocated = teams.reduce((sum, team) => sum + team.points, 0);
-      const pointsSpend = parseInt(customData.points_spend, 10) || 0;
-      const maxPool = Math.max(totalAllocated + pointsSpend, totalAllocated, 10);
-      const currentType = String(custom.team || "3");
-      const customOn = Boolean(custom.custom_on);
-      return {
-        isGK: false,
-        customOn,
-        currentType,
-        maxPool,
-        totalAllocated,
-        remaining: Math.max(0, maxPool - totalAllocated),
-        teams,
-        modeLabel: customOn ? "Custom" : "Standard",
-        typeLabel: TmConst.TRAINING_NAMES[currentType] || "Unknown",
-        dots: teams.map((team) => team.points).join("")
-      };
-    },
-    buildCustomTrainingPayload(playerId, trainingState) {
-      const payload = {
-        type: "custom",
-        on: 1,
-        player_id: playerId,
-        "custom[points_spend]": 0,
-        "custom[player_id]": playerId,
-        "custom[saved]": ""
-      };
-      ((trainingState == null ? void 0 : trainingState.teams) || []).forEach((team, index) => {
-        const key = `custom[team${index + 1}]`;
-        payload[`${key}[num]`] = index + 1;
-        payload[`${key}[label]`] = team.label || TmConst.TRAINING_LABELS[index] || `Team ${index + 1}`;
-        payload[`${key}[points]`] = parseInt(team.points, 10) || 0;
-        payload[`${key}[skills][]`] = team.skills || [];
-      });
-      return payload;
-    },
-    /**
-     * Save a custom training plan.
-     * The caller is responsible for building the full training_post payload.
-     * @param {object} data — fully-formed training_post payload
-     * @returns {Promise<void>}
-     */
-    async saveTraining(data) {
-      await _post("/ajax/training_post.ajax.php", data);
-    },
-    /**
-     * Save the training type / position group for a player.
-     * @param {string|number} playerId
-     * @param {string|number} teamId
-     * @returns {Promise<void>}
-     */
-    async saveTrainingType(playerId, teamId) {
-      await _post("/ajax/training_post.ajax.php", {
-        type: "player_pos",
-        player_id: playerId,
-        team_id: teamId
-      });
-    }
-  };
 
   // src/services/messages.js
   var TmMessagesService = {
@@ -6804,116 +3720,37 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     }
   };
 
-  // src/services/national-teams.js
-  var TmNationalTeamsService = {
-    fetchFixtures(countryCode) {
-      return _post("/ajax/fixtures.ajax.php", { type: "national-teams", var1: countryCode });
+  // src/models/messages.js
+  var TmMessagesModel = {
+    fetchTopUserInfo() {
+      return TmMessagesService.fetchTopUserInfo();
     },
-    fetchElectionSuggestions(query) {
-      return _post("/ajax/national-teams_election.ajax.php", { type: "suggest", q: query });
+    fetchTopUserFeed() {
+      return TmMessagesService.fetchTopUserFeed();
     },
-    fetchElectionNomination(clubId2) {
-      return _post("/ajax/national-teams_election.ajax.php", { type: "get_nomination", club_id: clubId2 });
+    fetchDetailedUserFeed(opts) {
+      return TmMessagesService.fetchDetailedUserFeed(opts);
     },
-    addElectionNomination(clubId2) {
-      return _post("/ajax/national-teams_election.ajax.php", { type: "add_nomination", club_id: clubId2 });
+    fetchFeedNames(opts) {
+      return TmMessagesService.fetchFeedNames(opts);
     },
-    respondToElectionNomination(country, response) {
-      return _post("/ajax/national-teams_election.ajax.php", { type: "nomination_response", country, response });
+    fetchFeedLikes(postId) {
+      return TmMessagesService.fetchFeedLikes(postId);
     },
-    fetchElectionVote(clubId2) {
-      return _post("/ajax/national-teams_election.ajax.php", { type: "get_vote", club_id: clubId2 });
+    fetchPmMessages(place) {
+      return TmMessagesService.fetchPmMessages(place);
     },
-    addElectionVote(clubId2) {
-      return _post("/ajax/national-teams_election.ajax.php", { type: "add_vote", club_id: clubId2 });
+    fetchPmMessageText(id, conversationId) {
+      return TmMessagesService.fetchPmMessageText(id, conversationId);
+    },
+    sendPmMessage(opts) {
+      return TmMessagesService.sendPmMessage(opts);
     }
-  };
-
-  // src/utils/normalize/youth.js
-  var normalizeYouthPlayer = (raw) => {
-    var _a2;
-    const player2 = Player.create();
-    player2.id = Number(raw.id || raw.player_id || 0);
-    player2.age = Number(raw.age) || 0;
-    player2.month = Number(raw.months || raw.month || 0);
-    player2.ageMonths = player2.age * 12 + player2.month;
-    player2.ageMonthsString = `${player2.age}.${player2.month}`;
-    const rawName = raw.player_name || raw.name || "";
-    player2.name = String(rawName);
-    player2.lastname = String(raw.lastname || rawName.split(" ").pop() || "");
-    player2.firstname = player2.name.replace(player2.lastname, "").trim();
-    player2.country = raw.country || null;
-    player2.isGK = String(raw.favposition || "").split(",").map((s6) => s6.trim().toUpperCase()).includes("GK");
-    const rawAsi = (_a2 = raw.skill_index) != null ? _a2 : raw.asi;
-    player2.asi = rawAsi != null ? TmUtils.parseNum(rawAsi, null) : null;
-    if (Array.isArray(raw.skills) && raw.skills.length) {
-      TmUtils.applyTooltipSkills(player2, raw.skills);
-    } else {
-      TmUtils.applySquadSkills(player2, raw);
-    }
-    TmUtils.applyPlayerPositions(player2, String(raw.favposition || ""));
-    if (player2.asi == null && player2.skills.length > 0) {
-      const weight = player2.isGK ? ASI_WEIGHT_GK : ASI_WEIGHT_OUTFIELD;
-      const skillSum = player2.skills.reduce((s6, sk) => s6 + (Number(sk.value) || 0), 0);
-      if (skillSum > 0) player2.asi = Math.pow(skillSum, 7) / weight;
-    }
-    player2.skills = TmLib.calcSkillDecimalsSimple(player2);
-    applyPlayerPositionRatings(player2);
-    player2.youthRecommendationHtml = raw.youthRecommendationHtml || raw.recom_html || raw.rec_stars || null;
-    player2.youthFee = Number(raw.youthFee || raw.fee || 0);
-    return player2;
-  };
-
-  // src/services/youth.js
-  var TmYouthService = {
-    async fetchYouthPlayers(options = {}) {
-      return _dedup("youth:players:nosync", async () => {
-        const data = await _post("/ajax/youth.ajax.php", { type: "get" });
-        if (!data || !Array.isArray(data.players)) return null;
-        return {
-          cash: data.cash,
-          squad_size: data.squad_size,
-          players: data.players.map(normalizeYouthPlayer).reverse()
-        };
-      });
-    },
-    async fetchNewYouthPlayers({ age, position } = {}) {
-      const data = await _post("/ajax/youth.ajax.php", { type: "new", age, position });
-      if (!data) return null;
-      if (data.error) return { error: String(data.error) };
-      const rawPlayers = Object.values(data).filter((p) => p && typeof p === "object" && (p.id || p.player_id));
-      return { players: rawPlayers.map(normalizeYouthPlayer) };
-    },
-    actOnYouthPlayer({ playerId, action }) {
-      return _post("/ajax/youth.ajax.php", {
-        type: "act",
-        player_id: playerId,
-        action
-      });
-    }
-  };
-
-  // src/services/index.js
-  var TmApi = {
-    ...TmApiEngine,
-    ...TmClubService,
-    ...TmMatchService,
-    ...TmPlayerService,
-    ...TmTransferService,
-    ...TMLeagueService,
-    ...TmQuickmatchService,
-    ...TmScoutsService,
-    ...TmShortlistService,
-    ...TmTacticsService,
-    ...TmTrainingService,
-    ...TmMessagesService,
-    ...TmNationalTeamsService,
-    ...TmYouthService
   };
 
   // src/components/shared/tm-app-shell-pm.js
   var STYLE_ID8 = "tmvu-shell-pm-styles";
-  function cleanText2(value) {
+  function cleanText(value) {
     return String(value || "").replace(/\s+/g, " ").trim();
   }
   function escapeHtml4(value) {
@@ -7416,13 +4253,13 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     return fallback;
   }
   function getConversationKey(message) {
-    const conversationId = cleanText2(message == null ? void 0 : message.conversation_id);
+    const conversationId = cleanText(message == null ? void 0 : message.conversation_id);
     if (conversationId && conversationId !== "0") return conversationId;
-    return cleanText2(message == null ? void 0 : message.id);
+    return cleanText(message == null ? void 0 : message.id);
   }
   function isUnreadMessage(message) {
-    const status = cleanText2(message == null ? void 0 : message.status).toLowerCase();
-    const messageStatus = cleanText2(message == null ? void 0 : message.m_status);
+    const status = cleanText(message == null ? void 0 : message.status).toLowerCase();
+    const messageStatus = cleanText(message == null ? void 0 : message.m_status);
     if (status) return status !== "read";
     return messageStatus === "0";
   }
@@ -7435,12 +4272,12 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       if (!key || seen.has(key)) continue;
       seen.add(key);
       items.push({
-        id: cleanText2(message == null ? void 0 : message.id),
+        id: cleanText(message == null ? void 0 : message.id),
         conversationId: key,
-        senderName: cleanText2(message == null ? void 0 : message.sender_name) || "Unknown sender",
-        subject: cleanText2(message == null ? void 0 : message.subject) || "(No subject)",
-        time: cleanText2(message == null ? void 0 : message.time),
-        longTime: cleanText2((message == null ? void 0 : message.long_time) || (message == null ? void 0 : message.time)),
+        senderName: cleanText(message == null ? void 0 : message.sender_name) || "Unknown sender",
+        subject: cleanText(message == null ? void 0 : message.subject) || "(No subject)",
+        time: cleanText(message == null ? void 0 : message.time),
+        longTime: cleanText((message == null ? void 0 : message.long_time) || (message == null ? void 0 : message.time)),
         unread: isUnreadMessage(message)
       });
       if (items.length >= 5) break;
@@ -7448,12 +4285,12 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     return items;
   }
   function extractFeedPlayerIds(text) {
-    return Array.from(String(text || "").matchAll(/\[player=(\d+)\]/g), (match) => cleanText2(match[1])).filter(Boolean);
+    return Array.from(String(text || "").matchAll(/\[player=(\d+)\]/g), (match) => cleanText(match[1])).filter(Boolean);
   }
   function extractFeedClubIds(item) {
     var _a2;
-    const textIds = Array.from(String((item == null ? void 0 : item.text) || "").matchAll(/@(\d+)/g), (match) => cleanText2(match[1]));
-    const attributeIds = Array.isArray((_a2 = item == null ? void 0 : item.attributes) == null ? void 0 : _a2.club_ids) ? item.attributes.club_ids.map(cleanText2) : [];
+    const textIds = Array.from(String((item == null ? void 0 : item.text) || "").matchAll(/@(\d+)/g), (match) => cleanText(match[1]));
+    const attributeIds = Array.isArray((_a2 = item == null ? void 0 : item.attributes) == null ? void 0 : _a2.club_ids) ? item.attributes.club_ids.map(cleanText) : [];
     return [...textIds, ...attributeIds].filter(Boolean);
   }
   function normalizeFeedNames(payload) {
@@ -7462,27 +4299,27 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     const playerMap = /* @__PURE__ */ new Map();
     const clubMap = /* @__PURE__ */ new Map();
     players.forEach((player2) => {
-      const id = cleanText2(player2 == null ? void 0 : player2.id);
+      const id = cleanText(player2 == null ? void 0 : player2.id);
       if (!id) return;
-      playerMap.set(id, cleanText2(player2 == null ? void 0 : player2.name) || `#${id}`);
+      playerMap.set(id, cleanText(player2 == null ? void 0 : player2.name) || `#${id}`);
     });
     clubs.forEach((club) => {
-      const id = cleanText2((club == null ? void 0 : club.id) || (club == null ? void 0 : club.club_id));
-      const name = cleanText2((club == null ? void 0 : club.name) || (club == null ? void 0 : club.club_name));
+      const id = cleanText((club == null ? void 0 : club.id) || (club == null ? void 0 : club.club_id));
+      const name = cleanText((club == null ? void 0 : club.name) || (club == null ? void 0 : club.club_name));
       if (!id || !name) return;
       clubMap.set(id, name);
     });
     return { playerMap, clubMap };
   }
   function resolveFeedLinkTarget(target) {
-    const raw = cleanText2(target);
+    const raw = cleanText(target);
     if (!raw) return "";
     if (raw.startsWith("/")) return raw;
     if (/^league;/i.test(raw)) return "/league/";
     return "";
   }
   function buildFeedLinkHtml(target, label) {
-    const safeLabel = escapeHtml4(cleanText2(label) || target);
+    const safeLabel = escapeHtml4(cleanText(label) || target);
     const href = resolveFeedLinkTarget(target);
     if (!href) return safeLabel;
     return `<a href="${escapeHtml4(href)}">${safeLabel}</a>`;
@@ -7502,14 +4339,14 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     };
     content = content.replace(/\[link=([^\]]+)\]([\s\S]*?)\[\/link\]/g, (_, target, label) => storeReplacement(buildFeedLinkHtml(target, label)));
     content = content.replace(/\[player=(\d+)\]/g, (_, playerId) => {
-      const id = cleanText2(playerId);
+      const id = cleanText(playerId);
       const label = playerMap.get(id) || `#${id}`;
       return storeReplacement(`<a href="/players/${escapeHtml4(id)}/">${escapeHtml4(label)}</a>`);
     });
     content = content.replace(/\[flag=([a-z]{2})\]/ig, (_, country) => storeReplacement(`<span class="tmvu-feed-flag">${escapeHtml4(country.toUpperCase())}</span>`));
     content = content.replace(/\[money=(\d+)\]/g, (_, amount) => storeReplacement(formatFeedMoney(amount)));
     content = content.replace(/@(\d+)/g, (_, clubId2) => {
-      const id = cleanText2(clubId2);
+      const id = cleanText(clubId2);
       const label = clubMap.get(id) || `#${id}`;
       return storeReplacement(`<a href="/club/${escapeHtml4(id)}/">${escapeHtml4(label)}</a>`);
     });
@@ -7520,17 +4357,17 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     return html2;
   }
   function getFeedPrimaryHref(item) {
-    const feedId = cleanText2(item == null ? void 0 : item.id);
+    const feedId = cleanText(item == null ? void 0 : item.id);
     if (feedId) return `/home/#/feed/${feedId}/`;
     return "/home/";
   }
   function navigateToFeedHref(href) {
-    const target = cleanText2(href) || "/home/";
+    const target = cleanText(href) || "/home/";
     try {
       const url = new URL(target, window.location.origin);
       const nextHref = `${url.pathname}${url.hash}`;
-      const currentPath = cleanText2(window.location.pathname).toLowerCase();
-      const targetPath = cleanText2(url.pathname).toLowerCase();
+      const currentPath = cleanText(window.location.pathname).toLowerCase();
+      const targetPath = cleanText(url.pathname).toLowerCase();
       if (currentPath === targetPath) {
         window.location.href = nextHref;
         window.setTimeout(() => window.location.reload(), 0);
@@ -7546,16 +4383,16 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     if (!items.length) return [];
     const playerIds = [...new Set(items.flatMap((item) => extractFeedPlayerIds(item == null ? void 0 : item.text)))];
     const clubIds = [...new Set(items.flatMap((item) => extractFeedClubIds(item)))];
-    const namesPayload = playerIds.length || clubIds.length ? await TmApi.fetchFeedNames({ playerIds, clubIds }) : null;
+    const namesPayload = playerIds.length || clubIds.length ? await TmMessagesModel.fetchFeedNames({ playerIds, clubIds }) : null;
     const nameMaps = normalizeFeedNames(namesPayload);
     return items.map((item) => {
       const comments = Array.isArray(item == null ? void 0 : item.comments) ? item.comments : [];
       return {
-        id: cleanText2(item == null ? void 0 : item.id),
+        id: cleanText(item == null ? void 0 : item.id),
         href: getFeedPrimaryHref(item),
         html: renderFeedTextHtml(item == null ? void 0 : item.text, nameMaps),
-        time: cleanText2(item == null ? void 0 : item.time),
-        longTime: cleanText2((item == null ? void 0 : item.full_time) || (item == null ? void 0 : item.time)),
+        time: cleanText(item == null ? void 0 : item.time),
+        longTime: cleanText((item == null ? void 0 : item.full_time) || (item == null ? void 0 : item.time)),
         commentCount: comments.length,
         unread: (item == null ? void 0 : item.is_read) === false || (item == null ? void 0 : item.is_read) === "false" || (item == null ? void 0 : item.is_read) === 0
       };
@@ -7564,36 +4401,36 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   function normalizePmFolderItems(payload, place = "inbox") {
     const messages = Array.isArray(payload == null ? void 0 : payload.messages) ? payload.messages : [];
     return messages.map((message) => ({
-      id: cleanText2(message == null ? void 0 : message.id),
+      id: cleanText(message == null ? void 0 : message.id),
       conversationId: getConversationKey(message) || "0",
-      senderName: cleanText2(message == null ? void 0 : message.sender_name) || "Unknown sender",
-      recipientName: cleanText2(message == null ? void 0 : message.recipient_name) || "",
-      subject: cleanText2(message == null ? void 0 : message.subject) || "(No subject)",
-      time: cleanText2(message == null ? void 0 : message.time),
-      longTime: cleanText2((message == null ? void 0 : message.long_time) || (message == null ? void 0 : message.time)),
+      senderName: cleanText(message == null ? void 0 : message.sender_name) || "Unknown sender",
+      recipientName: cleanText(message == null ? void 0 : message.recipient_name) || "",
+      subject: cleanText(message == null ? void 0 : message.subject) || "(No subject)",
+      time: cleanText(message == null ? void 0 : message.time),
+      longTime: cleanText((message == null ? void 0 : message.long_time) || (message == null ? void 0 : message.time)),
       unread: isUnreadMessage(message),
-      place: cleanText2(message == null ? void 0 : message.place) || place
+      place: cleanText(message == null ? void 0 : message.place) || place
     }));
   }
   function normalizePmThreadItems(payload) {
     const conversation = Array.isArray(payload == null ? void 0 : payload.conversation) ? payload.conversation : [];
     return [...conversation].reverse().map((message) => ({
-      id: cleanText2(message == null ? void 0 : message.id),
-      conversationId: cleanText2(message == null ? void 0 : message.conversation_id) || "0",
-      senderName: cleanText2(message == null ? void 0 : message.sender_name) || "Unknown sender",
-      senderId: cleanText2(message == null ? void 0 : message.sender_id),
-      recipientName: cleanText2(message == null ? void 0 : message.recipient_name),
-      recipientId: cleanText2(message == null ? void 0 : message.recipient_id),
-      subject: cleanText2((message == null ? void 0 : message.subject_text) || (message == null ? void 0 : message.subject)) || "(No subject)",
-      time: cleanText2(message == null ? void 0 : message.time),
-      longTime: cleanText2((message == null ? void 0 : message.long_time) || (message == null ? void 0 : message.time)),
+      id: cleanText(message == null ? void 0 : message.id),
+      conversationId: cleanText(message == null ? void 0 : message.conversation_id) || "0",
+      senderName: cleanText(message == null ? void 0 : message.sender_name) || "Unknown sender",
+      senderId: cleanText(message == null ? void 0 : message.sender_id),
+      recipientName: cleanText(message == null ? void 0 : message.recipient_name),
+      recipientId: cleanText(message == null ? void 0 : message.recipient_id),
+      subject: cleanText((message == null ? void 0 : message.subject_text) || (message == null ? void 0 : message.subject)) || "(No subject)",
+      time: cleanText(message == null ? void 0 : message.time),
+      longTime: cleanText((message == null ? void 0 : message.long_time) || (message == null ? void 0 : message.time)),
       messageHtml: String((message == null ? void 0 : message.message) || "").trim(),
-      messageText: cleanText2(message == null ? void 0 : message.message_text)
+      messageText: cleanText(message == null ? void 0 : message.message_text)
     }));
   }
   function getPmThreadCacheKey(item) {
-    const id = cleanText2(item == null ? void 0 : item.id);
-    const conversationId = cleanText2(item == null ? void 0 : item.conversationId) || "0";
+    const id = cleanText(item == null ? void 0 : item.id);
+    const conversationId = cleanText(item == null ? void 0 : item.conversationId) || "0";
     return `${id}:${conversationId}`;
   }
   function renderPmDialogListItems(items = []) {
@@ -7626,7 +4463,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   function renderPmThreadHtml(items = [], currentClubId = "") {
     if (!items.length) return TmUI.empty("No conversation loaded.");
     return items.map((item) => {
-      const isOwn = currentClubId && cleanText2(item.senderId) === currentClubId;
+      const isOwn = currentClubId && cleanText(item.senderId) === currentClubId;
       const bodyHtml = item.messageHtml || `<div>${escapeHtml4(item.messageText || "")}</div>`;
       const displayTime = escapeHtml4(item.longTime || item.time || "");
       return `
@@ -7683,12 +4520,12 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   function getPmReplyMeta(thread = [], selectedItem = null, currentClubId = "") {
     var _a2, _b;
     if (!Array.isArray(thread) || !thread.length) return null;
-    const counterpart = thread.find((item) => cleanText2(item.senderId) !== currentClubId) || thread.find((item) => cleanText2(item.recipientId) !== currentClubId) || thread[thread.length - 1];
-    const recipientName = cleanText2(counterpart == null ? void 0 : counterpart.senderId) === currentClubId ? cleanText2(counterpart == null ? void 0 : counterpart.recipientName) : cleanText2(counterpart == null ? void 0 : counterpart.senderName);
-    const recipientId = cleanText2(counterpart == null ? void 0 : counterpart.senderId) === currentClubId ? cleanText2(counterpart == null ? void 0 : counterpart.recipientId) : cleanText2(counterpart == null ? void 0 : counterpart.senderId);
-    const subjectBase = cleanText2((selectedItem == null ? void 0 : selectedItem.subject) || ((_a2 = thread[thread.length - 1]) == null ? void 0 : _a2.subject) || "");
+    const counterpart = thread.find((item) => cleanText(item.senderId) !== currentClubId) || thread.find((item) => cleanText(item.recipientId) !== currentClubId) || thread[thread.length - 1];
+    const recipientName = cleanText(counterpart == null ? void 0 : counterpart.senderId) === currentClubId ? cleanText(counterpart == null ? void 0 : counterpart.recipientName) : cleanText(counterpart == null ? void 0 : counterpart.senderName);
+    const recipientId = cleanText(counterpart == null ? void 0 : counterpart.senderId) === currentClubId ? cleanText(counterpart == null ? void 0 : counterpart.recipientId) : cleanText(counterpart == null ? void 0 : counterpart.senderId);
+    const subjectBase = cleanText((selectedItem == null ? void 0 : selectedItem.subject) || ((_a2 = thread[thread.length - 1]) == null ? void 0 : _a2.subject) || "");
     const subject = /^re:/i.test(subjectBase) ? subjectBase : `re: ${subjectBase}`;
-    const conversationId = cleanText2(selectedItem == null ? void 0 : selectedItem.conversationId) && cleanText2(selectedItem == null ? void 0 : selectedItem.conversationId) !== "0" ? cleanText2(selectedItem == null ? void 0 : selectedItem.conversationId) : cleanText2((selectedItem == null ? void 0 : selectedItem.id) || ((_b = thread[thread.length - 1]) == null ? void 0 : _b.id));
+    const conversationId = cleanText(selectedItem == null ? void 0 : selectedItem.conversationId) && cleanText(selectedItem == null ? void 0 : selectedItem.conversationId) !== "0" ? cleanText(selectedItem == null ? void 0 : selectedItem.conversationId) : cleanText((selectedItem == null ? void 0 : selectedItem.id) || ((_b = thread[thread.length - 1]) == null ? void 0 : _b.id));
     if (!recipientName || !recipientId || !subject) return null;
     return {
       recipientName,
@@ -7845,12 +4682,12 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     if (sendButton) sendButton.disabled = true;
     textarea.disabled = true;
     setPmReplyStatus(pmState, "Sending reply...", "muted");
-    const response = await TmApi.sendPmMessage({
+    const response = await TmMessagesModel.sendPmMessage({
       recipient: replyMeta.recipientName,
       subject: replyMeta.subject,
       message,
       conversationId: replyMeta.conversationId,
-      clubId: cleanText2(((_b = window.SESSION) == null ? void 0 : _b.id) || pmState.clubId || "")
+      clubId: cleanText(((_b = window.SESSION) == null ? void 0 : _b.id) || pmState.clubId || "")
     });
     if (sendButton) sendButton.disabled = false;
     textarea.disabled = false;
@@ -7966,8 +4803,8 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       const button = event.target.closest("[data-pm-dialog-item]");
       if (!button) return;
       const item = {
-        id: cleanText2(button.getAttribute("data-pm-id")),
-        conversationId: cleanText2(button.getAttribute("data-pm-conversation-id")) || "0",
+        id: cleanText(button.getAttribute("data-pm-id")),
+        conversationId: cleanText(button.getAttribute("data-pm-conversation-id")) || "0",
         subject: ((_a3 = button.querySelector(".tmvu-pm-dialog-row-subject")) == null ? void 0 : _a3.textContent) || ""
       };
       loadPmDialogDetail(pmState, item);
@@ -7980,7 +4817,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       }
       const actionButton2 = event.target.closest("[data-pm-thread-action]");
       if (!actionButton2) return;
-      executePmThreadAction(pmState, cleanText2(actionButton2.getAttribute("data-pm-thread-action")));
+      executePmThreadAction(pmState, cleanText(actionButton2.getAttribute("data-pm-thread-action")));
     });
     pmState.dialog = dialog;
     return dialog;
@@ -8001,7 +4838,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       setPmDialogDetailHtml(pmState, renderPmThreadPanelHtml(cached, pmState.clubId || "", dialog.replyMeta));
       return;
     }
-    const response = await TmApi.fetchPmMessageText(item.id, item.conversationId || "0");
+    const response = await TmMessagesModel.fetchPmMessageText(item.id, item.conversationId || "0");
     const thread = normalizePmThreadItems(response);
     if (!thread.length) {
       dialog.replyMeta = null;
@@ -8025,7 +4862,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     setPmDialogDetailHtml(pmState, TmUI.empty("Select a conversation to read."));
     let items = dialog.listCache.get(place);
     if (!items) {
-      const response = await TmApi.fetchPmMessages(place);
+      const response = await TmMessagesModel.fetchPmMessages(place);
       items = normalizePmFolderItems(response, place);
       dialog.listCache.set(place, items);
     }
@@ -8052,7 +4889,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     (_a2 = pmState.pmRootEl) == null ? void 0 : _a2.classList.add("is-loading");
     setPmListPlaceholder(pmState, "Loading latest conversations...");
     try {
-      const pmResponse = await TmApi.fetchPmMessages("inbox");
+      const pmResponse = await TmMessagesModel.fetchPmMessages("inbox");
       const pmItems = normalizePmConversationItems(pmResponse);
       if (pmItems.length) {
         pmState.pmListEl.innerHTML = TmAppShellHeader.renderPmItems(pmItems);
@@ -8073,7 +4910,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     (_a2 = feedState.rootEl) == null ? void 0 : _a2.classList.add("is-loading");
     setFeedListPlaceholder(feedState, "Loading notifications...");
     try {
-      const response = await TmApi.fetchTopUserFeed();
+      const response = await TmMessagesModel.fetchTopUserFeed();
       const items = await normalizeFeedItems(response);
       feedState.items = items;
       if (items.length) {
@@ -8150,8 +4987,8 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       event.preventDefault();
       event.stopPropagation();
       const item = {
-        id: cleanText2(itemButton.getAttribute("data-pm-id")),
-        conversationId: cleanText2(itemButton.getAttribute("data-pm-conversation-id")) || "0",
+        id: cleanText(itemButton.getAttribute("data-pm-id")),
+        conversationId: cleanText(itemButton.getAttribute("data-pm-conversation-id")) || "0",
         subject: ((_a3 = itemButton.querySelector(".tmvu-pm-item-subject")) == null ? void 0 : _a3.textContent) || ""
       };
       openPmDialog(pmState, { place: "inbox", item });
@@ -8229,7 +5066,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       isLoading: false,
       count: 0,
       isPmOpen: false,
-      clubId: cleanText2(clubId2 || ((_a2 = window.SESSION) == null ? void 0 : _a2.main_id) || ((_b = window.SESSION) == null ? void 0 : _b.club_id) || ((_c = window.SESSION) == null ? void 0 : _c.id)),
+      clubId: cleanText(clubId2 || ((_a2 = window.SESSION) == null ? void 0 : _a2.main_id) || ((_b = window.SESSION) == null ? void 0 : _b.club_id) || ((_c = window.SESSION) == null ? void 0 : _c.id)),
       dialog: null,
       pmRootEl: null,
       pmTriggerEl: null,
@@ -8276,8 +5113,8 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       setFeedCount,
       async refreshCount() {
         const [topUserInfo, topUserFeed] = await Promise.all([
-          TmApi.fetchTopUserInfo(),
-          TmApi.fetchTopUserFeed()
+          TmMessagesModel.fetchTopUserInfo(),
+          TmMessagesModel.fetchTopUserFeed()
         ]);
         setPmCount(getTopUserInfoPmCount(topUserInfo, pmState.count));
         setFeedCount(getTopUserInfoFeedCount(topUserInfo, feedState.count));
@@ -8566,6 +5403,841 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     }
   };
 
+  // src/lib/club.js
+  var Club = {
+    "id": null,
+    "name": null,
+    "nick": null,
+    "country": null,
+    "division": null,
+    "group": null,
+    "manager_name": null,
+    "fanclub": null,
+    "stadium": null,
+    "city": null,
+    "a_team": null,
+    "b_team": null,
+    "created": null,
+    "is_diamond": null,
+    "cash": null,
+    "online": null
+  };
+
+  // src/lib/player.js
+  var createSkills = () => SKILL_DEFS.map((skill) => ({
+    ...skill,
+    value: null
+  }));
+  var createPositions = (allPositions = false) => {
+    const entries = allPositions ? Object.entries(POSITION_MAP) : Object.entries(POSITION_MAP).filter(([, pos]) => pos.main);
+    const positions = entries.map(([key, pos]) => ({ ...pos, key, r5: null, rec: null, preferred: false }));
+    if (allPositions) {
+      for (const sub of BENCH_SLOTS) positions.push({ key: sub, playing: false });
+    }
+    return positions;
+  };
+  var Player = {
+    create({ allPositions = false } = {}) {
+      return {
+        id: null,
+        club_id: null,
+        club: { ...Club },
+        name: null,
+        firstname: null,
+        lastname: null,
+        country: null,
+        isGK: null,
+        age: null,
+        month: null,
+        ageMonths: null,
+        ageMonthsString: null,
+        asi: null,
+        routine: null,
+        r5: null,
+        ti: null,
+        wage: null,
+        retire: null,
+        ban: null,
+        injury: null,
+        faceUrl: null,
+        positions: createPositions(allPositions),
+        skills: createSkills(),
+        no: null,
+        note: null,
+        transfer: null,
+        training: {
+          custom: [null, null, null, null, null, null],
+          standard: null
+        },
+        stats: []
+      };
+    }
+  };
+
+  // src/lib/tm-lib.js
+  var {
+    WEIGHT_R5: WEIGHT_R52,
+    WEIGHT_RB: WEIGHT_RB2,
+    WAGE_RATE: WAGE_RATE2,
+    _TRAINING1: _TRAINING12,
+    _SEASON_DAYS: _SEASON_DAYS2,
+    POS_MULTIPLIERS: POS_MULTIPLIERS2,
+    ASI_WEIGHT_OUTFIELD: ASI_WEIGHT_OUTFIELD2,
+    ASI_WEIGHT_GK: ASI_WEIGHT_GK2,
+    GRAPH_KEYS_OUT: GRAPH_KEYS_OUT2,
+    GRAPH_KEYS_GK: GRAPH_KEYS_GK2,
+    TRAINING_GROUPS_OUT: TRAINING_GROUPS_OUT2,
+    TRAINING_GROUPS_GK: TRAINING_GROUPS_GK2,
+    ROUTINE_DECAY: ROUTINE_DECAY2,
+    STD_FOCUS: STD_FOCUS2,
+    SMOOTH_WEIGHT: SMOOTH_WEIGHT2
+  } = TmConst;
+  var { ageToMonths: ageToMonths2, skillValue: skillValue2 } = TmUtils;
+  var _fix2 = (v) => (Math.round(v * 100) / 100).toFixed(2);
+  var _sv = skillValue2;
+  var _calcRemainderRaw = (posIdx, skills, asi) => {
+    const weight = posIdx === 9 ? ASI_WEIGHT_GK2 : ASI_WEIGHT_OUTFIELD2;
+    const skillSum = skills.reduce((s6, v) => s6 + parseFloat(v), 0);
+    const remainder = Math.round((Math.pow(2, Math.log(weight * asi) / Math.log(128)) - skillSum) * 10) / 10;
+    let rec = 0, ratingR = 0, rW1 = 0, rW2 = 0, not20 = 0;
+    for (let i = 0; i < WEIGHT_RB2[posIdx].length; i++) {
+      rec += skills[i] * WEIGHT_RB2[posIdx][i];
+      ratingR += skills[i] * WEIGHT_R52[posIdx][i];
+      if (skills[i] !== 20) {
+        rW1 += WEIGHT_RB2[posIdx][i];
+        rW2 += WEIGHT_R52[posIdx][i];
+        not20++;
+      }
+    }
+    if (remainder / not20 > 0.9 || !not20) {
+      not20 = posIdx === 9 ? 11 : 14;
+      rW1 = 1;
+      rW2 = 5;
+    }
+    return { remainder, remainderW2: rW2, not20, ratingR, rec: parseFloat(_fix2((rec + remainder * rW1 / not20 - 2) / 3)) };
+  };
+  var calcR5 = (posIdx, skills, asi, rou) => {
+    const r = _calcRemainderRaw(posIdx, skills, asi);
+    const { pow, E } = Math;
+    const routineBonus = 3 / 100 * (100 - 100 * pow(E, -(rou || 0) * 0.035));
+    let rating = parseFloat(_fix2(r.ratingR + r.remainder * r.remainderW2 / r.not20 + routineBonus * 5));
+    const goldstar = skills.filter((s6) => s6 === 20).length;
+    const denom = skills.length - goldstar || 1;
+    const skillsB = skills.map((s6) => s6 === 20 ? 20 : s6 + r.remainder / denom);
+    const sr = skillsB.map((s6, i) => i === 1 ? s6 : s6 + routineBonus);
+    if (skills.length !== 11) {
+      const hb = sr[10] > 12 ? parseFloat(_fix2((pow(E, (sr[10] - 10) ** 3 / 1584.77) - 1) * 0.8 + pow(E, sr[0] ** 2 * 7e-3 / 8.73021) * 0.15 + pow(E, sr[6] ** 2 * 7e-3 / 8.73021) * 0.05)) : 0;
+      const fk = parseFloat(_fix2(pow(E, (sr[13] + sr[12] + sr[9] * 0.5) ** 2 * 2e-3) / 327.92526));
+      const ck = parseFloat(_fix2(pow(E, (sr[13] + sr[8] + sr[9] * 0.5) ** 2 * 2e-3) / 983.6577));
+      const pk = parseFloat(_fix2(pow(E, (sr[13] + sr[11] + sr[9] * 0.5) ** 2 * 2e-3) / 1967.31409));
+      const ds = sr[0] ** 2 + sr[1] ** 2 * 0.5 + sr[2] ** 2 * 0.5 + sr[3] ** 2 + sr[4] ** 2 + sr[5] ** 2 + sr[6] ** 2;
+      const os = sr[0] ** 2 * 0.5 + sr[1] ** 2 * 0.5 + sr[2] ** 2 + sr[3] ** 2 + sr[4] ** 2 + sr[5] ** 2 + sr[6] ** 2;
+      const m = POS_MULTIPLIERS2[posIdx];
+      return parseFloat(_fix2(rating + hb + fk + ck + pk + parseFloat(_fix2(ds / 6 / 22.9 ** 2)) * m + parseFloat(_fix2(os / 6 / 22.9 ** 2)) * m));
+    }
+    return parseFloat(_fix2(rating));
+  };
+  var calcRec = (posIdx, skills, asi) => _calcRemainderRaw(posIdx, skills, asi).rec;
+  var calculatePlayerR5 = (position, player2) => {
+    return calcR5(position.id, player2.skills.map(_sv), player2.asi, player2.routine || 0).toFixed(2);
+  };
+  var calculatePlayerREC = (position, player2) => calcRec(position.id, player2.skills.map(_sv), player2.asi).toFixed(2);
+  var _getCurrentSession = () => {
+    const now = /* @__PURE__ */ new Date();
+    let day = (now.getTime() - _TRAINING12.getTime()) / 1e3 / 3600 / 24;
+    while (day > _SEASON_DAYS2 - 16 / 24) day -= _SEASON_DAYS2;
+    const s6 = Math.floor(day / 7) + 1;
+    return s6 <= 0 ? 12 : s6;
+  };
+  var calculateTIPerSession = (player2) => {
+    const totalTI = calculateTI(player2);
+    const session = _getCurrentSession();
+    return totalTI !== null && session > 0 ? Number((totalTI / session).toFixed(1)) : null;
+  };
+  var calculateTI = (player2) => {
+    const { asi, wage, isGK } = player2;
+    if (!asi || !wage || wage <= TmConst.MIN_WAGE_FOR_TI) return null;
+    const w = isGK ? ASI_WEIGHT_GK2 : ASI_WEIGHT_OUTFIELD2;
+    const { pow, log, round } = Math;
+    const log27 = log(pow(2, 7));
+    return round((pow(2, log(w * asi) / log27) - pow(2, log(w * wage / WAGE_RATE2) / log27)) * 10);
+  };
+  var calcASIProjection = ({ player: player2, trainings, avgTI }) => {
+    const { asi, isGK = false, ageMonths = 0 } = player2;
+    const K = ASI_WEIGHT_OUTFIELD2;
+    const base = Math.pow(asi * K, 1 / 7);
+    const added = avgTI * trainings / 10;
+    let newASI;
+    let curSkillSum, futSkillSum;
+    if (isGK) {
+      const ss11 = base / 14 * 11;
+      const fs11 = ss11 + added;
+      newASI = Math.round(Math.pow(fs11 / 11 * 14, 7) / K);
+      curSkillSum = ss11;
+      futSkillSum = fs11;
+    } else {
+      newASI = Math.round(Math.pow(base + added, 7) / K);
+      curSkillSum = base;
+      futSkillSum = base + added;
+    }
+    const _agentVal = (si, totMonths) => {
+      const a = totMonths / 12;
+      if (a < 18) return 0;
+      let p = Math.round(si * 500 * Math.pow(25 / a, 2.5));
+      if (isGK) p = Math.round(p * 0.75);
+      return p;
+    };
+    const curAgentVal = _agentVal(asi, ageMonths);
+    const futAgentVal = _agentVal(newASI, ageMonths + trainings);
+    return {
+      newASI,
+      asiDiff: newASI - asi,
+      curSkillSum,
+      futSkillSum,
+      curAgentVal,
+      futAgentVal,
+      agentDiff: futAgentVal - curAgentVal
+    };
+  };
+  var calcAsiSkillSum = (player2) => {
+    const K = player2.isGK ? ASI_WEIGHT_GK2 : ASI_WEIGHT_OUTFIELD2;
+    return Math.pow(2, Math.log(K * player2.asi) / Math.log(128));
+  };
+  var calcASIFromSkillSum = (skillSum, isGK) => {
+    const weight = isGK ? ASI_WEIGHT_GK2 : ASI_WEIGHT_OUTFIELD2;
+    return Math.max(0, Math.round(Math.pow(Math.max(0, skillSum), 7) / weight));
+  };
+  var calcSkillDecimalsSimple = (player2) => {
+    const K = player2.isGK ? ASI_WEIGHT_GK2 : ASI_WEIGHT_OUTFIELD2;
+    const skills = player2.skills;
+    const nums = skills.map((s6) => parseFloat(s6.value) || 0);
+    const allSum = nums.reduce((s6, v) => s6 + v, 0);
+    const remainder = Math.round((Math.pow(2, Math.log(K * player2.asi) / Math.log(128)) - allSum) * 10) / 10;
+    const nonStar = nums.filter((v) => v < 20).length;
+    let result;
+    if (remainder <= 0) result = nums;
+    else if (nonStar === 0) result = nums.map((v) => v + remainder / nums.length);
+    else result = nums.map((v) => v === 20 ? 20 : v + remainder / nonStar);
+    return skills.map((s6, i) => ({ ...s6, value: result[i] }));
+  };
+  var calcSkillDecimals = (intSkills, asi, isGK, gw, { maxIntegers } = {}) => {
+    const N = intSkills.length;
+    const GRP = isGK ? TRAINING_GROUPS_GK2 : TRAINING_GROUPS_OUT2;
+    const GRP_COUNT = GRP.length;
+    if (!gw) gw = new Array(GRP_COUNT).fill(1 / GRP_COUNT);
+    const KASIW = isGK ? ASI_WEIGHT_GK2 : ASI_WEIGHT_OUTFIELD2;
+    const totalPts = Math.pow(2, Math.log(KASIW * asi) / Math.log(128));
+    const remainder = totalPts - intSkills.reduce((a, b) => a + b, 0);
+    const eff = TmUtils.skillEff;
+    const base = new Array(N).fill(0);
+    let overflow = 0;
+    for (let gi = 0; gi < GRP_COUNT; gi++) {
+      const grp = GRP[gi], perSk = gw[gi] / grp.length;
+      for (const si of grp) {
+        if (si >= N) continue;
+        if (intSkills[si] >= 20) overflow += perSk;
+        else base[si] = perSk;
+      }
+    }
+    const nonMax = intSkills.filter((v) => v < 20).length;
+    const ovfEach = nonMax > 0 ? overflow / nonMax : 0;
+    const wE = base.map((b, i) => intSkills[i] >= 20 ? 0 : (b + ovfEach) * eff(intSkills[i]));
+    const tot = wE.reduce((a, b) => a + b, 0);
+    const shares = tot > 0 ? wE.map((x) => x / tot) : new Array(N).fill(nonMax > 0 ? 1 / nonMax : 0);
+    let dec = shares.map((s6) => Math.max(0, remainder * s6));
+    const CAP = 0.99;
+    let passes = 0;
+    do {
+      let ovfl = 0, freeCount = 0;
+      for (let i = 0; i < N; i++) {
+        if (intSkills[i] >= 20) {
+          dec[i] = 0;
+          continue;
+        }
+        const cap = maxIntegers ? Math.max(0, maxIntegers[i] - intSkills[i]) + CAP : CAP;
+        if (dec[i] > cap) {
+          ovfl += dec[i] - cap;
+          dec[i] = cap;
+        } else if (dec[i] < cap) freeCount++;
+      }
+      if (ovfl > 1e-4 && freeCount > 0) {
+        const add = ovfl / freeCount;
+        for (let i = 0; i < N; i++) {
+          const cap = maxIntegers ? Math.max(0, maxIntegers[i] - intSkills[i]) + CAP : CAP;
+          if (intSkills[i] < 20 && dec[i] < cap) dec[i] += add;
+        }
+      } else break;
+    } while (++passes < 20);
+    return intSkills.map((v, i) => v >= 20 ? 20 : v + dec[i]);
+  };
+  var getPositionIndex = (pos) => {
+    const p = (pos || "").split(",")[0].toLowerCase().replace(/[^a-z]/g, "");
+    switch (p) {
+      case "gk":
+        return 9;
+      case "dc":
+      case "dcl":
+      case "dcr":
+        return 0;
+      case "dl":
+      case "dr":
+        return 1;
+      case "dmc":
+      case "dmcl":
+      case "dmcr":
+        return 2;
+      case "dml":
+      case "dmr":
+        return 3;
+      case "mc":
+      case "mcl":
+      case "mcr":
+        return 4;
+      case "ml":
+      case "mr":
+        return 5;
+      case "omc":
+      case "omcl":
+      case "omcr":
+        return 6;
+      case "oml":
+      case "omr":
+        return 7;
+      default:
+        return 8;
+    }
+  };
+  var TmLib = {
+    getPositionIndex,
+    calcR5,
+    calcAsiSkillSum,
+    calcASIFromSkillSum,
+    calcSkillDecimalsSimple,
+    calcSkillDecimals,
+    calculatePlayerR5,
+    calculatePlayerREC,
+    calcASIProjection,
+    calculateTI,
+    calculateTIPerSession
+  };
+
+  // src/utils/normalize/club.js
+  var normalizeClubTransfers = (html2, opts = {}) => {
+    const doc = new DOMParser().parseFromString(html2, "text/html");
+    let boughtTable = null, soldTable = null;
+    doc.querySelectorAll("h3").forEach((h3) => {
+      const text = h3.textContent.trim().toLowerCase();
+      let next = h3.nextElementSibling;
+      while (next && next.tagName !== "TABLE") next = next.nextElementSibling;
+      if (!next) return;
+      if (text.includes("bought")) boughtTable = next;
+      else if (text.includes("sold")) soldTable = next;
+    });
+    const parseRow = (tr) => {
+      const tds = tr.querySelectorAll("td");
+      if (tds.length < 4) return null;
+      const playerA = tds[0].querySelector("a[player_link]");
+      if (!playerA) return null;
+      const recTd = tds[1];
+      const isRetired = recTd.textContent.trim() === "Retired";
+      let stars = 0;
+      recTd.querySelectorAll("img").forEach((img) => {
+        const src = img.getAttribute("src") || "";
+        if (src.includes("half_star")) stars += 0.5;
+        else if (src.includes("star") && !src.includes("dark_star")) stars += 1;
+      });
+      const clubA = tds[2].querySelector("a[club_link]");
+      return {
+        pid: playerA.getAttribute("player_link"),
+        name: playerA.textContent.trim(),
+        url: playerA.getAttribute("href"),
+        rec: stars * 3.38,
+        isRetired,
+        clubId: clubA ? clubA.getAttribute("club_link") : null,
+        clubName: clubA ? clubA.textContent.trim() : tds[2].textContent.trim(),
+        price: parseFloat(tds[3].textContent.trim().replace(/,/g, "")) || 0,
+        ...opts
+      };
+    };
+    const parseRows2 = (table) => !table ? [] : Array.from(table.querySelectorAll("tr")).map(parseRow).filter(Boolean);
+    const bought = parseRows2(boughtTable);
+    const sold = parseRows2(soldTable);
+    let totalBought = 0, totalSold = 0, balance = 0;
+    doc.querySelectorAll("td[colspan]").forEach((td) => {
+      var _a2;
+      const val = parseFloat((((_a2 = td.querySelector("strong")) == null ? void 0 : _a2.textContent) || "0").replace(/,/g, "")) || 0;
+      const txt = td.textContent.trim();
+      if (/Total Bought/i.test(txt)) totalBought = val;
+      else if (/Total Sold/i.test(txt)) totalSold = val;
+      else if (/Balance/i.test(txt)) balance = val;
+    });
+    if (!totalBought && bought.length) totalBought = bought.reduce((s6, p) => s6 + p.price, 0);
+    if (!totalSold && sold.length) totalSold = sold.reduce((s6, p) => s6 + p.price, 0);
+    if (!balance) balance = totalSold - totalBought;
+    return { bought, sold, totalBought, totalSold, balance };
+  };
+  var normalizeClubFromTooltip = (raw) => {
+    var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
+    return {
+      id: (_a2 = raw.id) != null ? _a2 : null,
+      name: (_b = raw.club_name) != null ? _b : null,
+      nick: (_c = raw.club_nick) != null ? _c : null,
+      country: (_d = raw.country) != null ? _d : null,
+      division: (_e = raw.division) != null ? _e : null,
+      group: (_f = raw.group) != null ? _f : null,
+      manager_name: (_g = raw.manager_name) != null ? _g : null,
+      fanclub: (_h = raw.fanclub) != null ? _h : null,
+      stadium: (_i = raw.stadium) != null ? _i : null,
+      city: (_j = raw.city) != null ? _j : null,
+      a_team: (_k = raw.a_team) != null ? _k : null,
+      b_team: (_l = raw.b_team) != null ? _l : null,
+      created: (_m = raw.created) != null ? _m : null,
+      is_diamond: (_n = raw.is_diamond) != null ? _n : null,
+      cash: (_o = raw.cash) != null ? _o : null,
+      online: (_p = raw.online) != null ? _p : null
+    };
+  };
+  var normalizeClubFromScoutReport = (raw) => {
+    var _a2, _b, _c, _d, _e, _f, _g;
+    return {
+      id: (_a2 = raw.club) != null ? _a2 : null,
+      name: (_b = raw.klubnavn) != null ? _b : null,
+      nick: null,
+      country: (_c = raw.land) != null ? _c : null,
+      division: (_d = raw.division) != null ? _d : null,
+      group: (_e = raw.pulje) != null ? _e : null,
+      manager_name: null,
+      fanclub: null,
+      stadium: null,
+      city: null,
+      a_team: null,
+      b_team: null,
+      created: null,
+      is_diamond: null,
+      cash: (_f = raw.cash) != null ? _f : null,
+      online: (_g = raw.online) != null ? _g : null
+    };
+  };
+
+  // src/utils/normalize/player.js
+  var applyPlayerPositionRatings = (player2) => {
+    player2.positions = player2.positions.map((position) => ({
+      ...position,
+      r5: position.id != null ? TmLib.calculatePlayerR5(position, player2) : null,
+      rec: position.id != null ? TmLib.calculatePlayerREC(position, player2) : null
+    }));
+    const preferredPositions = player2.positions.filter((position) => position.preferred);
+    const positionsForRatings = preferredPositions.length ? preferredPositions : player2.positions;
+    player2.r5 = positionsForRatings.reduce((best, position) => {
+      const value = Number(position == null ? void 0 : position.r5);
+      if (!Number.isFinite(value)) return best;
+      return best == null || value > best ? value : best;
+    }, null);
+    player2.rec = positionsForRatings.reduce((best, position) => {
+      const value = Number(position == null ? void 0 : position.rec);
+      if (!Number.isFinite(value)) return best;
+      return best == null || value > best ? value : best;
+    }, null);
+    return player2;
+  };
+  var normalizeTooltipPlayer = (playerData) => {
+    var _a2;
+    const player2 = Player.create();
+    const rawClub = (_a2 = playerData.club) != null ? _a2 : {};
+    player2.club = normalizeClubFromTooltip(rawClub);
+    const { player: playerTooltip } = playerData;
+    player2.club_id = Number(player2.club.id);
+    player2.id = Number(playerTooltip.player_id);
+    player2.age = Number(playerTooltip.age);
+    player2.month = Number(playerTooltip.months);
+    player2.ageMonths = player2.age * 12 + player2.month;
+    player2.ageMonthsString = `${player2.age}.${player2.month}`;
+    player2.lastname = playerTooltip.lastname;
+    player2.name = playerTooltip.name;
+    player2.firstname = playerTooltip.name.split(" ").filter((n) => n !== player2.lastname).join(" ");
+    player2.country = playerTooltip.country;
+    player2.routine = Number(playerTooltip.routine);
+    player2.wage = TmUtils.parseNum(playerTooltip.wage, null);
+    player2.asi = TmUtils.parseNum(playerTooltip.skill_index, null);
+    player2.no = playerTooltip.no;
+    player2.retire = playerTooltip.isretirering;
+    player2.isGK = playerTooltip.fp === "GK";
+    player2.ti = TmLib.calculateTIPerSession(player2);
+    player2.faceUrl = TmUtils.extractFaceUrl(playerTooltip.appearance, playerTooltip.face_url);
+    TmUtils.applyTooltipSkills(player2, playerTooltip.skills);
+    TmUtils.applyPlayerPositions(player2, playerTooltip.favposition);
+    player2.skills = TmLib.calcSkillDecimalsSimple(player2);
+    applyPlayerPositionRatings(player2);
+    player2.allPositionRatings = player2.positions;
+    player2.isOwnPlayer = TmUtils.getOwnClubIds().includes(String(player2.club_id));
+    return player2;
+  };
+  var _parseTacticsBan = (status, banned) => {
+    if (!banned && !status) return "0";
+    const s6 = String(status || "");
+    if (s6.includes("yellow_card")) return "g";
+    if (s6.includes("red_card")) {
+      const m = s6.match(/^(\d+)/);
+      return `r${m ? parseInt(m[1]) : 1}`;
+    }
+    return banned ? "r1" : "0";
+  };
+  var normalizeTacticsPlayer = (p) => {
+    const player2 = Player.create({ allPositions: true });
+    player2.id = Number(p.player_id);
+    player2.club_id = Number(p.club_id);
+    player2.club.id = String(p.club_id);
+    player2.club.name = p.club_name || "";
+    player2.age = Number(p.age);
+    player2.month = Number(p.months);
+    player2.ageMonths = player2.age * 12 + player2.month;
+    player2.ageMonthsString = `${player2.age}.${player2.month}`;
+    player2.lastname = p.lastname;
+    player2.name = p.name;
+    player2.firstname = p.name.split(" ").filter((n) => n !== p.lastname).join(" ");
+    player2.country = p.country;
+    player2.routine = Number(p.routine) || 0;
+    player2.wage = TmUtils.parseNum(p.wage, null);
+    player2.asi = TmUtils.parseNum(p.skill_index, null);
+    player2.no = p.no;
+    player2.retire = p.isretirering;
+    player2.ban = _parseTacticsBan(p.status, p.banned);
+    player2.injury = p.injury;
+    player2.isGK = p.fp === "GK";
+    player2.rec_sort = p.rec_sort;
+    player2.faceUrl = TmUtils.extractFaceUrl(p.appearance, null);
+    TmUtils.applyTooltipSkills(player2, p.skills);
+    TmUtils.applyPlayerPositions(player2, p.favposition, true);
+    player2.skills = TmLib.calcSkillDecimalsSimple(player2);
+    applyPlayerPositionRatings(player2);
+    player2.allPositionRatings = player2.positions;
+    player2.ti = TmLib.calculateTIPerSession(player2);
+    player2.isOwnPlayer = TmUtils.getOwnClubIds().includes(String(player2.club_id));
+    return player2;
+  };
+  var normalizeSquadPlayer = (postPlayer) => {
+    const player2 = Player.create();
+    player2.id = Number(postPlayer.player_id || postPlayer.id);
+    player2.club_id = Number(postPlayer.club_id);
+    player2.club.id = postPlayer.club_id;
+    player2.age = Number(postPlayer.age);
+    player2.month = Number(postPlayer.month);
+    player2.ageMonths = player2.age * 12 + player2.month;
+    player2.ageMonthsString = `${player2.age}.${player2.month}`;
+    player2.lastname = postPlayer.lastname;
+    player2.name = postPlayer.player_name;
+    player2.firstname = postPlayer.player_name.split(" ").filter((n) => n !== postPlayer.lastname).join(" ");
+    player2.country = postPlayer.country;
+    player2.routine = TmUtils.parseNum(Number(postPlayer.rutine), 0);
+    player2.wage = TmUtils.parseNum(postPlayer.wage, null);
+    player2.asi = postPlayer.asi;
+    player2.no = postPlayer.no;
+    player2.retire = postPlayer.retire;
+    player2.ban = postPlayer.ban;
+    player2.injury = postPlayer.injury;
+    player2.isGK = postPlayer.fp === "GK";
+    player2.training.custom = String(postPlayer.training_custom || "").split("").map((v) => parseInt(v) || 0);
+    player2.training.standard = postPlayer.training;
+    player2.transfer = postPlayer.transfer;
+    TmUtils.applySquadSkills(player2, postPlayer);
+    TmUtils.applyPlayerPositions(player2, postPlayer.favposition);
+    applyPlayerPositionRatings(player2);
+    player2.ti = TmLib.calculateTIPerSession(player2);
+    player2.isOwnPlayer = TmUtils.getOwnClubIds().includes(String(player2.club_id));
+    return player2;
+  };
+  var _extractClub = (html2) => {
+    var _a2, _b;
+    if (!html2 || html2 === "-") return { name: null, href: null };
+    const name = (_a2 = (html2.match(/>([^<]+)<\/a>/) || [])[1]) != null ? _a2 : null;
+    const href = (_b = (html2.match(/href="([^"]+)"/) || [])[1]) != null ? _b : null;
+    return { name, href };
+  };
+  var _normalizeStatsRow = (raw, prev) => {
+    var _a2, _b, _c, _d, _e, _f, _g;
+    if (raw.season === "transfer") {
+      return { type: "transfer", amount: raw.transfer, transferamount: Number(raw.transferamount) || 0 };
+    }
+    const isTotal = raw.season === "total";
+    const games = Number(raw.games) || 0;
+    const { name, href } = _extractClub(raw.klubnavn);
+    return {
+      type: isTotal ? "total" : "season",
+      season: isTotal ? "total" : Number(raw.season),
+      club_id: isTotal ? null : (_b = (_a2 = raw.klub_id) != null ? _a2 : prev == null ? void 0 : prev.club_id) != null ? _b : null,
+      club_name: isTotal ? null : (_c = name != null ? name : prev == null ? void 0 : prev.club_name) != null ? _c : null,
+      club_href: isTotal ? null : (_d = href != null ? href : prev == null ? void 0 : prev.club_href) != null ? _d : null,
+      country: (_e = raw.country) != null ? _e : null,
+      division: (_f = raw.division) != null ? _f : null,
+      group: (_g = raw.group) != null ? _g : null,
+      games,
+      goals: Number(raw.goals) || 0,
+      conceded: Number(raw.conceded) || 0,
+      assists: Number(raw.assists) || 0,
+      cards: Number(raw.cards) || 0,
+      rating: games > 0 ? (Number(raw.rating) / games * 100 / 100).toFixed(2) : null,
+      productivity: Number(raw.productivity) || 0,
+      ...isTotal && { mom: Number(raw.mom) || 0 }
+    };
+  };
+  var _normalizeStatsTab = (rows) => {
+    if (!Array.isArray(rows)) return [];
+    let prev = null;
+    return rows.map((raw) => {
+      const row = _normalizeStatsRow(raw, prev);
+      if (row.type === "season") prev = row;
+      return row;
+    });
+  };
+  var normalizePlayerStats = (data) => {
+    var _a2, _b, _c, _d, _e;
+    return {
+      nat: _normalizeStatsTab((_a2 = data == null ? void 0 : data.table) == null ? void 0 : _a2.nat),
+      cup: _normalizeStatsTab((_b = data == null ? void 0 : data.table) == null ? void 0 : _b.cup),
+      int: _normalizeStatsTab((_c = data == null ? void 0 : data.table) == null ? void 0 : _c.int),
+      total: _normalizeStatsTab((_d = data == null ? void 0 : data.table) == null ? void 0 : _d.total),
+      current_season: (_e = data == null ? void 0 : data.current_season) != null ? _e : null
+    };
+  };
+  var populateSkillIndexFromTI = (tiHistory, currentAsi, isGK = false) => {
+    if (!Array.isArray(tiHistory) || !tiHistory.length || !Number.isFinite(Number(currentAsi))) return null;
+    tiHistory = tiHistory.slice(1);
+    const skillIndex = new Array(tiHistory.length).fill(null);
+    let currentSkillSum = TmLib.calcAsiSkillSum({ asi: Number(currentAsi), isGK });
+    skillIndex[tiHistory.length - 1] = Number(currentAsi);
+    for (let index = tiHistory.length - 2; index >= 0; index -= 1) {
+      const nextTI = Number(tiHistory[index + 1]);
+      if (!Number.isFinite(nextTI)) return null;
+      currentSkillSum -= nextTI / 10;
+      skillIndex[index] = TmLib.calcASIFromSkillSum(currentSkillSum, isGK);
+    }
+    return skillIndex;
+  };
+  var normalizePlayerGraphs = (graphs, player2) => {
+    var _a2, _b, _c, _d, _e, _f, _g;
+    if (!graphs) return null;
+    const TI = (_b = (_a2 = graphs.TI) != null ? _a2 : graphs.ti) != null ? _b : null;
+    return {
+      ...graphs,
+      TI,
+      skill_index: (_c = graphs.skill_index) != null ? _c : populateSkillIndexFromTI(TI, player2 == null ? void 0 : player2.asi, player2 == null ? void 0 : player2.isGK),
+      one_on_ones: (_e = (_d = graphs.one_on_ones) != null ? _d : graphs.oneonones) != null ? _e : null,
+      aerial_ability: (_g = (_f = graphs.aerial_ability) != null ? _f : graphs.arialability) != null ? _g : null
+    };
+  };
+  var normalizeSquadPlayerTraining = (data) => {
+    var _a2;
+    if (!data) return null;
+    const customRaw = String(data.training_custom || "").trim();
+    if (!customRaw) {
+      return {
+        custom: [null, null, null, null, null, null],
+        standard: (_a2 = data.training) != null ? _a2 : null
+      };
+    }
+    const customTraining = Array.from({ length: 6 }, (_, i) => {
+      const value = customRaw[i];
+      return value != null ? Number(value) || 0 : 0;
+    });
+    return { custom: customTraining, standard: null };
+  };
+  var normalizePlayerTraining = (data) => {
+    var _a2;
+    const { custom } = data;
+    if (!custom.custom_on) {
+      return {
+        custom: [null, null, null, null, null, null],
+        standard: (_a2 = custom.team) != null ? _a2 : null
+      };
+    }
+    const customTraining = Array.from({ length: 6 }, (_, i) => {
+      var _a3, _b;
+      const pts = (_b = (_a3 = custom.custom) == null ? void 0 : _a3[`team${i + 1}`]) == null ? void 0 : _b.points;
+      return pts != null ? Number(pts) : null;
+    });
+    return { custom: customTraining, standard: null };
+  };
+  var _TRANSFER_SHORT_TO_SKILL_KEY = {
+    str: "strength",
+    sta: "stamina",
+    pac: "pace",
+    mar: "marking",
+    tac: "tackling",
+    wor: "workrate",
+    pos: "positioning",
+    pas: "passing",
+    cro: "crossing",
+    tec: "technique",
+    hea: "heading",
+    fin: "finishing",
+    lon: "longshots",
+    set: "set_pieces",
+    han: "handling",
+    one: "oneonones",
+    ref: "reflexes",
+    ari: "arialability",
+    jum: "jumping",
+    com: "communication",
+    kic: "kicking",
+    thr: "throwing"
+  };
+  var _fmtTransferTime = (sec) => {
+    const s6 = Math.max(0, sec);
+    const d = Math.floor(s6 / 86400), h = Math.floor(s6 % 86400 / 3600), m = Math.floor(s6 % 3600 / 60);
+    if (d > 0) return `${d}d ${h}h`;
+    if (h > 0) return `${h}h ${m}m`;
+    return `${m}m ${s6 % 60}s`;
+  };
+  var normalizeTransferPlayer = (raw) => {
+    var _a2;
+    const player2 = Player.create();
+    const age = parseFloat(raw.age) || 0;
+    const years = Math.floor(age);
+    const months = Math.round((age - years) * 100);
+    player2.id = Number(raw.id);
+    player2.club_id = Number(raw.club_id);
+    player2.club.id = String(raw.club_id);
+    player2.club.name = raw.club_name || "";
+    player2.name = raw.name || raw.name_js || "";
+    player2.country = raw.nat || raw.country || null;
+    player2.age = years;
+    player2.month = months;
+    player2.ageMonths = years * 12 + months;
+    player2.ageMonthsString = `${years}.${months}`;
+    player2.asi = raw.asi || null;
+    player2.routine = raw.routine != null ? Number(raw.routine) : null;
+    const fp = Array.isArray(raw.fp) ? raw.fp.map((s6) => String(s6).trim().toLowerCase()).filter(Boolean) : String(raw.fp || "").split(",").map((s6) => s6.trim().toLowerCase()).filter(Boolean);
+    player2.isGK = fp[0] === "gk";
+    const rawSkillMap = new Map(
+      Object.entries(_TRANSFER_SHORT_TO_SKILL_KEY).filter(([short]) => raw[short] != null && Number(raw[short]) > 0).map(([short, longKey]) => [longKey, Number(raw[short])])
+    );
+    player2.skills = player2.skills.map((skill) => {
+      var _a3;
+      return { ...skill, value: (_a3 = rawSkillMap.get(skill.key)) != null ? _a3 : null };
+    }).filter((skill) => skill.value != null);
+    TmUtils.applyPlayerPositions(player2, raw.favposition || "");
+    applyPlayerPositionRatings(player2);
+    player2.isOwnPlayer = TmUtils.getOwnClubIds().includes(String(player2.club_id));
+    player2.r5 = null;
+    player2.r5Lo = null;
+    player2.r5Hi = null;
+    if (player2.asi && player2.skills.length) {
+      const preferredPositions = player2.positions.filter((p) => p.preferred).map((p) => p.key);
+      if (preferredPositions.length) {
+        const routineMax = Math.max(0, TmConst.ROUTINE_SCALE * ((player2.age || 20) - TmConst.ROUTINE_AGE_MIN));
+        const skillOrder = player2.isGK ? TmConst.SKILL_KEYS_GK_WEIGHT : TmConst.SKILL_KEYS_OUT;
+        const longKeyMap = new Map(player2.skills.map((s6) => [s6.key, Math.floor(Number(s6.value) || 0)]));
+        const skillArr = skillOrder.map((short) => {
+          var _a3;
+          return (_a3 = longKeyMap.get(_TRANSFER_SHORT_TO_SKILL_KEY[short])) != null ? _a3 : 0;
+        });
+        if (skillArr.some((v) => v > 0)) {
+          for (const pos of preferredPositions) {
+            const pi = TmLib.getPositionIndex(pos);
+            const lo = TmLib.calcR5(pi, skillArr, player2.asi, 0);
+            const hi = TmLib.calcR5(pi, skillArr, player2.asi, routineMax);
+            if (player2.r5Lo === null || lo > player2.r5Lo) player2.r5Lo = lo;
+            if (player2.r5Hi === null || hi > player2.r5Hi) player2.r5Hi = hi;
+          }
+        }
+      }
+    }
+    player2.tooltipFetched = false;
+    player2.timeleft = Math.max(0, raw.time || 0);
+    player2.timeleft_string = player2.timeleft > 0 ? _fmtTransferTime(player2.timeleft) : "";
+    player2.bid = TmUtils.parseNum(raw.bid, 0);
+    player2.curbid = player2.bid ? TmUtils.fmtCoins(player2.bid) : "";
+    player2.next_bid = raw.next_bid || null;
+    player2.is_pro = !!raw.pro;
+    player2.bump = !!raw.bump;
+    player2.shortlisted = (_a2 = raw.shortlisted) != null ? _a2 : null;
+    player2.note = raw.txt || "";
+    return player2;
+  };
+
+  // src/services/transfer.js
+  var TmTransferService = {
+    /**
+     * Fetch transfer bid dialog data for a player.
+     * @param {string|number} playerId
+     * @param {string|number} sessionId
+     * @returns {Promise<object|null>}
+     */
+    fetchTransferBidDialog(playerId, sessionId) {
+      return _post("/ajax/transfer_bids.ajax.php", {
+        type: "get_transfer_bid",
+        player_id: playerId,
+        session_id: sessionId
+      });
+    },
+    /**
+     * Fetch the current transfer status for a listed player.
+     * @param {string|number} playerId
+     * @returns {Promise<object|null>}
+     */
+    fetchTransfer(playerId) {
+      return _post("/ajax/transfer_get.ajax.php", { type: "transfer_reload", player_id: playerId });
+    },
+    /**
+     * Search the transfer market by a pre-built hash string.
+     * Returns the raw API response { list: [], refresh: bool } or null on error.
+     * The `list` array contains raw TM transfer player objects — call
+     * normalizeTransferPlayer() on each entry before use.
+     * @param {string} hash   — path-style hash built by buildHash() / buildHashRaw()
+     * @param {string|number} clubId — SESSION.id (used by TM to exclude own players)
+     * @returns {Promise<{list: object[], refresh: boolean}|null>}
+     */
+    fetchTransferSearch(hash, clubId2) {
+      return _post("/ajax/transfer.ajax.php", { search: hash, club_id: clubId2 });
+    },
+    /**
+     * Normalise a raw transfer-list player object into a standard Player model.
+     * Delegates to normalizeTransferPlayer in utils/normalize/player.js.
+     * @param {object} p — raw player from transfer list
+     * @returns {object} normalized Player model with r5Lo/r5Hi/rec pre-estimated
+     */
+    normalizeTransferPlayer(p) {
+      return normalizeTransferPlayer(p);
+    },
+    /**
+     * Merge normalized tooltip player data into a transfer player — mutates in place.
+     * Tooltip is already fully normalized (skills, r5, rec, ti, wage, routine) by
+     * normalizeTooltipPlayer + applyPlayerPositionRatings. We just spread it over
+     * the transfer player, preserving transfer-specific fields that tooltip lacks
+     * (timeleft, next_bid, r5Lo, r5Hi, note, tooltipFetched, etc.).
+     * @param {object} player       — normalized transfer player
+     * @param {object} tooltipPlayer — normalized player from TmPlayerModel.fetchTooltipCached
+     * @returns {object|null} player on success, null if tooltipPlayer is invalid
+     */
+    enrichTransferFromTooltip(player2, tooltipPlayer) {
+      if (!tooltipPlayer) return null;
+      const { note } = player2;
+      Object.assign(player2, tooltipPlayer);
+      if (note) player2.note = note;
+      player2.tooltipFetched = true;
+      return player2;
+    }
+  };
+
+  // src/models/transfer.js
+  var TmTransferModel = {
+    fetchTransferBidDialog(playerId, sessionId) {
+      return TmTransferService.fetchTransferBidDialog(playerId, sessionId);
+    },
+    fetchTransfer(playerId) {
+      return TmTransferService.fetchTransfer(playerId);
+    },
+    normalizeTransferPlayer(p) {
+      return TmTransferService.normalizeTransferPlayer(p);
+    },
+    enrichTransferFromTooltip(player2, data) {
+      return TmTransferService.enrichTransferFromTooltip(player2, data);
+    },
+    fetchTransferSearch(hash, clubId2) {
+      return TmTransferService.fetchTransferSearch(hash, clubId2);
+    }
+  };
+
   // src/components/player/card/tm-player-photo.js
   var STYLE_ID10 = "tmvu-player-photo-style";
   function escapeHtml5(value) {
@@ -8609,12 +6281,168 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   }
   var TmPlayerPhoto = { html, extractImageSrc };
 
+  // src/services/shortlist.js
+  function extractArrayLiteral(html2, varName) {
+    const marker = `var ${varName}`;
+    const startIndex = html2.indexOf(marker);
+    if (startIndex === -1) return "";
+    const arrayStart = html2.indexOf("[", startIndex);
+    if (arrayStart === -1) return "";
+    let depth = 0;
+    let inString = false;
+    let escaped = false;
+    for (let index = arrayStart; index < html2.length; index += 1) {
+      const char = html2[index];
+      if (inString) {
+        if (escaped) {
+          escaped = false;
+          continue;
+        }
+        if (char === "\\") {
+          escaped = true;
+          continue;
+        }
+        if (char === '"') inString = false;
+        continue;
+      }
+      if (char === '"') {
+        inString = true;
+        continue;
+      }
+      if (char === "[") depth += 1;
+      if (char === "]") {
+        depth -= 1;
+        if (depth === 0) return html2.slice(arrayStart, index + 1);
+      }
+    }
+    return "";
+  }
+  function parseTimeleft(str) {
+    const m = String(str || "").trim().match(/^(\d+)\s*(d|h|m)$/i);
+    if (!m) return 0;
+    const v = parseInt(m[1]);
+    if (/d/i.test(m[2])) return v * 86400;
+    if (/h/i.test(m[2])) return v * 3600;
+    return v * 60;
+  }
+  function parseBidText(str) {
+    const s6 = String(str || "").replace(/,/g, "").trim();
+    if (!s6 || s6 === "0") return 0;
+    const m = s6.match(/^([\d.]+)(M|K)?$/i);
+    if (!m) return 0;
+    const v = parseFloat(m[1]);
+    if (/M/i.test(m[2] || "")) return Math.round(v * 1e6);
+    if (/K/i.test(m[2] || "")) return Math.round(v * 1e3);
+    return Math.round(v);
+  }
+  function parseHomeBidRows(doc, selector, direction) {
+    const containers = doc.querySelectorAll(selector);
+    console.log(`[TM Bids] parseHomeBidRows selector="${selector}" containers=${containers.length}`);
+    const rows = Array.from(doc.querySelectorAll(`${selector} .player-row`));
+    console.log(`[TM Bids] parseHomeBidRows direction=${direction} player-rows=${rows.length}`);
+    return rows.map((li) => {
+      var _a2, _b, _c, _d, _e;
+      const id = String(li.id || "").replace("pid", "").trim();
+      if (!id) return null;
+      const bidSpan = li.querySelector(".cell-bid span");
+      const bidText = bidSpan ? ((_b = (_a2 = bidSpan.childNodes[0]) == null ? void 0 : _a2.textContent) == null ? void 0 : _b.trim()) || "" : "";
+      const clubA = li.querySelector(".cell-club a[club_link]");
+      const tlSpan = li.querySelector(".cell-timeleft span");
+      const timeleft_string = tlSpan ? ((_d = (_c = tlSpan.childNodes[0]) == null ? void 0 : _c.textContent) == null ? void 0 : _d.trim()) || "" : "";
+      const row = {
+        id,
+        direction,
+        curbid: bidText || "0",
+        bid: parseBidText(bidText),
+        club_id: clubA ? Number(clubA.getAttribute("club_link")) || 0 : 0,
+        club_name: ((_e = clubA == null ? void 0 : clubA.textContent) == null ? void 0 : _e.trim()) || "",
+        timeleft: parseTimeleft(timeleft_string),
+        timeleft_string
+      };
+      console.log(`[TM Bids] parsed ${direction} id=${id} bid="${bidText}" timeleft="${timeleft_string}"`);
+      return row;
+    }).filter(Boolean);
+  }
+  function waitForBidRows(timeoutMs = 8e3) {
+    return new Promise((resolve) => {
+      const check = () => document.querySelector(".transfers-in-box .player-row, .transfers-out-box .player-row");
+      if (check()) {
+        resolve();
+        return;
+      }
+      const obs = new MutationObserver(() => {
+        if (check()) {
+          obs.disconnect();
+          resolve();
+        }
+      });
+      obs.observe(document.body, { childList: true, subtree: true });
+      setTimeout(() => {
+        obs.disconnect();
+        resolve();
+      }, timeoutMs);
+    });
+  }
+  var TmShortlistService = {
+    /**
+     * Fetch a shortlist page and return the parsed players_ar array.
+     * @param {number} [start] — page offset (omit for first/random page)
+     * @returns {Promise<Array>}
+     */
+    async fetchShortlistPage(start3) {
+      const url = start3 != null ? `/shortlist/?start=${start3}` : "/shortlist/";
+      const html2 = await _getHtml(url);
+      if (!html2) return [];
+      const arrayLiteral = extractArrayLiteral(html2, "players_ar");
+      if (!arrayLiteral) return [];
+      try {
+        return JSON.parse(arrayLiteral);
+      } catch (e) {
+        return [];
+      }
+    },
+    addToShortlist(playerId) {
+      return _post("/ajax/players_shortlist.ajax.php", { player_id: playerId });
+    },
+    removeFromShortlist(playerId) {
+      return _post("/ajax/players_shortlist.ajax.php", { type: "remove", player_id: playerId });
+    },
+    async fetchHomeBids() {
+      return _dedup("bids:home", async () => {
+        console.log("[TM Bids] fetchHomeBids: waiting for bid rows in DOM");
+        await waitForBidRows();
+        console.log("[TM Bids] fetchHomeBids: parsing live DOM");
+        const ins = parseHomeBidRows(document, ".transfers-in-box", "in");
+        const outs = parseHomeBidRows(document, ".transfers-out-box", "out");
+        const result = [...ins, ...outs];
+        console.log("[TM Bids] fetchHomeBids: total rows=", result.length, result);
+        return result;
+      });
+    }
+  };
+
+  // src/models/shortlist.js
+  var TmShortlistModel = {
+    fetchHomeBids() {
+      return TmShortlistService.fetchHomeBids();
+    },
+    fetchShortlistPage() {
+      return TmShortlistService.fetchShortlistPage();
+    },
+    addToShortlist(playerId) {
+      return TmShortlistService.addToShortlist(playerId);
+    },
+    removeFromShortlist(playerId) {
+      return TmShortlistService.removeFromShortlist(playerId);
+    }
+  };
+
   // src/components/bids/tm-bids-dialog.js
   var STYLE_ID11 = "tmvu-bids-dialog-style";
   var DIALOG_ID = "tmvu-bids-dialog-overlay";
   var CLOSE_ICON = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
   var activeBidDialog = null;
-  function cleanText3(value) {
+  function cleanText2(value) {
     return String(value || "").replace(/\s+/g, " ").trim();
   }
   function escapeHtml6(value) {
@@ -8623,12 +6451,12 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   function renderFlag(countryCode) {
     return countryCode ? `<ib class="tmvu-bids-flag flag-img-${escapeHtml6(countryCode)}"></ib>` : "";
   }
-  function getOwnClubId2() {
+  function getOwnClubId() {
     var _a2, _b, _c;
-    return cleanText3(((_a2 = window.SESSION) == null ? void 0 : _a2.main_id) || ((_b = window.SESSION) == null ? void 0 : _b.club_id) || ((_c = window.SESSION) == null ? void 0 : _c.id));
+    return cleanText2(((_a2 = window.SESSION) == null ? void 0 : _a2.main_id) || ((_b = window.SESSION) == null ? void 0 : _b.club_id) || ((_c = window.SESSION) == null ? void 0 : _c.id));
   }
   function formatBidValue(value) {
-    const text = cleanText3(value);
+    const text = cleanText2(value);
     if (!text) return "-";
     const digits = text.replace(/[^\d]/g, "");
     if (!digits) return text;
@@ -8672,18 +6500,18 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   }
   function renderBidHistory(history = []) {
     const real = (history || []).filter((e) => {
-      const n = cleanText3(e.club_name || "").toUpperCase();
+      const n = cleanText2(e.club_name || "").toUpperCase();
       return n && n !== "NO BIDS" && n !== "NO BID";
     });
     if (!real.length) return '<p class="tmu-note" style="margin:0;">No bids placed yet.</p>';
     return `<ul class="tmvu-bids-dialog-history" id="tlpop_history">
-        ${real.map((e) => `<li><tm-stat data-label="${escapeHtml6(cleanText3(e.club_name))}" data-value="${e.bid}"></tm-stat></li>`).join("")}
+        ${real.map((e) => `<li><tm-stat data-label="${escapeHtml6(cleanText2(e.club_name))}" data-value="${e.bid}"></tm-stat></li>`).join("")}
     </ul>`;
   }
   function createBidDialogMarkup({ deadline, shortlist, bid_history, transfer }, player2) {
     const minimumBid = formatBidValue((transfer == null ? void 0 : transfer.next_bid) || player2.bid);
     const currentBid = formatBidValue(player2.bid);
-    const timeLeft = Number.isFinite(Number(deadline)) ? formatCountdown(Number(deadline)) : cleanText3(player2.timeleft_string);
+    const timeLeft = Number.isFinite(Number(deadline)) ? formatCountdown(Number(deadline)) : cleanText2(player2.timeleft_string);
     const preferredPositions = (player2.positions || []).filter((p) => p.preferred);
     const posChips = preferredPositions.length ? TmPosition.chip(preferredPositions) : "";
     const showBidForm = !player2.isOwnPlayer;
@@ -8734,7 +6562,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
                 ` : `
                     <tm-stat data-label="Current Bid" data-value="${escapeHtml6(currentBid)}"></tm-stat>
                     <tm-stat data-label="Next Bid" data-value="${escapeHtml6(minimumBid)}"></tm-stat>
-                    <tm-stat data-label="Expires" data-value="${escapeHtml6(cleanText3(player2.timeleft_string))}"></tm-stat>
+                    <tm-stat data-label="Expires" data-value="${escapeHtml6(cleanText2(player2.timeleft_string))}"></tm-stat>
                 `}
             </div>
         </div>
@@ -8833,7 +6661,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     activeBidDialog = null;
   }
   function openBidDialog(player2, opts = {}) {
-    const sessionId = getOwnClubId2();
+    const sessionId = getOwnClubId();
     if (!(player2 == null ? void 0 : player2.id) || !sessionId) return;
     injectStyles5();
     closeBidDialog();
@@ -8844,11 +6672,11 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     card.className = "tmu-card tmvu-bids-card";
     card.setAttribute("role", "dialog");
     card.setAttribute("aria-modal", "true");
-    card.setAttribute("aria-label", `Transfer bid \u2014 ${cleanText3(player2.name)}`);
+    card.setAttribute("aria-label", `Transfer bid \u2014 ${cleanText2(player2.name)}`);
     const head = document.createElement("div");
     head.className = "tmu-card-head";
     const titleEl = document.createElement("span");
-    titleEl.textContent = cleanText3(player2.name);
+    titleEl.textContent = cleanText2(player2.name);
     head.appendChild(titleEl);
     const closeBtn = TmButton.button({
       variant: "icon",
@@ -8884,7 +6712,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         overlay.remove();
       }
     };
-    TmTransferService.fetchTransferBidDialog(player2.id, sessionId).then((bidData) => {
+    TmTransferModel.fetchTransferBidDialog(player2.id, sessionId).then((bidData) => {
       if ((activeBidDialog == null ? void 0 : activeBidDialog.overlay) !== overlay) return;
       if (!bidData) {
         body.innerHTML = '<p class="tmvu-bids-dialog-error">Failed to load transfer bid details.</p>';
@@ -8896,7 +6724,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         const savedHtml = btn4.innerHTML;
         btn4.disabled = true;
         btn4.innerHTML = '<span class="tmu-spinner tmu-spinner-sm"></span>';
-        const result = removing ? await TmShortlistService.removeFromShortlist(player2.id) : await TmShortlistService.addToShortlist(player2.id);
+        const result = removing ? await TmShortlistModel.removeFromShortlist(player2.id) : await TmShortlistModel.addToShortlist(player2.id);
         btn4.disabled = false;
         if (result !== null) {
           if (removing) {
@@ -9055,7 +6883,22 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         key: "r5",
         label: "R5",
         align: "r",
-        render: (_, p) => p.r5 != null ? `<span class="tmu-tabular" style="color:${gc2(p.r5, R5_THRESHOLDS4)};font-weight:700">${p.r5}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
+        sort: (a, b) => {
+          var _a2, _b, _c, _d;
+          return ((_b = (_a2 = a.r5) != null ? _a2 : a.r5Hi) != null ? _b : -Infinity) - ((_d = (_c = b.r5) != null ? _c : b.r5Hi) != null ? _d : -Infinity);
+        },
+        render: (_, p) => {
+          if (p.r5 != null)
+            return `<span class="tmu-tabular" style="color:${gc2(p.r5, R5_THRESHOLDS4)};font-weight:700">${TmUtils.formatR5(p.r5)}</span>`;
+          if (p.r5Lo != null && p.r5Hi != null) {
+            const loStr = TmUtils.formatR5(p.r5Lo), hiStr = TmUtils.formatR5(p.r5Hi);
+            const clrLo = gc2(p.r5Lo, R5_THRESHOLDS4), clrHi = gc2(p.r5Hi, R5_THRESHOLDS4);
+            if (loStr === hiStr)
+              return `<span class="tmu-tabular" style="color:${clrHi};font-weight:700">${hiStr}</span>`;
+            return `<span class="tmu-tabular"><span style="color:${clrLo}">${loStr}</span><span style="color:var(--tmu-text-dim)"> \u2013 </span><span style="color:${clrHi};font-weight:700">${hiStr}</span></span>`;
+          }
+          return '<span style="color:var(--tmu-text-dim)">\u2014</span>';
+        }
       },
       ...showRec ? [{
         key: "rec",
@@ -9373,6 +7216,285 @@ order:initial
   }
   injectTmPageLayoutStyles();
 
+  // src/lib/tm-playerdb.js
+  var PlayerCacheDB = /* @__PURE__ */ (() => {
+    const DB_NAME = "TMPlayerData";
+    const STORE_NAME = "players";
+    const DB_VERSION = 1;
+    let db = null;
+    let openPromise = null;
+    const open = () => new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onupgradeneeded = (e) => {
+        const d = e.target.result;
+        if (!d.objectStoreNames.contains(STORE_NAME))
+          d.createObjectStore(STORE_NAME);
+      };
+      req.onsuccess = (e) => {
+        db = e.target.result;
+        resolve(db);
+      };
+      req.onerror = (e) => reject(e.target.error);
+    });
+    const ensureOpen = () => {
+      if (db) return Promise.resolve(db);
+      if (!openPromise) openPromise = open().catch((e) => {
+        openPromise = null;
+        console.warn("[PlayerCacheDB] open failed:", e);
+        return null;
+      });
+      return openPromise;
+    };
+    const get = (playerId) => ensureOpen().then((d) => {
+      if (!d) return null;
+      return new Promise((resolve) => {
+        const req = d.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).get(parseInt(playerId));
+        req.onsuccess = () => {
+          var _a2;
+          return resolve((_a2 = req.result) != null ? _a2 : null);
+        };
+        req.onerror = () => resolve(null);
+      });
+    });
+    const set = (playerId, data) => ensureOpen().then((d) => {
+      if (!d) return;
+      return new Promise((resolve) => {
+        const tx = d.transaction(STORE_NAME, "readwrite");
+        tx.objectStore(STORE_NAME).put(data, parseInt(playerId));
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => resolve();
+      });
+    });
+    return { get, set };
+  })();
+  var TmPlayerDB = PlayerCacheDB;
+  var ArchivedPlayerDB = /* @__PURE__ */ (() => {
+    const DB_NAME = "TMArchivedPlayers";
+    const STORE_NAME = "players";
+    const DB_VERSION = 1;
+    let db = null;
+    let openPromise = null;
+    const open = () => new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onupgradeneeded = (e) => {
+        const d = e.target.result;
+        if (!d.objectStoreNames.contains(STORE_NAME))
+          d.createObjectStore(STORE_NAME);
+      };
+      req.onsuccess = (e) => {
+        db = e.target.result;
+        resolve(db);
+      };
+      req.onerror = (e) => reject(e.target.error);
+    });
+    const ensureOpen = () => {
+      if (db) return Promise.resolve(db);
+      if (!openPromise) openPromise = open().catch((e) => {
+        openPromise = null;
+        console.warn("[ArchivedPlayerDB] open failed:", e);
+        return null;
+      });
+      return openPromise;
+    };
+    const get = (playerId) => ensureOpen().then((d) => {
+      if (!d) return null;
+      return new Promise((resolve) => {
+        const req = d.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).get(parseInt(playerId));
+        req.onsuccess = () => {
+          var _a2;
+          return resolve((_a2 = req.result) != null ? _a2 : null);
+        };
+        req.onerror = () => resolve(null);
+      });
+    });
+    const set = (playerId, data) => ensureOpen().then((d) => {
+      if (!d) return;
+      return new Promise((resolve) => {
+        const tx = d.transaction(STORE_NAME, "readwrite");
+        tx.objectStore(STORE_NAME).put(data, parseInt(playerId));
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => resolve();
+      });
+    });
+    return { get, set };
+  })();
+  var TmPlayerArchiveDB = ArchivedPlayerDB;
+  var archivePlayerRecord = async (playerId) => {
+    const record = await TmPlayerDB.get(playerId);
+    if (!record) return false;
+    await TmPlayerArchiveDB.set(playerId, { ...record, _archivedAt: Date.now() });
+    await new Promise((resolve) => {
+      const req = indexedDB.open("TMPlayerData", 1);
+      req.onsuccess = (e) => {
+        const d = e.target.result;
+        const tx = d.transaction("players", "readwrite");
+        tx.objectStore("players").delete(parseInt(playerId));
+        tx.oncomplete = () => {
+          d.close();
+          resolve();
+        };
+        tx.onerror = () => {
+          d.close();
+          resolve();
+        };
+      };
+      req.onerror = () => resolve();
+    });
+    return true;
+  };
+  var MatchCacheDB = /* @__PURE__ */ (() => {
+    const DB_NAME = "TMMatchCache";
+    const STORE_NAME = "matches";
+    const DB_VERSION = 1;
+    let db = null;
+    let openPromise = null;
+    const open = () => new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onupgradeneeded = (e) => {
+        const d = e.target.result;
+        if (!d.objectStoreNames.contains(STORE_NAME))
+          d.createObjectStore(STORE_NAME);
+      };
+      req.onsuccess = (e) => {
+        db = e.target.result;
+        resolve(db);
+      };
+      req.onerror = (e) => reject(e.target.error);
+    });
+    const ensureOpen = () => {
+      if (db) return Promise.resolve(db);
+      if (!openPromise) openPromise = open().catch((e) => {
+        openPromise = null;
+        console.warn("[MatchCacheDB] open failed:", e);
+        return null;
+      });
+      return openPromise;
+    };
+    const get = (matchId) => ensureOpen().then((d) => {
+      if (!d) return null;
+      return new Promise((resolve) => {
+        const req = d.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).get(parseInt(matchId));
+        req.onsuccess = () => {
+          var _a2;
+          return resolve((_a2 = req.result) != null ? _a2 : null);
+        };
+        req.onerror = () => resolve(null);
+      });
+    });
+    const set = (matchId, data) => ensureOpen().then((d) => {
+      if (!d) return;
+      return new Promise((resolve) => {
+        const tx = d.transaction(STORE_NAME, "readwrite");
+        tx.objectStore(STORE_NAME).put(data, parseInt(matchId));
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => resolve();
+      });
+    });
+    return { get, set };
+  })();
+  var TmMatchCacheDB = MatchCacheDB;
+
+  // src/services/player.js
+  var TmPlayerService = {
+    async fetchPlayerTooltip(playerId) {
+      const data = await _post("/ajax/tooltip.ajax.php", { player_id: playerId });
+      return data ? normalizeTooltipPlayer(data) : null;
+    },
+    async fetchPlayerInfo(pid, type, extra = {}) {
+      return _post("/ajax/players_get_info.ajax.php", {
+        player_id: pid,
+        type,
+        show_non_pro_graphs: true,
+        ...extra
+      });
+    },
+    async fetchPlayerGraphs(player2) {
+      var _a2;
+      const data = await this.fetchPlayerInfo(player2.id, "graphs");
+      if (!data) return null;
+      return {
+        graphs: normalizePlayerGraphs(data == null ? void 0 : data.graphs, player2),
+        player: player2,
+        skillpoints: (_a2 = data == null ? void 0 : data.skillpoints) != null ? _a2 : null
+      };
+    },
+    async fetchPlayerHistory(playerId) {
+      const data = await this.fetchPlayerInfo(playerId, "history");
+      return data ? normalizePlayerStats(data) : null;
+    },
+    async fetchPlayerTraining(playerId) {
+      const data = await this.fetchPlayerInfo(playerId, "training");
+      return data ? normalizePlayerTraining(data) : null;
+    },
+    async fetchPlayerTrainingForSync(player2) {
+      var _a2;
+      if (player2 == null ? void 0 : player2.isOwnPlayer) {
+        return this.fetchPlayerTraining(player2.id);
+      }
+      const data = await _post("/ajax/players_get_select.ajax.php", {
+        type: "change",
+        club_id: player2 == null ? void 0 : player2.club_id
+      });
+      return normalizeSquadPlayerTraining((_a2 = data == null ? void 0 : data.post) == null ? void 0 : _a2[player2.id]);
+    }
+  };
+
+  // src/models/player.js
+  var tooltipCache = /* @__PURE__ */ new Map();
+  var refreshPlayerSkills = (player2) => {
+    var _a2, _b;
+    const latestRecord = (_a2 = player2.records) == null ? void 0 : _a2[player2.ageMonthsString];
+    if (!Array.isArray(latestRecord == null ? void 0 : latestRecord.skills) || !((_b = player2.skills) == null ? void 0 : _b.length)) return;
+    player2.skills = player2.skills.map((skill, index) => ({
+      ...skill,
+      value: latestRecord.skills[index] != null ? Number(latestRecord.skills[index]) : skill.value
+    }));
+    applyPlayerPositionRatings(player2);
+  };
+  var TmPlayerModel = {
+    async fetchPlayerTooltip(playerId) {
+      var _a2, _b;
+      const [player2, dbPlayer] = await Promise.all([
+        TmPlayerService.fetchPlayerTooltip(playerId),
+        TmPlayerDB.get(playerId)
+      ]);
+      if (!player2) return null;
+      player2.records = (dbPlayer == null ? void 0 : dbPlayer.records) || {};
+      const latestRecord = (_a2 = dbPlayer == null ? void 0 : dbPlayer.records) == null ? void 0 : _a2[player2.ageMonthsString];
+      if (Array.isArray(latestRecord == null ? void 0 : latestRecord.skills) && ((_b = player2.skills) == null ? void 0 : _b.length)) {
+        player2.skills = player2.skills.map((skill, index) => ({
+          ...skill,
+          value: latestRecord.skills[index] != null ? Number(latestRecord.skills[index]) : skill.value
+        }));
+        applyPlayerPositionRatings(player2);
+      }
+      return player2;
+    },
+    fetchTooltipCached(playerId) {
+      if (!tooltipCache.has(playerId)) {
+        tooltipCache.set(playerId, this.fetchPlayerTooltip(playerId).finally(() => {
+          tooltipCache.delete(playerId);
+        }));
+      }
+      return tooltipCache.get(playerId);
+    },
+    fetchPlayerInfo(...args) {
+      return TmPlayerService.fetchPlayerInfo(...args);
+    },
+    fetchPlayerGraphs(...args) {
+      return TmPlayerService.fetchPlayerGraphs(...args);
+    },
+    fetchPlayerHistory(...args) {
+      return TmPlayerService.fetchPlayerHistory(...args);
+    },
+    fetchPlayerTraining(...args) {
+      return TmPlayerService.fetchPlayerTraining(...args);
+    },
+    fetchPlayerTrainingForSync(player2) {
+      return TmPlayerService.fetchPlayerTrainingForSync(player2);
+    }
+  };
+
   // src/pages/bids.js
   var STYLE_ID13 = "tmvu-bids-style";
   var COLS = { asi: false, rtn: false, rec: false, nameWidth: "220px" };
@@ -9415,7 +7537,7 @@ order:initial
     content.className = "tmvu-bids-main tmu-page-section-stack";
     content.appendChild(panel);
     mountedMain5.appendChild(content);
-    const bidMeta = await TmShortlistService.fetchHomeBids();
+    const bidMeta = await TmShortlistModel.fetchHomeBids();
     if (!bidMeta.length) {
       panel.innerHTML = TmUI.empty("No active transfer list bids found.", true);
       return;
@@ -9625,10 +7747,10 @@ order:initial
 
   // src/pages/finances-maintenance.js
   var STYLE_ID15 = "tmvu-fin-maintenance-style";
-  var cleanText4 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var cleanText3 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml7 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var metricHtml = (opts) => TmUI.metric(opts);
-  var parseMoney = (value) => TmUtils.parseNum(cleanText4(value));
+  var parseMoney = (value) => TmUtils.parseNum(cleanText3(value));
   var formatMoney = (value) => Number(value || 0).toLocaleString("en-US");
   var FACILITY_MAX_LEVELS = {
     "fast food place": 10,
@@ -9764,7 +7886,7 @@ order:initial
   var parseMenu = (sourceRoot3) => Array.from(sourceRoot3.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
     if (node.tagName === "HR") return [{ type: "separator" }];
     if (node.tagName !== "A") return [];
-    const label = cleanText4(node.textContent);
+    const label = cleanText3(node.textContent);
     return [{
       type: "link",
       href: node.getAttribute("href") || "#",
@@ -9779,7 +7901,7 @@ order:initial
     const match = String(value || "").match(/\d+/);
     return match ? Number(match[0]) : 0;
   };
-  var normalizeFacilityName = (value) => cleanText4(value).toLowerCase();
+  var normalizeFacilityName = (value) => cleanText3(value).toLowerCase();
   var getFacilityMaxLevel = (name) => FACILITY_MAX_LEVELS[normalizeFacilityName(name)] || 10;
   var parseRows = (table, type) => {
     if (!table) return [];
@@ -9790,8 +7912,8 @@ order:initial
       if (type === "stadium" && cells.length >= 4) {
         return {
           type,
-          name: cleanText4((_a2 = cells[0]) == null ? void 0 : _a2.textContent),
-          capacity: cleanText4((_b = cells[1]) == null ? void 0 : _b.textContent),
+          name: cleanText3((_a2 = cells[0]) == null ? void 0 : _a2.textContent),
+          capacity: cleanText3((_b = cells[1]) == null ? void 0 : _b.textContent),
           weekly: parseMoney(((_c = cells[2]) == null ? void 0 : _c.textContent) || "0"),
           season: parseMoney(((_d = cells[3]) == null ? void 0 : _d.textContent) || "0")
         };
@@ -9801,9 +7923,9 @@ order:initial
         const link = nameCell.querySelector("a[href]");
         return {
           type,
-          name: cleanText4(nameCell.textContent),
-          nameHtml: link ? link.outerHTML : escapeHtml7(cleanText4(nameCell.textContent)),
-          level: cleanText4((_e = cells[1]) == null ? void 0 : _e.textContent),
+          name: cleanText3(nameCell.textContent),
+          nameHtml: link ? link.outerHTML : escapeHtml7(cleanText3(nameCell.textContent)),
+          level: cleanText3((_e = cells[1]) == null ? void 0 : _e.textContent),
           weekly: parseMoney(((_f = cells[2]) == null ? void 0 : _f.textContent) || "0"),
           season: parseMoney(((_g = cells[3]) == null ? void 0 : _g.textContent) || "0")
         };
@@ -9811,7 +7933,7 @@ order:initial
       if (type === "totals" && cells.length >= 3) {
         return {
           type,
-          name: cleanText4((_h = cells[0]) == null ? void 0 : _h.textContent),
+          name: cleanText3((_h = cells[0]) == null ? void 0 : _h.textContent),
           weekly: parseMoney(((_i = cells[cells.length - 2]) == null ? void 0 : _i.textContent) || "0"),
           season: parseMoney(((_j = cells[cells.length - 1]) == null ? void 0 : _j.textContent) || "0")
         };
@@ -9824,7 +7946,7 @@ order:initial
     const boxes = Array.from(sourceRoot3.querySelectorAll("#tab0 > h3"));
     const sections = {};
     boxes.forEach((h3) => {
-      const title = cleanText4(h3.textContent).toLowerCase();
+      const title = cleanText3(h3.textContent).toLowerCase();
       let next = h3.nextElementSibling;
       while (next && next.tagName !== "DIV") next = next.nextElementSibling;
       const table = next == null ? void 0 : next.querySelector("table");
@@ -9834,7 +7956,7 @@ order:initial
       else if (title === "total") sections.totals = parseRows(table, "totals");
     });
     return {
-      title: cleanText4(((_a2 = sourceRoot3.querySelector(".column2_a .box_head h2")) == null ? void 0 : _a2.textContent) || "Finances"),
+      title: cleanText3(((_a2 = sourceRoot3.querySelector(".column2_a .box_head h2")) == null ? void 0 : _a2.textContent) || "Finances"),
       stadium: sections.stadium || [],
       maintenance: sections.maintenance || [],
       totals: sections.totals || []
@@ -9971,11 +8093,11 @@ order:initial
 
   // src/pages/finances.js
   var STYLE_ID16 = "tmvu-finances-style";
-  var cleanText5 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var cleanText4 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml8 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var metricHtml2 = (opts) => TmUI.metric(opts);
   var parseMoney2 = (value) => {
-    const text = cleanText5(value);
+    const text = cleanText4(value);
     const sign = /^-/.test(text) ? -1 : 1;
     return sign * TmUtils.parseNum(text);
   };
@@ -10119,7 +8241,7 @@ order:initial
   var parseMenu2 = (sourceRoot3) => Array.from(sourceRoot3.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
     if (node.tagName === "HR") return [{ type: "separator" }];
     if (node.tagName !== "A") return [];
-    const label = cleanText5(node.textContent);
+    const label = cleanText4(node.textContent);
     return [{
       type: "link",
       href: node.getAttribute("href") || "#",
@@ -10136,7 +8258,7 @@ order:initial
       const cells = row.querySelectorAll("th, td");
       if (cells.length < 3) return null;
       const labelCell = cells[0];
-      const label = cleanText5(labelCell.textContent);
+      const label = cleanText4(labelCell.textContent);
       const tooltip = ((_a3 = labelCell.querySelector("[tooltip]")) == null ? void 0 : _a3.getAttribute("tooltip")) || "";
       const current = parseMoney2(((_b2 = cells[1]) == null ? void 0 : _b2.textContent) || "0");
       const previous = parseMoney2(((_c2 = cells[2]) == null ? void 0 : _c2.textContent) || "0");
@@ -10152,9 +8274,9 @@ order:initial
     const headerCells = table.querySelectorAll("tr:first-child th");
     return {
       columns: [
-        cleanText5(((_a2 = headerCells[0]) == null ? void 0 : _a2.textContent) || ""),
-        cleanText5(((_b = headerCells[1]) == null ? void 0 : _b.textContent) || "Current"),
-        cleanText5(((_c = headerCells[2]) == null ? void 0 : _c.textContent) || "Previous")
+        cleanText4(((_a2 = headerCells[0]) == null ? void 0 : _a2.textContent) || ""),
+        cleanText4(((_b = headerCells[1]) == null ? void 0 : _b.textContent) || "Current"),
+        cleanText4(((_c = headerCells[2]) == null ? void 0 : _c.textContent) || "Previous")
       ],
       rows,
       total: rows.find((row) => row.isTotal) || null
@@ -10162,7 +8284,7 @@ order:initial
   };
   var parseOverview = (sourceRoot3) => {
     var _a2, _b, _c, _d;
-    const title = cleanText5(((_a2 = sourceRoot3.querySelector(".column2_a .box_head h2")) == null ? void 0 : _a2.textContent) || "Finances");
+    const title = cleanText4(((_a2 = sourceRoot3.querySelector(".column2_a .box_head h2")) == null ? void 0 : _a2.textContent) || "Finances");
     const balanceText = ((_b = sourceRoot3.querySelector(".column2_a .very_large .coin_big")) == null ? void 0 : _b.textContent) || "0";
     const pendingText = ((_d = (_c = Array.from(sourceRoot3.querySelectorAll(".column2_a .align_center")).find((node) => /pending transfers/i.test(node.textContent || ""))) == null ? void 0 : _c.querySelector(".coin")) == null ? void 0 : _d.textContent) || "";
     return {
@@ -10343,10 +8465,10 @@ order:initial
 
   // src/pages/finances-wages.js
   var STYLE_ID17 = "tmvu-fin-wages-style";
-  var cleanText6 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var cleanText5 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml9 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var metricHtml3 = (opts) => TmUI.metric(opts);
-  var parseMoney3 = (value) => TmUtils.parseNum(cleanText6(value));
+  var parseMoney3 = (value) => TmUtils.parseNum(cleanText5(value));
   var formatMoney3 = (value) => Number(value || 0).toLocaleString("en-US");
   var iconForMenu3 = (label) => {
     if (/finance/i.test(label)) return "\u{1F4B0}";
@@ -10472,7 +8594,7 @@ order:initial
   var parseMenu3 = (sourceRoot3) => Array.from(sourceRoot3.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
     if (node.tagName === "HR") return [{ type: "separator" }];
     if (node.tagName !== "A") return [];
-    const label = cleanText6(node.textContent);
+    const label = cleanText5(node.textContent);
     return [{
       type: "link",
       href: node.getAttribute("href") || "#",
@@ -10484,7 +8606,7 @@ order:initial
   var extractPlayerId = (anchor) => {
     var _a2;
     if (!anchor) return "";
-    return cleanText6(anchor.getAttribute("player_link")) || (((_a2 = cleanText6(anchor.getAttribute("href")).match(/\/players\/(\d+)\//)) == null ? void 0 : _a2[1]) || "");
+    return cleanText5(anchor.getAttribute("player_link")) || (((_a2 = cleanText5(anchor.getAttribute("href")).match(/\/players\/(\d+)\//)) == null ? void 0 : _a2[1]) || "");
   };
   var parseWageRows = (table, kind) => {
     if (!table) return [];
@@ -10508,11 +8630,11 @@ order:initial
         return {
           kind,
           isTotal: false,
-          order: cleanText6((_c = cells[0]) == null ? void 0 : _c.textContent),
-          name: cleanText6((playerAnchor == null ? void 0 : playerAnchor.textContent) || nameCell.textContent),
-          nameHtml: `${(playerAnchor == null ? void 0 : playerAnchor.outerHTML) || escapeHtml9(cleanText6(nameCell.textContent))}${countryAnchor ? ` ${countryAnchor.outerHTML}` : ""}`,
+          order: cleanText5((_c = cells[0]) == null ? void 0 : _c.textContent),
+          name: cleanText5((playerAnchor == null ? void 0 : playerAnchor.textContent) || nameCell.textContent),
+          nameHtml: `${(playerAnchor == null ? void 0 : playerAnchor.outerHTML) || escapeHtml9(cleanText5(nameCell.textContent))}${countryAnchor ? ` ${countryAnchor.outerHTML}` : ""}`,
           playerId: extractPlayerId(playerAnchor),
-          age: cleanText6((_d = cells[2]) == null ? void 0 : _d.textContent),
+          age: cleanText5((_d = cells[2]) == null ? void 0 : _d.textContent),
           weekly: parseMoney3(((_e = cells[3]) == null ? void 0 : _e.textContent) || "0"),
           season: parseMoney3(((_f = cells[4]) == null ? void 0 : _f.textContent) || "0")
         };
@@ -10521,9 +8643,9 @@ order:initial
         return {
           kind,
           isTotal: false,
-          role: cleanText6((_g = cells[0]) == null ? void 0 : _g.textContent),
-          name: cleanText6((_h = cells[1]) == null ? void 0 : _h.textContent),
-          age: cleanText6((_i = cells[2]) == null ? void 0 : _i.textContent),
+          role: cleanText5((_g = cells[0]) == null ? void 0 : _g.textContent),
+          name: cleanText5((_h = cells[1]) == null ? void 0 : _h.textContent),
+          age: cleanText5((_i = cells[2]) == null ? void 0 : _i.textContent),
           weekly: parseMoney3(((_j = cells[3]) == null ? void 0 : _j.textContent) || "0"),
           season: parseMoney3(((_k = cells[4]) == null ? void 0 : _k.textContent) || "0")
         };
@@ -10532,7 +8654,7 @@ order:initial
     }).filter(Boolean);
   };
   var parseTabData = (sourceRoot3) => {
-    const tabLabels = Array.from(sourceRoot3.querySelectorAll(".column2_a .tabs [set_active]")).map((node) => cleanText6(node.textContent));
+    const tabLabels = Array.from(sourceRoot3.querySelectorAll(".column2_a .tabs [set_active]")).map((node) => cleanText5(node.textContent));
     const playerTable = sourceRoot3.querySelector("#tab0 table");
     const staffTable = sourceRoot3.querySelector("#tab1 table");
     return {
@@ -10704,6 +8826,1711 @@ order:initial
     if (!sourceRoot3.querySelector(".column1 .content_menu, #tab0 table, #tab1 table")) return;
     render3(main2, sourceRoot3);
   }
+
+  // src/utils/match.js
+  var TmMatchUtils = {
+    /**
+     * Returns true if the given player id is in the home side's lineup.
+     * @param {Set<string>} homeIds — Set of home player ids as strings
+     * @param {string|number} pid
+     * @returns {boolean}
+     */
+    isHome(homeIds, pid) {
+      return homeIds.has(String(pid));
+    },
+    extractStats(mData, teamData) {
+      var _a2, _b;
+      const teamId = String((_b = (_a2 = teamData.club) == null ? void 0 : _a2.id) != null ? _b : teamData.id);
+      const acts = (mData.actions || []).filter((a) => String(a.teamId) === teamId);
+      const { ATTACK_STYLES: ATTACK_STYLES2, STYLE_ORDER: STYLE_ORDER5 } = TmConst;
+      const advanced = {};
+      STYLE_ORDER5.forEach((s6) => {
+        advanced[s6] = { a: 0, sh: 0, l: 0, g: 0, events: [] };
+      });
+      for (const [minKey, plays] of Object.entries(mData.visiblePlays || {})) {
+        const eMin = Number(minKey);
+        (plays || []).forEach((play) => {
+          if (String(play.team) !== teamId) return;
+          let label;
+          if (/^p_/.test(play.style)) {
+            label = "Penalties";
+          } else {
+            const entry = ATTACK_STYLES2.find((s6) => s6.key === play.style);
+            if (!entry) return;
+            label = entry.label;
+          }
+          const d = advanced[label];
+          d.a++;
+          if (play.outcome === "goal") {
+            d.g++;
+            d.sh++;
+          } else if (play.outcome === "shot") d.sh++;
+          else d.l++;
+          d.events.push({ min: eMin, evt: play, evtIdx: play.reportEventIndex, result: play.outcome });
+        });
+      }
+      return {
+        goals: acts.filter((a) => a.action === "shot" && a.goal).length,
+        shots: acts.filter((a) => a.action === "shot").length,
+        shotsOnTarget: acts.filter((a) => a.action === "shot" && a.onTarget).length,
+        saves: acts.filter((a) => a.action === "save").length,
+        passes: acts.filter((a) => a.action === "pass").length,
+        passesCompleted: acts.filter((a) => a.action === "pass" && a.success).length,
+        crosses: acts.filter((a) => a.action === "cross").length,
+        crossesCompleted: acts.filter((a) => a.action === "cross" && a.success).length,
+        fouls: acts.filter((a) => a.action === "foul").length,
+        yellowCards: acts.filter((a) => a.action === "yellow" || a.action === "yellowRed").length,
+        redCards: acts.filter((a) => a.action === "red" || a.action === "yellowRed").length,
+        advanced
+      };
+    },
+    getMatchEndMin(mData) {
+      var _a2, _b;
+      const playMins = Object.keys((mData == null ? void 0 : mData.plays) || {}).map(Number).filter(Number.isFinite);
+      const reportMins = Object.keys((mData == null ? void 0 : mData.report) || {}).map(Number).filter(Number.isFinite);
+      const actionMins = ((mData == null ? void 0 : mData.actions) || []).map((a) => Number(a.min)).filter(Number.isFinite);
+      const candidates = [
+        Number((_a2 = mData == null ? void 0 : mData.duration) == null ? void 0 : _a2.total),
+        Number((_b = mData == null ? void 0 : mData.duration) == null ? void 0 : _b.regular),
+        Number(mData == null ? void 0 : mData.liveMin),
+        ...playMins,
+        ...reportMins,
+        ...actionMins
+      ].filter((n) => Number.isFinite(n) && n > 0);
+      return candidates.length ? Math.max(90, ...candidates) : 90;
+    },
+    getPlayerStats(liveState, player2) {
+      var _a2;
+      const { mData } = liveState;
+      const pid = String(player2.id || player2.player_id);
+      const actions = (mData.actions || []).filter((a) => String(a.by) === pid);
+      const perMinute = actions.map(({ action, by, teamId, ...rest }) => ({ [action]: true, ...rest }));
+      const _test = {
+        goals: (e) => e.shot && e.goal,
+        assists: (e) => e.assist,
+        keyPasses: (e) => e.keyPass,
+        shots: (e) => e.shot,
+        saves: (e) => e.save,
+        shotsOnTarget: (e) => e.shot && e.onTarget,
+        goalsFoot: (e) => e.shot && e.goal && e.foot,
+        goalsHead: (e) => e.shot && e.goal && e.head,
+        passesCompleted: (e) => e.pass && e.success,
+        passesFailed: (e) => e.pass && !e.success,
+        crossesCompleted: (e) => e.cross && e.success,
+        crossesFailed: (e) => e.cross && !e.success,
+        interceptions: (e) => e.interception,
+        tackles: (e) => e.tackle,
+        headerClearances: (e) => e.headerClear,
+        tackleFails: (e) => e.tackleFail,
+        duelsWon: (e) => e.duelWon,
+        duelsLost: (e) => e.duelLost,
+        fouls: (e) => e.foul,
+        yellowCards: (e) => e.yellow,
+        yellowRedCards: (e) => e.yellowRed,
+        redCards: (e) => e.red,
+        injured: (e) => e.injury,
+        subIn: (e) => e.subIn,
+        subOut: (e) => e.subOut
+      };
+      const grouped = TmConst.PLAYER_STAT_COLS.flatMap((col) => {
+        const fn = _test[col.key];
+        if (!fn) return [];
+        const count = col.lineupBool ? perMinute.some(fn) ? 1 : 0 : perMinute.filter(fn).length;
+        return count ? [{ ...col, count }] : [];
+      });
+      const matchEndMin = this.getMatchEndMin(mData);
+      const subInAct = actions.find((a) => a.action === "subIn");
+      const subOutAct = actions.find((a) => a.action === "subOut");
+      const originalPos = player2.originalPosition || player2.position;
+      let minsPlayed;
+      if (subInAct) {
+        minsPlayed = (subOutAct ? subOutAct.min : matchEndMin) - (subInAct.min || 0);
+      } else if (/^sub/.test(originalPos)) {
+        minsPlayed = 0;
+      } else {
+        minsPlayed = subOutAct ? subOutAct.min : matchEndMin;
+      }
+      const entry = { perMinute, grouped, minsPlayed };
+      const posKey = (player2.position || "").split(",")[0].toLowerCase().replace(/[^a-z]/g, "");
+      const posEntry = POSITION_MAP[posKey] || POSITION_MAP[(player2.fp || "").split(",")[0].toLowerCase().replace(/[^a-z]/g, "")];
+      const r5 = posEntry && ((_a2 = player2.skills) == null ? void 0 : _a2.length) && player2.asi ? Number(TmLib.calculatePlayerR5(posEntry, player2)) : null;
+      return {
+        ...player2,
+        grouped: entry.grouped || [],
+        perMinute: entry.perMinute || [],
+        statsArray: entry.perMinute || [],
+        minsPlayed: entry.minsPlayed || 0,
+        r5
+      };
+    },
+    /**
+     * Render the goals+cards events section HTML from legacy tooltip API data.
+     * (tooltip.ajax.php format — events have .minute, .scorer_name, .score, .assist_id)
+     * @param {Array} goals  — sorted goal event objects with .isHome flag
+     * @param {Array} cards  — sorted card event objects with .isHome flag
+     * @returns {string} HTML string (empty string if no events)
+     */
+    renderLegacyEvents(goals, cards) {
+      const all = [
+        ...goals.map((e) => ({ ...e, _type: "goal" })),
+        ...cards.map((e) => ({ ...e, _type: "card" }))
+      ].sort((a, b) => Number(a.minute) - Number(b.minute));
+      if (!all.length) return "";
+      let t = '<div class="rnd-h2h-tooltip-events">';
+      all.forEach((e) => {
+        const sideClass = e.isHome ? "" : " away-evt";
+        t += `<div class="rnd-h2h-tooltip-evt${sideClass}">`;
+        t += `<span class="rnd-h2h-tooltip-evt-min">${e.minute}'</span>`;
+        if (e._type === "goal") {
+          t += `<span class="rnd-h2h-tooltip-evt-icon">\u26BD</span>`;
+          t += `<span class="rnd-h2h-tooltip-evt-text">${e.scorer_name || ""}`;
+          if (e.assist_id && e.assist_id !== "") {
+            t += ` <span class="rnd-h2h-tooltip-evt-assist">(${e.score})</span>`;
+          } else {
+            t += ` <span class="rnd-h2h-tooltip-evt-assist">${e.score}</span>`;
+          }
+          t += `</span>`;
+        } else {
+          const icon = e.score === "yellow" ? "\u{1F7E1}" : e.score === "orange" ? "\u{1F7E1}\u{1F7E1}\u2192\u{1F534}" : "\u{1F534}";
+          t += `<span class="rnd-h2h-tooltip-evt-icon">${icon}</span>`;
+          t += `<span class="rnd-h2h-tooltip-evt-text">${e.scorer_name || ""}</span>`;
+        }
+        t += `</div>`;
+      });
+      t += "</div>";
+      return t;
+    },
+    /**
+     * Render the goals+cards events section HTML from full match API data.
+     * (match.ajax.php format — events have .min, .name, .assist, .type)
+     * @param {Array} goals  — goal event objects with .isHome flag
+     * @param {Array} cards  — card event objects with .isHome flag
+     * @returns {string} HTML string (empty string if no events)
+     */
+    renderRichEvents(goals, cards) {
+      const all = [...goals, ...cards].sort((a, b) => a.min - b.min);
+      if (!all.length) return "";
+      let t = '<div class="rnd-h2h-tooltip-events">';
+      all.forEach((e) => {
+        const sideClass = e.isHome ? "" : " away-evt";
+        t += `<div class="rnd-h2h-tooltip-evt${sideClass}">`;
+        t += `<span class="rnd-h2h-tooltip-evt-min">${e.min}'</span>`;
+        if (e.type === "goal") {
+          t += `<span class="rnd-h2h-tooltip-evt-icon">\u26BD</span>`;
+          t += `<span class="rnd-h2h-tooltip-evt-text">${e.name}`;
+          if (e.assist) t += ` <span class="rnd-h2h-tooltip-evt-assist">(${e.assist})</span>`;
+          t += `</span>`;
+        } else {
+          const icon = e.type === "yellow" ? "\u{1F7E1}" : "\u{1F534}";
+          t += `<span class="rnd-h2h-tooltip-evt-icon">${icon}</span>`;
+          t += `<span class="rnd-h2h-tooltip-evt-text">${e.name}</span>`;
+        }
+        t += `</div>`;
+      });
+      t += "</div>";
+      return t;
+    },
+    /**
+     * Count non-empty text lines in a segment.
+     * @param {object} seg
+     * @returns {number}
+     */
+    countSegmentLines(seg) {
+      return Math.max(1, ((seg == null ? void 0 : seg.text) || []).filter((line) => line && line.trim()).length);
+    },
+    /**
+     * Return segment line ranges inside a play.
+     * @param {object} play
+     * @returns {Array<{ seg: object, startLineIdx: number, endLineIdx: number }>}
+     */
+    getSegmentRanges(play) {
+      let lineCursor = 0;
+      return ((play == null ? void 0 : play.segments) || []).map((seg) => {
+        const startLineIdx = lineCursor;
+        const endLineIdx = lineCursor + this.countSegmentLines(seg) - 1;
+        lineCursor = endLineIdx + 1;
+        return { seg, startLineIdx, endLineIdx };
+      });
+    },
+    /**
+     * Check if an event or event line is visible at the current live step.
+     * @param {number} evtMin    — minute of the event
+     * @param {number} evtIdx    — event index within that minute
+     * @param {number} curMin    — current live minute
+     * @param {number} curEvtIdx — current live event index
+     * @param {number} [curLineIdx=999] — current visible line index within the event
+     * @param {number} [evtLineIdx=-1]  — tested line index within the event
+     * @returns {boolean}
+     */
+    isEventVisible(evtMin, evtIdx, curMin, curEvtIdx, curLineIdx = 999, evtLineIdx = -1) {
+      if (evtMin < curMin) return true;
+      if (evtMin > curMin) return false;
+      if (evtIdx < curEvtIdx) return true;
+      if (evtIdx > curEvtIdx) return false;
+      return evtLineIdx <= curLineIdx;
+    },
+    /**
+     * Build the active lineup map for a side at the given live step.
+     * Starts from the original XI and applies visible substitutions and red cards.
+     * @param {object} mData
+     * @param {string} side        — 'home' | 'away'
+     * @param {number} [curMin]
+      * @param {number} [curEvtIdx]
+      * @param {number} [curLineIdx]
+     * @returns {{ [playerId: string]: object }}
+     */
+    buildActiveLineup(liveState, side) {
+      var _a2;
+      const { mData } = liveState;
+      const sourceLineup = ((_a2 = mData[side]) == null ? void 0 : _a2.lineup) || [];
+      const players = sourceLineup.map((p) => ({ ...p, originalPosition: p.position }));
+      const teamId = String(mData[side].club.id);
+      const teamActions = (mData.actions || []).filter((a) => String(a.teamId) === String(teamId));
+      const usedSubSlots = new Set(
+        players.filter((p) => /^sub\d+$/.test(p.position)).map((p) => p.position)
+      );
+      const getNextSubSlot = () => {
+        for (let i = 1; i <= 15; i++) {
+          const slot = `sub${i}`;
+          if (!usedSubSlots.has(slot)) {
+            usedSubSlots.add(slot);
+            return slot;
+          }
+        }
+        return "sub99";
+      };
+      for (const act of teamActions) {
+        const p = players.find((x) => String(x.id) === String(act.by));
+        if (!p) continue;
+        if (act.action === "subOut" || act.action === "red" || act.action === "yellowRed") {
+          p.position = getNextSubSlot();
+        } else if (act.action === "positionChange" && act.position) {
+          p.position = act.position;
+        }
+      }
+      return players;
+    },
+    /**
+     * Resolve live tactical settings for a side at the current match step.
+     * Currently mentality can change during the match; style and focus stay at base values.
+    * @param {object} liveState
+    * @param {string} side        — 'home' | 'away'
+     * @returns {{ mentality: number }}
+     */
+    buildLiveTeamTactics(liveState, side) {
+      var _a2, _b;
+      const { mData } = liveState || {};
+      const teamId = String((_b = (_a2 = mData[side]) == null ? void 0 : _a2.club) == null ? void 0 : _b.id);
+      const mentalityActions = mData.actions.filter((a) => a.action === "mentality_change" && String(a.team) === teamId);
+      if (!mentalityActions.length) return null;
+      return mentalityActions[mentalityActions.length - 1].mentality;
+    },
+    getVisiblePlays(liveState) {
+      const { mData, min: curMin, curEvtIdx, curLineIdx } = liveState;
+      const playedMinutes = Object.keys(mData.plays || {}).map(Number).filter((min) => min <= curMin);
+      const visiblePlays = {};
+      playedMinutes.forEach((min) => {
+        var _a2;
+        const plays = ((_a2 = mData.plays) == null ? void 0 : _a2[String(min)]) || [];
+        const visibleEvents = plays.filter((play) => {
+          var _a3;
+          const evtIdx = (_a3 = play.reportEventIndex) != null ? _a3 : null;
+          return this.isEventVisible(min, evtIdx, curMin, curEvtIdx, curLineIdx);
+        });
+        visibleEvents.forEach((ev) => {
+          var _a3;
+          const evtIdx = (_a3 = ev.reportEventIndex) != null ? _a3 : null;
+          const segRanges = this.getSegmentRanges(ev);
+          const visibleSegments = segRanges.filter(
+            (r) => this.isEventVisible(min, evtIdx, curMin, curEvtIdx, curLineIdx, r.endLineIdx + 1)
+          );
+          ev.visiblePlay = { ...ev, segments: visibleSegments.map((r) => r.seg) };
+        });
+        visiblePlays[String(min)] = visibleEvents.map((ev) => ev.visiblePlay);
+      });
+      return visiblePlays;
+    },
+    deriveMatchData(liveState) {
+      liveState.mData.visiblePlays = this.getVisiblePlays(liveState);
+      liveState.mData.actions = [];
+      const homeId = String(liveState.mData.home.club.id);
+      const awayId = String(liveState.mData.away.club.id);
+      Object.entries(liveState.mData.visiblePlays || {}).forEach(([minKey, plays]) => {
+        const min = Number(minKey);
+        plays.forEach((play) => {
+          play.segments.forEach((seg) => {
+            seg.actions.forEach((act) => {
+              var _a2, _b, _c, _d;
+              let teamId = null;
+              const playerInvolved = act.by;
+              let playerName = "";
+              if (playerInvolved) {
+                const inHome = liveState.mData.home.lineup.some((p) => String(p.id) === String(playerInvolved));
+                if (inHome) {
+                  teamId = homeId;
+                  playerName = (_b = (_a2 = liveState.mData.home.lineup.find((p) => String(p.id) === String(playerInvolved))) == null ? void 0 : _a2.name) != null ? _b : null;
+                } else {
+                  teamId = awayId;
+                  playerName = (_d = (_c = liveState.mData.away.lineup.find((p) => String(p.id) === String(playerInvolved))) == null ? void 0 : _c.name) != null ? _d : null;
+                }
+              }
+              const home = teamId !== null && teamId === homeId;
+              liveState.mData.actions.push({ ...act, teamId, home, player: playerName, min, evtIdx: play.reportEventIndex });
+            });
+          });
+        });
+      });
+      liveState.mData.teams = this.generateTeamData(liveState);
+      return liveState.mData;
+    },
+    /**
+     * Compute enriched team data.
+     * @param {object} liveState
+     * @returns {object} team data object
+     */
+    generateTeamData(liveState) {
+      const { mData } = liveState;
+      const buildTeam = (side) => {
+        var _a2, _b, _c, _d, _e, _f;
+        const sideData = mData[side];
+        const clubId2 = String(sideData.club.id);
+        const avg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+        const lineup = this.buildActiveLineup(liveState, side).map((player2) => this.getPlayerStats(liveState, player2)).sort((a, b) => {
+          var _a3, _b2, _c2, _d2;
+          const aIsSub = /^sub\d+$/.test(a.position);
+          const bIsSub = /^sub\d+$/.test(b.position);
+          if (aIsSub !== bIsSub) return aIsSub ? 1 : -1;
+          if (aIsSub) {
+            return (parseInt(a.position.slice(3)) || 99) - (parseInt(b.position.slice(3)) || 99);
+          }
+          const aPosKey = (a.position || "").toLowerCase().replace(/[^a-z]/g, "");
+          const bPosKey = (b.position || "").toLowerCase().replace(/[^a-z]/g, "");
+          const aOrder = (_b2 = (_a3 = POSITION_MAP[aPosKey]) == null ? void 0 : _a3.ordering) != null ? _b2 : 99;
+          const bOrder = (_d2 = (_c2 = POSITION_MAP[bPosKey]) == null ? void 0 : _c2.ordering) != null ? _d2 : 99;
+          return aOrder - bOrder;
+        });
+        const onPitch = lineup.filter((p) => !/^sub\d+$/.test(p.position));
+        const onBench = lineup.filter((p) => /^sub\d+$/.test(p.position));
+        const newMentality = this.buildLiveTeamTactics(liveState, side);
+        const mentality = (_a2 = newMentality !== null ? newMentality : sideData.tactics.mentality) != null ? _a2 : 4;
+        const attackingStyle = (_b = sideData.tactics.style) != null ? _b : null;
+        const focusSide = (_c = sideData.tactics.focus) != null ? _c : null;
+        const teamData = { id: sideData.club.id };
+        const stats = this.extractStats(mData, teamData);
+        const goals = liveState.mData.actions.filter((a) => a.goal);
+        return {
+          id: sideData.club.id,
+          name: sideData.club.name,
+          color: sideData.color,
+          goals: goals.filter((g) => String(g.teamId) === clubId2).length,
+          goalsAgainst: goals.filter((g) => String(g.teamId) !== clubId2).length,
+          lineup,
+          stats,
+          avgAge: avg(onPitch.map((p) => {
+            const years = Number(p.age);
+            const months = Number(p.month);
+            if (!Number.isFinite(years) || years <= 0) return null;
+            return Number.isFinite(months) && months >= 0 ? years + months / 12 : years;
+          })),
+          avgRtn: avg(onPitch.map((p) => p.routine)),
+          avgR5: avg(onPitch.map((p) => p.r5)),
+          subsR5: avg(onBench.map((p) => p.r5)),
+          formation: "4-4-2",
+          // TODO: derive from lineup positions
+          mentality,
+          attackingStyle,
+          focusSide,
+          mentalityLabel: ((_d = TmConst.MENTALITY_MAP_LONG) == null ? void 0 : _d[mentality]) || "?",
+          attackingStyleLabel: ((_e = TmConst.STYLE_MAP) == null ? void 0 : _e[attackingStyle]) || "?",
+          focusSideLabel: ((_f = TmConst.FOCUS_MAP) == null ? void 0 : _f[focusSide]) || "?"
+        };
+      };
+      if (!mData.teams) mData.teams = {};
+      mData.teams.home = buildTeam("home");
+      mData.teams.away = buildTeam("away");
+      return mData.teams;
+    },
+    /**
+     * Build a player face image URL from udseende2 appearance data.
+     * @param {object} p         — player object (needs .udseende2, .age)
+     * @param {string} colorHex  — club color hex (with or without #)
+     * @param {number} [w=96]    — image width in pixels
+     * @returns {string} full URL
+     */
+    faceUrl(p, colorHex, w = 96) {
+      const u = p && p.udseende2 || {};
+      const clr = String(colorHex).replace("#", "");
+      return `https://trophymanager.com/pics/player_pic2.php?face=${u.face || 1}&nose=${u.nose || 1}&eyes=${u.eyes || 1}&ears=${u.ears || 1}&mouth=${u.mouth || 1}&brows=${u.brows || 1}&hcolor=${u.hair_color || 1}&scolor=${u.skin_color || 1}&hair=${u.hair || 1}&age=${p && p.age || 25}&rgb=${clr}&w=${w}`;
+    }
+  };
+
+  // src/components/stats/tm-stats-match-processor.js
+  var {
+    STYLE_ORDER: STYLE_ORDER2,
+    STYLE_MAP: STYLE_MAP2,
+    MENTALITY_MAP: MENTALITY_MAP2,
+    PLAYER_STAT_ZERO: PLAYER_STAT_ZERO2
+  } = TmConst;
+  var getFormation = (lineup) => {
+    const positions = Object.values(lineup).map((p) => (p.position || "").toLowerCase()).filter((pos) => pos && !pos.startsWith("sub") && pos !== "gk");
+    let def = 0, dm = 0, mid = 0, am = 0, att = 0;
+    positions.forEach((p) => {
+      if (/^(d[^m]|sw|lb|rb|wb)/.test(p)) def++;
+      else if (/^dmc/.test(p)) dm++;
+      else if (/^(mc|ml|mr)/.test(p)) mid++;
+      else if (/^amc/.test(p)) am++;
+      else att++;
+    });
+    const lines = [def];
+    if (dm > 0) lines.push(dm);
+    if (mid > 0) lines.push(mid);
+    if (am > 0) lines.push(am);
+    lines.push(att);
+    return lines.join("-");
+  };
+  var classifyMatchType = (matchtype) => {
+    switch (matchtype) {
+      case "l":
+        return "league";
+      case "f":
+        return "friendly";
+      case "fl":
+        return "fl";
+      case "c":
+      case "cl":
+      case "cup":
+        return "cup";
+      default:
+        return "other";
+    }
+  };
+  var summarizePlayerStats = (entries = []) => {
+    const stats = { ...PLAYER_STAT_ZERO2 };
+    entries.forEach((e) => {
+      if (e.shot) {
+        stats.shots++;
+        if (e.onTarget) stats.shotsOnTarget++;
+        else stats.shotsOffTarget++;
+        if (e.head) {
+          stats.shotsHead++;
+          if (e.onTarget) stats.shotsOnTargetHead++;
+        }
+        if (e.foot) {
+          stats.shotsFoot++;
+          if (e.onTarget) stats.shotsOnTargetFoot++;
+        }
+        if (e.goal) {
+          stats.goals++;
+          if (e.head) stats.goalsHead++;
+          else stats.goalsFoot++;
+        }
+        if (e.penalty) stats.penaltiesTaken++;
+        if (e.goal && e.penalty) stats.penaltiesScored++;
+        if (e.goal && e.freekick) stats.freekickGoals++;
+      }
+      if (e.assist) stats.assists++;
+      if (e.keyPass) stats.keyPasses++;
+      if (e.pass) e.success ? stats.passesCompleted++ : stats.passesFailed++;
+      if (e.cross) e.success ? stats.crossesCompleted++ : stats.crossesFailed++;
+      if (e.save) stats.saves++;
+      if (e.foul) stats.fouls++;
+      if (e.duelWon) stats.duelsWon++;
+      if (e.duelLost) stats.duelsLost++;
+      if (e.tackle) stats.tackles++;
+      if (e.interception) stats.interceptions++;
+      if (e.headerClear) stats.headerClearances++;
+      if (e.tackleFail) stats.tackleFails++;
+      if (e.yellow) stats.yellowCards++;
+      if (e.yellowRed) stats.yellowRedCards++;
+      if (e.red) stats.redCards++;
+      if (e.setpiece) stats.setpieceTakes++;
+      if (e.subIn) stats.subIn = true;
+      if (e.subOut) stats.subOut = true;
+      if (e.injury) stats.injured = true;
+    });
+    return stats;
+  };
+  var getDisplayPosition = (player2) => {
+    const originalPosition = player2.originalPosition || player2.position || "";
+    const currentPosition = player2.position || "";
+    const perMinute = player2.perMinute || [];
+    const subIn = perMinute.some((e) => e.subIn);
+    const subOut = perMinute.some((e) => e.subOut);
+    if (subOut && originalPosition && !/^sub\d+$/i.test(originalPosition)) {
+      return originalPosition;
+    }
+    if (subIn) {
+      return !/^sub\d+$/i.test(currentPosition) ? currentPosition : (player2.fp || "").split(",")[0] || originalPosition || currentPosition;
+    }
+    if (/^sub\d+$/i.test(currentPosition) && !/^sub\d+$/i.test(originalPosition)) {
+      return originalPosition;
+    }
+    return currentPosition || originalPosition;
+  };
+  var countSetPieces = (actions = [], teamId) => actions.filter((a) => String(a.teamId) === String(teamId) && a.action === "setpiece").length;
+  var countPenalties = (advanced = {}) => {
+    var _a2;
+    return ((_a2 = advanced.Penalties) == null ? void 0 : _a2.a) || 0;
+  };
+  var mapAdvancedStats = (advanced = {}) => {
+    const out = {};
+    STYLE_ORDER2.forEach((style) => {
+      const entry = advanced[style] || {};
+      out[style] = {
+        a: entry.a || 0,
+        l: entry.l || 0,
+        sh: entry.sh || 0,
+        g: entry.g || 0
+      };
+    });
+    return out;
+  };
+  var TmStatsMatchProcessor = {
+    process(matchInfo, mData, clubId2) {
+      var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
+      void clubId2;
+      const matchEndMin = TmMatchUtils.getMatchEndMin(mData);
+      const derived = TmMatchUtils.deriveMatchData({
+        mData,
+        min: matchEndMin,
+        curEvtIdx: 999,
+        curLineIdx: 999
+      });
+      const isHome = matchInfo.isHome;
+      const ourSide = isHome ? "home" : "away";
+      const oppSide = isHome ? "away" : "home";
+      const homeTeam = ((_a2 = derived.teams) == null ? void 0 : _a2.home) || {};
+      const awayTeam = ((_b = derived.teams) == null ? void 0 : _b.away) || {};
+      const ourTeam = ((_c = derived.teams) == null ? void 0 : _c[ourSide]) || {};
+      const oppTeam = ((_d = derived.teams) == null ? void 0 : _d[oppSide]) || {};
+      const ourLineup = ourTeam.lineup || [];
+      const oppLineup = oppTeam.lineup || [];
+      const matchType = classifyMatchType(matchInfo.matchtype);
+      const matchStats = {
+        homeYellow: 0,
+        awayYellow: 0,
+        homeRed: 0,
+        awayRed: 0,
+        homeShots: 0,
+        awayShots: 0,
+        homeSoT: 0,
+        awaySoT: 0,
+        homeSetPieces: 0,
+        awaySetPieces: 0,
+        homePenalties: 0,
+        awayPenalties: 0,
+        homePoss: 0,
+        awayPoss: 0,
+        homeGoalsReport: 0,
+        awayGoalsReport: 0
+      };
+      if (derived.possession) {
+        matchStats.homePoss = Number(derived.possession.home) || 0;
+        matchStats.awayPoss = Number(derived.possession.away) || 0;
+      }
+      matchStats.homeYellow = ((_e = homeTeam.stats) == null ? void 0 : _e.yellowCards) || 0;
+      matchStats.awayYellow = ((_f = awayTeam.stats) == null ? void 0 : _f.yellowCards) || 0;
+      matchStats.homeRed = ((_g = homeTeam.stats) == null ? void 0 : _g.redCards) || 0;
+      matchStats.awayRed = ((_h = awayTeam.stats) == null ? void 0 : _h.redCards) || 0;
+      matchStats.homeShots = ((_i = homeTeam.stats) == null ? void 0 : _i.shots) || 0;
+      matchStats.awayShots = ((_j = awayTeam.stats) == null ? void 0 : _j.shots) || 0;
+      matchStats.homeSoT = ((_k = homeTeam.stats) == null ? void 0 : _k.shotsOnTarget) || 0;
+      matchStats.awaySoT = ((_l = awayTeam.stats) == null ? void 0 : _l.shotsOnTarget) || 0;
+      matchStats.homeSetPieces = countSetPieces(derived.actions, homeTeam.id);
+      matchStats.awaySetPieces = countSetPieces(derived.actions, awayTeam.id);
+      matchStats.homePenalties = countPenalties((_m = homeTeam.stats) == null ? void 0 : _m.advanced);
+      matchStats.awayPenalties = countPenalties((_n = awayTeam.stats) == null ? void 0 : _n.advanced);
+      matchStats.homeGoalsReport = homeTeam.goals || 0;
+      matchStats.awayGoalsReport = awayTeam.goals || 0;
+      const advFor = mapAdvancedStats((_o = ourTeam.stats) == null ? void 0 : _o.advanced);
+      const advAgainst = mapAdvancedStats((_p = oppTeam.stats) == null ? void 0 : _p.advanced);
+      const playerMatchData = {};
+      ourLineup.forEach((player2) => {
+        const position = getDisplayPosition(player2);
+        const isBench = /^sub\d+$/i.test(position || "");
+        if (isBench && !player2.minsPlayed) return;
+        const pid = String(player2.player_id || player2.id);
+        playerMatchData[pid] = {
+          name: player2.name || player2.nameLast || pid,
+          position,
+          isGK: position === "gk",
+          minutes: player2.minsPlayed || 0,
+          rating: player2.rating ? Number(player2.rating) : 0,
+          ...summarizePlayerStats(player2.perMinute || [])
+        };
+      });
+      const ourStyle = STYLE_MAP2[ourTeam.attackingStyle] || "Unknown";
+      const oppStyle = STYLE_MAP2[oppTeam.attackingStyle] || "Unknown";
+      const ourMentality = MENTALITY_MAP2[ourTeam.mentality] || "Unknown";
+      const oppMentality = MENTALITY_MAP2[oppTeam.mentality] || "Unknown";
+      const ourFormation = getFormation(ourLineup);
+      const oppFormation = getFormation(oppLineup);
+      return {
+        matchInfo,
+        matchType,
+        matchStats,
+        advFor,
+        advAgainst,
+        playerMatchData,
+        isHome,
+        unclassifiedGoals: [],
+        ourStyle,
+        oppStyle,
+        ourMentality,
+        oppMentality,
+        ourFormation,
+        oppFormation
+      };
+    }
+  };
+
+  // src/lib/match.js
+  var createCompetition = () => ({
+    name: null,
+    // "Super Liga Srbije"
+    type: null,
+    // "league" | "cup" | "friendly" | "friendly_league"
+    //   | "international_cup" | "ntq"
+    typeRaw: null,
+    // raw API code: "l", "fl", "f", "fq", "p1"–"p9",
+    //   "ueg", "ue1", "ue2", "clg", "cl1", "cl2", "ntq"
+    division: null,
+    // 1, 2, 3 … (for league matches)
+    url: null
+    // canonical URL for the competition page
+  });
+  var createVenue = () => ({
+    name: null,
+    // "Renzo Barbera"
+    city: null,
+    capacity: null,
+    weather: null,
+    // "sunny3", "cloudy2", "rainy1", "snow1", "overcast1"
+    pitchCondition: null,
+    // 0–100
+    facilities: {
+      sprinklers: null,
+      // 0 | 1
+      draining: null,
+      pitchcover: null,
+      heating: null
+    },
+    picture: null
+    // stadium art variant (integer)
+  });
+  var createTactics = () => ({
+    mentality: null,
+    // 1 (Very Defensive) → 7 (Very Attacking)
+    style: null,
+    // "1" Balanced / "2" Direct / "3" Wings /
+    //   "4" Short Passing / "5" Long Balls / "6" Through Balls
+    focus: null,
+    // "1" Balanced / "2" Left / "3" Central / "4" Right
+    formation: null
+    // "4-4-2" (derived from lineup positions or match_data)
+  });
+  var createRatings = () => ({
+    avg: null,
+    // average R5 of the starting XI (= avgR5)
+    subs: null,
+    // average R5 of bench players
+    GK: null,
+    // average R5 of goalkeeper line
+    DEF: null,
+    // average R5 of defensive line
+    MID: null,
+    // average R5 of midfield line
+    ATT: null,
+    // average R5 of attacking line
+    avgAge: null,
+    avgRoutine: null
+  });
+  var createSide = () => ({
+    club: { ...Club },
+    // id, name, nick, country, division, stadium, …
+    color: null,
+    // resolved primary kit color "#3884ff"
+    captain: null,
+    // player id (Number) of the armband holder
+    playerIds: null,
+    // Set<string> — computed once from lineup on load
+    tactics: createTactics(),
+    lineup: [],
+    // Player.create() objects + match context fields
+    // ── Derived (populated by deriveMatchData / generateTeamData) ──────
+    goals: null,
+    goalsAgainst: null,
+    stats: null,
+    // { shots, shotsOnTarget, saves, passes,
+    //   passesCompleted, crosses, fouls,
+    //   yellowCards, redCards, advanced }
+    ratings: createRatings()
+  });
+  var Match = {
+    create() {
+      return {
+        // ── Identity ─────────────────────────────────────────────────
+        id: null,
+        // match id (number or string)
+        season: null,
+        // season number
+        // ── When ─────────────────────────────────────────────────────
+        date: null,
+        // "YYYY-MM-DD"
+        kickoff: null,
+        // Unix timestamp of scheduled kick-off
+        kickoffTime: null,
+        // "17:00" time of day
+        // ── What competition ──────────────────────────────────────────
+        competition: createCompetition(),
+        // ── Where ─────────────────────────────────────────────────────
+        venue: createVenue(),
+        // ── Who ───────────────────────────────────────────────────────
+        home: createSide(),
+        away: createSide(),
+        // ── Outcome ───────────────────────────────────────────────────
+        result: {
+          home: null,
+          // goals scored by home (null = not played yet)
+          away: null,
+          halftime: { home: null, away: null }
+        },
+        possession: { home: null, away: null },
+        // % at full time
+        attendance: null,
+        // ── Lifecycle status ──────────────────────────────────────────
+        // Explicit — no more inferring from 4 different fields.
+        status: null,
+        // 'future' | 'live' | 'ended'
+        // liveMin: elapsed real-world minutes since kickoff when status='live'.
+        // Negative when status='future' (|liveMin| = minutes until kickoff).
+        liveMin: null,
+        // ── Duration (populated from API, meaningful when ended) ──────
+        duration: {
+          regular: null,
+          // 90 (or last minute of regulation)
+          total: null,
+          // 94 (including all stoppage time)
+          extra: null
+          // 4 (added minutes)
+        },
+        // ── Play engine (immutable after normalizeMatchData) ───────
+        // report: raw minute-keyed API events.
+        //         normalizeReport() promotes each event's parameters array
+        //         to direct properties on the event object (e.g. evt.goal,
+        //         evt.yellow, evt.sub) so consumers never touch .parameters.
+        // plays:  one Play per attacking chance sequence, built by
+        //         buildNormalizedPlays() from the normalized report.
+        //         Shape: { [min: string]: Play[] }
+        //         Play = { min, team, style, outcome, segments,
+        //                  reportEventIndex, severity }
+        //         Segment = { clips: Clip[], actions: GameAction[],
+        //                     text: string[] }
+        //         These two objects never change after normalization.
+        report: {},
+        plays: {},
+        // ── Broadcast state (rebuilt by deriveMatchData each replay step) ──
+        // visiblePlays: time-gate of plays — same shape as plays, contains
+        //               only the plays at or before the current cursor.
+        //               { [min: string]: Play[] }
+        visiblePlays: {},
+        // events: indexed action log — extracted from the segment.actions of
+        //         all visiblePlays.  Rebuilt from visiblePlays each step.
+        //
+        //         Instead of a generic flat array that every consumer has
+        //         to re-filter, the structure pre-indexes by the categories
+        //         actually needed at broadcast time:
+        //
+        //   log          — full chronological list of GameActions (source of truth)
+        //                  GameAction = { action, by, player, teamId, home,
+        //                                min, evtIdx, …type-specific fields }
+        //   score        — current goals.  Maintained as log grows — O(1) read.
+        //   mentality    — last recorded mentality for each side — O(1) read.
+        //   goals        — subset of log where action='shot' && goal.
+        //                  Used for: timeline, goal notifications, scoreline.
+        //   cards        — subset of log where action ∈ {yellow,yellowRed,red}.
+        //                  Used for: discipline board, player icon overlays.
+        //   subs         — subset of log where action ∈ {subIn,subOut}.
+        //                  Used for: active lineup reconstruction (much smaller
+        //                  than scanning the full log).
+        events: {
+          log: [],
+          score: { home: 0, away: 0 },
+          mentality: { home: null, away: null },
+          goals: [],
+          cards: [],
+          subs: []
+        },
+        // ── Enrichment state ──────────────────────────────────────────
+        // profilesReady: false until the tm:match-profiles-ready event fires
+        // and lineup players receive their full skill / r5 / asi data.
+        // Until then every player has base identity fields only.
+        profilesReady: false
+      };
+    }
+  };
+  var exampleMatch = Match.create();
+  Object.assign(exampleMatch, {
+    id: "12345678",
+    season: 26,
+    date: "2026-03-13",
+    kickoff: 1773356400,
+    kickoffTime: "17:00",
+    competition: { name: "Super Liga Srbije", type: "league", typeRaw: "l", division: 1 },
+    venue: {
+      name: "Renzo Barbera",
+      city: "Beograd",
+      capacity: 64e3,
+      weather: "sunny3",
+      pitchCondition: 72,
+      facilities: { sprinklers: 1, draining: 0, pitchcover: 1, heating: 0 },
+      picture: 9
+    },
+    result: { home: 2, away: 1, halftime: { home: 1, away: 0 } },
+    possession: { home: 55, away: 45 },
+    attendance: 42500,
+    status: "ended",
+    liveMin: null,
+    duration: { regular: 90, total: 94, extra: 4 },
+    // At full time, events holds the complete broadcast-state snapshot:
+    events: {
+      log: [],
+      // populated with all GameAction objects by deriveMatchData
+      score: { home: 2, away: 1 },
+      mentality: { home: 5, away: 4 },
+      goals: [],
+      // two home goal actions + one away goal action
+      cards: [],
+      // yellow/red card actions
+      subs: []
+      // sub actions (used for active lineup reconstruction)
+    }
+  });
+  Object.assign(exampleMatch.home, {
+    club: { id: "1001", name: "FK Partizan", nick: "PAR", country: "Serbia", division: 1, group: "1", manager_name: "Marko Kova\u010D", fanclub: 18e3, stadium: "Renzo Barbera" },
+    color: "#3884ff",
+    captain: 137172448,
+    playerIds: /* @__PURE__ */ new Set(),
+    // populated with player id strings during normalization
+    tactics: { mentality: 5, style: "3", focus: "2", formation: "4-3-3" },
+    lineup: [],
+    // Player.create() + { position, fp, captain, rec, rating, mom, … }
+    goals: 2,
+    goalsAgainst: 1,
+    stats: { shots: 14, shotsOnTarget: 6, saves: 3, passes: 412, passesCompleted: 327, crosses: 18, fouls: 11, yellowCards: 2, redCards: 0, advanced: {} },
+    ratings: { avg: 6.82, subs: 6.45, GK: 7.1, DEF: 6.9, MID: 6.8, ATT: 6.7, avgAge: 25.3, avgRoutine: 58.4 }
+  });
+  Object.assign(exampleMatch.away, {
+    club: { id: "1002", name: "FK Vojvodina", nick: "VOJ", country: "Serbia", division: 1, group: "1", manager_name: "Nikola Petrovi\u0107", fanclub: 9500, stadium: "Kara\u0111or\u0111e stadion" },
+    color: "#e63030",
+    captain: 139575032,
+    playerIds: /* @__PURE__ */ new Set(),
+    tactics: { mentality: 3, style: "2", focus: "1", formation: "4-4-2" },
+    lineup: [],
+    goals: 1,
+    goalsAgainst: 2,
+    stats: { shots: 8, shotsOnTarget: 3, saves: 5, passes: 298, passesCompleted: 210, crosses: 9, fouls: 14, yellowCards: 3, redCards: 0, advanced: {} },
+    ratings: { avg: 6.51, subs: 6.1, GK: 6.8, DEF: 6.5, MID: 6.4, ATT: 6.6, avgAge: 27, avgRoutine: 55.1 }
+  });
+
+  // src/constants/countries.js
+  var COUNTRIES = {
+    // -- Europe ----------------------------------------------------------
+    Albania: { suffix: "al", region: "Europe", ueta: [2, 3] },
+    Andorra: { suffix: "ad", region: "Europe" },
+    Armenia: { suffix: "am", region: "Europe" },
+    Austria: { suffix: "at", region: "Europe" },
+    Azerbaijan: { suffix: "az", region: "Europe" },
+    Belarus: { suffix: "by", region: "Europe" },
+    Belgium: { suffix: "be", region: "Europe" },
+    "Bosnia-Herzegovina": { suffix: "ba", region: "Europe" },
+    Bulgaria: { suffix: "bg", region: "Europe", ueta: [3, 3] },
+    Croatia: { suffix: "hr", region: "Europe", ueta: [2, 3] },
+    Cyprus: { suffix: "cy", region: "Europe", ueta: [2, 3] },
+    "Czech Republic": { suffix: "cz", region: "Europe", ueta: [4, 3] },
+    Denmark: { suffix: "dk", region: "Europe", ueta: [2, 3] },
+    England: { suffix: "en", region: "Europe", ueta: [3, 3] },
+    Estonia: { suffix: "ee", region: "Europe" },
+    "Faroe Islands": { suffix: "fo", region: "Europe" },
+    Finland: { suffix: "fi", region: "Europe" },
+    France: { suffix: "fr", region: "Europe" },
+    Georgia: { suffix: "ge", region: "Europe" },
+    Germany: { suffix: "de", region: "Europe", ueta: [2, 4] },
+    Greece: { suffix: "gr", region: "Europe" },
+    Hungary: { suffix: "hu", region: "Europe", ueta: [3, 3] },
+    Iceland: { suffix: "is", region: "Europe" },
+    Ireland: { suffix: "ie", region: "Europe" },
+    Israel: { suffix: "il", region: "Europe" },
+    Italy: { suffix: "it", region: "Europe", ueta: [4, 3] },
+    Kazakhstan: { suffix: "kz", region: "Europe" },
+    Latvia: { suffix: "lv", region: "Europe" },
+    Lithuania: { suffix: "lt", region: "Europe" },
+    Luxembourg: { suffix: "lu", region: "Europe" },
+    Malta: { suffix: "mt", region: "Europe" },
+    Moldova: { suffix: "md", region: "Europe" },
+    Montenegro: { suffix: "me", region: "Europe" },
+    Netherlands: { suffix: "nl", region: "Europe" },
+    "North Macedonia": { suffix: "mk", region: "Europe" },
+    "Northern Ireland": { suffix: "rt", region: "Europe" },
+    Norway: { suffix: "no", region: "Europe", ueta: [2, 4] },
+    Poland: { suffix: "pl", region: "Europe", ueta: [2, 3] },
+    Portugal: { suffix: "pt", region: "Europe", ueta: [2, 3] },
+    Romania: { suffix: "ro", region: "Europe" },
+    Russia: { suffix: "ru", region: "Europe" },
+    "San Marino": { suffix: "sm", region: "Europe" },
+    Scotland: { suffix: "ct", region: "Europe" },
+    Serbia: { suffix: "cs", region: "Europe", ueta: [2, 4] },
+    Slovakia: { suffix: "sk", region: "Europe" },
+    Slovenia: { suffix: "si", region: "Europe" },
+    Spain: { suffix: "es", region: "Europe" },
+    Sweden: { suffix: "se", region: "Europe" },
+    Switzerland: { suffix: "he", region: "Europe" },
+    Turkey: { suffix: "tr", region: "Europe", ueta: [4, 3] },
+    Ukraine: { suffix: "ua", region: "Europe" },
+    Wales: { suffix: "wa", region: "Europe" },
+    // -- North America ----------------------------------------------------
+    Belize: { suffix: "bz", region: "North America" },
+    Canada: { suffix: "ca", region: "North America" },
+    "Costa Rica": { suffix: "cr", region: "North America" },
+    Cuba: { suffix: "cu", region: "North America" },
+    "Dominican Republic": { suffix: "do", region: "North America" },
+    "El Salvador": { suffix: "sv", region: "North America" },
+    Guatemala: { suffix: "gt", region: "North America" },
+    Honduras: { suffix: "hn", region: "North America" },
+    Jamaica: { suffix: "jm", region: "North America" },
+    Mexico: { suffix: "mx", region: "North America" },
+    Panama: { suffix: "pa", region: "North America" },
+    "Puerto Rico": { suffix: "pr", region: "North America" },
+    "Trinidad & Tobago": { suffix: "tt", region: "North America" },
+    USA: { suffix: "us", region: "North America" },
+    "West Indian Islands": { suffix: "vc", region: "North America" },
+    // -- Asia -------------------------------------------------------------
+    Afghanistan: { suffix: "af", region: "Asia" },
+    Bahrain: { suffix: "bh", region: "Asia" },
+    Bangladesh: { suffix: "bd", region: "Asia" },
+    Brunei: { suffix: "bn", region: "Asia" },
+    China: { suffix: "cn", region: "Asia" },
+    "Hong Kong": { suffix: "hk", region: "Asia" },
+    India: { suffix: "in", region: "Asia" },
+    Indonesia: { suffix: "id", region: "Asia" },
+    Iran: { suffix: "ir", region: "Asia" },
+    Iraq: { suffix: "iq", region: "Asia" },
+    Japan: { suffix: "jp", region: "Asia" },
+    Jordan: { suffix: "jo", region: "Asia" },
+    Kuwait: { suffix: "kw", region: "Asia" },
+    Lebanon: { suffix: "lb", region: "Asia" },
+    Malaysia: { suffix: "my", region: "Asia" },
+    Nepal: { suffix: "np", region: "Asia" },
+    Oman: { suffix: "om", region: "Asia" },
+    Pakistan: { suffix: "pk", region: "Asia" },
+    Philippines: { suffix: "ph", region: "Asia" },
+    Qatar: { suffix: "qa", region: "Asia" },
+    "Saudi Arabia": { suffix: "sa", region: "Asia" },
+    Singapore: { suffix: "sg", region: "Asia" },
+    "South Korea": { suffix: "kr", region: "Asia" },
+    Syria: { suffix: "sy", region: "Asia" },
+    Taiwan: { suffix: "tw", region: "Asia" },
+    Thailand: { suffix: "th", region: "Asia" },
+    "United Emirates": { suffix: "ae", region: "Asia" },
+    Vietnam: { suffix: "vn", region: "Asia" },
+    // -- Oceania -----------------------------------------------------------
+    Australia: { suffix: "au", region: "Oceania" },
+    Fiji: { suffix: "fj", region: "Oceania" },
+    "New Zealand": { suffix: "nz", region: "Oceania" },
+    Oceania: { suffix: "oc", region: "Oceania" },
+    // -- South America -----------------------------------------------------
+    Argentina: { suffix: "ar", region: "South America" },
+    Bolivia: { suffix: "bo", region: "South America" },
+    Brazil: { suffix: "br", region: "South America" },
+    Chile: { suffix: "cl", region: "South America" },
+    Colombia: { suffix: "co", region: "South America" },
+    Ecuador: { suffix: "ec", region: "South America" },
+    Paraguay: { suffix: "py", region: "South America" },
+    Peru: { suffix: "pe", region: "South America" },
+    Uruguay: { suffix: "uy", region: "South America" },
+    Venezuela: { suffix: "ve", region: "South America" },
+    // -- Africa ------------------------------------------------------------
+    Algeria: { suffix: "dz", region: "Africa" },
+    Angola: { suffix: "ao", region: "Africa" },
+    Botswana: { suffix: "bw", region: "Africa" },
+    Cameroun: { suffix: "cm", region: "Africa" },
+    Chad: { suffix: "td", region: "Africa" },
+    Egypt: { suffix: "eg", region: "Africa" },
+    Ghana: { suffix: "gh", region: "Africa" },
+    "Ivory Coast": { suffix: "ci", region: "Africa" },
+    Libya: { suffix: "ly", region: "Africa" },
+    Morocco: { suffix: "ma", region: "Africa" },
+    Nigeria: { suffix: "ng", region: "Africa" },
+    Palestine: { suffix: "so", region: "Africa" },
+    Senegal: { suffix: "sn", region: "Africa" },
+    "South Africa": { suffix: "za", region: "Africa" },
+    Tunisia: { suffix: "tn", region: "Africa" }
+  };
+  var COUNTRY_BY_SUFFIX = Object.fromEntries(
+    Object.entries(COUNTRIES).map(([name, c]) => [c.suffix, name])
+  );
+  var _REGION_BY_SUFFIX = Object.fromEntries(
+    Object.entries(COUNTRIES).map(([, c]) => [c.suffix, c.region])
+  );
+  var getLeaguePromoColumns = (countrySuffix, division) => {
+    var _a2;
+    if (String(division) !== "1") return { direct: 1, playoff: 4 };
+    const name = COUNTRY_BY_SUFFIX[countrySuffix];
+    const [cl = 2, ue = 3] = name && ((_a2 = COUNTRIES[name]) == null ? void 0 : _a2.ueta) || [2, 3];
+    return { direct: cl, playoff: cl + ue };
+  };
+  var _CUP_GROUP = {
+    Europe: { cl: 1, ue: 2 },
+    Asia: { cl: 3, ue: 4 },
+    Oceania: { cl: 3, ue: 4 },
+    Africa: { cl: 3, ue: 4 },
+    "North America": { cl: 5, ue: 6 },
+    "South America": { cl: 5, ue: 6 }
+  };
+  var _CUP_NAMES = {
+    1: "UETA Champions Cup",
+    2: "UETA Cup",
+    3: "Champions Cup",
+    4: "International Cup",
+    5: "Champions Cup",
+    6: "International Cup"
+  };
+  var resolveIntCupUrl = (typeRaw, countrySuffix) => {
+    var _a2;
+    if (!typeRaw || !countrySuffix) return null;
+    const tier = typeRaw.startsWith("cl") ? "cl" : typeRaw.startsWith("ue") ? "ue" : null;
+    if (!tier) return null;
+    const region = _REGION_BY_SUFFIX[countrySuffix];
+    if (!region) return null;
+    const id = (_a2 = _CUP_GROUP[region]) == null ? void 0 : _a2[tier];
+    return id ? `/international-cup/${id}/` : null;
+  };
+  var resolveCupName = (typeRaw, countrySuffix) => {
+    var _a2;
+    if (!typeRaw || !countrySuffix) return null;
+    const tier = typeRaw.startsWith("cl") ? "cl" : typeRaw.startsWith("ue") ? "ue" : null;
+    if (!tier) return null;
+    const region = _REGION_BY_SUFFIX[countrySuffix];
+    if (!region) return null;
+    const id = (_a2 = _CUP_GROUP[region]) == null ? void 0 : _a2[tier];
+    return id ? _CUP_NAMES[id] || null : null;
+  };
+
+  // src/utils/normalize/match.js
+  var resolveCompetitionType = (typeRaw) => {
+    if (!typeRaw) return null;
+    if (typeRaw === "l") return "league";
+    if (typeRaw === "fl") return "friendly_league";
+    if (typeRaw === "f" || typeRaw === "fq") return "friendly";
+    if (typeRaw === "c" || /^p\d+$/.test(typeRaw)) return "cup";
+    if (typeRaw === "ntq") return "ntq";
+    if (/^(ue|cl)\w*$/.test(typeRaw)) return "international_cup";
+    return null;
+  };
+  var normalizeRawMatchClub = (rawClub, isNt = false) => {
+    const id = rawClub.id || null;
+    const country = rawClub.country || null;
+    const logo = isNt ? country ? `/pics/nt_logos/140px/${country}.png` : "" : id ? rawClub.logo || `/pics/club_logos/${id}_140.png` : "";
+    return {
+      id: isNt ? null : id,
+      name: rawClub.club_name || null,
+      nick: rawClub.club_nick || null,
+      country,
+      logo,
+      division: rawClub.division ? Number(rawClub.division) : null,
+      group: rawClub.group || null,
+      manager_name: rawClub.manager_name || null,
+      fanclub: rawClub.fanclub || null,
+      stadium: rawClub.stadium || null,
+      city: rawClub.city || null
+    };
+  };
+  var applyMatchContext = (player2, p, captainId) => {
+    var _a2;
+    player2.position = p.position || null;
+    if (player2.position) {
+      player2.positions = player2.positions || [];
+      for (const pos2 of player2.positions) pos2.playing = false;
+      const key = player2.position.toLowerCase();
+      let pos = player2.positions.find((pos2) => pos2.key === key);
+      if (!pos) player2.positions.push(pos = { key });
+      pos.playing = true;
+    }
+    player2.captain = Number(p.player_id) === captainId;
+    player2.rating = typeof p.rating === "number" && p.rating > 0 ? p.rating : null;
+    player2.mom = (_a2 = p.mom) != null ? _a2 : 0;
+    player2.grouped = [];
+    player2.perMinute = [];
+    player2.minsPlayed = null;
+    return player2;
+  };
+  var normalizeRawMatch = (raw, playersById = /* @__PURE__ */ new Map(), matchId = null) => {
+    var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s2, _t, _u, _v, _w, _x, _y, _z, _A, _B;
+    const ntMatch = typeof matchId === "string" && matchId.startsWith("nt");
+    const match = Match.create();
+    const md = raw.match_data || {};
+    const venue = md.venue || {};
+    match.id = (_b = (_a2 = raw.match_id) != null ? _a2 : raw.id) != null ? _b : null;
+    match.ntMatch = ntMatch;
+    match.season = (_c = raw.season) != null ? _c : null;
+    const readable = venue.kickoff_readable || "";
+    match.date = readable.split(" ")[0] || null;
+    match.kickoff = venue.kickoff ? Number(venue.kickoff) : null;
+    match.kickoffTime = md.match_time_of_day || null;
+    const typeRaw = venue.matchtype || null;
+    match.competition.name = venue.tournament || resolveCupName(typeRaw, (_f = (_e = (_d = raw.club) == null ? void 0 : _d.home) == null ? void 0 : _e.country) != null ? _f : null) || null;
+    match.competition.typeRaw = typeRaw;
+    match.competition.type = resolveCompetitionType(typeRaw);
+    match.competition.url = resolveIntCupUrl(typeRaw, (_i = (_h = (_g = raw.club) == null ? void 0 : _g.home) == null ? void 0 : _h.country) != null ? _i : null);
+    const homeDivision = (_k = (_j = raw.club) == null ? void 0 : _j.home) == null ? void 0 : _k.division;
+    match.competition.division = homeDivision ? Number(homeDivision) : null;
+    match.venue.name = venue.name || null;
+    match.venue.city = venue.city || null;
+    match.venue.capacity = venue.capacity ? Number(venue.capacity) : null;
+    match.venue.weather = venue.weather || null;
+    match.venue.pitchCondition = venue.pitch_condition ? Number(venue.pitch_condition) : null;
+    match.venue.facilities.sprinklers = (_l = venue.sprinklers) != null ? _l : null;
+    match.venue.facilities.draining = (_m = venue.draining) != null ? _m : null;
+    match.venue.facilities.pitchcover = (_n = venue.pitchcover) != null ? _n : null;
+    match.venue.facilities.heating = (_o = venue.heating) != null ? _o : null;
+    match.venue.picture = (_p = venue.picture) != null ? _p : null;
+    match.duration.regular = md.regular_last_min ? Number(md.regular_last_min) : null;
+    match.duration.total = md.last_min ? Number(md.last_min) : null;
+    match.duration.extra = md.extra_time ? Number(md.extra_time) : null;
+    match.possession.home = (_r = (_q = md.possession) == null ? void 0 : _q.home) != null ? _r : null;
+    match.possession.away = (_t = (_s2 = md.possession) == null ? void 0 : _s2.away) != null ? _t : null;
+    match.attendance = md.attendance ? Number(md.attendance) : null;
+    const htRaw = (_u = md.halftime) == null ? void 0 : _u.chance;
+    if (htRaw) {
+      const htText = Array.isArray(htRaw.text) ? htRaw.text[0] : htRaw.text;
+      const htLine = Array.isArray(htText) ? htText[0] : htText;
+      const htMatch = typeof htLine === "string" ? htLine.match(/(\d+)-(\d+)\.$/) : null;
+      if (htMatch) {
+        match.result.halftime.home = Number(htMatch[1]);
+        match.result.halftime.away = Number(htMatch[2]);
+      }
+    }
+    const rawLiveMin = md.live_min;
+    if (typeof rawLiveMin === "number" && rawLiveMin < 0) {
+      match.status = "future";
+      match.liveMin = rawLiveMin;
+    } else if (typeof rawLiveMin === "number" && rawLiveMin > 0) {
+      match.status = "live";
+      match.liveMin = rawLiveMin;
+    } else {
+      const kickoffTs = Number(venue.kickoff);
+      const now = Math.floor(Date.now() / 1e3);
+      match.status = kickoffTs && kickoffTs > now ? "future" : "ended";
+      match.liveMin = null;
+    }
+    for (const side of ["home", "away"]) {
+      const rawClub = ((_v = raw.club) == null ? void 0 : _v[side]) || {};
+      const rawLineup = ((_w = raw.lineup) == null ? void 0 : _w[side]) || {};
+      const captainId = Number(((_x = md.captain) == null ? void 0 : _x[side]) || 0);
+      const color = "#" + (((_y = rawClub.colors) == null ? void 0 : _y.club_color1) || (side === "home" ? "4a9030" : "5b9bff"));
+      match[side].club = normalizeRawMatchClub(rawClub, ntMatch);
+      match[side].color = color;
+      match[side].captain = captainId || null;
+      match[side].tactics.mentality = ((_z = md.mentality) == null ? void 0 : _z[side]) != null ? Number(md.mentality[side]) : null;
+      match[side].tactics.style = ((_A = md.attacking_style) == null ? void 0 : _A[side]) || null;
+      match[side].tactics.focus = ((_B = md.focus_side) == null ? void 0 : _B[side]) || null;
+      match[side].lineup = Object.values(rawLineup).map((p) => {
+        const pid = Number(p.player_id);
+        const player2 = playersById.get(pid) || {
+          id: pid,
+          name: p.name || p.nameLast || null,
+          nameLast: p.nameLast || null,
+          age: p.age || null,
+          month: null,
+          fp: p.fp || null,
+          no: p.no || null,
+          routine: p.routine ? Number(p.routine) : null,
+          rec: p.rec || null,
+          udseende2: p.udseende2 || null,
+          skills: [],
+          positions: [],
+          asi: null
+        };
+        return applyMatchContext(player2, p, captainId);
+      });
+      match[side].playerIds = new Set(Object.keys(rawLineup));
+    }
+    match.report = raw.report || {};
+    TmMatchService.normalizeReport(match.report);
+    match.plays = TmMatchService.buildNormalizedPlays(match.report, raw.lineup || {});
+    return match;
+  };
+
+  // src/services/match.js
+  var TmMatchService = {
+    /**
+     * Fetch the match tooltip (past seasons) from tooltip.ajax.php.
+     * @param {string|number} matchId
+     * @param {string|number} season
+     * @returns {Promise<object|null>}
+     */
+    fetchMatchTooltip(matchId, season) {
+      return _post("/ajax/tooltip.ajax.php", { type: "match", match_id: matchId, season });
+    },
+    /**
+     * Fetch head-to-head match history between two clubs.
+     * @param {string|number} homeId
+     * @param {string|number} awayId
+     * @param {number} date — Unix timestamp of kickoff
+     * @returns {Promise<object|null>}
+     */
+    fetchMatchH2H(homeId, awayId, date) {
+      return _get(`/ajax/match_h2h.ajax.php?home_team=${homeId}&away_team=${awayId}&date=${date}`);
+    },
+    /**
+     * Fetch the player tooltip endpoint.
+     * Returns the full parsed response (contains .player, .club, etc.) or null.
+     * @param {string|number} pid
+     * @returns {Promise<{player: object, club: object, [key: string]: any}|null>}
+     */
+    /**
+     * Promote each event's `parameters` array into direct properties on the event object.
+     * Mutates in place. After normalization callers read evt.goal, evt.shot, etc. directly.
+     * @param {object} report — mData.report keyed by minute string
+     */
+    normalizeReport(report) {
+      for (const evts of Object.values(report || {})) {
+        for (const evt of evts) {
+          if (!evt.parameters) continue;
+          for (const p of evt.parameters) {
+            if (p.goal !== void 0) evt.goal = p.goal;
+            if (p.shot !== void 0) evt.shot = p.shot;
+            if (p.yellow !== void 0) evt.yellow = p.yellow;
+            if (p.yellow_red !== void 0) evt.yellow_red = p.yellow_red;
+            if (p.red !== void 0) evt.red = p.red;
+            if (p.injury !== void 0) evt.injury = p.injury;
+            if (p.sub !== void 0) evt.sub = p.sub;
+            if (p.penalty !== void 0) evt.penalty = p.penalty;
+            if (p.set_piece !== void 0) evt.set_piece = p.set_piece;
+            if (p.mentality_change !== void 0) evt.mentality_change = p.mentality_change;
+          }
+        }
+      }
+    },
+    /**
+     * Build the normalized plays structure from a raw match report.
+     * Requires normalizeReport() to have been called first.
+     * @param {object} report — mData.report (post-normalizeReport)
+     * @param {object} lineup — mData.lineup with .home and .away player maps
+     * @returns {object} normalized plays keyed by minute string
+     */
+    buildNormalizedPlays(report, lineup) {
+      const { PASS_VIDS: PASS_VIDS2, CROSS_VIDS: CROSS_VIDS2, DEFWIN_VIDS: DEFWIN_VIDS2, FINISH_VIDS: FINISH_VIDS2, RUN_DUEL_VIDS: RUN_DUEL_VIDS2 } = TmConst;
+      const nameMap = {};
+      ["home", "away"].forEach((side) => {
+        Object.values((lineup == null ? void 0 : lineup[side]) || {}).forEach((p) => {
+          nameMap[String(p.player_id)] = p.nameLast || p.name || "?";
+        });
+      });
+      const resolveText = (lines) => (lines || []).map((l) => l.replace(/\[player=(\d+)\]/g, (_, pid) => nameMap[pid] || pid));
+      const result = {};
+      const sortedMins = Object.keys(report || {}).map(Number).sort((a, b) => a - b);
+      for (const min of sortedMins) {
+        const evts = report[String(min)] || [];
+        const plays = [];
+        evts.forEach((evt, reportEventIndex) => {
+          var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
+          const gPrefix = evt.type ? evt.type.replace(/[0-9]+.*/, "") : "";
+          const vids = (_a2 = evt.chance) == null ? void 0 : _a2.video;
+          if (!(vids == null ? void 0 : vids.length)) return;
+          const evtHasShot = !!evt.shot;
+          const evtShotOnTarget = ((_b = evt.shot) == null ? void 0 : _b.target) === "on";
+          const outcome = evt.goal ? "goal" : evt.shot ? "shot" : "lost";
+          const clips = [];
+          for (let vi = 0; vi < vids.length; vi++) {
+            const v = vids[vi];
+            const clip = v.video;
+            const text = resolveText((_d = (_c = evt.chance) == null ? void 0 : _c.text) == null ? void 0 : _d[vi]);
+            const nextClip = vi + 1 < vids.length ? vids[vi + 1].video : null;
+            const prevClip = vi > 0 ? vids[vi - 1].video : null;
+            const nextIsDefwin = !!(nextClip && DEFWIN_VIDS2.test(nextClip));
+            const nextIsFinish = !!(nextClip && FINISH_VIDS2.test(nextClip));
+            const prevIsCornerkick = !!(prevClip && /^cornerkick/.test(prevClip));
+            const actions = [];
+            if (/^penaltyshot$/.test(clip)) {
+              const shooter = evt.penalty || ((_e = evt.goal) == null ? void 0 : _e.player) || v.att1;
+              if (shooter) {
+                const isGoal = !!(evt.goal && String(evt.goal.player) === String(shooter));
+                const onTarget = isGoal || /^save/.test(nextClip || "") || /^goal_/.test(nextClip || "");
+                actions.push({ action: "shot", by: shooter, onTarget, head: false, foot: true, goal: isGoal, freekick: false, penalty: true });
+              }
+            } else if (PASS_VIDS2.test(clip)) {
+              const isGkDist = /^gk(throw|kick)/.test(clip);
+              const by = isGkDist ? v.gk : v.att1;
+              if (by) {
+                const isPreshort = /^preshort/.test(clip);
+                const rawLines = ((_g = (_f = evt.chance) == null ? void 0 : _f.text) == null ? void 0 : _g[vi]) || [];
+                const preshortSkip = isPreshort && !rawLines.some((l) => l.includes("[player=" + by + "]"));
+                if (!preshortSkip) {
+                  const failed = nextIsDefwin;
+                  actions.push({ action: "pass", success: !failed, by });
+                  if (!failed && evtHasShot) actions.push({ action: "keyPass", by });
+                }
+              }
+            } else if (CROSS_VIDS2.test(clip) && v.att1) {
+              if (/^freekick/.test(clip) && evtHasShot) {
+                const isGoal = !!(evt.goal && String(evt.goal.player) === String(v.att1));
+                const onTarget = isGoal || evtShotOnTarget;
+                const penalty = /^p_/.test(gPrefix);
+                const freekick = gPrefix === "dire";
+                actions.push({ action: "shot", by: v.att1, onTarget, head: false, foot: true, goal: isGoal, freekick, penalty });
+                if (isGoal && evt.goal.assist) actions.push({ action: "assist", by: evt.goal.assist });
+              } else {
+                const failed = nextIsDefwin;
+                actions.push({ action: "cross", success: !failed, by: v.att1 });
+                if (!failed && evtHasShot) actions.push({ action: "keyPass", by: v.att1 });
+              }
+            } else if (FINISH_VIDS2.test(clip) && v.att1) {
+              if (!nextIsFinish) {
+                const isHead = /^header/.test(clip);
+                const isGoal = !!(evt.goal && String(evt.goal.player) === String(v.att1));
+                const onTarget = isGoal || evtShotOnTarget;
+                const penalty = /^p_/.test(gPrefix);
+                const freekick = gPrefix === "dire";
+                actions.push({ action: "shot", by: v.att1, onTarget, head: isHead, foot: !isHead, goal: isGoal, freekick, penalty });
+                if (isGoal && evt.goal.assist) actions.push({ action: "assist", by: evt.goal.assist });
+              }
+            } else if (DEFWIN_VIDS2.test(clip)) {
+              const tAll = (((_h = evt.chance) == null ? void 0 : _h.text) || []).flat();
+              const winner = [v.def1, v.def2].find((d) => d && tAll.some((l) => l.includes("[player=" + d + "]")));
+              if (winner) {
+                if (!prevIsCornerkick) actions.push({ action: "duelWon", by: winner });
+                const tSeg = ((_j = (_i = evt.chance) == null ? void 0 : _i.text) == null ? void 0 : _j[vi]) || [];
+                const isHeader = /^defwin5$/.test(clip) || tSeg.some((l) => /\bheader\b|\bhead(ed|s)?\b/i.test(l));
+                const isTackle = /^defwin(3|6)$/.test(clip);
+                actions.push({ action: isHeader ? "headerClear" : isTackle ? "tackle" : "interception", by: winner });
+              }
+            } else if (RUN_DUEL_VIDS2.test(clip)) {
+              if (!nextIsDefwin) {
+                if (!prevIsCornerkick) {
+                  const tAll = (((_k = evt.chance) == null ? void 0 : _k.text) || []).flat();
+                  [v.def1, v.def2].forEach((d) => {
+                    if (d && tAll.some((l) => l.includes("[player=" + d + "]")))
+                      actions.push({ action: "duelLost", by: d });
+                  });
+                }
+                if (nextIsFinish && v.def1) actions.push({ action: "tackleFail", by: v.def1 });
+              }
+            } else if (/^save/.test(clip) && v.gk) {
+              actions.push({ action: "save", by: v.gk });
+            } else if (/^foulcall/.test(clip) && v.def1) {
+              actions.push({ action: "foul", by: v.def1 });
+            } else if (/^yellow/.test(clip)) {
+              const pid = evt.yellow || evt.yellow_red || v.def1;
+              if (pid) actions.push({ action: evt.yellow_red ? "yellowRed" : "yellow", by: pid });
+            } else if (/^red/.test(clip)) {
+              const pid = evt.red || v.def1;
+              if (pid) actions.push({ action: "red", by: pid });
+            } else if (/^sub/.test(clip) && evt.sub) {
+              actions.push({ action: "subIn", by: evt.sub.player_in });
+              actions.push({ action: "subOut", by: evt.sub.player_out });
+              if (evt.sub.player_position) actions.push({ action: "positionChange", by: evt.sub.player_in, position: evt.sub.player_position });
+            } else if (/^injury_sub/.test(clip) && evt.sub) {
+              actions.push({ action: "subIn", by: evt.sub.player_in });
+              actions.push({ action: "subOut", by: evt.sub.player_out });
+              if (evt.sub.player_position) actions.push({ action: "positionChange", by: evt.sub.player_in, position: evt.sub.player_position });
+            } else if (/^injurystart/.test(clip)) {
+            } else if (/^injury/.test(clip) && evt.injury) {
+              actions.push({ action: "injury", by: evt.injury });
+            }
+            clips.push({ video: clip, text, actions });
+          }
+          if (evt.set_piece && clips.length > 0)
+            clips[clips.length - 1].actions.push({ action: "setpiece", by: evt.set_piece, style: gPrefix });
+          if (evt.mentality_change && clips.length > 0)
+            clips[clips.length - 1].actions.push({ action: "mentality_change", team: String(evt.mentality_change.team), mentality: Number(evt.mentality_change.mentality) });
+          plays.push({ team: evt.club, style: gPrefix, outcome, clips, segments: clips, reportEventIndex, severity: evt.severity });
+        });
+        if (plays.length) result[String(min)] = plays;
+      }
+      return result;
+    },
+    /**
+     * Fetch and normalize a match.
+     * Returns a canonical Match object (lib/match.js shape).
+     * @param {string|number} matchId
+     * @returns {Promise<object|null>}
+     */
+    async fetchMatch(matchId) {
+      const raw = await _get(`/ajax/match.ajax.php?id=${matchId}`);
+      if (!raw) return null;
+      return normalizeRawMatch(raw, /* @__PURE__ */ new Map(), String(matchId));
+    },
+    /**
+     * Fetch a match via the standard match normalization path and return
+     * the stats-ready payload consumed by the club statistics page.
+     * @param {object} matchInfo
+     * @param {string|number} clubId
+     * @returns {Promise<object|null>}
+     */
+    async fetchMatchForStats(matchInfo, clubId2) {
+      const mData = await this.fetchMatch(matchInfo.id);
+      if (!mData) return null;
+      return TmStatsMatchProcessor.process(matchInfo, mData, clubId2);
+    },
+    /**
+     * Strip unnecessary fields from a raw match API response.
+     * Removes: udseende2/looks from lineup, text_team from report events,
+     * colors/logos/form/meta from club sections.
+     * Result is ~30% smaller and fully compatible with all scripts.
+     * @param {object} raw — raw response from match.ajax.php
+     * @returns {object} compressed raw (still raw shape, not a Match object)
+     */
+    compressMatch(raw) {
+      var _a2, _b;
+      const cPlayer = (p) => ({
+        player_id: Number(p.player_id),
+        id: Number(p.player_id),
+        name: p.name,
+        nameLast: p.nameLast,
+        position: p.position,
+        fp: p.fp,
+        no: p.no,
+        rating: p.rating,
+        mom: p.mom,
+        rec: p.rec,
+        routine: p.routine,
+        age: p.age,
+        udseende2: p.udseende2
+      });
+      const cLineupSide = (side) => {
+        var _a3;
+        const out = {};
+        for (const [pid, p] of Object.entries(((_a3 = raw.lineup) == null ? void 0 : _a3[side]) || {}))
+          out[pid] = cPlayer(p);
+        return out;
+      };
+      const cReport = (report) => {
+        const out = {};
+        for (const [min, events] of Object.entries(report || {})) {
+          out[min] = events.map((evt) => {
+            const e = {};
+            if (evt.type !== void 0) e.type = evt.type;
+            if (evt.club !== void 0) e.club = evt.club;
+            if (evt.severity !== void 0) e.severity = evt.severity;
+            if (evt.parameters) e.parameters = evt.parameters;
+            if (evt.chance) {
+              e.chance = {};
+              if (evt.chance.video) e.chance.video = evt.chance.video;
+              if (evt.chance.text) e.chance.text = evt.chance.text;
+            }
+            return e;
+          });
+        }
+        return out;
+      };
+      const cClub = (c) => ({
+        id: c.id,
+        club_name: c.club_name,
+        club_nick: c.club_nick,
+        fanclub: c.fanclub,
+        stadium: c.stadium,
+        manager_name: c.manager_name,
+        country: c.country,
+        division: c.division,
+        group: c.group
+      });
+      const md = raw.match_data || {};
+      return {
+        match_data: {
+          attacking_style: md.attacking_style,
+          mentality: md.mentality,
+          focus_side: md.focus_side,
+          possession: md.possession,
+          attendance: md.attendance,
+          regular_last_min: md.regular_last_min,
+          extra_time: md.extra_time,
+          last_min: md.last_min,
+          halftime: md.halftime,
+          captain: md.captain,
+          venue: md.venue
+        },
+        lineup: {
+          home: cLineupSide("home"),
+          away: cLineupSide("away")
+        },
+        report: cReport(raw.report),
+        club: {
+          home: ((_a2 = raw.club) == null ? void 0 : _a2.home) ? cClub(raw.club.home) : void 0,
+          away: ((_b = raw.club) == null ? void 0 : _b.away) ? cClub(raw.club.away) : void 0
+        }
+      };
+    },
+    /**
+     * Fetch a match, using TmMatchCacheDB as a cache.
+     * First call: fetches from TM API, compresses, stores, returns.
+     * Subsequent calls: returns stored compressed record instantly.
+     * @param {string|number} matchId
+     * @returns {Promise<object|null>}
+     */
+    async fetchMatchCached(matchId) {
+      const db = TmMatchCacheDB;
+      const cached = await db.get(matchId);
+      if (cached) return normalizeRawMatch(cached, /* @__PURE__ */ new Map(), String(matchId));
+      const raw = await _get(`/ajax/match.ajax.php?id=${matchId}`);
+      if (!raw) return null;
+      const compressed = this.compressMatch(raw);
+      db.set(matchId, compressed);
+      return normalizeRawMatch(compressed, /* @__PURE__ */ new Map(), String(matchId));
+    },
+    /**
+     * Build a per-minute text schedule from match.plays.
+     * Used by the replay loop to know at which second each commentary line appears.
+     *
+     * @param {object} plays  — match.plays from buildNormalizedPlays
+     * @param {number} lineInterval  — seconds between consecutive lines (default 3)
+     * @returns {{ schedule: object, eventMins: number[] }}
+     */
+    buildSchedule(plays, lineInterval = 3) {
+      const schedule = {};
+      for (const [minStr, minPlays] of Object.entries(plays)) {
+        let seconds = 0;
+        const entries = [];
+        for (const action of minPlays) {
+          const lineCount = Math.max(
+            1,
+            action.clips.reduce((s6, clip) => s6 + clip.text.filter((l) => l.trim()).length, 0)
+          );
+          for (let actionLineIndex = 0; actionLineIndex < lineCount; actionLineIndex++) {
+            entries.push({ actionIndex: action.reportEventIndex, lineIndex: actionLineIndex, seconds });
+            seconds += lineInterval;
+          }
+        }
+        if (entries.length) {
+          schedule[Number(minStr)] = entries;
+        }
+      }
+      return { schedule };
+    }
+  };
+
+  // src/models/match.js
+  var TmMatchModel = {
+    /**
+     * Fetch and normalize a match.
+     * Returns a canonical Match object (lib/match.js shape).
+     * Derived fields (goals, stats, ratings, visiblePlays, actions) are
+     * populated by calling TmMatchUtils.deriveMatchData(liveState) afterwards.
+     *
+     * @param {string|number} matchId
+     * @param {{ dbSync?: boolean }} [options]
+     * @returns {Promise<object|null>}
+     */
+    async fetchMatch(matchId) {
+      return TmMatchService.fetchMatch(matchId);
+    },
+    /**
+     * Fetch a match from cache (compresses and stores on first load).
+     * Returns a canonical Match object.
+     *
+     * @param {string|number} matchId
+     * @returns {Promise<object|null>}
+     */
+    async fetchMatchCached(matchId) {
+      return TmMatchService.fetchMatchCached(matchId);
+    },
+    /**
+     * Fetch match data without triggering the async player-profile enrichment.
+     * Use when only static match facts are needed (stats page, history, etc.).
+     *
+     * @param {string|number} matchId
+     * @returns {Promise<object|null>}
+     */
+    /**
+     * Fetch a match and process it through the stats pipeline.
+     *
+     * @param {object} matchInfo
+     * @param {string|number} clubId
+     * @param {{ dbSync?: boolean }} [options]
+     * @returns {Promise<object|null>}
+     */
+    async fetchMatchForStats(matchInfo, clubId2) {
+      return TmMatchService.fetchMatchForStats(matchInfo, clubId2);
+    },
+    /**
+     * Build a play-by-play schedule from a raw plays array.
+     *
+     * @param {Array} plays
+     * @param {number} [lineInterval=3]
+     * @returns {object}
+     */
+    buildSchedule(plays, lineInterval = 3) {
+      return TmMatchService.buildSchedule(plays, lineInterval);
+    },
+    /**
+     * Fetch the head-to-head history between two clubs.
+     *
+     * @param {string|number} homeId
+     * @param {string|number} awayId
+     * @param {number} kickoffTs  Unix timestamp of the reference match kickoff
+     * @returns {Promise<object|null>}
+     */
+    fetchH2H(homeId, awayId, kickoffTs) {
+      return TmMatchService.fetchMatchH2H(homeId, awayId, kickoffTs);
+    },
+    /**
+     * Fetch the match tooltip (past season results) from the tooltip endpoint.
+     *
+     * @param {string|number} matchId
+     * @param {string|number} season
+     * @returns {Promise<object|null>}
+     */
+    fetchTooltip(matchId, season) {
+      return TmMatchService.fetchMatchTooltip(matchId, season);
+    },
+    /**
+     * Build a canonical Match object directly from a known raw payload.
+     * Useful in tests, offline tools, or when a raw response is already in hand.
+     *
+     * @param {object} raw  match.ajax.php response
+     * @returns {object}    Match.create() with static fields populated
+     */
+    fromRaw(raw) {
+      return normalizeRawMatch(raw);
+    },
+    /**
+     * Strip unnecessary display / cache fields from a raw match response.
+     * See TmMatchService.compressMatch for the full list of removed fields.
+     *
+     * @param {object} raw
+     * @returns {object}  compressed raw (still raw shape, not a Match object)
+     */
+    compress(raw) {
+      return TmMatchService.compressMatch(raw);
+    },
+    /**
+     * Fetch, normalize and synchronously enrich a match with full player profiles.
+     * Unlike fetchMatch (which enriches async/fire-and-forget), this awaits all
+     * tooltip fetches before returning — needed by the match player overlay so
+     * positions/skills are available on first render.
+     *
+     * @param {string|number} matchId
+     * @returns {Promise<object|null>}  normalized match with plays built
+     */
+    async fetchMatchWithProfiles(matchId) {
+      var _a2, _b;
+      const raw = await _get(`/ajax/match.ajax.php?id=${matchId}`);
+      if (!raw) return null;
+      const allRawPlayers = [
+        ...Object.values(((_a2 = raw.lineup) == null ? void 0 : _a2.home) || {}),
+        ...Object.values(((_b = raw.lineup) == null ? void 0 : _b.away) || {})
+      ];
+      const results = await Promise.allSettled(
+        allRawPlayers.map((p) => TmPlayerModel.fetchPlayerTooltip(Number(p.player_id)))
+      );
+      const playersById = /* @__PURE__ */ new Map();
+      results.forEach((r) => {
+        if (r.status === "fulfilled" && r.value)
+          playersById.set(r.value.id, r.value);
+      });
+      return normalizeRawMatch(raw, playersById, String(matchId));
+    }
+  };
 
   // src/components/shared/tm-match-tooltip.js
   var STYLE_ID18 = "tmvu-match-tooltip-style";
@@ -10969,7 +10796,7 @@ order:initial
       if (state.tooltipEl) state.tooltipEl.innerHTML = TmUI.error("Failed", true);
     };
     if (isCurrentSeason) {
-      TmMatchService.fetchMatchCached(matchId, { dbSync: false }).then((data) => {
+      TmMatchModel.fetchMatchCached(matchId).then((data) => {
         var _a2;
         if (!data) {
           onFail();
@@ -10984,7 +10811,7 @@ order:initial
       }).catch(onFail);
       return;
     }
-    TmMatchService.fetchMatchTooltip(matchId, season).then((data) => {
+    TmMatchModel.fetchTooltip(matchId, season).then((data) => {
       var _a2;
       if (!data) {
         onFail();
@@ -11034,8 +10861,94 @@ order:initial
     bind
   };
 
+  // src/services/club.js
+  var TmClubService = {
+    /**
+     * Fetch club fixtures (all matches for a given club this season).
+     * @param {string|number} clubId
+     * @returns {Promise<object|null>}
+     */
+    fetchClubFixtures(clubId2) {
+      return _post("/ajax/fixtures.ajax.php", { type: "club", var1: clubId2 });
+    },
+    /**
+     * Fetch the match history HTML page for a club in a given season.
+     * Returns the raw HTML string (not JSON) or null on failure.
+     * @param {string|number} clubId
+     * @param {string|number} seasonId
+     * @returns {Promise<string|null>}
+     */
+    fetchClubMatchHistory(clubId2, seasonId) {
+      return _getHtml(`/history/club/matches/${clubId2}/${seasonId}/`);
+    },
+    /**
+     * Fetch the club transfer history HTML page for a given season.
+     * @param {string|number} clubId
+     * @param {string|number} seasonId
+     * @returns {Promise<string|null>}
+     */
+    fetchClubTransferHistory(clubId2, seasonId) {
+      return _getHtml(`/history/club/transfers/${clubId2}/${seasonId}/`);
+    },
+    /**
+     * Fetch the club records HTML page.
+     * @param {string|number} clubId
+     * @returns {Promise<string|null>}
+     */
+    fetchClubRecords(clubId2) {
+      return _getHtml(`/history/club/records/${clubId2}/`);
+    },
+    /**
+     * Fetch the raw club page HTML.
+     * @param {string|number} clubId
+     * @returns {Promise<string|null>}
+     */
+    fetchClubPageHtml(clubId2) {
+      return _getHtml(`/club/${clubId2}/`);
+    },
+    /**
+     * Fetch the club league history HTML page for a given season.
+     * @param {string|number} clubId
+     * @param {string|number} seasonId
+     * @returns {Promise<string|null>}
+     */
+    fetchClubLeagueHistory(clubId2, seasonId) {
+      return _getHtml(`/history/club/league/${clubId2}/${seasonId}/`);
+    },
+    /**
+     * Fetch the players_get_select post map for a club (raw, no normalization).
+     * Returns a { [playerId: string]: player } map, or null on failure.
+     * @param {string|number} clubId
+     * @returns {Promise<object|null>}
+     */
+    async fetchSquadPost(clubId2) {
+      return _dedup(`club:squad-post:${clubId2}`, async () => {
+        const data = await _post("/ajax/players_get_select.ajax.php", { type: "change", club_id: clubId2 });
+        if (!(data == null ? void 0 : data.post)) return null;
+        const map = {};
+        for (const [id, p] of Object.entries(data.post)) map[String(id)] = p;
+        return map;
+      });
+    }
+  };
+
   // src/models/club.js
-  var TmClubModel2 = {
+  var TmClubModel = {
+    fetchClubFixtures(clubId2) {
+      return TmClubService.fetchClubFixtures(clubId2);
+    },
+    fetchClubMatchHistory(clubId2, seasonId) {
+      return TmClubService.fetchClubMatchHistory(clubId2, seasonId);
+    },
+    fetchClubLeagueHistory(clubId2, seasonId) {
+      return TmClubService.fetchClubLeagueHistory(clubId2, seasonId);
+    },
+    fetchClubRecords(clubId2) {
+      return TmClubService.fetchClubRecords(clubId2);
+    },
+    fetchClubPageHtml(clubId2) {
+      return TmClubService.fetchClubPageHtml(clubId2);
+    },
     async fetchSquadRaw(clubId2, skillChangesMap = null) {
       const post = await TmClubService.fetchSquadPost(clubId2);
       if (!post) return null;
@@ -11061,6 +10974,16 @@ order:initial
       }));
     }
   };
+  var fetchRawPlayers = async (clubId2) => {
+    if (!clubId2) return [];
+    const post = await TmClubService.fetchSquadPost(clubId2);
+    if (!post) return [];
+    return Object.values(post).map(normalizeSquadPlayer);
+  };
+  var fetchClubTransfers = async (clubId2, season, opts = {}) => {
+    const html2 = await TmClubService.fetchClubTransferHistory(clubId2, season);
+    return html2 ? normalizeClubTransfers(html2, opts) : null;
+  };
 
   // src/components/shared/tm-match-ratings.js
   var squadCache = /* @__PURE__ */ new Map();
@@ -11068,7 +10991,7 @@ order:initial
   var matchCache = /* @__PURE__ */ new Map();
   var fetchSquad = (clubId2) => {
     if (!squadCache.has(clubId2)) {
-      squadCache.set(clubId2, TmClubModel2.fetchSquadRaw(clubId2).then((data) => {
+      squadCache.set(clubId2, TmClubModel.fetchSquadRaw(clubId2).then((data) => {
         const post = {};
         (data || []).forEach((player2) => {
           post[String(player2.id)] = player2;
@@ -11117,15 +11040,17 @@ order:initial
   var fetchMatchR5 = (matchId) => {
     const key = String(matchId);
     if (!matchCache.has(key)) {
-      matchCache.set(key, TmMatchService.fetchMatchCached(key, { dbSync: false }).then(async (data) => {
+      matchCache.set(key, TmMatchModel.fetchMatchCached(key).then(async (data) => {
         var _a2, _b, _c, _d;
-        if (!((_b = (_a2 = data == null ? void 0 : data.club) == null ? void 0 : _a2.home) == null ? void 0 : _b.id) || !((_d = (_c = data == null ? void 0 : data.club) == null ? void 0 : _c.away) == null ? void 0 : _d.id)) return null;
-        const homeId = String(data.club.home.id);
-        const awayId = String(data.club.away.id);
+        if (!((_b = (_a2 = data == null ? void 0 : data.home) == null ? void 0 : _a2.club) == null ? void 0 : _b.id) || !((_d = (_c = data == null ? void 0 : data.away) == null ? void 0 : _c.club) == null ? void 0 : _d.id)) return null;
+        const homeId = String(data.home.club.id);
+        const awayId = String(data.away.club.id);
+        const homeLineupMap = Object.fromEntries(data.home.lineup.map((p) => [String(p.id), p]));
+        const awayLineupMap = Object.fromEntries(data.away.lineup.map((p) => [String(p.id), p]));
         const [homeSquad, awaySquad] = await Promise.all([fetchSquad(homeId), fetchSquad(awayId)]);
         const [homeResult, awayResult] = await Promise.all([
-          computeTeamStats(Object.keys(data.lineup.home || {}), data.lineup.home || {}, homeSquad),
-          computeTeamStats(Object.keys(data.lineup.away || {}), data.lineup.away || {}, awaySquad)
+          computeTeamStats(Object.keys(homeLineupMap), homeLineupMap, homeSquad),
+          computeTeamStats(Object.keys(awayLineupMap), awayLineupMap, awaySquad)
         ]);
         return {
           homeR5: Number((homeResult.totals.R5 / 11).toFixed(2)),
@@ -11922,7 +11847,7 @@ order:initial
   };
 
   // src/components/shared/tm-standings-parser.js
-  var cleanText7 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var cleanText6 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   function getZone(className) {
     if (className.includes("promotion_playoff")) return "promo-po";
     if (className.includes("promotion")) return "promo";
@@ -11954,16 +11879,16 @@ order:initial
     const clubId2 = extractClubId(clubLink);
     const isHighlighted = cells.some((cell) => cell.classList.contains("highlight_td"));
     return {
-      rank: hasRankColumn ? Number.parseInt(cleanText7(((_a2 = cells[0]) == null ? void 0 : _a2.textContent) || ""), 10) || rankFallback : rankFallback,
+      rank: hasRankColumn ? Number.parseInt(cleanText6(((_a2 = cells[0]) == null ? void 0 : _a2.textContent) || ""), 10) || rankFallback : rankFallback,
       clubId: clubId2,
-      clubName: cleanText7(clubLink.textContent || ""),
-      gp: Number.parseInt(cleanText7(((_b = cells[1 + offset]) == null ? void 0 : _b.textContent) || ""), 10) || 0,
-      w: Number.parseInt(cleanText7(((_c = cells[2 + offset]) == null ? void 0 : _c.textContent) || ""), 10) || 0,
-      d: Number.parseInt(cleanText7(((_d = cells[3 + offset]) == null ? void 0 : _d.textContent) || ""), 10) || 0,
-      l: Number.parseInt(cleanText7(((_e = cells[4 + offset]) == null ? void 0 : _e.textContent) || ""), 10) || 0,
-      gf: Number.parseInt(cleanText7(((_f = cells[5 + offset]) == null ? void 0 : _f.textContent) || ""), 10) || 0,
-      ga: Number.parseInt(cleanText7(((_g = cells[6 + offset]) == null ? void 0 : _g.textContent) || ""), 10) || 0,
-      pts: Number.parseInt(cleanText7(((_h = cells[7 + offset]) == null ? void 0 : _h.textContent) || ""), 10) || 0,
+      clubName: cleanText6(clubLink.textContent || ""),
+      gp: Number.parseInt(cleanText6(((_b = cells[1 + offset]) == null ? void 0 : _b.textContent) || ""), 10) || 0,
+      w: Number.parseInt(cleanText6(((_c = cells[2 + offset]) == null ? void 0 : _c.textContent) || ""), 10) || 0,
+      d: Number.parseInt(cleanText6(((_d = cells[3 + offset]) == null ? void 0 : _d.textContent) || ""), 10) || 0,
+      l: Number.parseInt(cleanText6(((_e = cells[4 + offset]) == null ? void 0 : _e.textContent) || ""), 10) || 0,
+      gf: Number.parseInt(cleanText6(((_f = cells[5 + offset]) == null ? void 0 : _f.textContent) || ""), 10) || 0,
+      ga: Number.parseInt(cleanText6(((_g = cells[6 + offset]) == null ? void 0 : _g.textContent) || ""), 10) || 0,
+      pts: Number.parseInt(cleanText6(((_h = cells[7 + offset]) == null ? void 0 : _h.textContent) || ""), 10) || 0,
       zone: getZone(className),
       isMe: className.includes("highlighted_row_done") || isHighlighted || !!highlightedClubId && clubId2 === highlightedClubId
     };
@@ -11972,7 +11897,7 @@ order:initial
     var _a2;
     const headers = row.querySelectorAll("th");
     if (!headers.length) return false;
-    const firstLabel = cleanText7(((_a2 = headers[0]) == null ? void 0 : _a2.textContent) || "").toLowerCase();
+    const firstLabel = cleanText6(((_a2 = headers[0]) == null ? void 0 : _a2.textContent) || "").toLowerCase();
     if (!firstLabel) return false;
     return !["#", "club", "gp", "w", "d", "l", "gf", "ga", "pts", "p", "goals"].includes(firstLabel);
   }
@@ -11990,7 +11915,7 @@ order:initial
         var _a2;
         if (isGroupTitleRow(row)) {
           if (currentGroup == null ? void 0 : currentGroup.rows.length) groups.push(currentGroup);
-          currentGroup = { title: cleanText7(((_a2 = row.querySelector("th")) == null ? void 0 : _a2.textContent) || ""), rows: [] };
+          currentGroup = { title: cleanText6(((_a2 = row.querySelector("th")) == null ? void 0 : _a2.textContent) || ""), rows: [] };
           return;
         }
         if (row.querySelector("th")) return;
@@ -12709,6 +12634,84 @@ order:initial
     refresh();
   }
 
+  // src/services/league.js
+  var TMLeagueService = {
+    /**
+     * Fetch fixtures via fixtures.ajax.php.
+     * @param {string} type
+     * @param {object} params
+     * @returns {Promise<object|null>}
+     */
+    fetchLeagueFixtures(type, params = {}) {
+      return _post("/ajax/fixtures.ajax.php", { type, ...params });
+    },
+    /**
+     * Fetch available league divisions for a given country.
+     * @param {string} country — country suffix (e.g. 'cs', 'de')
+     * @returns {Promise<object|null>}
+     */
+    fetchLeagueDivisions(country) {
+      return _post("https://trophymanager.com/ajax/league_get_divisions.ajax.php", { get: "new", country });
+    },
+    /**
+     * Fetch the raw league page HTML for a division/group.
+     * @param {string} country
+     * @param {string|number} division
+     * @param {string|number} group
+     * @returns {Promise<string|null>}
+     */
+    fetchLeaguePageHtml(country, division, group) {
+      return _getHtml(`/league/${country}/${division}/${group}/`);
+    },
+    /**
+     * Fetch the raw league transfer history HTML page for a given season.
+     * @param {string} country
+     * @param {string|number} division
+     * @param {string|number} group
+     * @param {string|number} season
+     * @returns {Promise<string|null>}
+     */
+    fetchLeagueTransferHistory(country, division, group, season) {
+      return _getHtml(`/history/league/${country}/${division}/${group}/transfers/${season}/`);
+    },
+    fetchFriendlyLeaguePageHtml(leagueId) {
+      return _getHtml(`/friendly-league/${leagueId}/`);
+    },
+    fetchFriendlyLeagueStatisticsHtml(leagueId, stat = "goals") {
+      return _getHtml(`/statistics/friendly-league/${leagueId}/${stat}`);
+    },
+    fetchFriendlyLeagueHistoryHtml(type = "standings", seasonValue = "") {
+      const cleanType = String(type || "standings").replace(/^\/+|\/+$/g, "");
+      const cleanSeason = String(seasonValue || "").replace(/^\/+|\/+$/g, "");
+      return _getHtml(`/history/friendly-league/${cleanType}/${cleanSeason ? `${cleanSeason}/` : ""}`);
+    }
+  };
+
+  // src/models/league.js
+  var TmLeagueModel = {
+    fetchLeagueFixtures(type, params = {}) {
+      return TMLeagueService.fetchLeagueFixtures(type, params);
+    },
+    fetchLeagueDivisions(country) {
+      return TMLeagueService.fetchLeagueDivisions(country);
+    },
+    fetchLeaguePageHtml(country, division, group) {
+      return TMLeagueService.fetchLeaguePageHtml(country, division, group);
+    },
+    fetchLeagueTransferHistory(country, division, group, season) {
+      return TMLeagueService.fetchLeagueTransferHistory(country, division, group, season);
+    },
+    fetchFriendlyLeaguePageHtml(leagueId) {
+      return TMLeagueService.fetchFriendlyLeaguePageHtml(leagueId);
+    },
+    fetchFriendlyLeagueStatisticsHtml(leagueId, stat = "goals") {
+      return TMLeagueService.fetchFriendlyLeagueStatisticsHtml(leagueId, stat);
+    },
+    fetchFriendlyLeagueHistoryHtml(type = "standings", seasonValue = "") {
+      return TMLeagueService.fetchFriendlyLeagueHistoryHtml(type, seasonValue);
+    }
+  };
+
   // src/pages/friendly-league.js
   var CURRENT_SEASON = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
   var main = null;
@@ -12725,14 +12728,14 @@ order:initial
   var FRIENDLY_HISTORY_META = null;
   var INITIAL_HISTORY_TYPE = "standings";
   var INITIAL_HISTORY_SEASON = "";
-  var cleanText8 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var cleanText7 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml13 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var wrapperText = (value) => {
     const html2 = String(value || "").trim();
     if (!html2) return "";
     const wrapper = document.createElement("div");
     wrapper.innerHTML = html2;
-    return cleanText8(wrapper.textContent || "");
+    return cleanText7(wrapper.textContent || "");
   };
   var extractHrefFromHtml = (value) => {
     var _a2;
@@ -12752,32 +12755,32 @@ order:initial
   };
   var parseFriendlyLeagueFixtures = (payload) => Object.entries(payload || {}).sort(([leftKey], [rightKey]) => leftKey.localeCompare(rightKey)).map(([monthKey, month]) => {
     const matches = Array.from((month == null ? void 0 : month.matches) || []).map((match) => ({
-      date: cleanText8((match == null ? void 0 : match.date) || ""),
+      date: cleanText7((match == null ? void 0 : match.date) || ""),
       matchId: String((match == null ? void 0 : match.id) || ""),
-      homeId: cleanText8((match == null ? void 0 : match.hometeam) || ""),
-      homeName: cleanText8((match == null ? void 0 : match.hometeam_name) || ""),
+      homeId: cleanText7((match == null ? void 0 : match.hometeam) || ""),
+      homeName: cleanText7((match == null ? void 0 : match.hometeam_name) || ""),
       homeHref: extractHrefFromHtml(match == null ? void 0 : match.home_link),
       homeFlagHtml: normalizeFlagHtml(match == null ? void 0 : match.home_flag),
-      awayId: cleanText8((match == null ? void 0 : match.awayteam) || ""),
-      awayName: cleanText8((match == null ? void 0 : match.awayteam_name) || ""),
+      awayId: cleanText7((match == null ? void 0 : match.awayteam) || ""),
+      awayName: cleanText7((match == null ? void 0 : match.awayteam_name) || ""),
       awayHref: extractHrefFromHtml(match == null ? void 0 : match.away_link),
       awayFlagHtml: normalizeFlagHtml(match == null ? void 0 : match.away_flag),
-      result: cleanText8((match == null ? void 0 : match.result) || wrapperText(match == null ? void 0 : match.match_link) || "x-x"),
+      result: cleanText7((match == null ? void 0 : match.result) || wrapperText(match == null ? void 0 : match.match_link) || "x-x"),
       matchHref: extractHrefFromHtml(match == null ? void 0 : match.match_link),
-      matchtype_name: cleanText8((match == null ? void 0 : match.matchtype_sort) || wrapperText(match == null ? void 0 : match.matchtype_name) || "Friendly League"),
-      matchtype_sort: cleanText8((match == null ? void 0 : match.matchtype_sort) || "Friendly League")
+      matchtype_name: cleanText7((match == null ? void 0 : match.matchtype_sort) || wrapperText(match == null ? void 0 : match.matchtype_name) || "Friendly League"),
+      matchtype_sort: cleanText7((match == null ? void 0 : match.matchtype_sort) || "Friendly League")
     })).filter((match) => match.matchId && match.homeName && match.awayName);
     if (!matches.length) return null;
     return {
       key: monthKey,
-      label: cleanText8((month == null ? void 0 : month.date_name) || `${(month == null ? void 0 : month.month) || "Month"} ${monthKey.slice(0, 4)}`),
+      label: cleanText7((month == null ? void 0 : month.date_name) || `${(month == null ? void 0 : month.month) || "Month"} ${monthKey.slice(0, 4)}`),
       active: Boolean(month == null ? void 0 : month.current_month),
       groups: TmFixturesList.fromMatches(matches)
     };
   }).filter(Boolean);
   var getFriendlyLeagueFixtures = () => {
     if (!LEAGUE_FIXTURES_PROMISE) {
-      LEAGUE_FIXTURES_PROMISE = LEAGUE_ID ? TMLeagueService.fetchLeagueFixtures("friendly-league", { var1: LEAGUE_ID }) : Promise.resolve(null);
+      LEAGUE_FIXTURES_PROMISE = LEAGUE_ID ? TmLeagueModel.fetchLeagueFixtures("friendly-league", { var1: LEAGUE_ID }) : Promise.resolve(null);
     }
     return LEAGUE_FIXTURES_PROMISE;
   };
@@ -12785,7 +12788,7 @@ order:initial
     const key = String(stat || "goals");
     if (!FRIENDLY_STATS_DOC_CACHE) FRIENDLY_STATS_DOC_CACHE = /* @__PURE__ */ new Map();
     if (FRIENDLY_STATS_DOC_CACHE.has(key)) return FRIENDLY_STATS_DOC_CACHE.get(key);
-    const html2 = await TMLeagueService.fetchFriendlyLeagueStatisticsHtml(LEAGUE_ID, key);
+    const html2 = await TmLeagueModel.fetchFriendlyLeagueStatisticsHtml(LEAGUE_ID, key);
     FRIENDLY_STATS_DOC_CACHE.set(key, html2 || "");
     return html2 || "";
   };
@@ -12794,13 +12797,13 @@ order:initial
     const root2 = typeof source === "string" ? new DOMParser().parseFromString(source, "text/html") : source;
     const contentBox = root2 == null ? void 0 : root2.querySelector(".column2_a > .box");
     const statSelect = contentBox == null ? void 0 : contentBox.querySelector("#stats_players");
-    const statDefs = Array.from((statSelect == null ? void 0 : statSelect.querySelectorAll("option")) || []).map((option) => [option.value, cleanText8(option.textContent)]).filter(([value, label]) => value && label);
-    const teamLabels = Array.from((contentBox == null ? void 0 : contentBox.querySelectorAll(".tabs [set_active]")) || []).map((tab) => cleanText8(tab.textContent)).filter(Boolean);
+    const statDefs = Array.from((statSelect == null ? void 0 : statSelect.querySelectorAll("option")) || []).map((option) => [option.value, cleanText7(option.textContent)]).filter(([value, label]) => value && label);
+    const teamLabels = Array.from((contentBox == null ? void 0 : contentBox.querySelectorAll(".tabs [set_active]")) || []).map((tab) => cleanText7(tab.textContent)).filter(Boolean);
     return {
-      title: cleanText8(((_a2 = contentBox == null ? void 0 : contentBox.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "Statistics"),
+      title: cleanText7(((_a2 = contentBox == null ? void 0 : contentBox.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "Statistics"),
       statDefs: statDefs.length ? statDefs : PLAYER_STAT_DEFS,
       teamLabels: teamLabels.length ? teamLabels : ["Main team", "Under 21"],
-      initialStat: cleanText8((statSelect == null ? void 0 : statSelect.value) || INITIAL_STATS_STAT || "goals") || "goals"
+      initialStat: cleanText7((statSelect == null ? void 0 : statSelect.value) || INITIAL_STATS_STAT || "goals") || "goals"
     };
   };
   var getFriendlyLeagueHistoryHtml = async (type = "standings", seasonValue = "") => {
@@ -12813,7 +12816,7 @@ order:initial
       FRIENDLY_HISTORY_DOC_CACHE.set(key, html3);
       return html3;
     }
-    const html2 = await TMLeagueService.fetchFriendlyLeagueHistoryHtml(type, seasonValue);
+    const html2 = await TmLeagueModel.fetchFriendlyLeagueHistoryHtml(type, seasonValue);
     FRIENDLY_HISTORY_DOC_CACHE.set(key, html2 || "");
     return html2 || "";
   };
@@ -12823,10 +12826,10 @@ order:initial
     const contentBox = root2 == null ? void 0 : root2.querySelector(".column2_a > .box");
     const typeSelect = contentBox == null ? void 0 : contentBox.querySelector("#stats_type");
     const seasonSelect = contentBox == null ? void 0 : contentBox.querySelector("#stats_season");
-    const typeDefs = Array.from((typeSelect == null ? void 0 : typeSelect.querySelectorAll("option")) || []).map((option) => ({ value: cleanText8(option.value), label: cleanText8(option.textContent) })).filter((option) => option.value && option.label);
-    const seasons2 = Array.from((seasonSelect == null ? void 0 : seasonSelect.querySelectorAll("option")) || []).map((option) => ({ id: cleanText8(option.value), label: cleanText8(option.textContent) })).filter((option) => option.id && option.label);
+    const typeDefs = Array.from((typeSelect == null ? void 0 : typeSelect.querySelectorAll("option")) || []).map((option) => ({ value: cleanText7(option.value), label: cleanText7(option.textContent) })).filter((option) => option.value && option.label);
+    const seasons2 = Array.from((seasonSelect == null ? void 0 : seasonSelect.querySelectorAll("option")) || []).map((option) => ({ id: cleanText7(option.value), label: cleanText7(option.textContent) })).filter((option) => option.id && option.label);
     return {
-      title: cleanText8(((_a2 = contentBox == null ? void 0 : contentBox.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "History"),
+      title: cleanText7(((_a2 = contentBox == null ? void 0 : contentBox.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "History"),
       typeDefs: typeDefs.length ? typeDefs : [
         { value: "standings", label: "Standings" },
         { value: "matches", label: "Matches" }
@@ -12846,19 +12849,19 @@ order:initial
       const cells = Array.from(tr.querySelectorAll("td"));
       const clubLink = tr.querySelector("a[club_link]");
       if (!clubLink || cells.length < 8) return null;
-      const goals = cleanText8(((_a2 = cells[6]) == null ? void 0 : _a2.textContent) || "0-0").split("-");
+      const goals = cleanText7(((_a2 = cells[6]) == null ? void 0 : _a2.textContent) || "0-0").split("-");
       return {
-        rank: Number.parseInt(cleanText8(((_b = cells[0]) == null ? void 0 : _b.textContent) || "0"), 10) || 0,
-        clubId: cleanText8(clubLink.getAttribute("club_link") || ""),
-        clubName: cleanText8(clubLink.textContent || ""),
-        gp: Number.parseInt(cleanText8(((_c = cells[2]) == null ? void 0 : _c.textContent) || "0"), 10) || 0,
-        w: Number.parseInt(cleanText8(((_d = cells[3]) == null ? void 0 : _d.textContent) || "0"), 10) || 0,
-        d: Number.parseInt(cleanText8(((_e = cells[4]) == null ? void 0 : _e.textContent) || "0"), 10) || 0,
-        l: Number.parseInt(cleanText8(((_f = cells[5]) == null ? void 0 : _f.textContent) || "0"), 10) || 0,
+        rank: Number.parseInt(cleanText7(((_b = cells[0]) == null ? void 0 : _b.textContent) || "0"), 10) || 0,
+        clubId: cleanText7(clubLink.getAttribute("club_link") || ""),
+        clubName: cleanText7(clubLink.textContent || ""),
+        gp: Number.parseInt(cleanText7(((_c = cells[2]) == null ? void 0 : _c.textContent) || "0"), 10) || 0,
+        w: Number.parseInt(cleanText7(((_d = cells[3]) == null ? void 0 : _d.textContent) || "0"), 10) || 0,
+        d: Number.parseInt(cleanText7(((_e = cells[4]) == null ? void 0 : _e.textContent) || "0"), 10) || 0,
+        l: Number.parseInt(cleanText7(((_f = cells[5]) == null ? void 0 : _f.textContent) || "0"), 10) || 0,
         gf: Number.parseInt(goals[0] || "0", 10) || 0,
         ga: Number.parseInt(goals[1] || "0", 10) || 0,
-        pts: Number.parseInt(cleanText8(((_g = cells[7]) == null ? void 0 : _g.textContent) || "0"), 10) || 0,
-        isMe: tr.classList.contains("highlighted_row_done") || myClubId && cleanText8(clubLink.getAttribute("club_link")) === myClubId
+        pts: Number.parseInt(cleanText7(((_g = cells[7]) == null ? void 0 : _g.textContent) || "0"), 10) || 0,
+        isMe: tr.classList.contains("highlighted_row_done") || myClubId && cleanText7(clubLink.getAttribute("club_link")) === myClubId
       };
     }).filter(Boolean);
   };
@@ -12885,15 +12888,15 @@ order:initial
           day: currentDay,
           matchId: ((_c = (_b = scoreLink.getAttribute("href")) == null ? void 0 : _b.match(/\/matches\/(\d+)\//)) == null ? void 0 : _c[1]) || "",
           matchHref: scoreLink.getAttribute("href") || "",
-          homeId: cleanText8(homeLink.getAttribute("club_link") || ""),
-          homeName: cleanText8(homeLink.textContent || ""),
-          awayId: cleanText8(awayLink.getAttribute("club_link") || ""),
-          awayName: cleanText8(awayLink.textContent || ""),
-          result: cleanText8(scoreLink.textContent || "")
+          homeId: cleanText7(homeLink.getAttribute("club_link") || ""),
+          homeName: cleanText7(homeLink.textContent || ""),
+          awayId: cleanText7(awayLink.getAttribute("club_link") || ""),
+          awayName: cleanText7(awayLink.textContent || ""),
+          result: cleanText7(scoreLink.textContent || "")
         });
       });
       if (!matches.length) return;
-      const shortMonth = cleanText8(heading.textContent).split(" ")[0].slice(0, 3);
+      const shortMonth = cleanText7(heading.textContent).split(" ")[0].slice(0, 3);
       const byDay = /* @__PURE__ */ new Map();
       matches.forEach((match) => {
         const key = String(match.day);
@@ -12901,7 +12904,7 @@ order:initial
         byDay.get(key).push(match);
       });
       groups.push({
-        label: cleanText8(heading.textContent),
+        label: cleanText7(heading.textContent),
         groups: Array.from(byDay.entries()).map(([day, dayMatches]) => ({
           label: `${day} ${shortMonth}`,
           matches: dayMatches
@@ -13051,7 +13054,7 @@ order:initial
   var parseMenu4 = () => Array.from(sourceRoot.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
     if (node.tagName === "HR") return [{ type: "separator" }];
     if (node.tagName !== "A") return [];
-    const label = cleanText8(node.textContent);
+    const label = cleanText7(node.textContent);
     return [{
       type: "link",
       href: node.getAttribute("href") || "#",
@@ -13074,7 +13077,7 @@ order:initial
     const standingsRows = parseStandingsRows(standingsTable);
     const highlightedRow = standingsRows.find((row) => row.isMe);
     return {
-      title: cleanText8((nameNode == null ? void 0 : nameNode.textContent) || "Friendly League"),
+      title: cleanText7((nameNode == null ? void 0 : nameNode.textContent) || "Friendly League"),
       ownerHtml: (ownerNode == null ? void 0 : ownerNode.innerHTML) || "",
       rank: highlightedRow ? String(highlightedRow.rank) : "",
       goals: highlightedRow ? `${highlightedRow.gf}:${highlightedRow.ga}` : "",
@@ -13412,16 +13415,16 @@ order:initial
     currentRouteRoot = nativeMain;
     LEAGUE_ID = (routeMatch == null ? void 0 : routeMatch[1]) || extractFriendlyLeagueId(nativeMain) || ((_c = (_b = (_a2 = nativeMain.querySelector("#new_message_button")) == null ? void 0 : _a2.getAttribute("onclick")) == null ? void 0 : _b.match(/pop_create_chat\((\d+),/)) == null ? void 0 : _c[1]) || "";
     ACTIVE_TAB = /^\/fixtures\//i.test(currentPath) ? "fixtures" : /^\/statistics\//i.test(currentPath) ? "statistics" : /^\/history\//i.test(currentPath) ? "history" : "overview";
-    INITIAL_STATS_STAT = (routeMatch == null ? void 0 : routeMatch[2]) || cleanText8(((_d = nativeMain.querySelector("#stats_players")) == null ? void 0 : _d.value) || "goals") || "goals";
-    INITIAL_HISTORY_TYPE = cleanText8((historyMatch == null ? void 0 : historyMatch[1]) || ((_e = nativeMain.querySelector("#stats_type")) == null ? void 0 : _e.value) || "standings") || "standings";
-    INITIAL_HISTORY_SEASON = cleanText8((historyMatch == null ? void 0 : historyMatch[2]) || ((_f = nativeMain.querySelector("#stats_season")) == null ? void 0 : _f.value) || "");
+    INITIAL_STATS_STAT = (routeMatch == null ? void 0 : routeMatch[2]) || cleanText7(((_d = nativeMain.querySelector("#stats_players")) == null ? void 0 : _d.value) || "goals") || "goals";
+    INITIAL_HISTORY_TYPE = cleanText7((historyMatch == null ? void 0 : historyMatch[1]) || ((_e = nativeMain.querySelector("#stats_type")) == null ? void 0 : _e.value) || "standings") || "standings";
+    INITIAL_HISTORY_SEASON = cleanText7((historyMatch == null ? void 0 : historyMatch[2]) || ((_f = nativeMain.querySelector("#stats_season")) == null ? void 0 : _f.value) || "");
     LEAGUE_FIXTURES_PROMISE = null;
     FRIENDLY_STATS_DOC_CACHE = null;
     FRIENDLY_HISTORY_DOC_CACHE = null;
     FRIENDLY_STATS_META = ACTIVE_TAB === "statistics" ? parseFriendlyLeagueStatisticsMeta(nativeMain) : null;
     FRIENDLY_HISTORY_META = ACTIVE_TAB === "history" ? parseFriendlyLeagueHistoryMeta(nativeMain) : null;
     if (ACTIVE_TAB !== "overview" && LEAGUE_ID) {
-      const overviewHtml = await TMLeagueService.fetchFriendlyLeaguePageHtml(LEAGUE_ID);
+      const overviewHtml = await TmLeagueModel.fetchFriendlyLeaguePageHtml(LEAGUE_ID);
       if (overviewHtml) {
         const overviewDoc = new DOMParser().parseFromString(overviewHtml, "text/html");
         const overviewRoot = overviewDoc.querySelector(".main_center");
@@ -13725,6 +13728,40 @@ order:initial
     }
   };
 
+  // src/services/quickmatch.js
+  var TmQuickmatchService = {
+    fetchRankings(show3 = "national") {
+      return _post("/ajax/quickmatch_get_content.ajax.php", { show: show3 });
+    },
+    queue(type, opponent = null) {
+      const payload = { type };
+      if (opponent !== null && opponent !== void 0 && opponent !== "") payload.opponent = opponent;
+      return _post("/ajax/quickmatch_queue.ajax.php", payload);
+    },
+    waitForMatch() {
+      return _post("/ajax/quickmatch_queue.ajax.php", { type: "wait" });
+    },
+    fetchLatestMatches() {
+      return _getHtml("/quickmatch/latest-matches/");
+    }
+  };
+
+  // src/models/quickmatch.js
+  var TmQuickmatchModel = {
+    waitForMatch() {
+      return TmQuickmatchService.waitForMatch();
+    },
+    fetchRankings(mode) {
+      return TmQuickmatchService.fetchRankings(mode);
+    },
+    queue(type, opponent) {
+      return TmQuickmatchService.queue(type, opponent);
+    },
+    fetchLatestMatches() {
+      return TmQuickmatchService.fetchLatestMatches();
+    }
+  };
+
   // src/pages/quickmatch.js
   var sourceRoot2 = null;
   var mountedMain = null;
@@ -13749,7 +13786,7 @@ order:initial
   var renderQueued = false;
   var queuePollTimer = null;
   var queueCountdown = null;
-  var cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var cleanText8 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml14 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var escapeAttr = (value) => escapeHtml14(value).replace(/`/g, "&#96;");
   var metricHtml4 = (opts) => TmUI.metric(opts);
@@ -13773,7 +13810,7 @@ order:initial
   var parseMenu5 = () => Array.from(sourceRoot2.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
     if (node.tagName === "HR") return [{ type: "separator" }];
     if (node.tagName !== "A") return [];
-    const label = cleanText9(node.textContent);
+    const label = cleanText8(node.textContent);
     return [{
       type: "link",
       href: node.getAttribute("href") || "#",
@@ -13788,12 +13825,12 @@ order:initial
   };
   var parseCostCopy = () => {
     var _a2;
-    return cleanText9(((_a2 = sourceRoot2.querySelector("#select_match_type .very_large")) == null ? void 0 : _a2.textContent) || "Costs 2 TM Pro Days");
+    return cleanText8(((_a2 = sourceRoot2.querySelector("#select_match_type .very_large")) == null ? void 0 : _a2.textContent) || "Costs 2 TM Pro Days");
   };
   var parseShowmatchGroups = () => {
     const labels = {};
     sourceRoot2.querySelectorAll("#match_type_show .tabs [set_active]").forEach((tab) => {
-      labels[tab.getAttribute("set_active")] = cleanText9(tab.textContent) || SHOW_GROUP_LABELS[tab.getAttribute("set_active")] || "Showmatch";
+      labels[tab.getAttribute("set_active")] = cleanText8(tab.textContent) || SHOW_GROUP_LABELS[tab.getAttribute("set_active")] || "Showmatch";
     });
     return Array.from(sourceRoot2.querySelectorAll("#match_type_show .tab_container > div[id]")).map((panel) => {
       var _a2, _b, _c;
@@ -13803,7 +13840,7 @@ order:initial
         const hoverText = node.querySelector(".hover_text");
         return {
           id: rawVal,
-          labelHtml: (hoverText == null ? void 0 : hoverText.innerHTML) || escapeHtml14(cleanText9(node.textContent)),
+          labelHtml: (hoverText == null ? void 0 : hoverText.innerHTML) || escapeHtml14(cleanText8(node.textContent)),
           disabled: node.classList.contains("disabled"),
           selected: node.classList.contains("selected")
         };
@@ -13811,8 +13848,8 @@ order:initial
       return {
         key,
         label: labels[key] || SHOW_GROUP_LABELS[key] || "Showmatch",
-        heading: cleanText9(((_a2 = panel.querySelector(".align_center strong, .division_champs")) == null ? void 0 : _a2.textContent) || labels[key] || ""),
-        subcopy: cleanText9(((_b = panel.querySelector(".align_center em, .align_center.large + ul, .align_center + em")) == null ? void 0 : _b.previousElementSibling) ? "" : ((_c = panel.querySelector("em")) == null ? void 0 : _c.textContent) || ""),
+        heading: cleanText8(((_a2 = panel.querySelector(".align_center strong, .division_champs")) == null ? void 0 : _a2.textContent) || labels[key] || ""),
+        subcopy: cleanText8(((_b = panel.querySelector(".align_center em, .align_center.large + ul, .align_center + em")) == null ? void 0 : _b.previousElementSibling) ? "" : ((_c = panel.querySelector("em")) == null ? void 0 : _c.textContent) || ""),
         options
       };
     }).filter((group) => group.options.length);
@@ -13836,13 +13873,13 @@ order:initial
     const onclick = (trigger == null ? void 0 : trigger.getAttribute("onclick")) || "";
     const match = onclick.match(/pop_region_select\(\s*'([^']*)'\s*,\s*'([^']+)'\s*\)/i);
     return {
-      label: cleanText9((trigger == null ? void 0 : trigger.textContent) || "Change"),
+      label: cleanText8((trigger == null ? void 0 : trigger.textContent) || "Change"),
       type: (match == null ? void 0 : match[1]) || "",
       pathTemplate: (match == null ? void 0 : match[2]) || "",
       canOpen: Boolean(match && typeof window.pop_region_select === "function")
     };
   };
-  var isStandingsHeaderText = (text) => /^(#|rank|rating|club|team|country|nation|league|division|statistics|stats?|pts?|points?)$/i.test(cleanText9(text));
+  var isStandingsHeaderText = (text) => /^(#|rank|rating|club|team|country|nation|league|division|statistics|stats?|pts?|points?)$/i.test(cleanText8(text));
   var findStandingsTableCandidate = (root2) => {
     const tables = Array.from((root2 == null ? void 0 : root2.querySelectorAll(".column2_a table, .column2 table, table")) || []);
     let best = null;
@@ -13852,7 +13889,7 @@ order:initial
       const clubLinks = table.querySelectorAll('a[href*="/club/"]').length;
       const statsLinks = table.querySelectorAll('a[href*="/statistics/club/"]').length;
       const headerRow = rows.find((row) => row.querySelectorAll("th").length) || rows[0] || null;
-      const headerTexts = Array.from((headerRow == null ? void 0 : headerRow.querySelectorAll("th, td")) || []).map((cell) => cleanText9(cell.textContent));
+      const headerTexts = Array.from((headerRow == null ? void 0 : headerRow.querySelectorAll("th, td")) || []).map((cell) => cleanText8(cell.textContent));
       const headerScore = headerTexts.filter(isStandingsHeaderText).length;
       const dataRows = rows.filter((row) => row.querySelectorAll("td").length >= 4 && row.querySelector('a[href*="/club/"]')).length;
       const score = clubLinks * 4 + statsLinks * 3 + headerScore * 2 + dataRows;
@@ -13867,7 +13904,7 @@ order:initial
     let best = null;
     boxes.forEach((box) => {
       var _a2;
-      const title = cleanText9(((_a2 = box.querySelector(".box_sub_header .large, .box_head h2, h2")) == null ? void 0 : _a2.textContent) || "");
+      const title = cleanText8(((_a2 = box.querySelector(".box_sub_header .large, .box_head h2, h2")) == null ? void 0 : _a2.textContent) || "");
       const table = findStandingsTableCandidate(box);
       const clubLinks = (table == null ? void 0 : table.querySelectorAll('a[href*="/club/"]').length) || 0;
       const score = (/standings/i.test(title) ? 10 : 0) + clubLinks;
@@ -13889,11 +13926,11 @@ order:initial
     if (!contentBox || !table) return null;
     const allRows = Array.from(table.querySelectorAll("tr"));
     const headerRow = table.querySelector("thead tr") || allRows.find((row) => row.querySelectorAll("th").length) || allRows.find((row) => {
-      const texts = Array.from(row.querySelectorAll("td")).map((cell) => cleanText9(cell.textContent));
+      const texts = Array.from(row.querySelectorAll("td")).map((cell) => cleanText8(cell.textContent));
       return texts.filter(isStandingsHeaderText).length >= 2;
     }) || allRows[0] || null;
     const headerCells = Array.from((headerRow == null ? void 0 : headerRow.querySelectorAll("th, td")) || []);
-    const headerLabels = headerCells.map((cell) => cleanText9(cell.textContent).toLowerCase());
+    const headerLabels = headerCells.map((cell) => cleanText8(cell.textContent).toLowerCase());
     const bodyRows = (table.tBodies.length ? Array.from(table.tBodies[0].rows) : Array.from(table.rows)).filter((row) => row !== headerRow && row.querySelectorAll("td").length >= 4 && row.querySelector('a[href*="/club/"]'));
     const findColumnIndex = (patterns, fallback) => {
       const foundIndex = headerLabels.findIndex((label) => patterns.some((pattern) => pattern.test(label)));
@@ -13909,12 +13946,12 @@ order:initial
       var _a3, _b, _c;
       const cells = Array.from(row.querySelectorAll("td"));
       if (cells.length < Math.max(headerCells.length || 0, 4)) return null;
-      const rank = cleanText9(((_a3 = cells[rankIndex]) == null ? void 0 : _a3.textContent) || String(rowIndex + 1));
-      const ratingText = cleanText9(((_b = cells[ratingIndex]) == null ? void 0 : _b.textContent) || "0");
+      const rank = cleanText8(((_a3 = cells[rankIndex]) == null ? void 0 : _a3.textContent) || String(rowIndex + 1));
+      const ratingText = cleanText8(((_b = cells[ratingIndex]) == null ? void 0 : _b.textContent) || "0");
       const rating = Number(String(ratingText).replace(/[^\d.-]/g, "")) || 0;
       const clubCell = cells[clubIndex];
       const clubLink = clubCell == null ? void 0 : clubCell.querySelector("a[href]");
-      const clubLabel = cleanText9((clubLink == null ? void 0 : clubLink.textContent) || (clubCell == null ? void 0 : clubCell.textContent) || "Club");
+      const clubLabel = cleanText8((clubLink == null ? void 0 : clubLink.textContent) || (clubCell == null ? void 0 : clubCell.textContent) || "Club");
       const clubHtml = buildLinkHtml((clubLink == null ? void 0 : clubLink.getAttribute("href")) || "", clubLabel, "tmvu-qm-standings-link");
       const statsCell = findCellByLinkPatterns(cells, [/\/statistics\/club\//i]) || cells[statsIndex] || null;
       const leagueCell = findCellByLinkPatterns(cells, [/\/league\//i, /\/league(?!-stats)/i]) || cells[leagueIndex] || null;
@@ -13925,7 +13962,7 @@ order:initial
         return hrefs.length === 0 || hrefs.some((href) => !/\/club\/|\/league\/|\/statistics\/club\//i.test(href));
       }) || cells[countryIndex] || null;
       const countryCode = extractFlagCode(countryCell);
-      const countryLabel = cleanText9((countryCell == null ? void 0 : countryCell.textContent) || "").replace(/^[-–]\s*/, "");
+      const countryLabel = cleanText8((countryCell == null ? void 0 : countryCell.textContent) || "").replace(/^[-–]\s*/, "");
       const countryLink = ((_c = countryCell == null ? void 0 : countryCell.querySelector("a[href]")) == null ? void 0 : _c.getAttribute("href")) || "";
       const countryInner = [
         countryCode ? renderFlag2(countryCode) : "",
@@ -13933,10 +13970,10 @@ order:initial
       ].filter(Boolean).join(" ");
       const countryHtml = countryInner ? countryLink ? `<a class="tmvu-qm-standings-country" href="${escapeAttr(countryLink)}">${countryInner}</a>` : `<span class="tmvu-qm-standings-country">${countryInner}</span>` : "";
       const leagueLink = leagueCell == null ? void 0 : leagueCell.querySelector("a[href]");
-      const leagueLabel = cleanText9((leagueLink == null ? void 0 : leagueLink.textContent) || (leagueCell == null ? void 0 : leagueCell.textContent) || "");
+      const leagueLabel = cleanText8((leagueLink == null ? void 0 : leagueLink.textContent) || (leagueCell == null ? void 0 : leagueCell.textContent) || "");
       const leagueHtml = leagueLabel ? buildLinkHtml((leagueLink == null ? void 0 : leagueLink.getAttribute("href")) || "", leagueLabel, "tmvu-qm-standings-link") : "";
       const statsLink = statsCell == null ? void 0 : statsCell.querySelector("a[href]");
-      const statsLabel = cleanText9((statsLink == null ? void 0 : statsLink.textContent) || (statsCell == null ? void 0 : statsCell.textContent) || "Open");
+      const statsLabel = cleanText8((statsLink == null ? void 0 : statsLink.textContent) || (statsCell == null ? void 0 : statsCell.textContent) || "Open");
       const statsHtml = statsLink ? `<a class="tmvu-qm-standings-stats" href="${escapeAttr(statsLink.getAttribute("href") || "")}">${escapeHtml14(statsLabel || "Open")}</a>` : escapeHtml14(statsLabel);
       return {
         rank: Number(String(rank).replace(/\D+/g, "")) || rowIndex + 1,
@@ -13950,7 +13987,7 @@ order:initial
         _rowClass: /highlighted_row/i.test(row.className || "") ? "tmvu-qm-rank-me" : ""
       };
     }).filter(Boolean);
-    const title = cleanText9(((_a2 = contentBox.querySelector(".box_sub_header .large, .box_head h2, h2")) == null ? void 0 : _a2.textContent) || "Complete Standings");
+    const title = cleanText8(((_a2 = contentBox.querySelector(".box_sub_header .large, .box_head h2, h2")) == null ? void 0 : _a2.textContent) || "Complete Standings");
     const regionAction = parseRegionAction(contentBox);
     return {
       title,
@@ -13979,9 +14016,9 @@ order:initial
       const matchLink = (_c = cells[2]) == null ? void 0 : _c.querySelector("a.match_link");
       if (!matchLink || !homeAnchor || !awayAnchor) return null;
       const matchId = ((_d = (matchLink.getAttribute("href") || "").match(/\/matches\/(\d+)\//)) == null ? void 0 : _d[1]) || "";
-      const score = cleanText9(matchLink.textContent);
+      const score = cleanText8(matchLink.textContent);
       const isPlayed = /\d/.test(score);
-      const rawDate = cleanText9(cells[0].textContent);
+      const rawDate = cleanText8(cells[0].textContent);
       const parts = rawDate.match(/(\d+)\.\s*(\w+)/);
       const MONTHS = { January: 0, February: 1, March: 2, April: 3, May: 4, June: 5, July: 6, August: 7, September: 8, October: 9, November: 10, December: 11 };
       let isoDate = rawDate;
@@ -13994,9 +14031,9 @@ order:initial
         date: isoDate,
         result: isPlayed ? score : "",
         hometeam: homeAnchor.getAttribute("club_link") || "",
-        hometeam_name: cleanText9(homeAnchor.textContent),
+        hometeam_name: cleanText8(homeAnchor.textContent),
         awayteam: awayAnchor.getAttribute("club_link") || "",
-        awayteam_name: cleanText9(awayAnchor.textContent),
+        awayteam_name: cleanText8(awayAnchor.textContent),
         matchtype_key: "ranked"
       };
     }).filter(Boolean);
@@ -14317,12 +14354,12 @@ order:initial
   var startQueuePolling = () => {
     stopQueuePolling();
     const poll = async () => {
-      const data = await TmQuickmatchService.waitForMatch();
+      const data = await TmQuickmatchModel.waitForMatch();
       if (Number(data == null ? void 0 : data.match_id) > 0) {
         window.location.href = `/matches/${data.match_id}/`;
         return;
       }
-      if (data == null ? void 0 : data.text) state2.queue.text = cleanText9(data.text);
+      if (data == null ? void 0 : data.text) state2.queue.text = cleanText8(data.text);
       queueRender();
       queuePollTimer = window.setTimeout(poll, 1e4);
     };
@@ -14333,7 +14370,7 @@ order:initial
       const wasActive = state2.queue.active;
       state2.queue.active = true;
       state2.queue.type = fallbackType || state2.queue.type || "";
-      state2.queue.text = cleanText9((data == null ? void 0 : data.text) || "Searching for a match...");
+      state2.queue.text = cleanText8((data == null ? void 0 : data.text) || "Searching for a match...");
       if (!wasActive) state2.queue.startedAt = Date.now();
       queueRender();
       if (Number(data == null ? void 0 : data.match_id) > 0) {
@@ -14355,22 +14392,22 @@ order:initial
     state2.rankedMode = mode;
     state2.rankedLoading = true;
     queueRender();
-    const data = await TmQuickmatchService.fetchRankings(mode);
+    const data = await TmQuickmatchModel.fetchRankings(mode);
     const rankingRows = Array.isArray(data == null ? void 0 : data.rankings) ? data.rankings.map((row, i) => ({ ...row, rank: i + 1 })) : Object.entries((data == null ? void 0 : data.rankings) || {}).sort((left, right) => Number(left[0]) - Number(right[0])).map(([key, row]) => ({ ...row, rank: Number(key) }));
     state2.rankedRows = rankingRows.length ? rankingRows.filter((row) => row && (row.club_link || row.club_name || row.name)).map((row) => ({
       rank: row.rank,
       rating: Number(row.rating) || 0,
-      division: cleanText9(row.division),
+      division: cleanText8(row.division),
       clubId: String(row.club_id || ""),
-      clubLinkHtml: row.club_link || escapeHtml14(cleanText9(row.club_name || row.name || "Club")),
-      country: cleanText9(row.country),
+      clubLinkHtml: row.club_link || escapeHtml14(cleanText8(row.club_name || row.name || "Club")),
+      country: cleanText8(row.country),
       isUser: Number(row.is_user) === 1
     })) : [];
     state2.rankedLoading = false;
     queueRender();
   };
   var checkExistingQueue = async () => {
-    const data = await TmQuickmatchService.queue("check");
+    const data = await TmQuickmatchModel.queue("check");
     applyQueueState(data);
   };
   var startRanked = async () => {
@@ -14381,7 +14418,7 @@ order:initial
     if (!state2.queue.startedAt) state2.queue.startedAt = Date.now();
     startQueueTick();
     queueRender();
-    const data = await TmQuickmatchService.queue("ranked");
+    const data = await TmQuickmatchModel.queue("ranked");
     if (!applyQueueState(data, "ranked")) {
       state2.queue.active = false;
       state2.queue.startedAt = null;
@@ -14398,7 +14435,7 @@ order:initial
       return;
     }
     state2.notice = "";
-    const data = await TmQuickmatchService.queue("showmatch", opponent);
+    const data = await TmQuickmatchModel.queue("showmatch", opponent);
     if (!applyQueueState(data, "showmatch")) {
       state2.notice = (data == null ? void 0 : data.error_text) || "Showmatch queue did not start.";
       queueRender();
@@ -14640,7 +14677,7 @@ order:initial
     fixtureContainer.className = "tmvu-qm-fixtures-bare";
     fixtureContainer.innerHTML = TmUI.loading("Loading matches...");
     TmClubFixturesStyles.inject();
-    TmQuickmatchService.fetchLatestMatches().then((html2) => {
+    TmQuickmatchModel.fetchLatestMatches().then((html2) => {
       const byMonth = parseQmLatestMatchesHtml(html2);
       if (!byMonth) {
         fixtureContainer.innerHTML = TmUI.empty("No recent quickmatch games found.");
@@ -15585,10 +15622,226 @@ order:initial
     listHtml
   };
 
+  // src/lib/scout.js
+  var Scout = {
+    create() {
+      return {
+        id: null,
+        firstname: null,
+        lastname: null,
+        name: null,
+        country: null,
+        age: null,
+        wage: null,
+        seniors: null,
+        youths: null,
+        physical: null,
+        tactical: null,
+        technical: null,
+        development: null,
+        psychology: null,
+        last_action: null,
+        away: false,
+        returns: null
+      };
+    },
+    createReport() {
+      return {
+        scout: null,
+        date: null,
+        age: null,
+        rec: null,
+        currentSkill: null,
+        specialist: { label: "Specialty", reliability: null, value: null },
+        development: [
+          { key: "potential", label: "Potential", reliability: null, value: null },
+          { key: "bloom", label: "Bloom", reliability: null, value: null },
+          { key: "devStatus", label: "Development status", reliability: null, value: null }
+        ],
+        peaks: [
+          { key: "physical", label: "Physique", reliability: null, value: null },
+          { key: "tactical", label: "Tactical", reliability: null, value: null },
+          { key: "technical", label: "Technical", reliability: null, value: null }
+        ],
+        personality: [
+          { key: "leadership", label: "Leadership", reliability: null, value: null },
+          { key: "professionalism", label: "Professionalism", reliability: null, value: null },
+          { key: "aggression", label: "Aggression", reliability: null, value: null }
+        ]
+      };
+    }
+  };
+
+  // src/utils/normalize/scout.js
+  var _confPct = (skill) => Math.round((parseInt(skill, 10) || 0) / 20 * 100);
+  var _extractTierVal = (txt) => {
+    const m = txt ? txt.match(/\((\d+)\/(\d+)\)/) : null;
+    return m ? { value: parseInt(m[1], 10), max: parseInt(m[2], 10) } : null;
+  };
+  var normalizeScout = (raw) => {
+    var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
+    const scout = Scout.create();
+    scout.id = (_a2 = raw.id) != null ? _a2 : null;
+    scout.firstname = (_b = raw.name) != null ? _b : null;
+    scout.lastname = (_c = raw.surname) != null ? _c : null;
+    scout.name = raw.name && raw.surname ? `${raw.name} ${raw.surname}` : null;
+    scout.country = (_d = raw.nationality) != null ? _d : null;
+    scout.age = (_e = raw.age) != null ? _e : null;
+    scout.wage = (_f = raw.wage) != null ? _f : null;
+    scout.seniors = (_g = raw.seniors) != null ? _g : null;
+    scout.youths = (_h = raw.youths) != null ? _h : null;
+    scout.physical = (_i = raw.physical) != null ? _i : null;
+    scout.tactical = (_j = raw.tactical) != null ? _j : null;
+    scout.technical = (_k = raw.technical) != null ? _k : null;
+    scout.development = (_l = raw.development) != null ? _l : null;
+    scout.psychology = (_m = raw.psychology) != null ? _m : null;
+    scout.last_action = (_n = raw.last_action) != null ? _n : null;
+    scout.away = (_o = raw.away) != null ? _o : false;
+    scout.returns = (_p = raw.returns) != null ? _p : null;
+    return scout;
+  };
+  var normalizeScoutReport = (raw, rawScoutsMap = {}) => {
+    var _a2, _b, _c, _d;
+    const report = Scout.createReport();
+    const scoutRaw = (_a2 = rawScoutsMap[String(raw.scoutid)]) != null ? _a2 : null;
+    report.scout = scoutRaw ? normalizeScout(scoutRaw) : Scout.create();
+    report.date = (_b = raw.done) != null ? _b : null;
+    report.age = raw.report_age != null ? parseFloat(raw.report_age) : null;
+    let potRel = null, bloomRel = null, phyRel = null, tacRel = null, tecRel = null, psyRel = null;
+    if (scoutRaw) {
+      const age = parseInt(raw.report_age, 10) || 0;
+      const senYth = age < 20 ? parseInt(scoutRaw.youths, 10) || 0 : parseInt(scoutRaw.seniors, 10) || 0;
+      const dev = parseInt(scoutRaw.development, 10) || 0;
+      potRel = _confPct(Math.min(senYth, dev));
+      bloomRel = _confPct(dev);
+      phyRel = _confPct(parseInt(scoutRaw.physical, 10) || 0);
+      tacRel = _confPct(parseInt(scoutRaw.tactical, 10) || 0);
+      tecRel = _confPct(parseInt(scoutRaw.technical, 10) || 0);
+      psyRel = _confPct(parseInt(scoutRaw.psychology, 10) || 0);
+    }
+    report.specialist = { label: "Specialty", reliability: null, value: raw.specialist != null ? parseInt(raw.specialist, 10) : null };
+    report.rec = raw.rec != null ? parseFloat(raw.rec) : null;
+    report.currentSkill = raw.current_skill != null ? parseInt(raw.current_skill, 10) : null;
+    report.development[0] = { key: "potential", label: "Potential", reliability: potRel, value: raw.old_pot != null ? parseInt(raw.old_pot, 10) : null };
+    report.development[1] = { key: "bloom", label: "Bloom", reliability: bloomRel, value: (_c = raw.bloom_status_txt) != null ? _c : null };
+    report.development[2] = { key: "devStatus", label: "Development status", reliability: bloomRel, value: (_d = raw.dev_status) != null ? _d : null };
+    report.peaks[0] = { key: "physical", label: "Physique", reliability: phyRel, value: _extractTierVal(raw.peak_phy_txt) };
+    report.peaks[1] = { key: "tactical", label: "Tactical", reliability: tacRel, value: _extractTierVal(raw.peak_tac_txt) };
+    report.peaks[2] = { key: "technical", label: "Technical", reliability: tecRel, value: _extractTierVal(raw.peak_tec_txt) };
+    report.personality[0] = { key: "leadership", label: "Leadership", reliability: psyRel, value: raw.charisma != null ? parseInt(raw.charisma, 10) : null };
+    report.personality[1] = { key: "professionalism", label: "Professionalism", reliability: psyRel, value: raw.professionalism != null ? parseInt(raw.professionalism, 10) : null };
+    report.personality[2] = { key: "aggression", label: "Aggression", reliability: psyRel, value: raw.aggression != null ? parseInt(raw.aggression, 10) : null };
+    return report;
+  };
+  var normalizeBestEstimate = (reports) => {
+    var _a2, _b, _c;
+    const regular = (reports || []).filter((r) => {
+      var _a3;
+      return ((_a3 = r.scout) == null ? void 0 : _a3.id) && r.scout.id !== "0";
+    });
+    if (!regular.length) return null;
+    const _pickBest = (getEntry) => {
+      var _a3;
+      let best = null, bestRel = -1, bestDate = "";
+      for (const r of regular) {
+        const entry = getEntry(r);
+        if (!entry) continue;
+        const rel = (_a3 = entry.reliability) != null ? _a3 : -1;
+        const d = r.date || "";
+        if (rel > bestRel || rel === bestRel && d > bestDate) {
+          best = r;
+          bestRel = rel;
+          bestDate = d;
+        }
+      }
+      return best;
+    };
+    const potReport = _pickBest((r) => {
+      var _a3;
+      return (_a3 = r.development) == null ? void 0 : _a3[0];
+    });
+    const bloomReport = _pickBest((r) => {
+      var _a3;
+      return (_a3 = r.development) == null ? void 0 : _a3[1];
+    });
+    const phyReport = _pickBest((r) => {
+      var _a3;
+      return (_a3 = r.peaks) == null ? void 0 : _a3[0];
+    });
+    const tacReport = _pickBest((r) => {
+      var _a3;
+      return (_a3 = r.peaks) == null ? void 0 : _a3[1];
+    });
+    const tecReport = _pickBest((r) => {
+      var _a3;
+      return (_a3 = r.peaks) == null ? void 0 : _a3[2];
+    });
+    const psyReport = _pickBest((r) => {
+      var _a3;
+      return (_a3 = r.personality) == null ? void 0 : _a3[0];
+    });
+    const estimate = Scout.createReport();
+    estimate.rec = (_a2 = potReport == null ? void 0 : potReport.rec) != null ? _a2 : null;
+    let specVal = null;
+    for (const r of [phyReport, tacReport, tecReport]) {
+      if (r && ((_c = (_b = r.specialist) == null ? void 0 : _b.value) != null ? _c : 0) > 0) {
+        specVal = r.specialist.value;
+        break;
+      }
+    }
+    estimate.specialist = { label: "Specialty", reliability: null, value: specVal };
+    if (potReport) estimate.development[0] = { ...potReport.development[0] };
+    if (bloomReport) estimate.development[1] = { ...bloomReport.development[1] };
+    if (bloomReport) estimate.development[2] = { ...bloomReport.development[2] };
+    if (phyReport) estimate.peaks[0] = { ...phyReport.peaks[0] };
+    if (tacReport) estimate.peaks[1] = { ...tacReport.peaks[1] };
+    if (tecReport) estimate.peaks[2] = { ...tecReport.peaks[2] };
+    if (psyReport) {
+      estimate.personality[0] = { ...psyReport.personality[0] };
+      estimate.personality[1] = { ...psyReport.personality[1] };
+      estimate.personality[2] = { ...psyReport.personality[2] };
+    }
+    return estimate;
+  };
+
+  // src/services/scouts.js
+  var TmScoutsService = {
+    async fetchPlayerScouting(playerId) {
+      var _a2;
+      const data = await _post("/ajax/players_get_info.ajax.php", {
+        player_id: playerId,
+        type: "scout",
+        show_non_pro_graphs: true
+      });
+      if (!data) return null;
+      const rawScouts = (_a2 = data.scouts) != null ? _a2 : {};
+      const scouts = Object.fromEntries(
+        Object.entries(rawScouts).map(([id, raw]) => [id, normalizeScout(raw)])
+      );
+      const reports = Array.isArray(data.reports) ? data.reports.map((raw) => normalizeScoutReport(raw, rawScouts)) : [];
+      const interested = Array.isArray(data.interested) ? data.interested.map((club) => normalizeClubFromScoutReport(club)) : [];
+      const bestEstimate = normalizeBestEstimate(reports);
+      return { reports, scouts, interested, bestEstimate };
+    },
+    fetchReports() {
+      return _post("/ajax/scouts_get_reports.ajax.php", {});
+    }
+  };
+
+  // src/models/scouts.js
+  var TmScoutsModel = {
+    fetchPlayerScouting(playerId) {
+      return TmScoutsService.fetchPlayerScouting(playerId);
+    },
+    fetchReports() {
+      return TmScoutsService.fetchReports();
+    }
+  };
+
   // src/pages/scouts.js
   var STYLE_ID31 = "tmvu-scouts-style";
   var mainColumn2 = null;
-  var cleanText10 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml15 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var parseNumber = (value) => {
     const num = parseFloat(String(value != null ? value : "").replace(/[^\d.-]/g, ""));
@@ -15597,13 +15850,13 @@ order:initial
   var parseCellNumber = (cell) => {
     if (!cell) return 0;
     const img = cell.querySelector("img[alt], img[title]");
-    return parseInt((img == null ? void 0 : img.getAttribute("alt")) || (img == null ? void 0 : img.getAttribute("title")) || cleanText10(cell.textContent), 10) || 0;
+    return parseInt((img == null ? void 0 : img.getAttribute("alt")) || (img == null ? void 0 : img.getAttribute("title")) || cleanText9(cell.textContent), 10) || 0;
   };
-  var formatPosition = (value) => cleanText10(String(value || "")).split(",").filter(Boolean).map((part) => part.trim().toUpperCase()).join(", ") || "-";
+  var formatPosition = (value) => cleanText9(String(value || "")).split(",").filter(Boolean).map((part) => part.trim().toUpperCase()).join(", ") || "-";
   var parseMenu6 = (sourceRoot3) => Array.from(sourceRoot3.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
     if (node.tagName === "HR") return [{ type: "separator" }];
     if (node.tagName !== "A") return [];
-    const label = cleanText10(node.textContent);
+    const label = cleanText9(node.textContent);
     const href = node.getAttribute("href") || "#";
     let icon = "\u{1F9ED}";
     if (/hire/i.test(label)) icon = "\u2795";
@@ -15615,9 +15868,9 @@ order:initial
     return rows.map((row) => {
       const cells = row.querySelectorAll("td");
       if (cells.length < 9) return null;
-      const nameCell = cleanText10(cells[0].textContent);
+      const nameCell = cleanText9(cells[0].textContent);
       const match = nameCell.match(/^(.*)\((\d+)\)$/);
-      const fullName = cleanText10((match == null ? void 0 : match[1]) || nameCell);
+      const fullName = cleanText9((match == null ? void 0 : match[1]) || nameCell);
       const age = parseInt((match == null ? void 0 : match[2]) || "0", 10) || 0;
       const fireLink = row.querySelector('a[href*="fire_scout_pop"]');
       const fireHref = (fireLink == null ? void 0 : fireLink.getAttribute("href")) || "";
@@ -15647,11 +15900,11 @@ order:initial
     const playerIdMatch = playerHref.match(/\/players\/(\d+)\//);
     const playerId = (playerIdMatch == null ? void 0 : playerIdMatch[1]) || "";
     if (!playerAnchor || !playerId) return null;
-    const displayTime = cleanText10(cells[0].textContent);
+    const displayTime = cleanText9(cells[0].textContent);
     return {
       id: playerId,
       playerId,
-      name: cleanText10(playerAnchor.textContent),
+      name: cleanText9(playerAnchor.textContent),
       playerHref,
       playerHtml: cells[1].innerHTML,
       displayTime,
@@ -15683,10 +15936,10 @@ order:initial
       return {
         id: String(report.id || report.playerid || ""),
         playerId: String(report.playerid || ""),
-        name: cleanText10(report.name || ""),
+        name: cleanText9(report.name || ""),
         playerHref,
-        displayTime: cleanText10(report.display_time || report.done || ""),
-        done: cleanText10(report.done || ""),
+        displayTime: cleanText9(report.display_time || report.done || ""),
+        done: cleanText9(report.done || ""),
         doneTs: Date.parse(report.done || "") || 0,
         displayRec: parseNumber((_a2 = report.display_rec) != null ? _a2 : report.rec),
         potentialStars: (parseNumber(report.potential) || 0) / 2,
@@ -15694,7 +15947,7 @@ order:initial
         skillPotential: parseNumber(report.skill_potential),
         age: parseInt(report.age || "0", 10) || 0,
         position: formatPosition(report.favposition),
-        country: cleanText10(report.nationalitet || ""),
+        country: cleanText9(report.nationalitet || ""),
         scoutId: String(report.scoutid || ""),
         scoutName: (scout == null ? void 0 : scout.fullName) || `Scout ${report.scoutid || ""}`,
         peakPhy: parseInt(report.peak_phy || "0", 10) || 0,
@@ -15724,12 +15977,16 @@ order:initial
       try {
         const [tooltipData, scoutData] = await Promise.all([
           TmPlayerModel.fetchPlayerTooltip(report.playerId),
-          TmPlayerModel.fetchPlayerInfo(report.playerId, "scout")
+          TmScoutsModel.fetchPlayerScouting(report.playerId)
         ]);
+        if (tooltipData && scoutData) {
+          tooltipData.scoutReports = scoutData.reports || [];
+          tooltipData.bestEstimate = scoutData.bestEstimate || null;
+        }
         return {
           ...report,
-          currentAge: (tooltipData == null ? void 0 : tooltipData.player) ? `${tooltipData.player.age}.${tooltipData.player.months || 0}` : "",
-          tooltipPlayer: (tooltipData == null ? void 0 : tooltipData.player) && Array.isArray(tooltipData.player.skills) ? tooltipData.player : null,
+          currentAge: tooltipData ? `${tooltipData.age}.${tooltipData.month || 0}` : "",
+          tooltipPlayer: tooltipData && Array.isArray(tooltipData.skills) ? tooltipData : null,
           fullScoutData: Array.isArray(scoutData == null ? void 0 : scoutData.reports) && scoutData.reports.length ? scoutData : null
         };
       } catch (e) {
@@ -16016,7 +16273,7 @@ order:initial
   var boot = async (main2, sourceRoot3) => {
     injectStyles23();
     const scouts = parseScoutsFromDom(sourceRoot3);
-    const response = await TmScoutsService.fetchReports();
+    const response = await TmScoutsModel.fetchReports();
     const reports = response && Object.keys(response).length ? normalizeReports(response, scouts) : parseFallbackReports(sourceRoot3);
     renderPage2(main2, sourceRoot3, scouts, reports);
     const enrichedReports = await enrichReports(reports);
@@ -16031,13 +16288,13 @@ order:initial
 
   // src/pages/scouts-hire.js
   var STYLE_ID32 = "tmvu-scouts-hire-style";
-  var cleanText11 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var cleanText10 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var buttonHtml5 = (opts) => TmUI.button(opts).outerHTML;
   var skillHtml = (value) => TmUI.skillBadge(value);
   var parseMoneyText = (value) => {
     var _a2;
-    const text = cleanText11(value);
+    const text = cleanText10(value);
     const number = parseFloat(((_a2 = text.replace(/,/g, "").match(/[\d.]+/)) == null ? void 0 : _a2[0]) || "0");
     if (!Number.isFinite(number)) return 0;
     if (/\bmil\b/i.test(text)) return Math.round(number * 1e6);
@@ -16046,13 +16303,13 @@ order:initial
   };
   var parseSkillCell = (cell) => {
     const img = cell == null ? void 0 : cell.querySelector("img[alt], img[title]");
-    const raw = (img == null ? void 0 : img.getAttribute("alt")) || (img == null ? void 0 : img.getAttribute("title")) || cleanText11(cell == null ? void 0 : cell.textContent);
+    const raw = (img == null ? void 0 : img.getAttribute("alt")) || (img == null ? void 0 : img.getAttribute("title")) || cleanText10(cell == null ? void 0 : cell.textContent);
     return parseInt(raw || "0", 10) || 0;
   };
   var parseMenu7 = (sourceRoot3) => Array.from(sourceRoot3.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
     if (node.tagName === "HR") return [{ type: "separator" }];
     if (node.tagName !== "A") return [];
-    const label = cleanText11(node.textContent);
+    const label = cleanText10(node.textContent);
     let icon = "\u{1F9ED}";
     if (/hire/i.test(label)) icon = "\u2795";
     else if (/wage/i.test(label)) icon = "\u{1F4B0}";
@@ -16070,9 +16327,9 @@ order:initial
       var _a2, _b, _c, _d, _e, _f;
       const cells = Array.from(row.querySelectorAll("td"));
       if (cells.length < 9) return null;
-      const heading = cleanText11(((_a2 = cells[0].querySelector("span")) == null ? void 0 : _a2.textContent) || cells[0].textContent);
+      const heading = cleanText10(((_a2 = cells[0].querySelector("span")) == null ? void 0 : _a2.textContent) || cells[0].textContent);
       const nameMatch = heading.match(/^(.*?)\((\d+)\s*Years?\)$/i);
-      const metaText = cleanText11(((_b = cells[0].querySelector(".subtle")) == null ? void 0 : _b.textContent) || "");
+      const metaText = cleanText10(((_b = cells[0].querySelector(".subtle")) == null ? void 0 : _b.textContent) || "");
       const wageParts = metaText.split(/,\s*Sign-on fee:\s*/i);
       let hireHref = "";
       let countryHref = "";
@@ -16091,13 +16348,13 @@ order:initial
       const development = parseSkillCell(cells[6]);
       const psychology = parseSkillCell(cells[7]);
       const overall = Number(((seniors + youths + physical + tactical + technical + development + psychology) / 7).toFixed(1));
-      const wageLabel = cleanText11(wageParts[0].replace(/^Wage:\s*/i, "") || "0");
-      const signOnFeeLabel = cleanText11(wageParts[1] || "0");
+      const wageLabel = cleanText10(wageParts[0].replace(/^Wage:\s*/i, "") || "0");
+      const signOnFeeLabel = cleanText10(wageParts[1] || "0");
       const wageValue = TmUtils.parseNum(wageLabel);
       const signOnFeeValue = parseMoneyText(signOnFeeLabel);
       return {
         id,
-        fullName: cleanText11((nameMatch == null ? void 0 : nameMatch[1]) || heading),
+        fullName: cleanText10((nameMatch == null ? void 0 : nameMatch[1]) || heading),
         age: parseInt((nameMatch == null ? void 0 : nameMatch[2]) || "0", 10) || 0,
         countryCode,
         wageLabel,
@@ -16268,7 +16525,7 @@ order:initial
     table.addEventListener("click", (event) => {
       const trigger = event.target.closest("[data-scout-hire]");
       if (!trigger) return;
-      const candidate = candidatesById.get(cleanText11(trigger.getAttribute("data-scout-hire")));
+      const candidate = candidatesById.get(cleanText10(trigger.getAttribute("data-scout-hire")));
       if (!candidate) return;
       event.preventDefault();
       if (typeof window.hire_scout_pop === "function") {
@@ -16313,11 +16570,11 @@ order:initial
   var STYLE_ID33 = "tmvu-sponsors-style";
   var refreshTimer = 0;
   var sponsorObserver = null;
-  var cleanText12 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var cleanText11 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml17 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  var parseMoney4 = (value) => TmUtils.parseNum(cleanText12(value));
+  var parseMoney4 = (value) => TmUtils.parseNum(cleanText11(value));
   var formatMoney4 = (value) => Number(value || 0).toLocaleString("en-US");
-  var titleize = (value) => cleanText12(value).replace(/[_-]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+  var titleize = (value) => cleanText11(value).replace(/[_-]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
   var actionButton = (label, onClick) => TmUI.button({
     label,
     color: "secondary",
@@ -16622,7 +16879,7 @@ order:initial
   var parseMenu8 = (sourceRoot3) => Array.from(sourceRoot3.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
     if (node.tagName === "HR") return [{ type: "separator" }];
     if (node.tagName !== "A") return [];
-    const label = cleanText12(node.textContent);
+    const label = cleanText11(node.textContent);
     return [{
       type: "link",
       href: node.getAttribute("href") || "#",
@@ -16647,7 +16904,7 @@ order:initial
   };
   var extractOptionNote = (row, optionLabel, bonusText) => {
     if (!row) return "";
-    const texts = Array.from(row.querySelectorAll("th, td")).map((cell) => cleanText12(cell.textContent)).filter(Boolean).filter((text) => text !== optionLabel && text !== bonusText);
+    const texts = Array.from(row.querySelectorAll("th, td")).map((cell) => cleanText11(cell.textContent)).filter(Boolean).filter((text) => text !== optionLabel && text !== bonusText);
     return texts.join(" | ");
   };
   var findOptionImage = (radio, labelNode) => {
@@ -16668,7 +16925,7 @@ order:initial
   var parseGoalGroups = (box) => {
     if (!box) return [];
     return Array.from(box.querySelectorAll("h3")).map((heading) => {
-      const title = cleanText12(heading.textContent);
+      const title = cleanText11(heading.textContent);
       let section = heading.nextElementSibling;
       while (section && !section.matches(".std, form, table")) {
         if (section.matches("h3")) return null;
@@ -16683,9 +16940,9 @@ order:initial
         options: radios.map((radio) => {
           const row = radio.closest("tr") || radio.parentElement;
           const labelNode = getLabelForInput(section, radio) || getLabelForInput(box, radio) || (row == null ? void 0 : row.querySelector("label"));
-          const optionLabel = cleanText12((labelNode == null ? void 0 : labelNode.textContent) || radio.value || radio.name);
+          const optionLabel = cleanText11((labelNode == null ? void 0 : labelNode.textContent) || radio.value || radio.name);
           const bonusNode = row == null ? void 0 : row.querySelector("td.align_right, .align_right");
-          const bonusText = cleanText12((bonusNode == null ? void 0 : bonusNode.textContent) || "0");
+          const bonusText = cleanText11((bonusNode == null ? void 0 : bonusNode.textContent) || "0");
           const imageNode = findOptionImage(radio, labelNode);
           return {
             id: radio.id || "",
@@ -16704,7 +16961,7 @@ order:initial
   var parseOfferActions = (node) => {
     const seen = /* @__PURE__ */ new Set();
     return Array.from(node.querySelectorAll('.msgbuttons .button_border, .msgbuttons button, .msgbuttons input[type="button"], .msgbuttons input[type="submit"], a.button_border')).map((element) => {
-      const label = cleanText12(element.value || element.textContent || element.getAttribute("title") || "Action");
+      const label = cleanText11(element.value || element.textContent || element.getAttribute("title") || "Action");
       const key = `${label}|${element.getAttribute("onclick") || ""}`;
       if (!label || seen.has(key)) return null;
       seen.add(key);
@@ -16719,7 +16976,7 @@ order:initial
         offers: []
       };
     }
-    const hostText = cleanText12(host.textContent);
+    const hostText = cleanText11(host.textContent);
     if (host.querySelector(".loading_animation") || /loading/i.test(hostText)) {
       return {
         status: "loading",
@@ -16733,8 +16990,8 @@ order:initial
       var _a2;
       const image = node.querySelector("img");
       const moneyNode = node.querySelector(".large.bold, .very_large .coin_big, .coin_big, .coin");
-      const title = cleanText12(((_a2 = node.querySelector("h1, h2, h3, strong, b")) == null ? void 0 : _a2.textContent) || "Sponsor Offer");
-      const paragraphs = Array.from(node.querySelectorAll("p, li")).map((item) => cleanText12(item.textContent)).filter(Boolean);
+      const title = cleanText11(((_a2 = node.querySelector("h1, h2, h3, strong, b")) == null ? void 0 : _a2.textContent) || "Sponsor Offer");
+      const paragraphs = Array.from(node.querySelectorAll("p, li")).map((item) => cleanText11(item.textContent)).filter(Boolean);
       const detailSet = /* @__PURE__ */ new Set();
       const details = paragraphs.filter((text) => {
         if (detailSet.has(text)) return false;
@@ -16746,7 +17003,7 @@ order:initial
       const meta = details.filter((text) => text !== contract && text !== expires);
       const actions = parseOfferActions(node);
       const amount = parseMoney4((moneyNode == null ? void 0 : moneyNode.textContent) || "0");
-      const fallbackText = cleanText12(node.textContent);
+      const fallbackText = cleanText11(node.textContent);
       if (!amount && !contract && !image && !actions.length && !fallbackText) return null;
       return {
         title,
@@ -17111,6 +17368,132 @@ order:initial
     attachSharedShadowStyles(shadow);
   };
 
+  // src/services/training.js
+  var TRAINING_SKILL_NAMES = {
+    strength: "Strength",
+    stamina: "Stamina",
+    pace: "Pace",
+    marking: "Marking",
+    tackling: "Tackling",
+    workrate: "Workrate",
+    positioning: "Positioning",
+    passing: "Passing",
+    crossing: "Crossing",
+    technique: "Technique",
+    heading: "Heading",
+    finishing: "Finishing",
+    longshots: "Longshots",
+    set_pieces: "Set Pieces"
+  };
+  var TmTrainingService = {
+    adaptSquadTraining(player2) {
+      var _a2, _b;
+      if (player2 == null ? void 0 : player2.isGK) return { custom: { gk: true } };
+      const customArr = Array.isArray((_a2 = player2 == null ? void 0 : player2.training) == null ? void 0 : _a2.custom) ? player2.training.custom : [];
+      const isCustom = customArr.length === 6 && customArr.some((v) => v > 0);
+      const custom = {};
+      for (let index = 0; index < 6; index++) {
+        custom[`team${index + 1}`] = {
+          points: isCustom ? customArr[index] || 0 : 0,
+          skills: [],
+          label: TmConst.TRAINING_LABELS[index] || `Team ${index + 1}`
+        };
+      }
+      custom.points_spend = 0;
+      return {
+        custom: {
+          gk: false,
+          custom_on: isCustom ? 1 : 0,
+          team: String(((_b = player2 == null ? void 0 : player2.training) == null ? void 0 : _b.standard) || "3"),
+          custom
+        }
+      };
+    },
+    normalizeTrainingState(data) {
+      const custom = data == null ? void 0 : data.custom;
+      if (!custom || custom.gk) {
+        return {
+          isGK: true,
+          customOn: false,
+          currentType: "",
+          maxPool: 0,
+          totalAllocated: 0,
+          remaining: 0,
+          teams: [],
+          modeLabel: "Goalkeeper",
+          typeLabel: "Automatic",
+          dots: ""
+        };
+      }
+      const customData = custom.custom || {};
+      const teams = Array.from({ length: 6 }, (_, index) => {
+        const team = customData[`team${index + 1}`] || {};
+        return {
+          num: index + 1,
+          label: team.label || TmConst.TRAINING_LABELS[index] || `Team ${index + 1}`,
+          points: parseInt(team.points, 10) || 0,
+          skills: Array.isArray(team.skills) ? team.skills : [],
+          skillLabels: Array.isArray(team.skills) ? team.skills.map((skill) => TRAINING_SKILL_NAMES[skill] || skill) : []
+        };
+      });
+      const totalAllocated = teams.reduce((sum, team) => sum + team.points, 0);
+      const pointsSpend = parseInt(customData.points_spend, 10) || 0;
+      const maxPool = Math.max(totalAllocated + pointsSpend, totalAllocated, 10);
+      const currentType = String(custom.team || "3");
+      const customOn = Boolean(custom.custom_on);
+      return {
+        isGK: false,
+        customOn,
+        currentType,
+        maxPool,
+        totalAllocated,
+        remaining: Math.max(0, maxPool - totalAllocated),
+        teams,
+        modeLabel: customOn ? "Custom" : "Standard",
+        typeLabel: TmConst.TRAINING_NAMES[currentType] || "Unknown",
+        dots: teams.map((team) => team.points).join("")
+      };
+    },
+    /**
+     * Save a custom training plan.
+     * The caller is responsible for building the full training_post payload.
+     * @param {object} data — fully-formed training_post payload
+     * @returns {Promise<void>}
+     */
+    async saveTraining(data) {
+      await _post("/ajax/training_post.ajax.php", data);
+    },
+    /**
+     * Save the training type / position group for a player.
+     * @param {string|number} playerId
+     * @param {string|number} teamId
+     * @returns {Promise<void>}
+     */
+    async saveTrainingType(playerId, teamId) {
+      await _post("/ajax/training_post.ajax.php", {
+        type: "player_pos",
+        player_id: playerId,
+        team_id: teamId
+      });
+    }
+  };
+
+  // src/models/training.js
+  var TmTrainingModel = {
+    adaptSquadTraining(player2) {
+      return TmTrainingService.adaptSquadTraining(player2);
+    },
+    normalizeTrainingState(raw) {
+      return TmTrainingService.normalizeTrainingState(raw);
+    },
+    saveTraining(data) {
+      return TmTrainingService.saveTraining(data);
+    },
+    saveTrainingType(playerId, teamId) {
+      return TmTrainingService.saveTrainingType(playerId, teamId);
+    }
+  };
+
   // src/components/player/training/standard-training.js
   var mountStandardTraining = (el2, player2, { readOnly = false, onStateChange = null } = {}) => {
     let currentType = String(player2.training.standard || "3");
@@ -17130,7 +17513,7 @@ order:initial
       if (value !== currentType) {
         currentType = value;
         player2.training.standard = value;
-        TmTrainingService.saveTrainingType(player2.id, value);
+        TmTrainingModel.saveTrainingType(player2.id, value);
         onStateChange == null ? void 0 : onStateChange(player2.training);
       }
     };
@@ -17278,7 +17661,7 @@ order:initial
           d[`${p}[points]`] = pts;
           d[`${p}[skills][]`] = [];
         });
-        TmTrainingService.saveTraining(d);
+        TmTrainingModel.saveTraining(d);
       }, 300);
     };
     const updateUI = () => {
@@ -17444,7 +17827,7 @@ order:initial
         render16(container, { player: player3, readOnly: true });
       } else {
         container.innerHTML = TmUI.loading();
-        TmClubModel2.fetchSquadRaw(player3.club_id).then((squad) => {
+        TmClubModel.fetchSquadRaw(player3.club_id).then((squad) => {
           const found = (squad || []).find((p) => Number(p.id) === Number(player3.id));
           if (!found) {
             container.innerHTML = TmUI.error("Player not found in squad data");
@@ -17509,7 +17892,7 @@ order:initial
     notice: "",
     selectedPlayerId: ""
   };
-  var cleanText13 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var cleanText12 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml18 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var formatAge = (years, months) => `${Number(years) || 0}.${String(Number(months) || 0).padStart(2, "0")}`;
   var htmlOf5 = (node) => (node == null ? void 0 : node.outerHTML) || "";
@@ -17517,13 +17900,13 @@ order:initial
   var metricHtml6 = (opts) => TmUI.metric(opts);
   var badgeHtml2 = (opts, tone = "muted") => TmUI.badge({ size: "md", shape: "full", weight: "bold", ...opts }, tone);
   var inputHtml2 = (opts) => htmlOf5(TmUI.input({ tone: "overlay", density: "comfy", ...opts }));
-  var getOwnClubId3 = () => {
+  var getOwnClubId2 = () => {
     var _a2, _b, _c;
-    return cleanText13(((_a2 = window.SESSION) == null ? void 0 : _a2.main_id) || ((_b = window.SESSION) == null ? void 0 : _b.club_id) || ((_c = window.SESSION) == null ? void 0 : _c.id));
+    return cleanText12(((_a2 = window.SESSION) == null ? void 0 : _a2.main_id) || ((_b = window.SESSION) == null ? void 0 : _b.club_id) || ((_c = window.SESSION) == null ? void 0 : _c.id));
   };
   var getBTeamClubId = () => {
     var _a2;
-    return cleanText13((_a2 = window.SESSION) == null ? void 0 : _a2.b_team);
+    return cleanText12((_a2 = window.SESSION) == null ? void 0 : _a2.b_team);
   };
   var injectStyles26 = () => {
     if (document.getElementById(STYLE_ID35)) return;
@@ -17703,7 +18086,7 @@ order:initial
       positions: preferred.length ? preferred : player2.positions.slice(0, 1),
       favposition: preferred.map((p) => p.key).join(","),
       training: { standard: player2.training.standard, custom: custom6 },
-      trainingState: TmTrainingService.normalizeTrainingState(TmTrainingService.adaptSquadTraining(player2)),
+      trainingState: TmTrainingModel.normalizeTrainingState(TmTrainingModel.adaptSquadTraining(player2)),
       trainingLoaded: true,
       trainingLoading: false,
       trainingError: "",
@@ -17711,11 +18094,11 @@ order:initial
     };
   };
   var getFilteredPlayers = () => {
-    const query = cleanText13(state3.query).toLowerCase();
+    const query = cleanText12(state3.query).toLowerCase();
     if (!query) return state3.players;
     return state3.players.filter((player2) => {
-      const name = cleanText13(player2.name).toLowerCase();
-      const pos = cleanText13(player2.favposition).toLowerCase();
+      const name = cleanText12(player2.name).toLowerCase();
+      const pos = cleanText12(player2.favposition).toLowerCase();
       return name.includes(query) || pos.includes(query);
     });
   };
@@ -17907,8 +18290,8 @@ order:initial
       player: player2,
       readOnly: false,
       onStateChange: (rawTraining) => {
-        const trainingState = TmTrainingService.normalizeTrainingState(
-          TmTrainingService.adaptSquadTraining({ isGK: player2.isGK, training: rawTraining })
+        const trainingState = TmTrainingModel.normalizeTrainingState(
+          TmTrainingModel.adaptSquadTraining({ isGK: player2.isGK, training: rawTraining })
         );
         updatePlayer(player2.id, (p) => ({
           ...p,
@@ -17950,7 +18333,7 @@ order:initial
     }
   };
   var init = async () => {
-    const ownClubId = getOwnClubId3();
+    const ownClubId = getOwnClubId2();
     const bTeamClubId = getBTeamClubId();
     if (!ownClubId) {
       throw new Error("Training club context was not available yet.");
@@ -17982,7 +18365,7 @@ order:initial
     try {
       await init();
     } catch (error) {
-      if (!getOwnClubId3()) {
+      if (!getOwnClubId2()) {
         window.setTimeout(() => initTrainingPage(main2), 0);
         return;
       }
@@ -18234,6 +18617,83 @@ order:initial
     }
   };
 
+  // src/utils/normalize/youth.js
+  var normalizeYouthPlayer = (raw) => {
+    var _a2;
+    const player2 = Player.create();
+    player2.id = Number(raw.id || raw.player_id || 0);
+    player2.age = Number(raw.age) || 0;
+    player2.month = Number(raw.months || raw.month || 0);
+    player2.ageMonths = player2.age * 12 + player2.month;
+    player2.ageMonthsString = `${player2.age}.${player2.month}`;
+    const rawName = raw.player_name || raw.name || "";
+    player2.name = String(rawName);
+    player2.lastname = String(raw.lastname || rawName.split(" ").pop() || "");
+    player2.firstname = player2.name.replace(player2.lastname, "").trim();
+    player2.country = raw.country || null;
+    player2.isGK = String(raw.favposition || "").split(",").map((s6) => s6.trim().toUpperCase()).includes("GK");
+    const rawAsi = (_a2 = raw.skill_index) != null ? _a2 : raw.asi;
+    player2.asi = rawAsi != null ? TmUtils.parseNum(rawAsi, null) : null;
+    if (Array.isArray(raw.skills) && raw.skills.length) {
+      TmUtils.applyTooltipSkills(player2, raw.skills);
+    } else {
+      TmUtils.applySquadSkills(player2, raw);
+    }
+    TmUtils.applyPlayerPositions(player2, String(raw.favposition || ""));
+    if (player2.asi == null && player2.skills.length > 0) {
+      const weight = player2.isGK ? ASI_WEIGHT_GK : ASI_WEIGHT_OUTFIELD;
+      const skillSum = player2.skills.reduce((s6, sk) => s6 + (Number(sk.value) || 0), 0);
+      if (skillSum > 0) player2.asi = Math.pow(skillSum, 7) / weight;
+    }
+    player2.skills = TmLib.calcSkillDecimalsSimple(player2);
+    applyPlayerPositionRatings(player2);
+    player2.youthRecommendationHtml = raw.youthRecommendationHtml || raw.recom_html || raw.rec_stars || null;
+    player2.youthFee = Number(raw.youthFee || raw.fee || 0);
+    return player2;
+  };
+
+  // src/services/youth.js
+  var TmYouthService = {
+    async fetchYouthPlayers(options = {}) {
+      return _dedup("youth:players:nosync", async () => {
+        const data = await _post("/ajax/youth.ajax.php", { type: "get" });
+        if (!data || !Array.isArray(data.players)) return null;
+        return {
+          cash: data.cash,
+          squad_size: data.squad_size,
+          players: data.players.map(normalizeYouthPlayer).reverse()
+        };
+      });
+    },
+    async fetchNewYouthPlayers({ age, position } = {}) {
+      const data = await _post("/ajax/youth.ajax.php", { type: "new", age, position });
+      if (!data) return null;
+      if (data.error) return { error: String(data.error) };
+      const rawPlayers = Object.values(data).filter((p) => p && typeof p === "object" && (p.id || p.player_id));
+      return { players: rawPlayers.map(normalizeYouthPlayer) };
+    },
+    actOnYouthPlayer({ playerId, action }) {
+      return _post("/ajax/youth.ajax.php", {
+        type: "act",
+        player_id: playerId,
+        action
+      });
+    }
+  };
+
+  // src/models/youth.js
+  var TmYouthModel = {
+    fetchNewYouthPlayers(opts) {
+      return TmYouthService.fetchNewYouthPlayers(opts);
+    },
+    fetchYouthPlayers(opts) {
+      return TmYouthService.fetchYouthPlayers(opts);
+    },
+    actOnYouthPlayer(opts) {
+      return TmYouthService.actOnYouthPlayer(opts);
+    }
+  };
+
   // src/pages/youth-development.js
   var mountedMain3 = null;
   var mainColumn4 = null;
@@ -18345,7 +18805,7 @@ order:initial
     if (state4.busy || !state4.pull.available || !state4.pull.visible) return;
     setBusy(true);
     try {
-      const result = await TmYouthService.fetchNewYouthPlayers({
+      const result = await TmYouthModel.fetchNewYouthPlayers({
         age: state4.selectedAge,
         position: state4.selectedPosition,
         skipSync: true
@@ -18385,7 +18845,7 @@ order:initial
     if (choice !== "ok") return;
     setBusy(true);
     try {
-      const result = await TmYouthService.actOnYouthPlayer({ playerId, action: "hire" });
+      const result = await TmYouthModel.actOnYouthPlayer({ playerId, action: "hire" });
       if ((result == null ? void 0 : result.yes) === "yes") {
         state4.cash -= Number(player2.youthFee) || 0;
         markPlayer(playerId, {
@@ -18415,7 +18875,7 @@ order:initial
     if (choice !== "ok") return;
     setBusy(true);
     try {
-      const result = await TmYouthService.actOnYouthPlayer({ playerId, action: "fire" });
+      const result = await TmYouthModel.actOnYouthPlayer({ playerId, action: "fire" });
       if ((result == null ? void 0 : result.yes) === "yes") {
         markPlayer(playerId, { _status: "fired" });
         state4.notice = `${player2.name} was released.`;
@@ -18441,7 +18901,7 @@ order:initial
     if (choice !== "ok") return;
     setBusy(true);
     try {
-      const result = await TmYouthService.actOnYouthPlayer({ playerId: "all", action: "fire" });
+      const result = await TmYouthModel.actOnYouthPlayer({ playerId: "all", action: "fire" });
       if ((result == null ? void 0 : result.yes) === "yes") {
         setPlayers(state4.players.map((player2) => player2._status === "active" ? { ...player2, _status: "fired", _revealed: true } : player2));
         state4.notice = "All active youth players were released.";
@@ -18532,7 +18992,7 @@ order:initial
     if (!sourceRoot3.querySelector(".column1 .content_menu, #age_focus, #position_focus")) return;
     mountedMain3 = main2;
     const pullControls = parsePullControls(sourceRoot3);
-    const initialData = await TmYouthService.fetchYouthPlayers({ skipSync: true });
+    const initialData = await TmYouthModel.fetchYouthPlayers({ skipSync: true });
     state4 = {
       busy: false,
       notice: "",
@@ -18828,8 +19288,8 @@ order:initial
           return { graphData: null, training: null };
         }
         const [graphData, training] = await Promise.all([
-          TmPlayerService.fetchPlayerGraphs(player2),
-          TmPlayerService.fetchPlayerTrainingForSync(player2)
+          TmPlayerModel.fetchPlayerGraphs(player2),
+          TmPlayerModel.fetchPlayerTrainingForSync(player2)
         ]);
         done++;
         onProgress == null ? void 0 : onProgress(done, total);
@@ -19984,7 +20444,7 @@ order:initial
       const seen = new Set(initialEntries.map((e) => String(e.id)));
       for (let i = 0; i < DISCOVERY_ROUNDS; i++) {
         try {
-          const discoveredEntries = await TmShortlistService.fetchShortlistPage();
+          const discoveredEntries = await TmShortlistModel.fetchShortlistPage();
           for (const entry of discoveredEntries) {
             const id = String(entry.id);
             if (seen.has(id)) continue;
@@ -20385,7 +20845,7 @@ order:initial
     Stadium: "\u{1F3DF}",
     Table: "\u{1F3C6}"
   };
-  function cleanText14(value) {
+  function cleanText13(value) {
     return String(value || "").replace(/\s+/g, " ").trim();
   }
   function normalizeClubHref(href) {
@@ -20433,7 +20893,7 @@ order:initial
       }
       if (node.tagName !== "A") return;
       const href = normalizeClubHref(node.getAttribute("href") || "");
-      const label = mapLabel(cleanText14(node.textContent));
+      const label = mapLabel(cleanText13(node.textContent));
       if (!href || !label) return;
       items.push({ type: "link", href, label, icon: ICONS2[label] || "\u{1F4CB}" });
     });
@@ -20518,7 +20978,7 @@ order:initial
       const idMatch = html2.match(/B-Team:\s*<\/strong>\s*<a\s+href="\/club\/(\d+)\//) || html2.match(/B-Team:[\s\S]*?\/club\/(\d+)\//);
       if (!idMatch) return;
       const bTeamId = idMatch[1];
-      TmClubModel2.fetchSquadRaw(bTeamId).then((data) => {
+      TmClubModel.fetchSquadRaw(bTeamId).then((data) => {
         const players = Array.isArray(data) ? data : [];
         if (players.length) {
           bTeamPlayers = players.map((p) => ({ ...p, isBTeam: true }));
@@ -20549,7 +21009,7 @@ order:initial
     if (processed) return;
     const clubId2 = (_a2 = location.pathname.match(/\/club\/(\d+)/)) == null ? void 0 : _a2[1];
     if (!clubId2) return;
-    const data = await TmClubModel2.fetchSquadRaw(clubId2);
+    const data = await TmClubModel.fetchSquadRaw(clubId2);
     if (data == null ? void 0 : data.length) {
       allPlayers = data;
       processed = true;
@@ -20642,7 +21102,7 @@ order:initial
       return;
     }
     el2.innerHTML = TmUI.loading("Loading league history\u2026");
-    TmClubService.fetchClubLeagueHistory(_clubId, _seasons[0].id).then(function(html2) {
+    TmClubModel.fetchClubLeagueHistory(_clubId, _seasons[0].id).then(function(html2) {
       if (!html2) {
         el2.innerHTML = TmUI.error("Failed to load league history.");
         return;
@@ -20879,7 +21339,7 @@ order:initial
       return;
     }
     c.innerHTML = TmUI.loading("Loading Season " + sid + " matches\u2026");
-    TmClubService.fetchClubMatchHistory(_clubId2, sid).then(function(html2) {
+    TmClubModel.fetchClubMatchHistory(_clubId2, sid).then(function(html2) {
       if (!html2) {
         c.innerHTML = TmUI.error("Failed to load matches");
         return;
@@ -21068,13 +21528,13 @@ order:initial
         processNext();
         return;
       }
-      const p = isCurrentSeason ? TmMatchService.fetchMatch(mid).then(function(d) {
+      const p = isCurrentSeason ? TmMatchModel.fetchMatch(mid).then(function(d) {
         if (d) {
           d._rich = true;
           _matchDataCache[mid] = d;
           results.push({ matchData: d, isRich: true, matchInfo: m });
         }
-      }) : TmMatchService.fetchMatchTooltip(mid, season).then(function(d) {
+      }) : TmMatchModel.fetchTooltip(mid, season).then(function(d) {
         if (d) {
           _matchDataCache[mid] = d;
           results.push({ matchData: d, isRich: false, matchInfo: m });
@@ -21099,12 +21559,14 @@ order:initial
       return players[name];
     }
     results.forEach(function(r) {
+      var _a2, _b, _c, _d, _e, _f, _g, _h;
       const d = r.matchData;
       if (r.isRich) {
-        const club = d.club || {};
-        const hId = String(club.home ? club.home.id || "" : "");
-        const aId = String(club.away ? club.away.id || "" : "");
+        const hId = String(((_b = (_a2 = d.home) == null ? void 0 : _a2.club) == null ? void 0 : _b.id) || "");
+        const aId = String(((_d = (_c = d.away) == null ? void 0 : _c.club) == null ? void 0 : _d.id) || "");
         const report = d.report || {};
+        const allLineup = [...((_e = d.home) == null ? void 0 : _e.lineup) || [], ...((_f = d.away) == null ? void 0 : _f.lineup) || []];
+        const playerById = Object.fromEntries(allLineup.map((p) => [String(p.id), p]));
         const allMins = Object.keys(report).map(Number).sort(function(a, b) {
           return a - b;
         });
@@ -21119,28 +21581,28 @@ order:initial
             const params = Array.isArray(evt.parameters) ? evt.parameters : [evt.parameters];
             params.forEach(function(p) {
               if (p.goal) {
-                const scorer = d.lineup && d.lineup.home && d.lineup.home[p.goal.player] || d.lineup && d.lineup.away && d.lineup.away[p.goal.player];
+                const scorer = playerById[String(p.goal.player)];
                 if (scorer) {
                   const sp = getPlayer(scorer.nameLast || scorer.name);
                   if (sp) sp.goals++;
                 }
               }
               if (p.yellow) {
-                const pl = d.lineup && d.lineup.home && d.lineup.home[p.yellow] || d.lineup && d.lineup.away && d.lineup.away[p.yellow];
+                const pl = playerById[String(p.yellow)];
                 if (pl) {
                   const pp = getPlayer(pl.nameLast || pl.name);
                   if (pp) pp.yellows++;
                 }
               }
               if (p.yellow_red) {
-                const pl2 = d.lineup && d.lineup.home && d.lineup.home[p.yellow_red] || d.lineup && d.lineup.away && d.lineup.away[p.yellow_red];
+                const pl2 = playerById[String(p.yellow_red)];
                 if (pl2) {
                   const pp2 = getPlayer(pl2.nameLast || pl2.name);
                   if (pp2) pp2.reds++;
                 }
               }
               if (p.red) {
-                const pl3 = d.lineup && d.lineup.home && d.lineup.home[p.red] || d.lineup && d.lineup.away && d.lineup.away[p.red];
+                const pl3 = playerById[String(p.red)];
                 if (pl3) {
                   const pp3 = getPlayer(pl3.nameLast || pl3.name);
                   if (pp3) pp3.reds++;
@@ -21149,16 +21611,11 @@ order:initial
             });
           });
         });
-        let allPlrs = [];
-        if (d.lineup) {
-          if (d.lineup.home) allPlrs = allPlrs.concat(Object.values(d.lineup.home));
-          if (d.lineup.away) allPlrs = allPlrs.concat(Object.values(d.lineup.away));
-        }
-        const mom = allPlrs.find(function(p) {
+        const mom = allLineup.find(function(p) {
           return p.mom === 1 || p.mom === "1";
         });
         if (mom) {
-          const momInHome = d.lineup && d.lineup.home && Object.values(d.lineup.home).indexOf(mom) !== -1;
+          const momInHome = (_h = (_g = d.home) == null ? void 0 : _g.playerIds) == null ? void 0 : _h.has(String(mom.id));
           const momClub = momInHome ? hId : aId;
           if (momClub === String(_clubId2)) {
             const mp = getPlayer(mom.nameLast || mom.name);
@@ -21315,7 +21772,7 @@ order:initial
       return;
     }
     el2.innerHTML = TmUI.loading("Loading records\u2026");
-    TmClubService.fetchClubRecords(_clubId3).then(function(html2) {
+    TmClubModel.fetchClubRecords(_clubId3).then(function(html2) {
       var _a2;
       if (!html2) {
         el2.innerHTML = TmUI.error("Failed to load records");
@@ -23014,14 +23471,14 @@ order:initial
     `;
     document.head.appendChild(style);
   }
-  function cleanText15(value) {
+  function cleanText14(value) {
     return String(value || "").replace(/\s+/g, " ").trim();
   }
   function escapeHtml20(value) {
     return String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
   function normalizeFoundedText(text) {
-    return cleanText15(text).replace(/^Founded\s+Founded/i, "Founded").replace(/^Founded(\d)/i, "Founded $1");
+    return cleanText14(text).replace(/^Founded\s+Founded/i, "Founded").replace(/^Founded(\d)/i, "Founded $1");
   }
   function parsePlayers(table) {
     if (!table) return [];
@@ -23030,12 +23487,12 @@ order:initial
       const playerLink = row.querySelector('a[player_link], a[href*="/players/"]');
       if (!playerLink || cells.length < 4) return null;
       return {
-        name: cleanText15(playerLink.textContent),
+        name: cleanText14(playerLink.textContent),
         href: playerLink.getAttribute("href") || "#",
         firstCellHtml: cells[0].innerHTML,
         starsHtml: cells[1].innerHTML,
-        rating: cleanText15(cells[2].textContent),
-        goals: cleanText15(cells[3].textContent)
+        rating: cleanText14(cells[2].textContent),
+        goals: cleanText14(cells[3].textContent)
       };
     }).filter(Boolean);
   }
@@ -23070,8 +23527,8 @@ order:initial
       var _a2;
       const icon = row.children[0];
       const content = row.children[1];
-      const season = cleanText15(((_a2 = content == null ? void 0 : content.querySelector(".subtle")) == null ? void 0 : _a2.textContent) || "");
-      const title = season ? cleanText15((content == null ? void 0 : content.textContent.replace(season, "")) || "") : cleanText15((content == null ? void 0 : content.textContent) || "");
+      const season = cleanText14(((_a2 = content == null ? void 0 : content.querySelector(".subtle")) == null ? void 0 : _a2.textContent) || "");
+      const title = season ? cleanText14((content == null ? void 0 : content.textContent.replace(season, "")) || "") : cleanText14((content == null ? void 0 : content.textContent) || "");
       return {
         small: row.classList.contains("small"),
         iconStyle: (icon == null ? void 0 : icon.getAttribute("style")) || "",
@@ -23101,7 +23558,7 @@ order:initial
     const trophies = parseTrophies(trophyBox);
     return {
       clubHref: (clubNameLink == null ? void 0 : clubNameLink.getAttribute("href")) || "#",
-      clubName: cleanText15((clubNameLink == null ? void 0 : clubNameLink.textContent) || "Club"),
+      clubName: cleanText14((clubNameLink == null ? void 0 : clubNameLink.textContent) || "Club"),
       statusHtml: ((_c = topMeta == null ? void 0 : topMeta.querySelector(".large")) == null ? void 0 : _c.innerHTML) || "",
       competitionHtml: (competitionLine == null ? void 0 : competitionLine.innerHTML) || "",
       changeClubHref,
@@ -23429,7 +23886,7 @@ order:initial
       TmClubFixturesStyles.inject();
       container.innerHTML = TmUI.loading("Loading club fixtures...");
       try {
-        const data = await TmClubService.fetchClubFixtures(CLUB_ID);
+        const data = await TmClubModel.fetchClubFixtures(CLUB_ID);
         if (!data) throw new Error("Failed to fetch club fixtures");
         fixturesData = data;
         render16();
@@ -25054,7 +25511,7 @@ order:initial
       TmStatsStyles.inject();
       buildUI2();
       try {
-        const fixtures = await TmClubService.fetchClubFixtures(CLUB_ID);
+        const fixtures = await TmClubModel.fetchClubFixtures(CLUB_ID);
         if (!fixtures) throw new Error("Failed to fetch fixtures");
         const playedMatches = getPlayedMatches(fixtures);
         matchCount.total = playedMatches.length;
@@ -25066,7 +25523,7 @@ order:initial
           const results = await Promise.all(
             batch.map(async (matchInfo) => {
               try {
-                const statsMatch = await TmMatchService.fetchMatchForStats(matchInfo, CLUB_ID, { dbSync: false });
+                const statsMatch = await TmMatchModel.fetchMatchForStats(matchInfo, CLUB_ID);
                 if (!statsMatch) throw new Error("null response");
                 return statsMatch;
               } catch (err) {
@@ -25683,6 +26140,7 @@ order:initial
     columns: { rtn: false },
     sortKey: "timeleft",
     sortDir: 1,
+    onRowClick: null,
     rowCls(player2) {
       return player2.timeleft > 0 ? "tmpt-row-clickable" : null;
     },
@@ -25971,7 +26429,7 @@ order:initial
           if (p._pollCountdown <= 0) {
             p._pollCountdown = p.timeleft <= 120 ? 10 : 60;
             if (sessionId) {
-              TmTransferService.fetchTransferBidDialog(p.id, sessionId).then((data) => {
+              TmTransferModel.fetchTransferBidDialog(p.id, sessionId).then((data) => {
                 var _a4, _b2, _c2;
                 if (!data) return;
                 const fresh = Number(data.deadline);
@@ -26008,7 +26466,7 @@ order:initial
       }
     }
     function processPlayer(p) {
-      return TmTransferService.normalizeTransferPlayer(p);
+      return TmTransferModel.normalizeTransferPlayer(p);
     }
     function scheduleRefresh() {
       if (_refreshPending) return;
@@ -26080,7 +26538,7 @@ order:initial
       const playerId = String(player2.id);
       if (tooltipPromiseCache.has(playerId)) return tooltipPromiseCache.get(playerId);
       const request = TmPlayerModel.fetchTooltipCached(playerId).then((data) => {
-        const result = TmTransferService.enrichTransferFromTooltip(player2, data);
+        const result = TmTransferModel.enrichTransferFromTooltip(player2, data);
         if (!result) return null;
         updateTooltipCells(player2);
         return player2;
@@ -26113,7 +26571,7 @@ order:initial
       }
       const hash = TmTransferFilters.buildHash();
       const clubId2 = window.SESSION ? window.SESSION.id : 0;
-      TmTransferService.fetchTransferSearch(hash, clubId2).then(function(data) {
+      TmTransferModel.fetchTransferSearch(hash, clubId2).then(function(data) {
         isLoading = false;
         if (!data) {
           document.getElementById("tms-table-wrap").innerHTML = TmUI.error("No data received. Please try again.");
@@ -26138,7 +26596,7 @@ order:initial
     }
     function fetchWithHash(hash) {
       const clubId2 = window.SESSION ? window.SESSION.id : 0;
-      return TmTransferService.fetchTransferSearch(hash, clubId2).then((data) => Array.isArray(data == null ? void 0 : data.list) ? data.list : []);
+      return TmTransferModel.fetchTransferSearch(hash, clubId2).then((data) => Array.isArray(data == null ? void 0 : data.list) ? data.list : []);
     }
     const showModal = (opts) => TmUI.modal(opts);
     const promptModal = (opts) => TmUI.prompt(opts);
@@ -26261,6 +26719,8 @@ order:initial
         `;
       main2.classList.add("tmvu-transfer-page");
       main2.querySelectorAll(".column1_d").forEach((node) => node.remove());
+      const outer = document.getElementById("tms-outer");
+      if (outer) outer.style.display = "none";
       main2.insertAdjacentHTML("beforeend", layoutHtml);
     }
     function bindEvents() {
@@ -26280,9 +26740,9 @@ order:initial
           player2.tooltipFetched = false;
           fetchOnePlayer(player2).then(() => {
             const container = document.getElementById("tms-table-wrap");
-            const row = container == null ? void 0 : container.querySelector(`tr[data-pid="${player2.id}"]`);
-            if (row == null ? void 0 : row.matches(":hover")) {
-              const anchor = row.querySelector(".tmpt-link") || row;
+            const row2 = container == null ? void 0 : container.querySelector(`tr[data-pid="${player2.id}"]`);
+            if (row2 == null ? void 0 : row2.matches(":hover")) {
+              const anchor = row2.querySelector(".tmpt-link") || row2;
               TmPlayerTooltip.show(anchor, player2);
             }
           });
@@ -26295,6 +26755,13 @@ order:initial
           const pid = bidBtn.dataset.pid;
           const player2 = allPlayers2.find((x) => String(x.id) === pid);
           if (player2) TmBidsDialog.open(player2);
+          return;
+        }
+        const row = e.target.closest("#tms-table-wrap tr[data-pid]");
+        if (row && !e.target.closest("[data-transfer-bid],[data-transfer-reload],a,button,input")) {
+          const pid = row.dataset.pid;
+          const player2 = allPlayers2.find((x) => String(x.id) === pid);
+          if (player2 && Number(player2.timeleft) > 0) TmBidsDialog.open(player2);
           return;
         }
         const fpBtn = e.target.closest("[data-fp]");
@@ -26369,189 +26836,6 @@ order:initial
     }
     init2();
   }
-
-  // src/constants/countries.js
-  var COUNTRIES = {
-    // -- Europe ----------------------------------------------------------
-    Albania: { suffix: "al", region: "Europe", ueta: [2, 3] },
-    Andorra: { suffix: "ad", region: "Europe" },
-    Armenia: { suffix: "am", region: "Europe" },
-    Austria: { suffix: "at", region: "Europe" },
-    Azerbaijan: { suffix: "az", region: "Europe" },
-    Belarus: { suffix: "by", region: "Europe" },
-    Belgium: { suffix: "be", region: "Europe" },
-    "Bosnia-Herzegovina": { suffix: "ba", region: "Europe" },
-    Bulgaria: { suffix: "bg", region: "Europe", ueta: [3, 3] },
-    Croatia: { suffix: "hr", region: "Europe", ueta: [2, 3] },
-    Cyprus: { suffix: "cy", region: "Europe", ueta: [2, 3] },
-    "Czech Republic": { suffix: "cz", region: "Europe", ueta: [4, 3] },
-    Denmark: { suffix: "dk", region: "Europe", ueta: [2, 3] },
-    England: { suffix: "en", region: "Europe", ueta: [3, 3] },
-    Estonia: { suffix: "ee", region: "Europe" },
-    "Faroe Islands": { suffix: "fo", region: "Europe" },
-    Finland: { suffix: "fi", region: "Europe" },
-    France: { suffix: "fr", region: "Europe" },
-    Georgia: { suffix: "ge", region: "Europe" },
-    Germany: { suffix: "de", region: "Europe", ueta: [2, 4] },
-    Greece: { suffix: "gr", region: "Europe" },
-    Hungary: { suffix: "hu", region: "Europe", ueta: [3, 3] },
-    Iceland: { suffix: "is", region: "Europe" },
-    Ireland: { suffix: "ie", region: "Europe" },
-    Israel: { suffix: "il", region: "Europe" },
-    Italy: { suffix: "it", region: "Europe", ueta: [4, 3] },
-    Kazakhstan: { suffix: "kz", region: "Europe" },
-    Latvia: { suffix: "lv", region: "Europe" },
-    Lithuania: { suffix: "lt", region: "Europe" },
-    Luxembourg: { suffix: "lu", region: "Europe" },
-    Malta: { suffix: "mt", region: "Europe" },
-    Moldova: { suffix: "md", region: "Europe" },
-    Montenegro: { suffix: "me", region: "Europe" },
-    Netherlands: { suffix: "nl", region: "Europe" },
-    "North Macedonia": { suffix: "mk", region: "Europe" },
-    "Northern Ireland": { suffix: "rt", region: "Europe" },
-    Norway: { suffix: "no", region: "Europe", ueta: [2, 4] },
-    Poland: { suffix: "pl", region: "Europe", ueta: [2, 3] },
-    Portugal: { suffix: "pt", region: "Europe", ueta: [2, 3] },
-    Romania: { suffix: "ro", region: "Europe" },
-    Russia: { suffix: "ru", region: "Europe" },
-    "San Marino": { suffix: "sm", region: "Europe" },
-    Scotland: { suffix: "ct", region: "Europe" },
-    Serbia: { suffix: "cs", region: "Europe", ueta: [2, 4] },
-    Slovakia: { suffix: "sk", region: "Europe" },
-    Slovenia: { suffix: "si", region: "Europe" },
-    Spain: { suffix: "es", region: "Europe" },
-    Sweden: { suffix: "se", region: "Europe" },
-    Switzerland: { suffix: "he", region: "Europe" },
-    Turkey: { suffix: "tr", region: "Europe", ueta: [4, 3] },
-    Ukraine: { suffix: "ua", region: "Europe" },
-    Wales: { suffix: "wa", region: "Europe" },
-    // -- North America ----------------------------------------------------
-    Belize: { suffix: "bz", region: "North America" },
-    Canada: { suffix: "ca", region: "North America" },
-    "Costa Rica": { suffix: "cr", region: "North America" },
-    Cuba: { suffix: "cu", region: "North America" },
-    "Dominican Republic": { suffix: "do", region: "North America" },
-    "El Salvador": { suffix: "sv", region: "North America" },
-    Guatemala: { suffix: "gt", region: "North America" },
-    Honduras: { suffix: "hn", region: "North America" },
-    Jamaica: { suffix: "jm", region: "North America" },
-    Mexico: { suffix: "mx", region: "North America" },
-    Panama: { suffix: "pa", region: "North America" },
-    "Puerto Rico": { suffix: "pr", region: "North America" },
-    "Trinidad & Tobago": { suffix: "tt", region: "North America" },
-    USA: { suffix: "us", region: "North America" },
-    "West Indian Islands": { suffix: "vc", region: "North America" },
-    // -- Asia -------------------------------------------------------------
-    Afghanistan: { suffix: "af", region: "Asia" },
-    Bahrain: { suffix: "bh", region: "Asia" },
-    Bangladesh: { suffix: "bd", region: "Asia" },
-    Brunei: { suffix: "bn", region: "Asia" },
-    China: { suffix: "cn", region: "Asia" },
-    "Hong Kong": { suffix: "hk", region: "Asia" },
-    India: { suffix: "in", region: "Asia" },
-    Indonesia: { suffix: "id", region: "Asia" },
-    Iran: { suffix: "ir", region: "Asia" },
-    Iraq: { suffix: "iq", region: "Asia" },
-    Japan: { suffix: "jp", region: "Asia" },
-    Jordan: { suffix: "jo", region: "Asia" },
-    Kuwait: { suffix: "kw", region: "Asia" },
-    Lebanon: { suffix: "lb", region: "Asia" },
-    Malaysia: { suffix: "my", region: "Asia" },
-    Nepal: { suffix: "np", region: "Asia" },
-    Oman: { suffix: "om", region: "Asia" },
-    Pakistan: { suffix: "pk", region: "Asia" },
-    Philippines: { suffix: "ph", region: "Asia" },
-    Qatar: { suffix: "qa", region: "Asia" },
-    "Saudi Arabia": { suffix: "sa", region: "Asia" },
-    Singapore: { suffix: "sg", region: "Asia" },
-    "South Korea": { suffix: "kr", region: "Asia" },
-    Syria: { suffix: "sy", region: "Asia" },
-    Taiwan: { suffix: "tw", region: "Asia" },
-    Thailand: { suffix: "th", region: "Asia" },
-    "United Emirates": { suffix: "ae", region: "Asia" },
-    Vietnam: { suffix: "vn", region: "Asia" },
-    // -- Oceania -----------------------------------------------------------
-    Australia: { suffix: "au", region: "Oceania" },
-    Fiji: { suffix: "fj", region: "Oceania" },
-    "New Zealand": { suffix: "nz", region: "Oceania" },
-    Oceania: { suffix: "oc", region: "Oceania" },
-    // -- South America -----------------------------------------------------
-    Argentina: { suffix: "ar", region: "South America" },
-    Bolivia: { suffix: "bo", region: "South America" },
-    Brazil: { suffix: "br", region: "South America" },
-    Chile: { suffix: "cl", region: "South America" },
-    Colombia: { suffix: "co", region: "South America" },
-    Ecuador: { suffix: "ec", region: "South America" },
-    Paraguay: { suffix: "py", region: "South America" },
-    Peru: { suffix: "pe", region: "South America" },
-    Uruguay: { suffix: "uy", region: "South America" },
-    Venezuela: { suffix: "ve", region: "South America" },
-    // -- Africa ------------------------------------------------------------
-    Algeria: { suffix: "dz", region: "Africa" },
-    Angola: { suffix: "ao", region: "Africa" },
-    Botswana: { suffix: "bw", region: "Africa" },
-    Cameroun: { suffix: "cm", region: "Africa" },
-    Chad: { suffix: "td", region: "Africa" },
-    Egypt: { suffix: "eg", region: "Africa" },
-    Ghana: { suffix: "gh", region: "Africa" },
-    "Ivory Coast": { suffix: "ci", region: "Africa" },
-    Libya: { suffix: "ly", region: "Africa" },
-    Morocco: { suffix: "ma", region: "Africa" },
-    Nigeria: { suffix: "ng", region: "Africa" },
-    Palestine: { suffix: "so", region: "Africa" },
-    Senegal: { suffix: "sn", region: "Africa" },
-    "South Africa": { suffix: "za", region: "Africa" },
-    Tunisia: { suffix: "tn", region: "Africa" }
-  };
-  var COUNTRY_BY_SUFFIX = Object.fromEntries(
-    Object.entries(COUNTRIES).map(([name, c]) => [c.suffix, name])
-  );
-  var _REGION_BY_SUFFIX = Object.fromEntries(
-    Object.entries(COUNTRIES).map(([, c]) => [c.suffix, c.region])
-  );
-  var getLeaguePromoColumns = (countrySuffix, division) => {
-    var _a2;
-    if (String(division) !== "1") return { direct: 1, playoff: 4 };
-    const name = COUNTRY_BY_SUFFIX[countrySuffix];
-    const [cl = 2, ue = 3] = name && ((_a2 = COUNTRIES[name]) == null ? void 0 : _a2.ueta) || [2, 3];
-    return { direct: cl, playoff: cl + ue };
-  };
-  var _CUP_GROUP = {
-    Europe: { cl: 1, ue: 2 },
-    Asia: { cl: 3, ue: 4 },
-    Oceania: { cl: 3, ue: 4 },
-    Africa: { cl: 3, ue: 4 },
-    "North America": { cl: 5, ue: 6 },
-    "South America": { cl: 5, ue: 6 }
-  };
-  var _CUP_NAMES = {
-    1: "UETA Champions Cup",
-    2: "UETA Cup",
-    3: "Champions Cup",
-    4: "International Cup",
-    5: "Champions Cup",
-    6: "International Cup"
-  };
-  var resolveIntCupUrl = (typeRaw, countrySuffix) => {
-    var _a2;
-    if (!typeRaw || !countrySuffix) return null;
-    const tier = typeRaw.startsWith("cl") ? "cl" : typeRaw.startsWith("ue") ? "ue" : null;
-    if (!tier) return null;
-    const region = _REGION_BY_SUFFIX[countrySuffix];
-    if (!region) return null;
-    const id = (_a2 = _CUP_GROUP[region]) == null ? void 0 : _a2[tier];
-    return id ? `/international-cup/${id}/` : null;
-  };
-  var resolveCupName = (typeRaw, countrySuffix) => {
-    var _a2;
-    if (!typeRaw || !countrySuffix) return null;
-    const tier = typeRaw.startsWith("cl") ? "cl" : typeRaw.startsWith("ue") ? "ue" : null;
-    if (!tier) return null;
-    const region = _REGION_BY_SUFFIX[countrySuffix];
-    if (!region) return null;
-    const id = (_a2 = _CUP_GROUP[region]) == null ? void 0 : _a2[tier];
-    return id ? _CUP_NAMES[id] || null : null;
-  };
 
   // src/components/league/tm-league-standings.js
   var leaguePanelRef = null;
@@ -27001,7 +27285,7 @@ order:initial
     overlay.addEventListener("click", (event) => {
       if (event.target.closest("#tsa-ld-close")) overlay.remove();
     });
-    TMLeagueService.fetchLeagueDivisions(s6.leagueCountry || "cs").then((data) => {
+    TmLeagueModel.fetchLeagueDivisions(s6.leagueCountry || "cs").then((data) => {
       if (!data) {
         document.getElementById("tsa-ld-body").innerHTML = TmUI.error("Failed to load leagues.");
         return;
@@ -27103,7 +27387,7 @@ order:initial
       } else {
         divInput.placeholder = "Loading divisions\u2026";
         divAc.setDisabled(true);
-        TMLeagueService.fetchLeagueDivisions(c.suffix).then((d) => {
+        TmLeagueModel.fetchLeagueDivisions(c.suffix).then((d) => {
           if (d) applyDivisions(d.divisions || []);
         });
       }
@@ -28020,38 +28304,33 @@ order:initial
     if (content) content.innerHTML = TmUI.loading("Analyzing...");
   };
   var processMatchData = (matchId, data) => {
-    var _a2, _b;
     const s6 = window.TmLeagueCtx;
-    const homeId = String(data.club.home.id);
-    const awayId = String(data.club.away.id);
-    if (!s6.panelLeagueName && ((_b = (_a2 = data.match_data) == null ? void 0 : _a2.venue) == null ? void 0 : _b.tournament)) {
-      s6.panelLeagueName = data.match_data.venue.tournament;
+    const homeId = String(data.home.club.id);
+    const awayId = String(data.away.club.id);
+    if (!s6.panelLeagueName && data.competition.name) {
+      s6.panelLeagueName = data.competition.name;
       const el2 = document.getElementById("tsa-panel-league-name");
       if (el2) el2.textContent = s6.panelLeagueName;
     }
-    const homeLineup = data.lineup.home;
-    const awayLineup = data.lineup.away;
-    const homeKeys = Object.keys(homeLineup || {});
-    const awayKeys = Object.keys(awayLineup || {});
-    const homeStarters = homeKeys.filter((id) => {
-      var _a3, _b2;
-      return !((_b2 = (_a3 = homeLineup[id]) == null ? void 0 : _a3.position) == null ? void 0 : _b2.includes("sub"));
+    const homeLineupArr = data.home.lineup;
+    const awayLineupArr = data.away.lineup;
+    const homeLineupMap = Object.fromEntries(homeLineupArr.map((p) => [String(p.id), p]));
+    const awayLineupMap = Object.fromEntries(awayLineupArr.map((p) => [String(p.id), p]));
+    const homeStarters = homeLineupArr.filter((p) => {
+      var _a2;
+      return !((_a2 = p.position) == null ? void 0 : _a2.includes("sub"));
     });
-    const awayStarters = awayKeys.filter((id) => {
-      var _a3, _b2;
-      return !((_b2 = (_a3 = awayLineup[id]) == null ? void 0 : _a3.position) == null ? void 0 : _b2.includes("sub"));
+    const awayStarters = awayLineupArr.filter((p) => {
+      var _a2;
+      return !((_a2 = p.position) == null ? void 0 : _a2.includes("sub"));
     });
     if (!homeStarters.length || !awayStarters.length) {
-      console.warn(`[League] match=${matchId} lineup problem \u2014 home keys=${homeKeys.length} starters=${homeStarters.length}, away keys=${awayKeys.length} starters=${awayStarters.length}`);
-      console.log("[League] homeLineup sample:", homeKeys.slice(0, 3).map((id) => {
-        var _a3;
-        return { id, pos: (_a3 = homeLineup[id]) == null ? void 0 : _a3.position };
-      }));
+      console.warn(`[League] match=${matchId} lineup problem \u2014 home=${homeLineupArr.length} starters=${homeStarters.length}, away=${awayLineupArr.length} starters=${awayStarters.length}`);
     }
-    Promise.all([s6.fetchSquad(homeId, data.club.home.club_name), s6.fetchSquad(awayId, data.club.away.club_name)]).then(([homeSquad, awaySquad]) => {
+    Promise.all([s6.fetchSquad(homeId, data.home.club.name), s6.fetchSquad(awayId, data.away.club.name)]).then(([homeSquad, awaySquad]) => {
       return Promise.all([
-        s6.computeTeamStats(Object.keys(homeLineup), homeLineup, homeSquad),
-        s6.computeTeamStats(Object.keys(awayLineup), awayLineup, awaySquad)
+        s6.computeTeamStats(Object.keys(homeLineupMap), homeLineupMap, homeSquad),
+        s6.computeTeamStats(Object.keys(awayLineupMap), awayLineupMap, awaySquad)
       ]).then(([homeResult, awayResult]) => ({ homeResult, awayResult, homeSquad, awaySquad }));
     }).then(({ homeResult, awayResult, homeSquad, awaySquad }) => {
       if (homeResult.totals.R5 === 0) {
@@ -28089,7 +28368,7 @@ order:initial
       const homeR5 = Number((homeResult.totals.R5 / 11).toFixed(2));
       const awayR5 = Number((awayResult.totals.R5 / 11).toFixed(2));
       if (!homeR5) {
-        console.warn(`[League] Home team ${data.club.home.club_name} has R5=0 in match ${matchId}`);
+        console.warn(`[League] Home team ${data.home.club.name} has R5=0 in match ${matchId}`);
       }
       roundMatchCache.set(String(matchId), { homeR5, awayR5, data });
       fillRatingCells(String(matchId), homeR5, awayR5);
@@ -28130,7 +28409,7 @@ order:initial
         s6.totalExpected = matchIds.length * 2;
         s6.updateProgress(`Loading ${matchIds.length} matches (${dates.length} rounds)...`);
         matchIds.forEach((id) => {
-          TmMatchService.fetchMatchCached(id, { dbSync: false }).then((data) => {
+          TmMatchModel.fetchMatchCached(id).then((data) => {
             if (data) processMatchData(id, data);
             else s6.totalProcessed += 2;
           }).catch(() => {
@@ -28151,7 +28430,7 @@ order:initial
     if (s6.fixturesCache) {
       doAnalysis(s6.fixturesCache);
     } else {
-      TMLeagueService.fetchLeagueFixtures("league", { var1: s6.leagueCountry, var2: s6.leagueDivision, var3: s6.leagueGroup }).then((data) => {
+      TmLeagueModel.fetchLeagueFixtures("league", { var1: s6.leagueCountry, var2: s6.leagueDivision, var3: s6.leagueGroup }).then((data) => {
         if (!data) return;
         s6.fixturesCache = data;
         buildRounds2(s6.fixturesCache);
@@ -28783,7 +29062,7 @@ order:initial
     document.body.appendChild(overlay);
     const body = overlay.querySelector("[data-feed-likes-body]");
     const subtitle = overlay.querySelector(".tmvu-home-feed-likes-subtitle");
-    const likes = normalizeFeedLikes(await TmApi.fetchFeedLikes(postId));
+    const likes = normalizeFeedLikes(await TmMessagesModel.fetchFeedLikes(postId));
     subtitle.textContent = likes.length ? `${likes.length} club${likes.length === 1 ? "" : "s"} liked this post` : "No likes found for this post";
     if (!likes.length) {
       body.innerHTML = TmUI.empty("No likes returned by the feed endpoint.", true);
@@ -29202,7 +29481,7 @@ order:initial
       return buildHomeFeedModel({
         payload,
         nativePostMap: buildNativeHomeFeedPostMap(feedRoot),
-        fetchFeedNames: TmApi.fetchFeedNames
+        fetchFeedNames: TmMessagesModel.fetchFeedNames.bind(TmMessagesModel)
       });
     };
     const loadApiFeedPage = async ({ reset = false, lastPost = "" } = {}) => {
@@ -29745,7 +30024,7 @@ order:initial
           getFeedRoot: () => document.querySelector("#feed"),
           fetchFeedPayload: ({ lastPost }) => {
             const params = getLeagueFeedParams();
-            return TmApi.fetchDetailedUserFeed({
+            return TmMessagesModel.fetchDetailedUserFeed({
               feedId: "0",
               buddies: false,
               personal: false,
@@ -29873,490 +30152,6 @@ order:initial
     setInterval(initForCurrentPage, 500);
     initForCurrentPage();
   }
-
-  // src/lib/match.js
-  var createCompetition = () => ({
-    name: null,
-    // "Super Liga Srbije"
-    type: null,
-    // "league" | "cup" | "friendly" | "friendly_league"
-    //   | "international_cup" | "ntq"
-    typeRaw: null,
-    // raw API code: "l", "fl", "f", "fq", "p1"–"p9",
-    //   "ueg", "ue1", "ue2", "clg", "cl1", "cl2", "ntq"
-    division: null,
-    // 1, 2, 3 … (for league matches)
-    url: null
-    // canonical URL for the competition page
-  });
-  var createVenue = () => ({
-    name: null,
-    // "Renzo Barbera"
-    city: null,
-    capacity: null,
-    weather: null,
-    // "sunny3", "cloudy2", "rainy1", "snow1", "overcast1"
-    pitchCondition: null,
-    // 0–100
-    facilities: {
-      sprinklers: null,
-      // 0 | 1
-      draining: null,
-      pitchcover: null,
-      heating: null
-    },
-    picture: null
-    // stadium art variant (integer)
-  });
-  var createTactics = () => ({
-    mentality: null,
-    // 1 (Very Defensive) → 7 (Very Attacking)
-    style: null,
-    // "1" Balanced / "2" Direct / "3" Wings /
-    //   "4" Short Passing / "5" Long Balls / "6" Through Balls
-    focus: null,
-    // "1" Balanced / "2" Left / "3" Central / "4" Right
-    formation: null
-    // "4-4-2" (derived from lineup positions or match_data)
-  });
-  var createRatings = () => ({
-    avg: null,
-    // average R5 of the starting XI (= avgR5)
-    subs: null,
-    // average R5 of bench players
-    GK: null,
-    // average R5 of goalkeeper line
-    DEF: null,
-    // average R5 of defensive line
-    MID: null,
-    // average R5 of midfield line
-    ATT: null,
-    // average R5 of attacking line
-    avgAge: null,
-    avgRoutine: null
-  });
-  var createSide = () => ({
-    club: { ...Club },
-    // id, name, nick, country, division, stadium, …
-    color: null,
-    // resolved primary kit color "#3884ff"
-    captain: null,
-    // player id (Number) of the armband holder
-    playerIds: null,
-    // Set<string> — computed once from lineup on load
-    tactics: createTactics(),
-    lineup: [],
-    // Player.create() objects + match context fields
-    // ── Derived (populated by deriveMatchData / generateTeamData) ──────
-    goals: null,
-    goalsAgainst: null,
-    stats: null,
-    // { shots, shotsOnTarget, saves, passes,
-    //   passesCompleted, crosses, fouls,
-    //   yellowCards, redCards, advanced }
-    ratings: createRatings()
-  });
-  var Match = {
-    create() {
-      return {
-        // ── Identity ─────────────────────────────────────────────────
-        id: null,
-        // match id (number or string)
-        season: null,
-        // season number
-        // ── When ─────────────────────────────────────────────────────
-        date: null,
-        // "YYYY-MM-DD"
-        kickoff: null,
-        // Unix timestamp of scheduled kick-off
-        kickoffTime: null,
-        // "17:00" time of day
-        // ── What competition ──────────────────────────────────────────
-        competition: createCompetition(),
-        // ── Where ─────────────────────────────────────────────────────
-        venue: createVenue(),
-        // ── Who ───────────────────────────────────────────────────────
-        home: createSide(),
-        away: createSide(),
-        // ── Outcome ───────────────────────────────────────────────────
-        result: {
-          home: null,
-          // goals scored by home (null = not played yet)
-          away: null,
-          halftime: { home: null, away: null }
-        },
-        possession: { home: null, away: null },
-        // % at full time
-        attendance: null,
-        // ── Lifecycle status ──────────────────────────────────────────
-        // Explicit — no more inferring from 4 different fields.
-        status: null,
-        // 'future' | 'live' | 'ended'
-        // liveMin: elapsed real-world minutes since kickoff when status='live'.
-        // Negative when status='future' (|liveMin| = minutes until kickoff).
-        liveMin: null,
-        // ── Duration (populated from API, meaningful when ended) ──────
-        duration: {
-          regular: null,
-          // 90 (or last minute of regulation)
-          total: null,
-          // 94 (including all stoppage time)
-          extra: null
-          // 4 (added minutes)
-        },
-        // ── Play engine (immutable after normalizeMatchData) ───────
-        // report: raw minute-keyed API events.
-        //         normalizeReport() promotes each event's parameters array
-        //         to direct properties on the event object (e.g. evt.goal,
-        //         evt.yellow, evt.sub) so consumers never touch .parameters.
-        // plays:  one Play per attacking chance sequence, built by
-        //         buildNormalizedPlays() from the normalized report.
-        //         Shape: { [min: string]: Play[] }
-        //         Play = { min, team, style, outcome, segments,
-        //                  reportEventIndex, severity }
-        //         Segment = { clips: Clip[], actions: GameAction[],
-        //                     text: string[] }
-        //         These two objects never change after normalization.
-        report: {},
-        plays: {},
-        // ── Broadcast state (rebuilt by deriveMatchData each replay step) ──
-        // visiblePlays: time-gate of plays — same shape as plays, contains
-        //               only the plays at or before the current cursor.
-        //               { [min: string]: Play[] }
-        visiblePlays: {},
-        // events: indexed action log — extracted from the segment.actions of
-        //         all visiblePlays.  Rebuilt from visiblePlays each step.
-        //
-        //         Instead of a generic flat array that every consumer has
-        //         to re-filter, the structure pre-indexes by the categories
-        //         actually needed at broadcast time:
-        //
-        //   log          — full chronological list of GameActions (source of truth)
-        //                  GameAction = { action, by, player, teamId, home,
-        //                                min, evtIdx, …type-specific fields }
-        //   score        — current goals.  Maintained as log grows — O(1) read.
-        //   mentality    — last recorded mentality for each side — O(1) read.
-        //   goals        — subset of log where action='shot' && goal.
-        //                  Used for: timeline, goal notifications, scoreline.
-        //   cards        — subset of log where action ∈ {yellow,yellowRed,red}.
-        //                  Used for: discipline board, player icon overlays.
-        //   subs         — subset of log where action ∈ {subIn,subOut}.
-        //                  Used for: active lineup reconstruction (much smaller
-        //                  than scanning the full log).
-        events: {
-          log: [],
-          score: { home: 0, away: 0 },
-          mentality: { home: null, away: null },
-          goals: [],
-          cards: [],
-          subs: []
-        },
-        // ── Enrichment state ──────────────────────────────────────────
-        // profilesReady: false until the tm:match-profiles-ready event fires
-        // and lineup players receive their full skill / r5 / asi data.
-        // Until then every player has base identity fields only.
-        profilesReady: false
-      };
-    }
-  };
-  var exampleMatch = Match.create();
-  Object.assign(exampleMatch, {
-    id: "12345678",
-    season: 26,
-    date: "2026-03-13",
-    kickoff: 1773356400,
-    kickoffTime: "17:00",
-    competition: { name: "Super Liga Srbije", type: "league", typeRaw: "l", division: 1 },
-    venue: {
-      name: "Renzo Barbera",
-      city: "Beograd",
-      capacity: 64e3,
-      weather: "sunny3",
-      pitchCondition: 72,
-      facilities: { sprinklers: 1, draining: 0, pitchcover: 1, heating: 0 },
-      picture: 9
-    },
-    result: { home: 2, away: 1, halftime: { home: 1, away: 0 } },
-    possession: { home: 55, away: 45 },
-    attendance: 42500,
-    status: "ended",
-    liveMin: null,
-    duration: { regular: 90, total: 94, extra: 4 },
-    // At full time, events holds the complete broadcast-state snapshot:
-    events: {
-      log: [],
-      // populated with all GameAction objects by deriveMatchData
-      score: { home: 2, away: 1 },
-      mentality: { home: 5, away: 4 },
-      goals: [],
-      // two home goal actions + one away goal action
-      cards: [],
-      // yellow/red card actions
-      subs: []
-      // sub actions (used for active lineup reconstruction)
-    }
-  });
-  Object.assign(exampleMatch.home, {
-    club: { id: "1001", name: "FK Partizan", nick: "PAR", country: "Serbia", division: 1, group: "1", manager_name: "Marko Kova\u010D", fanclub: 18e3, stadium: "Renzo Barbera" },
-    color: "#3884ff",
-    captain: 137172448,
-    playerIds: /* @__PURE__ */ new Set(),
-    // populated with player id strings during normalization
-    tactics: { mentality: 5, style: "3", focus: "2", formation: "4-3-3" },
-    lineup: [],
-    // Player.create() + { position, fp, captain, rec, rating, mom, … }
-    goals: 2,
-    goalsAgainst: 1,
-    stats: { shots: 14, shotsOnTarget: 6, saves: 3, passes: 412, passesCompleted: 327, crosses: 18, fouls: 11, yellowCards: 2, redCards: 0, advanced: {} },
-    ratings: { avg: 6.82, subs: 6.45, GK: 7.1, DEF: 6.9, MID: 6.8, ATT: 6.7, avgAge: 25.3, avgRoutine: 58.4 }
-  });
-  Object.assign(exampleMatch.away, {
-    club: { id: "1002", name: "FK Vojvodina", nick: "VOJ", country: "Serbia", division: 1, group: "1", manager_name: "Nikola Petrovi\u0107", fanclub: 9500, stadium: "Kara\u0111or\u0111e stadion" },
-    color: "#e63030",
-    captain: 139575032,
-    playerIds: /* @__PURE__ */ new Set(),
-    tactics: { mentality: 3, style: "2", focus: "1", formation: "4-4-2" },
-    lineup: [],
-    goals: 1,
-    goalsAgainst: 2,
-    stats: { shots: 8, shotsOnTarget: 3, saves: 5, passes: 298, passesCompleted: 210, crosses: 9, fouls: 14, yellowCards: 3, redCards: 0, advanced: {} },
-    ratings: { avg: 6.51, subs: 6.1, GK: 6.8, DEF: 6.5, MID: 6.4, ATT: 6.6, avgAge: 27, avgRoutine: 55.1 }
-  });
-
-  // src/utils/normalize/match.js
-  var resolveCompetitionType = (typeRaw) => {
-    if (!typeRaw) return null;
-    if (typeRaw === "l") return "league";
-    if (typeRaw === "fl") return "friendly_league";
-    if (typeRaw === "f" || typeRaw === "fq") return "friendly";
-    if (typeRaw === "c" || /^p\d+$/.test(typeRaw)) return "cup";
-    if (typeRaw === "ntq") return "ntq";
-    if (/^(ue|cl)\w*$/.test(typeRaw)) return "international_cup";
-    return null;
-  };
-  var normalizeRawMatchClub = (rawClub, isNt = false) => {
-    const id = rawClub.id || null;
-    const country = rawClub.country || null;
-    const logo = isNt ? country ? `/pics/nt_logos/140px/${country}.png` : "" : id ? rawClub.logo || `/pics/club_logos/${id}_140.png` : "";
-    return {
-      id: isNt ? null : id,
-      name: rawClub.club_name || null,
-      nick: rawClub.club_nick || null,
-      country,
-      logo,
-      division: rawClub.division ? Number(rawClub.division) : null,
-      group: rawClub.group || null,
-      manager_name: rawClub.manager_name || null,
-      fanclub: rawClub.fanclub || null,
-      stadium: rawClub.stadium || null,
-      city: rawClub.city || null
-    };
-  };
-  var applyMatchContext = (player2, p, captainId) => {
-    var _a2;
-    player2.position = p.position || null;
-    if (player2.position) {
-      player2.positions = player2.positions || [];
-      for (const pos2 of player2.positions) pos2.playing = false;
-      const key = player2.position.toLowerCase();
-      let pos = player2.positions.find((pos2) => pos2.key === key);
-      if (!pos) player2.positions.push(pos = { key });
-      pos.playing = true;
-    }
-    player2.captain = Number(p.player_id) === captainId;
-    player2.rating = typeof p.rating === "number" && p.rating > 0 ? p.rating : null;
-    player2.mom = (_a2 = p.mom) != null ? _a2 : 0;
-    player2.grouped = [];
-    player2.perMinute = [];
-    player2.minsPlayed = null;
-    return player2;
-  };
-  var normalizeRawMatch = (raw, playersById = /* @__PURE__ */ new Map(), matchId = null) => {
-    var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s2, _t, _u, _v, _w, _x, _y, _z, _A, _B;
-    const ntMatch = typeof matchId === "string" && matchId.startsWith("nt");
-    const match = Match.create();
-    const md = raw.match_data || {};
-    const venue = md.venue || {};
-    match.id = (_b = (_a2 = raw.match_id) != null ? _a2 : raw.id) != null ? _b : null;
-    match.ntMatch = ntMatch;
-    match.season = (_c = raw.season) != null ? _c : null;
-    const readable = venue.kickoff_readable || "";
-    match.date = readable.split(" ")[0] || null;
-    match.kickoff = venue.kickoff ? Number(venue.kickoff) : null;
-    match.kickoffTime = md.match_time_of_day || null;
-    const typeRaw = venue.matchtype || null;
-    match.competition.name = venue.tournament || resolveCupName(typeRaw, (_f = (_e = (_d = raw.club) == null ? void 0 : _d.home) == null ? void 0 : _e.country) != null ? _f : null) || null;
-    match.competition.typeRaw = typeRaw;
-    match.competition.type = resolveCompetitionType(typeRaw);
-    match.competition.url = resolveIntCupUrl(typeRaw, (_i = (_h = (_g = raw.club) == null ? void 0 : _g.home) == null ? void 0 : _h.country) != null ? _i : null);
-    const homeDivision = (_k = (_j = raw.club) == null ? void 0 : _j.home) == null ? void 0 : _k.division;
-    match.competition.division = homeDivision ? Number(homeDivision) : null;
-    match.venue.name = venue.name || null;
-    match.venue.city = venue.city || null;
-    match.venue.capacity = venue.capacity ? Number(venue.capacity) : null;
-    match.venue.weather = venue.weather || null;
-    match.venue.pitchCondition = venue.pitch_condition ? Number(venue.pitch_condition) : null;
-    match.venue.facilities.sprinklers = (_l = venue.sprinklers) != null ? _l : null;
-    match.venue.facilities.draining = (_m = venue.draining) != null ? _m : null;
-    match.venue.facilities.pitchcover = (_n = venue.pitchcover) != null ? _n : null;
-    match.venue.facilities.heating = (_o = venue.heating) != null ? _o : null;
-    match.venue.picture = (_p = venue.picture) != null ? _p : null;
-    match.duration.regular = md.regular_last_min ? Number(md.regular_last_min) : null;
-    match.duration.total = md.last_min ? Number(md.last_min) : null;
-    match.duration.extra = md.extra_time ? Number(md.extra_time) : null;
-    match.possession.home = (_r = (_q = md.possession) == null ? void 0 : _q.home) != null ? _r : null;
-    match.possession.away = (_t = (_s2 = md.possession) == null ? void 0 : _s2.away) != null ? _t : null;
-    match.attendance = md.attendance ? Number(md.attendance) : null;
-    const htRaw = (_u = md.halftime) == null ? void 0 : _u.chance;
-    if (htRaw) {
-      const htText = Array.isArray(htRaw.text) ? htRaw.text[0] : htRaw.text;
-      const htLine = Array.isArray(htText) ? htText[0] : htText;
-      const htMatch = typeof htLine === "string" ? htLine.match(/(\d+)-(\d+)\.$/) : null;
-      if (htMatch) {
-        match.result.halftime.home = Number(htMatch[1]);
-        match.result.halftime.away = Number(htMatch[2]);
-      }
-    }
-    const rawLiveMin = md.live_min;
-    if (typeof rawLiveMin === "number" && rawLiveMin < 0) {
-      match.status = "future";
-      match.liveMin = rawLiveMin;
-    } else if (typeof rawLiveMin === "number" && rawLiveMin > 0) {
-      match.status = "live";
-      match.liveMin = rawLiveMin;
-    } else {
-      const kickoffTs = Number(venue.kickoff);
-      const now = Math.floor(Date.now() / 1e3);
-      match.status = kickoffTs && kickoffTs > now ? "future" : "ended";
-      match.liveMin = null;
-    }
-    for (const side of ["home", "away"]) {
-      const rawClub = ((_v = raw.club) == null ? void 0 : _v[side]) || {};
-      const rawLineup = ((_w = raw.lineup) == null ? void 0 : _w[side]) || {};
-      const captainId = Number(((_x = md.captain) == null ? void 0 : _x[side]) || 0);
-      const color = "#" + (((_y = rawClub.colors) == null ? void 0 : _y.club_color1) || (side === "home" ? "4a9030" : "5b9bff"));
-      match[side].club = normalizeRawMatchClub(rawClub, ntMatch);
-      match[side].color = color;
-      match[side].captain = captainId || null;
-      match[side].tactics.mentality = ((_z = md.mentality) == null ? void 0 : _z[side]) != null ? Number(md.mentality[side]) : null;
-      match[side].tactics.style = ((_A = md.attacking_style) == null ? void 0 : _A[side]) || null;
-      match[side].tactics.focus = ((_B = md.focus_side) == null ? void 0 : _B[side]) || null;
-      match[side].lineup = Object.values(rawLineup).map((p) => {
-        const pid = Number(p.player_id);
-        const player2 = playersById.get(pid);
-        if (!player2) return null;
-        return applyMatchContext(player2, p, captainId);
-      }).filter(Boolean);
-      match[side].playerIds = new Set(Object.keys(rawLineup));
-    }
-    match.report = raw.report || {};
-    TmMatchService.normalizeReport(match.report);
-    match.plays = TmMatchService.buildNormalizedPlays(match.report, raw.lineup || {});
-    return match;
-  };
-
-  // src/models/match.js
-  var TmMatchModel = {
-    /**
-     * Fetch and normalize a match.
-     * Returns a canonical Match object (lib/match.js shape).
-     * Derived fields (goals, stats, ratings, visiblePlays, actions) are
-     * populated by calling TmMatchUtils.deriveMatchData(liveState) afterwards.
-     *
-     * @param {string|number} matchId
-     * @param {{ dbSync?: boolean }} [options]
-     * @returns {Promise<object|null>}
-     */
-    async fetchMatch(matchId, options = {}) {
-      return TmMatchService.fetchMatch(matchId, options);
-    },
-    /**
-     * Fetch match data without triggering the async player-profile enrichment.
-     * Use when only static match facts are needed (stats page, history, etc.).
-     *
-     * @param {string|number} matchId
-     * @returns {Promise<object|null>}
-     */
-    /**
-     * Fetch a match and process it through the stats pipeline.
-     *
-     * @param {object} matchInfo
-     * @param {string|number} clubId
-     * @param {{ dbSync?: boolean }} [options]
-     * @returns {Promise<object|null>}
-     */
-    async fetchMatchForStats(matchInfo, clubId2, options = {}) {
-      return TmMatchService.fetchMatchForStats(matchInfo, clubId2, options);
-    },
-    /**
-     * Fetch the head-to-head history between two clubs.
-     *
-     * @param {string|number} homeId
-     * @param {string|number} awayId
-     * @param {number} kickoffTs  Unix timestamp of the reference match kickoff
-     * @returns {Promise<object|null>}
-     */
-    fetchH2H(homeId, awayId, kickoffTs) {
-      return TmMatchService.fetchMatchH2H(homeId, awayId, kickoffTs);
-    },
-    /**
-     * Fetch the match tooltip (past season results) from the tooltip endpoint.
-     *
-     * @param {string|number} matchId
-     * @param {string|number} season
-     * @returns {Promise<object|null>}
-     */
-    fetchTooltip(matchId, season) {
-      return TmMatchService.fetchMatchTooltip(matchId, season);
-    },
-    /**
-     * Build a canonical Match object directly from a known raw payload.
-     * Useful in tests, offline tools, or when a raw response is already in hand.
-     *
-     * @param {object} raw  match.ajax.php response
-     * @returns {object}    Match.create() with static fields populated
-     */
-    fromRaw(raw) {
-      return normalizeRawMatch(raw);
-    },
-    /**
-     * Strip unnecessary display / cache fields from a raw match response.
-     * See TmMatchService.compressMatch for the full list of removed fields.
-     *
-     * @param {object} raw
-     * @returns {object}  compressed raw (still raw shape, not a Match object)
-     */
-    compress(raw) {
-      return TmMatchService.compressMatch(raw);
-    },
-    /**
-     * Fetch, normalize and synchronously enrich a match with full player profiles.
-     * Unlike fetchMatch (which enriches async/fire-and-forget), this awaits all
-     * tooltip fetches before returning — needed by the match player overlay so
-     * positions/skills are available on first render.
-     *
-     * @param {string|number} matchId
-     * @returns {Promise<object|null>}  normalized match with plays built
-     */
-    async fetchMatchWithProfiles(matchId) {
-      var _a2, _b;
-      const raw = await _get(`/ajax/match.ajax.php?id=${matchId}`);
-      if (!raw) return null;
-      const allRawPlayers = [
-        ...Object.values(((_a2 = raw.lineup) == null ? void 0 : _a2.home) || {}),
-        ...Object.values(((_b = raw.lineup) == null ? void 0 : _b.away) || {})
-      ];
-      const results = await Promise.allSettled(
-        allRawPlayers.map((p) => TmPlayerModel.fetchPlayerTooltip(Number(p.player_id)))
-      );
-      const playersById = /* @__PURE__ */ new Map();
-      results.forEach((r) => {
-        if (r.status === "fulfilled" && r.value)
-          playersById.set(r.value.id, r.value);
-      });
-      return normalizeRawMatch(raw, playersById, String(matchId));
-    }
-  };
 
   // src/components/match-new/tm-match-header.js
   var STYLE_ID43 = "mp-header-style";
@@ -31057,7 +30852,7 @@ order:initial
     }
   };
 
-  // src/components/match/tm-unity-engine.js
+  // src/components/match-new/tm-unity-engine.js
   var TmUnityEngine = {
     create({ viewportId, onReady, onClipStart, onClipEnd, onMinuteDone }) {
       const uw = () => typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
@@ -34411,7 +34206,7 @@ order:initial
         if (!el2.querySelector(".rnd-league-wrap")) el2.innerHTML = TmUI.loading("Loading league data\u2026");
         const fetches = missingIds.map((mid) => {
           if (!cache.matchPromisesById[mid]) {
-            cache.matchPromisesById[mid] = TmMatchService.fetchMatch(mid, { dbSync: false }).then((mData) => {
+            cache.matchPromisesById[mid] = TmMatchModel.fetchMatch(mid).then((mData) => {
               if (mData) cache.matchDataById[mid] = mData;
               else cache.failedIds[mid] = true;
             }).catch(() => {
@@ -34430,7 +34225,7 @@ order:initial
       } else {
         el2.innerHTML = TmUI.loading("Loading league data\u2026");
         if (!cache.fixturesPromise) {
-          cache.fixturesPromise = TMLeagueService.fetchLeagueFixtures("league", { var1: country, var2: division, var3: group }).then((fixtures) => {
+          cache.fixturesPromise = TmLeagueModel.fetchLeagueFixtures("league", { var1: country, var2: division, var3: group }).then((fixtures) => {
             if (!fixtures) throw new Error("No fixtures returned");
             cache.fixtures = fixtures;
             return fixtures;
@@ -34454,8 +34249,8 @@ order:initial
   };
 
   // src/services/international-cup.js
-  var cleanText16 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-  var normalizeCountryKey = (value) => cleanText16(value).toLowerCase();
+  var cleanText15 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var normalizeCountryKey = (value) => cleanText15(value).toLowerCase();
   var isDebugEnabled = () => {
     var _a2;
     try {
@@ -34491,7 +34286,7 @@ order:initial
     const homeAnchor = item.querySelector('.hometeam a[club_link], .hometeam a[href*="/club/"]');
     const awayAnchor = item.querySelector('.awayteam a[club_link], .awayteam a[href*="/club/"]');
     if (!homeAnchor || !awayAnchor) return null;
-    const scoreText = cleanText16(((_a2 = item.querySelector(".match_result")) == null ? void 0 : _a2.textContent) || "");
+    const scoreText = cleanText15(((_a2 = item.querySelector(".match_result")) == null ? void 0 : _a2.textContent) || "");
     const scoreMatch = scoreText.match(/(\d+)\s*-\s*(\d+)/);
     if (!scoreMatch) return null;
     return {
@@ -34507,7 +34302,7 @@ order:initial
   var HEADING_SELECTOR = "h1, h2, h3, .stage_title, .sub_header, .box_headline, .box_sub_header .large";
   function getBoxTitle(box) {
     var _a2;
-    return cleanText16(
+    return cleanText15(
       ((_a2 = box == null ? void 0 : box.querySelector(".box_head h2, .box_headline, .box_sub_header .large, h3, h2")) == null ? void 0 : _a2.textContent) || ""
     );
   }
@@ -34518,10 +34313,10 @@ order:initial
       let sibling = current.previousElementSibling;
       while (sibling) {
         if ((_a2 = sibling.matches) == null ? void 0 : _a2.call(sibling, HEADING_SELECTOR)) {
-          const title = cleanText16(sibling.textContent);
+          const title = cleanText15(sibling.textContent);
           if (title) return title;
         }
-        const nestedHeading = Array.from(((_b = sibling.querySelectorAll) == null ? void 0 : _b.call(sibling, HEADING_SELECTOR)) || []).map((candidate) => cleanText16(candidate.textContent)).filter(Boolean).pop();
+        const nestedHeading = Array.from(((_b = sibling.querySelectorAll) == null ? void 0 : _b.call(sibling, HEADING_SELECTOR)) || []).map((candidate) => cleanText15(candidate.textContent)).filter(Boolean).pop();
         if (nestedHeading) return nestedHeading;
         sibling = sibling.previousElementSibling;
       }
@@ -34548,7 +34343,7 @@ order:initial
     return Array.from(groupedSections.values()).filter((section) => section.nodes.length);
   }
   function classifyStage(title, passedGroupStage) {
-    const text = cleanText16(title).toLowerCase();
+    const text = cleanText15(title).toLowerCase();
     if (/group stage|groups?/.test(text)) return "group";
     if (/qualification|qualifying|play\s*-?\s*off|preliminary/.test(text)) return "qualification";
     if (/round of|quarter|semi|final/.test(text)) return "knockout";
@@ -34658,6 +34453,19 @@ order:initial
       return countries;
     },
     normalizeCountryKey
+  };
+
+  // src/models/international-cup.js
+  var TmInternationalCupModel = {
+    fetchOverviewDocument(tournamentId) {
+      return TmInternationalCupService.fetchOverviewDocument(tournamentId);
+    },
+    normalizeCountryKey(code) {
+      return TmInternationalCupService.normalizeCountryKey(code);
+    },
+    calculateCurrentSeasonCountryPoints(opts) {
+      return TmInternationalCupService.calculateCurrentSeasonCountryPoints(opts);
+    }
   };
 
   // src/components/match-new/tm-match-intcup.js
@@ -35026,7 +34834,7 @@ order:initial
       };
       const initialMin = (initialReplayState == null ? void 0 : initialReplayState.currentMinute) != null ? initialReplayState.currentMinute : Infinity;
       el2.innerHTML = TmUI.loading("Loading cup data\u2026");
-      TmInternationalCupService.fetchOverviewDocument(tournamentId).then((doc) => {
+      TmInternationalCupModel.fetchOverviewDocument(tournamentId).then((doc) => {
         if (!doc) {
           el2.innerHTML = TmUI.error("Failed to load cup data");
           return;
@@ -35082,7 +34890,7 @@ order:initial
       liveStartMinute = Math.floor(match.liveMin);
       liveStartSecond = Math.round(match.liveMin % 1 * 60);
     }
-    const { schedule } = TmMatchService.buildSchedule(match.plays);
+    const { schedule } = TmMatchModel.buildSchedule(match.plays);
     const playMinutes = Object.keys(match.plays).map(Number).sort((a, b) => a - b);
     const maximumMinute = playMinutes.length ? playMinutes[playMinutes.length - 1] : 90;
     const header = TmMatchHeader.create({
@@ -35134,8 +34942,8 @@ order:initial
       try {
         const matchId2 = String(match.id);
         const [homeFixtures, awayFixtures] = await Promise.all([
-          TmClubService.fetchClubFixtures(match.home.club.id),
-          TmClubService.fetchClubFixtures(match.away.club.id)
+          TmClubModel.fetchClubFixtures(match.home.club.id),
+          TmClubModel.fetchClubFixtures(match.away.club.id)
         ]);
         const numericMatchId = Number(matchId2);
         const seenIds = /* @__PURE__ */ new Set();
@@ -35158,10 +34966,12 @@ order:initial
         const goalCounts = {};
         const matchCounts = {};
         await Promise.all(pastMatchIds.map(async (id) => {
+          var _a3, _b2;
           try {
-            const mData = await TmMatchService.fetchMatch(id, { dbSync: false });
+            const mData = await TmMatchModel.fetchMatch(id);
             if (!(mData == null ? void 0 : mData.report)) return;
-            (mData.allPlayers || []).forEach((p) => {
+            const allPlayers3 = [...((_a3 = mData.home) == null ? void 0 : _a3.lineup) || [], ...((_b2 = mData.away) == null ? void 0 : _b2.lineup) || []];
+            allPlayers3.forEach((p) => {
               const pid = String(p.id || p.player_id || "");
               if (pid) matchCounts[pid] = (matchCounts[pid] || 0) + 1;
             });
@@ -35800,7 +35610,7 @@ order:initial
         `;
       document.head.appendChild(style);
     };
-    const cleanText26 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const cleanText25 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const htmlOf6 = (node) => node ? node.outerHTML : "";
     const extractClubId4 = (node) => {
       if (!node) return "";
@@ -35830,11 +35640,11 @@ order:initial
       const awayAnchor = awayCell == null ? void 0 : awayCell.querySelector('a[club_link], a[href*="/club/"]');
       if (!homeAnchor || !awayAnchor) return null;
       const scoreAnchor = scoreCell == null ? void 0 : scoreCell.querySelector('a[match_link], [match_link], a[href*="/matches/"]');
-      const scoreText = cleanText26((scoreCell == null ? void 0 : scoreCell.textContent) || "");
+      const scoreText = cleanText25((scoreCell == null ? void 0 : scoreCell.textContent) || "");
       const matchId = extractMatchId(scoreAnchor);
       const scoreHref = matchId ? `/matches/${matchId}/` : "";
       return {
-        roundLabel: cleanText26((roundCell == null ? void 0 : roundCell.textContent) || roundLabel),
+        roundLabel: cleanText25((roundCell == null ? void 0 : roundCell.textContent) || roundLabel),
         matchId,
         scoreText: scoreText || "\u2014",
         scoreHref,
@@ -35843,12 +35653,12 @@ order:initial
         isHighlight: row.classList.contains("highlighted_row_done") || !!row.querySelector(".highlight_td"),
         home: {
           id: extractClubId4(homeAnchor),
-          name: cleanText26(homeAnchor.textContent) || cleanText26((homeCell == null ? void 0 : homeCell.textContent) || ""),
+          name: cleanText25(homeAnchor.textContent) || cleanText25((homeCell == null ? void 0 : homeCell.textContent) || ""),
           href: homeAnchor.getAttribute("href") || "#"
         },
         away: {
           id: extractClubId4(awayAnchor),
-          name: cleanText26(awayAnchor.textContent) || cleanText26((awayCell == null ? void 0 : awayCell.textContent) || ""),
+          name: cleanText25(awayAnchor.textContent) || cleanText25((awayCell == null ? void 0 : awayCell.textContent) || ""),
           href: awayAnchor.getAttribute("href") || "#"
         }
       };
@@ -35860,7 +35670,7 @@ order:initial
         return [{
           type: "link",
           href: node.getAttribute("href") || "#",
-          label: cleanText26(node.textContent),
+          label: cleanText25(node.textContent),
           icon: /cup/i.test(node.textContent) ? "\u{1F3C6}" : /fixture/i.test(node.textContent) ? "\u{1F4C5}" : /stat/i.test(node.textContent) ? "\u{1F4CA}" : /history/i.test(node.textContent) ? "\u{1F4DC}" : "\u{1F4CB}"
         }];
       });
@@ -35874,14 +35684,14 @@ order:initial
       const changeLink = box.querySelector(".box_sub_header a.float_right");
       const emblem = box.querySelector(".align_center img");
       const roundLink = box.querySelector('.align_center a[href*="/fixtures/cup/"]');
-      const roundText = cleanText26(((_a2 = box.querySelector(".align_center")) == null ? void 0 : _a2.textContent) || "");
+      const roundText = cleanText25(((_a2 = box.querySelector(".align_center")) == null ? void 0 : _a2.textContent) || "");
       const progressHeading = Array.from(box.querySelectorAll("h3")).find((node) => /progress/i.test(node.textContent || ""));
       const progressStd = progressHeading == null ? void 0 : progressHeading.nextElementSibling;
       const progressRows = Array.from((progressStd == null ? void 0 : progressStd.querySelectorAll("table tr")) || []).map((row) => {
         var _a3;
         const cells = row.querySelectorAll("td");
         return {
-          round: cleanText26(((_a3 = cells[0]) == null ? void 0 : _a3.textContent) || ""),
+          round: cleanText25(((_a3 = cells[0]) == null ? void 0 : _a3.textContent) || ""),
           homeHtml: cells[1] ? cells[1].innerHTML : "",
           scoreHtml: cells[2] ? cells[2].innerHTML : "",
           awayHtml: cells[3] ? cells[3].innerHTML : "",
@@ -35904,13 +35714,13 @@ order:initial
         competitionHtml = clone.innerHTML.trim();
       }
       return {
-        clubName: cleanText26((clubLink == null ? void 0 : clubLink.textContent) || "Cup"),
+        clubName: cleanText25((clubLink == null ? void 0 : clubLink.textContent) || "Cup"),
         clubHref: (clubLink == null ? void 0 : clubLink.getAttribute("href")) || "#",
         changeHtml: htmlOf6(changeLink),
         competitionHtml,
         emblemSrc: (emblem == null ? void 0 : emblem.getAttribute("src")) || "",
         currentRoundHref: (roundLink == null ? void 0 : roundLink.getAttribute("href")) || "",
-        currentRoundLabel: cleanText26((roundLink == null ? void 0 : roundLink.textContent) || ""),
+        currentRoundLabel: cleanText25((roundLink == null ? void 0 : roundLink.textContent) || ""),
         roundText,
         progressRows,
         sponsorHtml
@@ -35924,7 +35734,7 @@ order:initial
       let currentTitle = "";
       Array.from(((_a2 = secondBox.querySelector(".box_body")) == null ? void 0 : _a2.children) || []).forEach((node) => {
         if (node.tagName === "H3") {
-          currentTitle = cleanText26(node.textContent);
+          currentTitle = cleanText25(node.textContent);
           return;
         }
         if (!currentTitle || !node.classList.contains("std")) return;
@@ -35951,7 +35761,7 @@ order:initial
         return {
           imageSrc: ((_a2 = node.querySelector("img")) == null ? void 0 : _a2.getAttribute("src")) || "",
           clubHtml: (clubAnchor == null ? void 0 : clubAnchor.outerHTML) || "",
-          leagueText: cleanText26(clone.textContent || "")
+          leagueText: cleanText25(clone.textContent || "")
         };
       });
       const paragraphs = Array.from(box.querySelectorAll(".std p")).map((node) => node.outerHTML);
@@ -36776,7 +36586,7 @@ order:initial
         const panel = panels[messagesKey];
         if (!panel) return;
         panel.innerHTML = TmUI.loading("Loading messages...", true);
-        const payload = await TmApi.fetchPmMessages("inbox");
+        const payload = await TmMessagesModel.fetchPmMessages("inbox");
         const items = normalizePmConversationItems2(payload).map((item) => ({
           title: item.subject,
           sub: item.senderName,
@@ -36826,11 +36636,11 @@ order:initial
         isLoadingMore: apiFeedState.isLoadingMore
       } : null;
       const fetchApiHomeFeedModel = async (feedRoot, { lastPost = "" } = {}) => {
-        const payload = await TmApi.fetchDetailedUserFeed({ lastPost });
+        const payload = await TmMessagesModel.fetchDetailedUserFeed({ lastPost });
         return buildHomeFeedModel({
           payload,
           nativePostMap: buildNativeHomeFeedPostMap(feedRoot),
-          fetchFeedNames: TmApi.fetchFeedNames
+          fetchFeedNames: TmMessagesModel.fetchFeedNames.bind(TmMessagesModel)
         });
       };
       const loadApiHomeFeedPage = async (feedRoot, { reset = false, lastPost = "" } = {}) => {
@@ -36972,7 +36782,7 @@ order:initial
     const sourceRoot3 = document.querySelector(".main_center") || main2;
     const STYLE_ID60 = "tmvu-international-cup-overview-style";
     const CURRENT_SEASON2 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
-    const cleanText26 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const cleanText25 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml33 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const htmlOf6 = (node) => node ? node.outerHTML : "";
     const stripShadow = (root2) => {
@@ -37183,7 +36993,7 @@ order:initial
     const parseMenu10 = () => Array.from(sourceRoot3.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
       if (node.tagName === "HR") return [{ type: "separator" }];
       if (node.tagName !== "A") return [];
-      const label = cleanText26(node.textContent);
+      const label = cleanText25(node.textContent);
       const href = node.getAttribute("href") || "#";
       let icon = "\u{1F3C6}";
       if (/coeff/i.test(label)) icon = "\u2211";
@@ -37194,11 +37004,11 @@ order:initial
       var _a2, _b, _c;
       const options = Array.from(sourceRoot3.querySelectorAll("#change_league option")).map((option) => ({
         id: String(option.value || ""),
-        label: cleanText26(option.textContent)
+        label: cleanText25(option.textContent)
       })).filter((option) => option.id && option.label);
       const selectedId = ((_a2 = window.location.pathname.match(/^\/international-cup\/(\d+)\/?$/i)) == null ? void 0 : _a2[1]) || ((_b = options.find((option) => {
         var _a3;
-        return option.label === cleanText26((_a3 = sourceRoot3.querySelector(".box_sub_header .large")) == null ? void 0 : _a3.textContent);
+        return option.label === cleanText25((_a3 = sourceRoot3.querySelector(".box_sub_header .large")) == null ? void 0 : _a3.textContent);
       })) == null ? void 0 : _b.id) || ((_c = options[0]) == null ? void 0 : _c.id) || "";
       return { options, selectedId };
     };
@@ -37206,7 +37016,7 @@ order:initial
       var _a2;
       const box = sourceRoot3.querySelector(".column2_a > .box");
       const subHeader = box == null ? void 0 : box.querySelector(".box_sub_header");
-      const tournamentName = cleanText26(((_a2 = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _a2.textContent) || "International Cup");
+      const tournamentName = cleanText25(((_a2 = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _a2.textContent) || "International Cup");
       return { box, tournamentName };
     };
     const parseContentSections = (box) => {
@@ -37217,7 +37027,7 @@ order:initial
       Array.from(body.children).forEach((node) => {
         if (node.classList.contains("box_shadow") || node.classList.contains("box_sub_header") || node.id === "change_league") return;
         if (node.tagName === "H3") {
-          current = { title: cleanText26(node.textContent), nodes: [] };
+          current = { title: cleanText25(node.textContent), nodes: [] };
           sections2.push(current);
           return;
         }
@@ -37254,10 +37064,10 @@ order:initial
       if (!homeAnchor || !awayAnchor) return null;
       const matchDateNode = item.querySelector(".match_date");
       const scoreAnchor = item.querySelector('.match_result a[match_link], .match_result a[href*="/matches/"]');
-      const scoreText = cleanText26(((_a2 = item.querySelector(".match_result")) == null ? void 0 : _a2.textContent) || "\u2014");
+      const scoreText = cleanText25(((_a2 = item.querySelector(".match_result")) == null ? void 0 : _a2.textContent) || "\u2014");
       const matchId = extractMatchId(scoreAnchor);
       const scoreHref = matchId ? `/matches/${matchId}/` : "";
-      const dateLabel = cleanText26(
+      const dateLabel = cleanText25(
         (matchDateNode == null ? void 0 : matchDateNode.getAttribute("tooltip")) || (matchDateNode == null ? void 0 : matchDateNode.getAttribute("title")) || (matchDateNode == null ? void 0 : matchDateNode.textContent) || ""
       );
       return {
@@ -37270,13 +37080,13 @@ order:initial
         isHighlight: false,
         home: {
           id: extractClubId4(homeAnchor),
-          name: cleanText26(homeAnchor.textContent),
+          name: cleanText25(homeAnchor.textContent),
           href: homeAnchor.getAttribute("href") || "#",
           flagHtml: extractCountryFlagHtml(item.querySelector(".hometeam"))
         },
         away: {
           id: extractClubId4(awayAnchor),
-          name: cleanText26(awayAnchor.textContent),
+          name: cleanText25(awayAnchor.textContent),
           href: awayAnchor.getAttribute("href") || "#",
           flagHtml: extractCountryFlagHtml(item.querySelector(".awayteam"))
         }
@@ -37286,7 +37096,7 @@ order:initial
       var _a2;
       const box = sourceRoot3.querySelector(".column3_a .box");
       if (!box) return null;
-      const title = cleanText26(((_a2 = box.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "Tournament Notes");
+      const title = cleanText25(((_a2 = box.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "Tournament Notes");
       const body = stripShadow(box.querySelector(".box_body"));
       const winners = Array.from((body == null ? void 0 : body.querySelectorAll('.align_center[style*="display: inline-block"]')) || []).map((node) => {
         var _a3;
@@ -37296,7 +37106,7 @@ order:initial
         return {
           imageSrc: ((_a3 = node.querySelector("img")) == null ? void 0 : _a3.getAttribute("src")) || "",
           clubHtml: (clubAnchor == null ? void 0 : clubAnchor.outerHTML) || "",
-          leagueText: cleanText26(clone.textContent || "")
+          leagueText: cleanText25(clone.textContent || "")
         };
       });
       body == null ? void 0 : body.querySelectorAll('.align_center[style*="display: inline-block"]').forEach((node) => node.remove());
@@ -39516,7 +39326,7 @@ order:initial
     const CURRENT_SEASON2 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const coefficientTierBreakIndexes = [];
     let activeCoefficientGroup = null;
-    const cleanText26 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const cleanText25 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const htmlOf6 = (node) => node ? node.outerHTML : "";
     const COEFFICIENT_GROUPS = [
       { slug: "fita", label: "FITA (Global)", overviewIds: ["1", "2", "3", "4", "5", "6"], matchIds: [], aliases: ["fita", "global", "world", "globalno"], hasQualificationTiers: false },
@@ -39525,7 +39335,7 @@ order:initial
       { slug: "fata", label: "FATA", overviewIds: ["5", "6"], matchIds: ["5", "6"], aliases: ["fata", "liberty", "americana"], hasQualificationTiers: true }
     ];
     const findCoefficientGroup = (value) => {
-      const normalized = cleanText26(value).toLowerCase();
+      const normalized = cleanText25(value).toLowerCase();
       if (!normalized) return null;
       return COEFFICIENT_GROUPS.find((group) => normalized === group.slug || group.matchIds.includes(normalized) || normalized.includes(group.slug) || normalized.includes(group.label.toLowerCase()) || group.aliases.some((alias) => normalized.includes(alias)));
     };
@@ -39535,7 +39345,7 @@ order:initial
       const countryAnchor = ((_a2 = node.matches) == null ? void 0 : _a2.call(node, 'a.country_link[href*="/national-teams/"], a[href*="/national-teams/"]')) ? node : (_b = node.querySelector) == null ? void 0 : _b.call(node, 'a.country_link[href*="/national-teams/"], a[href*="/national-teams/"]');
       const href = (countryAnchor == null ? void 0 : countryAnchor.getAttribute("href")) || "";
       const code = ((_c = href.match(/\/national-teams\/([^/]+)\//)) == null ? void 0 : _c[1]) || "";
-      return TmInternationalCupService.normalizeCountryKey(code || (countryAnchor == null ? void 0 : countryAnchor.textContent) || node.textContent || "");
+      return TmInternationalCupModel.normalizeCountryKey(code || (countryAnchor == null ? void 0 : countryAnchor.textContent) || node.textContent || "");
     };
     const escapeHtml33 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const renderFlag4 = (country) => {
@@ -39778,7 +39588,7 @@ order:initial
     const parseMenu10 = (tournamentState2) => Array.from(sourceRoot3.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
       if (node.tagName === "HR") return [{ type: "separator" }];
       if (node.tagName !== "A") return [];
-      const label = cleanText26(node.textContent);
+      const label = cleanText25(node.textContent);
       const href = node.getAttribute("href") || "#";
       const resolvedHref = /coeff/i.test(label) ? `/international-cup/coefficients/${tournamentState2.selectedId}/` : href;
       let icon = "\u{1F3C6}";
@@ -39806,7 +39616,7 @@ order:initial
       var _a2;
       const box = sourceRoot3.querySelector(".column2_a > .box");
       const subHeader = box == null ? void 0 : box.querySelector(".box_sub_header");
-      const tournamentName = cleanText26(((_a2 = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _a2.textContent) || "International Cup");
+      const tournamentName = cleanText25(((_a2 = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _a2.textContent) || "International Cup");
       return { box, tournamentName };
     };
     const normalizeCoefficientTable = (table, label) => {
@@ -39831,7 +39641,7 @@ order:initial
           const countryAnchor = countryCell == null ? void 0 : countryCell.querySelector('a.country_link[href*="/national-teams/"]');
           const href = (countryAnchor == null ? void 0 : countryAnchor.getAttribute("href")) || "";
           const code = ((_a2 = href.match(/\/national-teams\/([^/]+)\//)) == null ? void 0 : _a2[1]) || "";
-          const qualifies = cleanText26(((_b = cells[2]) == null ? void 0 : _b.textContent) || "");
+          const qualifies = cleanText25(((_b = cells[2]) == null ? void 0 : _b.textContent) || "");
           if (shouldApplyQualificationTiers && index > 0 && qualifies && previousQualifies && qualifies !== previousQualifies) {
             coefficientTierBreakIndexes.push(index);
           }
@@ -39852,7 +39662,7 @@ order:initial
     const parseCoefficientTabs = (box) => {
       const labels = /* @__PURE__ */ new Map();
       box == null ? void 0 : box.querySelectorAll(".tabs [set_active]").forEach((tab) => {
-        labels.set(tab.getAttribute("set_active"), cleanText26(tab.textContent) || "Tab");
+        labels.set(tab.getAttribute("set_active"), cleanText25(tab.textContent) || "Tab");
       });
       return Array.from((box == null ? void 0 : box.querySelectorAll(".tab_container > div[id]")) || []).map((panel, index) => {
         const label = labels.get(panel.id) || `Tab ${index + 1}`;
@@ -39955,7 +39765,7 @@ order:initial
       return host;
     };
     const parseCellSortValue = (cell) => {
-      const text = cleanText26((cell == null ? void 0 : cell.textContent) || "");
+      const text = cleanText25((cell == null ? void 0 : cell.textContent) || "");
       if (!text || text === "\u2014") return { type: "empty", value: "" };
       const normalizedNumber = text.replace(/,/g, "");
       if (/^-?\d+(?:\.\d+)?$/.test(normalizedNumber)) {
@@ -40020,7 +39830,7 @@ order:initial
             flushPendingBlankCells();
           }
           cells.push({
-            label: cleanText26(entry.cell.textContent),
+            label: cleanText25(entry.cell.textContent),
             colspan: entry.colspan,
             rowspan: entry.rowspan
           });
@@ -40034,7 +39844,7 @@ order:initial
     const buildSortableTableFromNative = (table) => {
       var _a2, _b, _c;
       if (!table) return null;
-      const tableLabel = cleanText26(table.dataset.tmvuTableLabel || "");
+      const tableLabel = cleanText25(table.dataset.tmvuTableLabel || "");
       const headerRows = Array.from(table.querySelectorAll("tr")).filter((row) => row.querySelectorAll("th").length);
       if (!headerRows.length) return null;
       const { matrix, totalColumns } = buildHeaderMatrix(headerRows);
@@ -40046,7 +39856,7 @@ order:initial
           if (!entry) continue;
           const { cell } = entry;
           return {
-            label: cleanText26(cell.textContent),
+            label: cleanText25(cell.textContent),
             align: getCellAlign(cell)
           };
         }
@@ -40088,12 +39898,12 @@ order:initial
             const value = Number(item[`col${index}`]);
             return Number.isFinite(value) ? value : 0;
           });
-          if (currentWindowIndex >= 0 && !cleanText26(item.__html[currentWindowIndex] || "")) {
+          if (currentWindowIndex >= 0 && !cleanText25(item.__html[currentWindowIndex] || "")) {
             const currentWindowValue = yearValues.slice(0, -1).reduce((sum, value) => sum + value, 0);
             item[`col${currentWindowIndex}`] = currentWindowValue;
             item.__html[currentWindowIndex] = formatTableNumber(currentWindowValue);
           }
-          if (rollingWindowIndex >= 0 && !cleanText26(item.__html[rollingWindowIndex] || "")) {
+          if (rollingWindowIndex >= 0 && !cleanText25(item.__html[rollingWindowIndex] || "")) {
             const rollingWindowValue = yearValues.slice(1).reduce((sum, value) => sum + value, 0);
             item[`col${rollingWindowIndex}`] = rollingWindowValue;
             item.__html[rollingWindowIndex] = formatTableNumber(rollingWindowValue);
@@ -40143,7 +39953,7 @@ order:initial
     };
     const formatCoefficientValue = (value) => Number.isFinite(value) ? value.toFixed(3) : "0.000";
     const findCoefficientPanel = (root2, labelPattern) => {
-      const tab = Array.from(root2.querySelectorAll("[data-tab-target]")).find((node) => labelPattern.test(cleanText26(node.textContent)));
+      const tab = Array.from(root2.querySelectorAll("[data-tab-target]")).find((node) => labelPattern.test(cleanText25(node.textContent)));
       const panelId = (tab == null ? void 0 : tab.getAttribute("data-tab-target")) || "";
       return panelId ? root2.querySelector(`[data-tab-panel="${panelId}"]`) : null;
     };
@@ -40152,14 +39962,14 @@ order:initial
       const perYearTable = perYearPanel == null ? void 0 : perYearPanel.querySelector("table");
       if (!perYearTable) return;
       const allRows = Array.from(perYearTable.querySelectorAll("tr"));
-      const seasonGroupHeader = Array.from(perYearTable.querySelectorAll("th")).find((node) => /season/i.test(cleanText26(node.textContent)));
-      const numericHeaderRow = allRows.find((row) => Array.from(row.querySelectorAll("th")).some((node) => /^\d+$/.test(cleanText26(node.textContent))));
-      const seasonHeaders = Array.from((numericHeaderRow == null ? void 0 : numericHeaderRow.querySelectorAll("th")) || []).filter((node) => /^\d+$/.test(cleanText26(node.textContent)));
-      const totalHeader = Array.from(perYearTable.querySelectorAll("th")).find((node) => /total|\d+\s*-\s*\d+/i.test(cleanText26(node.textContent)));
-      const nextSeason = CURRENT_SEASON2 ? String(CURRENT_SEASON2) : seasonHeaders.length ? String(Math.max(...seasonHeaders.map((node) => Number(cleanText26(node.textContent)) || 0)) + 1) : "Current";
-      const currentStart = seasonHeaders[0] ? cleanText26(seasonHeaders[0].textContent) : "";
-      const currentEnd = seasonHeaders.length ? cleanText26(seasonHeaders[seasonHeaders.length - 1].textContent) : "";
-      const rollingStart = seasonHeaders[1] ? cleanText26(seasonHeaders[1].textContent) : "";
+      const seasonGroupHeader = Array.from(perYearTable.querySelectorAll("th")).find((node) => /season/i.test(cleanText25(node.textContent)));
+      const numericHeaderRow = allRows.find((row) => Array.from(row.querySelectorAll("th")).some((node) => /^\d+$/.test(cleanText25(node.textContent))));
+      const seasonHeaders = Array.from((numericHeaderRow == null ? void 0 : numericHeaderRow.querySelectorAll("th")) || []).filter((node) => /^\d+$/.test(cleanText25(node.textContent)));
+      const totalHeader = Array.from(perYearTable.querySelectorAll("th")).find((node) => /total|\d+\s*-\s*\d+/i.test(cleanText25(node.textContent)));
+      const nextSeason = CURRENT_SEASON2 ? String(CURRENT_SEASON2) : seasonHeaders.length ? String(Math.max(...seasonHeaders.map((node) => Number(cleanText25(node.textContent)) || 0)) + 1) : "Current";
+      const currentStart = seasonHeaders[0] ? cleanText25(seasonHeaders[0].textContent) : "";
+      const currentEnd = seasonHeaders.length ? cleanText25(seasonHeaders[seasonHeaders.length - 1].textContent) : "";
+      const rollingStart = seasonHeaders[1] ? cleanText25(seasonHeaders[1].textContent) : "";
       const currentLabel = currentStart && currentEnd ? `${currentStart}-${currentEnd}` : "Current";
       const rollingLabel = rollingStart && /^\d+$/.test(nextSeason) ? `${rollingStart}-${nextSeason}` : "Recent 5";
       if (seasonGroupHeader && !seasonGroupHeader.dataset.tmvuCurrentSeasonGroup) {
@@ -40195,7 +40005,7 @@ order:initial
         const countryCell = cells[1];
         const totalCell = cells[cells.length - 1];
         const seasonCells = cells.slice(2, -1);
-        const seasonValues = seasonCells.map((cell) => parseFloat(cleanText26(cell.textContent)) || 0);
+        const seasonValues = seasonCells.map((cell) => parseFloat(cleanText25(cell.textContent)) || 0);
         const countryKey = getCountryKeyFromNode(countryCell);
         const currentValue = (_a2 = countryPoints[countryKey]) == null ? void 0 : _a2.average;
         const currentCell = document.createElement("td");
@@ -40217,7 +40027,7 @@ order:initial
     const hydrateCurrentSeasonCoefficientData = async ({ root: root2, box, tournamentIds = [] }) => {
       if (!root2 || !box) return;
       if (tournamentIds == null ? void 0 : tournamentIds.length) {
-        const countryPoints = await TmInternationalCupService.calculateCurrentSeasonCountryPoints({ tournamentIds });
+        const countryPoints = await TmInternationalCupModel.calculateCurrentSeasonCountryPoints({ tournamentIds });
         if (!Object.keys(countryPoints || {}).length) {
           console.warn("[TMVU][International Cup] Current-season coefficient calculation returned no country data.", {
             tournamentIds
@@ -40231,7 +40041,7 @@ order:initial
       var _a2;
       const box = sourceRoot3.querySelector(".column3_a .box");
       if (!box) return null;
-      const title = cleanText26(((_a2 = box.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "Tournament Notes");
+      const title = cleanText25(((_a2 = box.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "Tournament Notes");
       const body = stripShadow(box.querySelector(".box_body"));
       return {
         title,
@@ -40284,9 +40094,9 @@ order:initial
     { label: "Coefficients", href: "/international-cup/coefficients/1/" },
     { label: "Statistics", href: "/statistics/international-cup/1/", active: true }
   ];
-  var cleanText17 = (v) => String(v != null ? v : "").replace(/\s+/g, " ").trim();
-  var cleanOpts = (sel) => sel ? Array.from(sel.options).map((o) => ({ value: o.value, label: cleanText17(o.textContent), selected: o.selected })).filter((o) => o.value) : [];
-  var readMenuLabels = (menu) => menu ? Array.from(menu.querySelectorAll(".ui-menu-item-wrapper")).map((el2) => cleanText17(el2.textContent)).filter(Boolean) : [];
+  var cleanText16 = (v) => String(v != null ? v : "").replace(/\s+/g, " ").trim();
+  var cleanOpts = (sel) => sel ? Array.from(sel.options).map((o) => ({ value: o.value, label: cleanText16(o.textContent), selected: o.selected })).filter((o) => o.value) : [];
+  var readMenuLabels = (menu) => menu ? Array.from(menu.querySelectorAll(".ui-menu-item-wrapper")).map((el2) => cleanText16(el2.textContent)).filter(Boolean) : [];
   var readTourneyOpts = (root2) => {
     const selectOpts = cleanOpts(root2.querySelector("#tourney_number"));
     const menuLabels = readMenuLabels(document.querySelector("#tourney_number-menu"));
@@ -40414,6 +40224,116 @@ order:initial
     mountInternationalCupStatisticsPage(main2);
   }
 
+  // src/services/tactics.js
+  var _a;
+  var CLUB_COUNTRY = String(((_a = window.SESSION) == null ? void 0 : _a.country) || "").trim().toLowerCase();
+  var isForeigner = (p) => !!CLUB_COUNTRY && String((p == null ? void 0 : p.country) || "").trim().toLowerCase() !== CLUB_COUNTRY;
+  var isUnavailable = (p) => (p == null ? void 0 : p.ban) && String(p.ban).startsWith("r") || (p == null ? void 0 : p.injury) && p.injury !== "0" && Number(p.injury) !== 0;
+  function encodeNested(obj, prefix = "") {
+    const parts = [];
+    for (const [key, val] of Object.entries(obj)) {
+      const k = prefix ? `${prefix}[${key}]` : key;
+      if (val !== null && val !== void 0 && typeof val === "object") {
+        parts.push(encodeNested(val, k));
+      } else if (val !== null && val !== void 0) {
+        parts.push(`${encodeURIComponent(k)}=${encodeURIComponent(val)}`);
+      }
+    }
+    return parts.join("&");
+  }
+  var TmTacticsService = {
+    fetchTacticsRaw(reserves, national, miniGameId) {
+      return _dedup(
+        `tactics:get:${reserves}:${national}:${miniGameId}`,
+        () => _post("/ajax/tactics_get.ajax.php", { reserves, national, miniGameId })
+      );
+    },
+    postLineupSave(assoc, changedPlayers, reserves, national, miniGameId) {
+      return fetch("/ajax/tactics_post.ajax.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" },
+        body: encodeNested({ on_field: assoc, players: changedPlayers, reserves, national, miniGameId })
+      });
+    },
+    saveSettingValue(saveKey, value, reserves, national, miniGameId) {
+      var _a2, _b, _c;
+      const clubId2 = String(((_a2 = window.SESSION) == null ? void 0 : _a2.id) || ((_b = window.SESSION) == null ? void 0 : _b.main_id) || ((_c = window.SESSION) == null ? void 0 : _c.club_id) || "");
+      const body = { save: saveKey, value: String(value), reserves, national, club_id: clubId2 };
+      if (saveKey !== "focus") body.miniGameId = miniGameId;
+      return fetch("/ajax/tactics_post.ajax.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" },
+        body: new URLSearchParams(body).toString()
+      });
+    },
+    fetchCondOrders(reserves, national, miniGameId) {
+      return new Promise((resolve) => {
+        window.jQuery.post(
+          "/ajax/tactics_co_get.ajax.php",
+          { get: "cond_orders", reserves, national, miniGameId },
+          (d) => resolve(d),
+          "json"
+        ).fail(() => resolve(null));
+      });
+    },
+    saveCondOrder(coRaw, reserves, national, miniGameId) {
+      return fetch("/ajax/tactics_co_post.ajax.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ ...coRaw, reserves, national, miniGameId })
+      });
+    },
+    deleteCondOrder(num, reserves, national, miniGameId) {
+      return fetch("/ajax/tactics_co_post.ajax.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ num, type: "delete", reserves, national, miniGameId })
+      });
+    }
+  };
+
+  // src/services/national-teams.js
+  var TmNationalTeamsService = {
+    fetchFixtures(countryCode) {
+      return _post("/ajax/fixtures.ajax.php", { type: "national-teams", var1: countryCode });
+    },
+    fetchElectionSuggestions(query) {
+      return _post("/ajax/national-teams_election.ajax.php", { type: "suggest", q: query });
+    },
+    fetchElectionNomination(clubId2) {
+      return _post("/ajax/national-teams_election.ajax.php", { type: "get_nomination", club_id: clubId2 });
+    },
+    addElectionNomination(clubId2) {
+      return _post("/ajax/national-teams_election.ajax.php", { type: "add_nomination", club_id: clubId2 });
+    },
+    respondToElectionNomination(country, response) {
+      return _post("/ajax/national-teams_election.ajax.php", { type: "nomination_response", country, response });
+    },
+    fetchElectionVote(clubId2) {
+      return _post("/ajax/national-teams_election.ajax.php", { type: "get_vote", club_id: clubId2 });
+    },
+    addElectionVote(clubId2) {
+      return _post("/ajax/national-teams_election.ajax.php", { type: "add_vote", club_id: clubId2 });
+    }
+  };
+
+  // src/services/index.js
+  var TmApi = {
+    ...TmClubService,
+    ...TmMatchService,
+    ...TmPlayerService,
+    ...TmTransferService,
+    ...TMLeagueService,
+    ...TmQuickmatchService,
+    ...TmScoutsService,
+    ...TmShortlistService,
+    ...TmTacticsService,
+    ...TmTrainingService,
+    ...TmMessagesService,
+    ...TmNationalTeamsService,
+    ...TmYouthService
+  };
+
   // src/components/national-teams/tm-national-teams-nt-save.js
   var STYLE_ID53 = "tmvu-nt-save-style";
   var SCAN_SEASON_COUNT = 13;
@@ -40427,11 +40347,11 @@ order:initial
     { key: "reasons", label: "Reasons" },
     { key: "sources", label: "Sources" }
   ];
-  var cleanText18 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-  var lowerText = (value) => cleanText18(value).toLowerCase();
+  var cleanText17 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var lowerText = (value) => cleanText17(value).toLowerCase();
   var escapeHtml26 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   function normalizeCountryCode(value) {
-    const raw = cleanText18(value);
+    const raw = cleanText17(value);
     if (!raw) return "";
     const bracketMatch = raw.match(/^\[([a-z]{2,3})\]$/i);
     if (bracketMatch) return lowerText(bracketMatch[1]);
@@ -40871,17 +40791,17 @@ order:initial
   function extractClubId3(anchor) {
     var _a2;
     if (!anchor) return "";
-    const attrId = cleanText18(anchor.getAttribute("club_link"));
+    const attrId = cleanText17(anchor.getAttribute("club_link"));
     if (attrId) return attrId;
-    const href = cleanText18(anchor.getAttribute("href"));
+    const href = cleanText17(anchor.getAttribute("href"));
     return ((_a2 = href.match(/\/club\/(\d+)\//)) == null ? void 0 : _a2[1]) || "";
   }
   function extractPlayerId2(anchor) {
     var _a2;
     if (!anchor) return "";
-    const attrId = cleanText18(anchor.getAttribute("player_link"));
+    const attrId = cleanText17(anchor.getAttribute("player_link"));
     if (attrId) return attrId;
-    const href = cleanText18(anchor.getAttribute("href"));
+    const href = cleanText17(anchor.getAttribute("href"));
     return ((_a2 = href.match(/\/players\/(\d+)\//)) == null ? void 0 : _a2[1]) || "";
   }
   function extractCountryCodeFromNode(node) {
@@ -40889,7 +40809,7 @@ order:initial
     if (!node) return "";
     const anchor = ((_a2 = node.matches) == null ? void 0 : _a2.call(node, 'a.country_link[href*="/national-teams/"], a[href*="/national-teams/"]')) ? node : (_b = node.querySelector) == null ? void 0 : _b.call(node, 'a.country_link[href*="/national-teams/"], a[href*="/national-teams/"]');
     if (anchor) {
-      const href = cleanText18(anchor.getAttribute("href"));
+      const href = cleanText17(anchor.getAttribute("href"));
       const hrefCode = normalizeCountryCode(href);
       if (hrefCode) return hrefCode;
       const classCode = normalizeCountryCode(anchor.innerHTML);
@@ -40926,9 +40846,9 @@ order:initial
   }
   function normalizeDivisionGroups(divisions = []) {
     return divisions.flatMap((item) => {
-      const division = cleanText18(item == null ? void 0 : item.division);
+      const division = cleanText17(item == null ? void 0 : item.division);
       const groups = Math.max(1, Number(item == null ? void 0 : item.groups) || 1);
-      const name = cleanText18(item == null ? void 0 : item.name) || `Division ${division}`;
+      const name = cleanText17(item == null ? void 0 : item.name) || `Division ${division}`;
       if (!division) return [];
       return Array.from({ length: groups }, (_, index) => ({
         division,
@@ -41006,7 +40926,7 @@ order:initial
       return state5.availableDivisionBounds;
     }
     try {
-      const divisionsData = await TmApi.fetchLeagueDivisions(state5.countryCode);
+      const divisionsData = await TmLeagueModel.fetchLeagueDivisions(state5.countryCode);
       const divisionGroups = normalizeDivisionGroups((divisionsData == null ? void 0 : divisionsData.divisions) || []);
       if (!divisionGroups.length) {
         updateScopeHint(state5);
@@ -41045,7 +40965,7 @@ order:initial
       if (!hasBanned && !hasInactive) return;
       const existing = map.get(clubId2) || {
         clubId: clubId2,
-        clubName: cleanText18(clubAnchor.textContent) || `Club ${clubId2}`,
+        clubName: cleanText17(clubAnchor.textContent) || `Club ${clubId2}`,
         division: groupCtx.division,
         group: groupCtx.group,
         statuses: /* @__PURE__ */ new Set()
@@ -41086,7 +41006,7 @@ order:initial
         if (!passesRecommendation) return;
         console.log("[NT Save][Transfer History Pass]", {
           playerId,
-          playerName: cleanText18(playerAnchor.textContent),
+          playerName: cleanText17(playerAnchor.textContent),
           country: playerCountryCode,
           seasonScanned: season,
           transferType: type,
@@ -41099,9 +41019,9 @@ order:initial
         });
         items.push({
           playerId,
-          playerName: cleanText18(playerAnchor.textContent),
+          playerName: cleanText17(playerAnchor.textContent),
           clubId: clubId2,
-          clubName: cleanText18(clubAnchor.textContent),
+          clubName: cleanText17(clubAnchor.textContent),
           transferType: type,
           division: groupCtx.division,
           group: groupCtx.group,
@@ -41175,16 +41095,16 @@ order:initial
   function buildCandidateRecord(player2, club, clubId2 = "", clubName2 = "") {
     var _a2, _b;
     return {
-      playerId: cleanText18((player2 == null ? void 0 : player2.id) || (player2 == null ? void 0 : player2.player_id)),
-      name: cleanText18((player2 == null ? void 0 : player2.name) || (player2 == null ? void 0 : player2.player_name)) || "Unknown player",
+      playerId: cleanText17((player2 == null ? void 0 : player2.id) || (player2 == null ? void 0 : player2.player_id)),
+      name: cleanText17((player2 == null ? void 0 : player2.name) || (player2 == null ? void 0 : player2.player_name)) || "Unknown player",
       country: resolvePlayerCountryCode(player2),
       age: Number(player2 == null ? void 0 : player2.age) || 0,
       months: Number((_a2 = player2 == null ? void 0 : player2.months) != null ? _a2 : player2 == null ? void 0 : player2.month) || 0,
       asi: TmUtils.parseNum((_b = player2 == null ? void 0 : player2.asi) != null ? _b : player2 == null ? void 0 : player2.skill_index),
       r5: computeCandidateR5(player2),
-      position: Array.isArray(player2 == null ? void 0 : player2.positions) && player2.positions.some((p) => p.preferred) ? player2.positions.filter((p) => p.preferred).map((p) => p.key).join(",") : cleanText18((player2 == null ? void 0 : player2.favposition) || (player2 == null ? void 0 : player2.fp)),
-      clubId: cleanText18(clubId2 || (player2 == null ? void 0 : player2.club_id) || (club == null ? void 0 : club.id)),
-      clubName: cleanText18(clubName2 || (player2 == null ? void 0 : player2.club_name) || (club == null ? void 0 : club.club_name)) || "Unknown club",
+      position: Array.isArray(player2 == null ? void 0 : player2.positions) && player2.positions.some((p) => p.preferred) ? player2.positions.filter((p) => p.preferred).map((p) => p.key).join(",") : cleanText17((player2 == null ? void 0 : player2.favposition) || (player2 == null ? void 0 : player2.fp)),
+      clubId: cleanText17(clubId2 || (player2 == null ? void 0 : player2.club_id) || (club == null ? void 0 : club.id)),
+      clubName: cleanText17(clubName2 || (player2 == null ? void 0 : player2.club_name) || (club == null ? void 0 : club.club_name)) || "Unknown club",
       clubCreated: lowerText(club == null ? void 0 : club.created),
       sources: [],
       reasons: []
@@ -41450,7 +41370,7 @@ order:initial
   }
   function setStatus(state5, html2) {
     if (state5.statusEl) state5.statusEl.innerHTML = html2;
-    if (state5.miniStatusEl) state5.miniStatusEl.textContent = cleanText18(html2.replace(/<[^>]+>/g, " "));
+    if (state5.miniStatusEl) state5.miniStatusEl.textContent = cleanText17(html2.replace(/<[^>]+>/g, " "));
   }
   function setProgress(state5, { phase = "", current = 0, total = 0, note = "", unitLabel = "" } = {}) {
     var _a2, _b;
@@ -41596,7 +41516,7 @@ order:initial
     return state5.tooltipCache.get(playerId);
   }
   async function getTooltipCandidateBatch(state5, playerIds = [], batchSize = 10) {
-    const uniqueIds = [...new Set(playerIds.map((id) => cleanText18(id)).filter(Boolean))];
+    const uniqueIds = [...new Set(playerIds.map((id) => cleanText17(id)).filter(Boolean))];
     const results = /* @__PURE__ */ new Map();
     for (let index = 0; index < uniqueIds.length; index += batchSize) {
       const batchIds = uniqueIds.slice(index, index + batchSize);
@@ -41613,12 +41533,12 @@ order:initial
   async function getClubPage(state5, clubId2) {
     if (!clubId2) return null;
     if (!state5.clubPageCache.has(clubId2)) {
-      state5.clubPageCache.set(clubId2, TmApi.fetchClubPageHtml(clubId2).then((html2) => html2 || null).catch(() => null));
+      state5.clubPageCache.set(clubId2, TmClubModel.fetchClubPageHtml(clubId2).then((html2) => html2 || null).catch(() => null));
     }
     return state5.clubPageCache.get(clubId2);
   }
   async function getClubPageBatch(state5, clubIds = [], batchSize = 10) {
-    const uniqueIds = [...new Set(clubIds.map((id) => cleanText18(id)).filter(Boolean))];
+    const uniqueIds = [...new Set(clubIds.map((id) => cleanText17(id)).filter(Boolean))];
     const results = /* @__PURE__ */ new Map();
     for (let index = 0; index < uniqueIds.length; index += batchSize) {
       const batchIds = uniqueIds.slice(index, index + batchSize);
@@ -41651,7 +41571,7 @@ order:initial
         note: `${groupCtx.name} \xB7 Group ${groupCtx.group} \xB7 current league flags`,
         unitLabel: "batches"
       });
-      const leagueHtml = await TmApi.fetchLeaguePageHtml(state5.countryCode, groupCtx.division, groupCtx.group);
+      const leagueHtml = await TmLeagueModel.fetchLeaguePageHtml(state5.countryCode, groupCtx.division, groupCtx.group);
       parseLeagueFlaggedClubs(leagueHtml, groupCtx).forEach((item) => {
         const existing = state5.flaggedClubs.get(item.clubId) || { ...item, statuses: [] };
         item.statuses.forEach((status) => {
@@ -41682,7 +41602,7 @@ order:initial
         });
         const historyBatch = await Promise.all(seasonBatch.map(async (season) => ({
           season,
-          html: await TmApi.fetchLeagueTransferHistory(state5.countryCode, groupCtx.division, groupCtx.group, season)
+          html: await TmLeagueModel.fetchLeagueTransferHistory(state5.countryCode, groupCtx.division, groupCtx.group, season)
         })));
         historyBatch.forEach(({ season, html: html2 }) => {
           parseTransferHistory(html2, groupCtx, season, state5.countryCode, state5.currentSeason).forEach((entry) => {
@@ -41747,7 +41667,7 @@ order:initial
         const club = tooltipData == null ? void 0 : tooltipData.club;
         if (!player2 || !matchesTargetCountry(player2, state5.countryCode)) return "";
         if (lowerText(club == null ? void 0 : club.created) === "inactive") return "";
-        return cleanText18((club == null ? void 0 : club.id) || (player2 == null ? void 0 : player2.club_id) || (club == null ? void 0 : club.club_id));
+        return cleanText17((club == null ? void 0 : club.id) || (player2 == null ? void 0 : player2.club_id) || (club == null ? void 0 : club.club_id));
       }).filter(Boolean);
       setStatus(state5, `<strong>Inspecting players</strong> ${batchStart + 1}-${Math.min(batchStart + batch.length, transferCandidates.length)}/${transferCandidates.length} \xB7 fetching club batch`);
       const clubPageMap = await getClubPageBatch(state5, clubIdsToCheck, 10);
@@ -41804,7 +41724,7 @@ order:initial
           continue;
         }
         const clubId2 = record.clubId;
-        const clubHtml = clubPageMap.get(cleanText18(clubId2)) || null;
+        const clubHtml = clubPageMap.get(cleanText17(clubId2)) || null;
         if (hasClubBannedBadge(clubHtml)) {
           record.reasons.push("club banned");
           const { changed } = upsertCandidate(state5.results, record);
@@ -41847,7 +41767,7 @@ order:initial
       const squadPlayers = await TmClubModel.fetchSquadRaw(flaggedClub.clubId) || [];
       const squadPlayersMissingCountry = squadPlayers.filter((squadPlayer) => {
         const countryCode = resolvePlayerCountryCode(squadPlayer);
-        return !countryCode && cleanText18(squadPlayer.id || squadPlayer.player_id);
+        return !countryCode && cleanText17(squadPlayer.id || squadPlayer.player_id);
       });
       const squadTooltipMap = await getTooltipCandidateBatch(
         state5,
@@ -41858,7 +41778,7 @@ order:initial
         let countryCode = resolvePlayerCountryCode(squadPlayer);
         let tooltipData = null;
         if (!countryCode) {
-          tooltipData = squadTooltipMap.get(cleanText18(squadPlayer.id || squadPlayer.player_id)) || null;
+          tooltipData = squadTooltipMap.get(cleanText17(squadPlayer.id || squadPlayer.player_id)) || null;
           countryCode = resolvePlayerCountryCode(tooltipData == null ? void 0 : tooltipData.player);
         }
         if (countryCode !== normalizeCountryCode(state5.countryCode)) continue;
@@ -41899,7 +41819,7 @@ order:initial
     setProgress(state5, { phase: "Preparing", current: 0, total: 1, note: `Loading divisions for ${state5.countryCode.toUpperCase()}` });
     try {
       setStatus(state5, `<strong>Preparing</strong> divisions for ${escapeHtml26(state5.countryCode.toUpperCase())}...`);
-      const divisionsData = await TmApi.fetchLeagueDivisions(state5.countryCode);
+      const divisionsData = await TmLeagueModel.fetchLeagueDivisions(state5.countryCode);
       const allDivisionGroups = normalizeDivisionGroups((divisionsData == null ? void 0 : divisionsData.divisions) || []);
       if (allDivisionGroups.length) {
         state5.availableDivisionBounds = getDivisionBounds(allDivisionGroups);
@@ -42027,7 +41947,7 @@ order:initial
   };
 
   // src/components/national-teams/tm-national-teams-side-menu.js
-  var cleanText19 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var cleanText18 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var normalizePath = (value) => {
     const text = String(value || "").trim();
     if (!text) return "";
@@ -42051,7 +41971,7 @@ order:initial
       if (node.tagName === "HR") return [{ type: "separator" }];
       if (node.tagName !== "A") return [];
       const href = node.getAttribute("href") || "#";
-      const label = cleanText19(node.textContent);
+      const label = cleanText18(node.textContent);
       if (!label) return [];
       return [{
         type: "link",
@@ -42066,7 +41986,7 @@ order:initial
   };
   var hasElectionItem = (items = []) => items.some((item) => (item == null ? void 0 : item.type) === "link" && /election/i.test(item.label || ""));
   var getCanonicalNationalTeamsPath = (countryCode) => {
-    const code = cleanText19(countryCode).toLowerCase();
+    const code = cleanText18(countryCode).toLowerCase();
     return code ? `/national-teams/${code}/` : "";
   };
   var areMenusEquivalent = (leftItems = [], rightItems = []) => {
@@ -42153,7 +42073,7 @@ order:initial
     if (!main2 || !main2.isConnected) return;
     const sourceRoot3 = (document.querySelector(".main_center") || main2).cloneNode(true);
     const STYLE_ID60 = "tmvu-national-teams-rankings-style";
-    const cleanText26 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const cleanText25 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml33 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const injectStyles46 = () => {
       if (document.getElementById(STYLE_ID60)) return;
@@ -42226,7 +42146,7 @@ order:initial
       box.querySelectorAll(".tabs [set_active]").forEach((tab) => {
         const id = tab.getAttribute("set_active") || "";
         if (!id) return;
-        labelById.set(id, cleanText26(tab.textContent) || "Tab");
+        labelById.set(id, cleanText25(tab.textContent) || "Tab");
       });
       return Array.from(box.querySelectorAll(".tab_container > div[id]")).map((panel, index) => {
         const table = panel.querySelector("table");
@@ -42242,9 +42162,9 @@ order:initial
       var _a2, _b;
       const box = sourceRoot3.querySelector(".column2_a > .box");
       if (!box) return null;
-      const title = cleanText26(((_a2 = box.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "National Team Rankings");
+      const title = cleanText25(((_a2 = box.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "National Team Rankings");
       const subHeader = box.querySelector(".box_sub_header");
-      const region = cleanText26(((_b = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _b.textContent) || "Region");
+      const region = cleanText25(((_b = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _b.textContent) || "Region");
       const changeNode = subHeader == null ? void 0 : subHeader.querySelector(".faux_link");
       const panels = parsePanels(box);
       return {
@@ -42322,9 +42242,34 @@ order:initial
     render16();
   }
 
+  // src/models/national-teams.js
+  var TmNationalTeamsModel = {
+    fetchFixtures(countryCode) {
+      return TmNationalTeamsService.fetchFixtures(countryCode);
+    },
+    fetchElectionNomination(clubId2) {
+      return TmNationalTeamsService.fetchElectionNomination(clubId2);
+    },
+    addElectionNomination(clubId2) {
+      return TmNationalTeamsService.addElectionNomination(clubId2);
+    },
+    respondToElectionNomination(country, response) {
+      return TmNationalTeamsService.respondToElectionNomination(country, response);
+    },
+    fetchElectionVote(clubId2) {
+      return TmNationalTeamsService.fetchElectionVote(clubId2);
+    },
+    addElectionVote(clubId2) {
+      return TmNationalTeamsService.addElectionVote(clubId2);
+    },
+    fetchElectionSuggestions(query) {
+      return TmNationalTeamsService.fetchElectionSuggestions(query);
+    }
+  };
+
   // src/pages/national-teams-fixtures.js
   var STYLE_ID54 = "tmvu-national-teams-fixtures-style";
-  var cleanText20 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var cleanText19 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml27 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var normalizeFlagHtml2 = (value) => {
     var _a2;
@@ -42336,23 +42281,23 @@ order:initial
   };
   var parseFixturesResponse = (payload) => Object.entries(payload || {}).sort(([leftKey], [rightKey]) => leftKey.localeCompare(rightKey)).map(([monthKey, month]) => {
     const matches = Array.from((month == null ? void 0 : month.matches) || []).map((match) => ({
-      date: cleanText20((match == null ? void 0 : match.date) || ""),
+      date: cleanText19((match == null ? void 0 : match.date) || ""),
       matchId: String((match == null ? void 0 : match.id) || ""),
-      homeId: cleanText20((match == null ? void 0 : match.hometeam) || ""),
-      homeName: cleanText20((match == null ? void 0 : match.hometeamname) || ""),
+      homeId: cleanText19((match == null ? void 0 : match.hometeam) || ""),
+      homeName: cleanText19((match == null ? void 0 : match.hometeamname) || ""),
       homeHref: extractHrefFromHtml2(match == null ? void 0 : match.home_link),
       homeFlagHtml: normalizeFlagHtml2(match == null ? void 0 : match.home_flag),
-      awayId: cleanText20((match == null ? void 0 : match.awayteam) || ""),
-      awayName: cleanText20((match == null ? void 0 : match.awayteamname) || ""),
+      awayId: cleanText19((match == null ? void 0 : match.awayteam) || ""),
+      awayName: cleanText19((match == null ? void 0 : match.awayteamname) || ""),
       awayHref: extractHrefFromHtml2(match == null ? void 0 : match.away_link),
       awayFlagHtml: normalizeFlagHtml2(match == null ? void 0 : match.away_flag),
-      result: cleanText20((match == null ? void 0 : match.result) || wrapperText2(match == null ? void 0 : match.match_link) || "x-x"),
-      matchtype_name: cleanText20((match == null ? void 0 : match.matchtype_name) || (match == null ? void 0 : match.matchtype_sort) || "")
+      result: cleanText19((match == null ? void 0 : match.result) || wrapperText2(match == null ? void 0 : match.match_link) || "x-x"),
+      matchtype_name: cleanText19((match == null ? void 0 : match.matchtype_name) || (match == null ? void 0 : match.matchtype_sort) || "")
     })).filter((match) => match.matchId && match.homeName && match.awayName);
     if (!matches.length) return null;
     return {
       key: monthKey,
-      label: cleanText20((month == null ? void 0 : month.date_name) || `${(month == null ? void 0 : month.month) || "Month"} ${monthKey.slice(0, 4)}`),
+      label: cleanText19((month == null ? void 0 : month.date_name) || `${(month == null ? void 0 : month.month) || "Month"} ${monthKey.slice(0, 4)}`),
       active: Boolean(month == null ? void 0 : month.current_month),
       groups: TmFixturesList.fromMatches(matches)
     };
@@ -42362,7 +42307,7 @@ order:initial
     if (!html2) return "";
     const wrapper = document.createElement("div");
     wrapper.innerHTML = html2;
-    return cleanText20(wrapper.textContent || "");
+    return cleanText19(wrapper.textContent || "");
   };
   var extractHrefFromHtml2 = (value) => {
     var _a2;
@@ -42405,7 +42350,7 @@ order:initial
     if (!contentBox) return;
     injectTmPageLayoutStyles();
     injectStyles40();
-    const title = cleanText20(((_a2 = contentBox.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "Fixtures");
+    const title = cleanText19(((_a2 = contentBox.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "Fixtures");
     main2.innerHTML = "";
     main2.classList.add("tmvu-nt-fixtures-page", "tmu-page-layout-2col", "tmu-page-density-regular");
     mountNationalTeamsSideMenu(main2, {
@@ -42459,7 +42404,7 @@ order:initial
     const init2 = async () => {
       var _a3, _b2;
       panelHost.innerHTML = TmUI.loading("Loading fixtures...");
-      const data = await TmApi.fetchFixtures(countryCode);
+      const data = await TmNationalTeamsModel.fetchFixtures(countryCode);
       if (!data) {
         tabsHost.innerHTML = "";
         panelHost.innerHTML = TmUI.error("Failed to load fixtures.");
@@ -42489,7 +42434,7 @@ order:initial
     november: 11,
     december: 12
   };
-  var cleanText21 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var cleanText20 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml28 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var extractDay = (item) => {
     var _a2;
@@ -42498,7 +42443,7 @@ order:initial
     return match ? Number(match[1]) : null;
   };
   var extractMonthMeta = (label) => {
-    const match = cleanText21(label).match(/^([A-Za-z]+)\s+(\d{4})$/);
+    const match = cleanText20(label).match(/^([A-Za-z]+)\s+(\d{4})$/);
     if (!match) return null;
     const month = MONTH_INDEX[match[1].toLowerCase()];
     const year = Number(match[2]);
@@ -42538,15 +42483,15 @@ order:initial
       matchId: ((_b = (_a2 = resultLink == null ? void 0 : resultLink.getAttribute("href")) == null ? void 0 : _a2.match(/\/matches\/(?:nt\/)?(\d+)\//i)) == null ? void 0 : _b[1]) || "",
       matchHref: (resultLink == null ? void 0 : resultLink.getAttribute("href")) || "",
       homeId: ((_d = (_c = homeNameLink == null ? void 0 : homeNameLink.getAttribute("href")) == null ? void 0 : _c.match(/\/national-teams\/([a-z]{2,3})\//i)) == null ? void 0 : _d[1]) || "",
-      homeName: cleanText21((homeNameLink == null ? void 0 : homeNameLink.textContent) || (homeTeam == null ? void 0 : homeTeam.textContent) || ""),
+      homeName: cleanText20((homeNameLink == null ? void 0 : homeNameLink.textContent) || (homeTeam == null ? void 0 : homeTeam.textContent) || ""),
       homeHref: (homeNameLink == null ? void 0 : homeNameLink.getAttribute("href")) || "",
       homeFlagHtml: (homeFlagLink == null ? void 0 : homeFlagLink.innerHTML) || "",
       awayId: ((_f = (_e = awayNameLink == null ? void 0 : awayNameLink.getAttribute("href")) == null ? void 0 : _e.match(/\/national-teams\/([a-z]{2,3})\//i)) == null ? void 0 : _f[1]) || "",
-      awayName: cleanText21((awayNameLink == null ? void 0 : awayNameLink.textContent) || (awayTeam == null ? void 0 : awayTeam.textContent) || ""),
+      awayName: cleanText20((awayNameLink == null ? void 0 : awayNameLink.textContent) || (awayTeam == null ? void 0 : awayTeam.textContent) || ""),
       awayHref: (awayNameLink == null ? void 0 : awayNameLink.getAttribute("href")) || "",
       awayFlagHtml: (awayFlagLink == null ? void 0 : awayFlagLink.innerHTML) || "",
-      result: cleanText21((resultLink == null ? void 0 : resultLink.textContent) || ""),
-      matchtype_name: cleanText21(((_g = item.querySelector(".matchtype")) == null ? void 0 : _g.textContent) || "")
+      result: cleanText20((resultLink == null ? void 0 : resultLink.textContent) || ""),
+      matchtype_name: cleanText20(((_g = item.querySelector(".matchtype")) == null ? void 0 : _g.textContent) || "")
     };
   }).filter((match) => match.matchId && match.homeName && match.awayName && match.date);
   var parseHistoryMonths = (contentBox) => {
@@ -42554,7 +42499,7 @@ order:initial
     const lists = Array.from(contentBox.querySelectorAll(".box_body ul.match_list"));
     lists.forEach((listEl) => {
       const header = findMonthHeader(listEl);
-      const label = cleanText21((header == null ? void 0 : header.textContent) || "");
+      const label = cleanText20((header == null ? void 0 : header.textContent) || "");
       const monthMeta = extractMonthMeta(label);
       if (!monthMeta) return;
       const matches = parseMonthMatches(listEl, monthMeta);
@@ -42623,7 +42568,7 @@ order:initial
     if (!contentBox) return;
     injectTmPageLayoutStyles();
     injectStyles41();
-    const title = cleanText21(((_a2 = contentBox.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "History");
+    const title = cleanText20(((_a2 = contentBox.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "History");
     const months = parseHistoryMonths(contentBox);
     main2.innerHTML = "";
     main2.classList.add("tmvu-nt-history-page", "tmu-page-layout-2col", "tmu-page-density-regular");
@@ -42668,7 +42613,7 @@ order:initial
 
   // src/pages/national-teams-statistics.js
   var STYLE_ID56 = "tmvu-national-teams-statistics-style";
-  var cleanText22 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var cleanText21 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml29 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var fetchDocument = async (path) => {
     const response = await window.fetch(path, { credentials: "same-origin" });
@@ -42686,7 +42631,7 @@ order:initial
     const headerCells = Array.from((headerRow == null ? void 0 : headerRow.querySelectorAll("th, td")) || []);
     if (!headerCells.length) return null;
     const headers = headerCells.map((cell, index) => {
-      const label = cleanText22(cell.textContent) || (index === 0 ? "Name" : `Col ${index + 1}`);
+      const label = cleanText21(cell.textContent) || (index === 0 ? "Name" : `Col ${index + 1}`);
       const key = index === 0 ? "player" : `col${index}`;
       const align = index === 0 ? "l" : "r";
       return {
@@ -42703,15 +42648,15 @@ order:initial
       const cells = Array.from(row.querySelectorAll("td"));
       const playerCell = cells[0];
       const playerLink = playerCell == null ? void 0 : playerCell.querySelector('a[href*="/players/"]');
-      const playerHtml = playerLink ? `<a href="${playerLink.getAttribute("href") || "#"}" target="_blank" style="color:inherit;text-decoration:none">${escapeHtml29(cleanText22(playerLink.textContent))}</a>` : escapeHtml29(cleanText22((playerCell == null ? void 0 : playerCell.textContent) || ""));
+      const playerHtml = playerLink ? `<a href="${playerLink.getAttribute("href") || "#"}" target="_blank" style="color:inherit;text-decoration:none">${escapeHtml29(cleanText21(playerLink.textContent))}</a>` : escapeHtml29(cleanText21((playerCell == null ? void 0 : playerCell.textContent) || ""));
       const item = {
-        player: cleanText22((playerCell == null ? void 0 : playerCell.textContent) || ""),
-        playerSort: cleanText22((playerCell == null ? void 0 : playerCell.textContent) || ""),
+        player: cleanText21((playerCell == null ? void 0 : playerCell.textContent) || ""),
+        playerSort: cleanText21((playerCell == null ? void 0 : playerCell.textContent) || ""),
         playerHtml,
         _rowClass: /highlighted_row/.test(row.className || "") ? "tmu-psb-me" : ""
       };
       cells.forEach((cell, index) => {
-        const text = cleanText22(cell.textContent);
+        const text = cleanText21(cell.textContent);
         if (index === 0) return;
         item[`col${index}`] = text;
         item[`sort${index}`] = isNumericLike(text) ? Number(text.replace(",", ".")) : rowIndex;
@@ -42768,7 +42713,7 @@ order:initial
         main2.innerHTML = TmUI.error("Failed to load national team statistics.");
         return;
       }
-      const title = cleanText22(((_a2 = contentBox.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "Statistics");
+      const title = cleanText21(((_a2 = contentBox.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "Statistics");
       const tableData = parseStatisticsTable(contentBox);
       main2.innerHTML = "";
       main2.classList.add("tmvu-nt-statistics-page", "tmu-page-layout-2col", "tmu-page-density-regular");
@@ -42819,7 +42764,7 @@ order:initial
 
   // src/pages/national-teams-election.js
   var STYLE_ID57 = "tmvu-national-teams-election-style";
-  var cleanText23 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var cleanText22 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var toNumber2 = (value) => Number.parseInt(String(value || ""), 10);
   var escapeHtml30 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var extractCountryCode = (root2) => {
@@ -42842,21 +42787,21 @@ order:initial
         const [id, label, countrySuffix] = rawValue;
         return {
           id: toNumber2(id),
-          label: cleanText23(label || id),
-          countrySuffix: cleanText23(countrySuffix || "")
+          label: cleanText22(label || id),
+          countrySuffix: cleanText22(countrySuffix || "")
         };
       }
       if (typeof rawValue === "object") {
         const id = toNumber2((_c = (_b = (_a2 = rawValue.value) != null ? _a2 : rawValue.id) != null ? _b : rawValue.club_id) != null ? _c : rawLabel);
         return {
           id,
-          label: cleanText23((_g = (_f = (_e = (_d = rawValue.label) != null ? _d : rawValue.name) != null ? _e : rawValue.club_name) != null ? _f : rawLabel) != null ? _g : id),
-          countrySuffix: cleanText23((_j = (_i = (_h = rawValue.country_suffix) != null ? _h : rawValue.country) != null ? _i : rawValue.flag) != null ? _j : "")
+          label: cleanText22((_g = (_f = (_e = (_d = rawValue.label) != null ? _d : rawValue.name) != null ? _e : rawValue.club_name) != null ? _f : rawLabel) != null ? _g : id),
+          countrySuffix: cleanText22((_j = (_i = (_h = rawValue.country_suffix) != null ? _h : rawValue.country) != null ? _i : rawValue.flag) != null ? _j : "")
         };
       }
       return {
         id: toNumber2(rawValue),
-        label: cleanText23(rawLabel != null ? rawLabel : rawValue),
+        label: cleanText22(rawLabel != null ? rawLabel : rawValue),
         countrySuffix: ""
       };
     };
@@ -42877,7 +42822,7 @@ order:initial
   });
   var handleNominationSelection = async (clubId2) => {
     if (!clubId2) return;
-    const data = await TmNationalTeamsService.fetchElectionNomination(clubId2);
+    const data = await TmNationalTeamsModel.fetchElectionNomination(clubId2);
     if (!(data == null ? void 0 : data.success)) {
       await showErrorModal((data == null ? void 0 : data.error) || "Could not load nomination details.");
       return;
@@ -42891,7 +42836,7 @@ order:initial
       ]
     });
     if (choice !== "confirm") return;
-    const result = await TmNationalTeamsService.addElectionNomination(clubId2);
+    const result = await TmNationalTeamsModel.addElectionNomination(clubId2);
     if (!(result == null ? void 0 : result.success)) {
       await showErrorModal((result == null ? void 0 : result.error) || "Nomination failed.");
       return;
@@ -42915,7 +42860,7 @@ order:initial
       ]
     });
     if (choice !== "confirm") return;
-    const result = await TmNationalTeamsService.respondToElectionNomination(country, response);
+    const result = await TmNationalTeamsModel.respondToElectionNomination(country, response);
     if (!(result == null ? void 0 : result.success)) {
       await showErrorModal((result == null ? void 0 : result.error) || "Response failed.");
       return;
@@ -42929,7 +42874,7 @@ order:initial
   };
   var handleVote = async (clubId2) => {
     if (!clubId2) return;
-    const data = await TmNationalTeamsService.fetchElectionVote(clubId2);
+    const data = await TmNationalTeamsModel.fetchElectionVote(clubId2);
     if (!(data == null ? void 0 : data.success)) {
       await showErrorModal((data == null ? void 0 : data.error) || "Could not load vote details.");
       return;
@@ -42943,7 +42888,7 @@ order:initial
       ]
     });
     if (choice !== "confirm") return;
-    const result = await TmNationalTeamsService.addElectionVote(clubId2);
+    const result = await TmNationalTeamsModel.addElectionVote(clubId2);
     if (!(result == null ? void 0 : result.success)) {
       await showErrorModal((result == null ? void 0 : result.error) || "Vote failed.");
       return;
@@ -42970,12 +42915,12 @@ order:initial
     for (const node of Array.from(clone.childNodes)) {
       if (node.nodeType === Node.ELEMENT_NODE && ["UL", "H3"].includes(node.nodeName)) break;
       if (node.nodeType === Node.TEXT_NODE || node.nodeType === Node.ELEMENT_NODE) {
-        const text = cleanText23(node.textContent || "");
+        const text = cleanText22(node.textContent || "");
         if (text) leadParts.push(text);
       }
     }
-    const leadText = cleanText23(leadParts.join(" "));
-    const leadList = Array.from(clone.querySelectorAll(":scope > ul:first-of-type > li")).map((li) => cleanText23(li.textContent)).filter(Boolean);
+    const leadText = cleanText22(leadParts.join(" "));
+    const leadList = Array.from(clone.querySelectorAll(":scope > ul:first-of-type > li")).map((li) => cleanText22(li.textContent)).filter(Boolean);
     if (leadText || leadList.length) {
       sections.push({
         title: "",
@@ -42985,9 +42930,9 @@ order:initial
     }
     Array.from(clone.querySelectorAll(":scope > h3")).forEach((heading) => {
       const list = heading.nextElementSibling;
-      const items = (list == null ? void 0 : list.tagName) === "UL" ? Array.from(list.querySelectorAll("li")).map((li) => cleanText23(li.textContent)).filter(Boolean) : [];
+      const items = (list == null ? void 0 : list.tagName) === "UL" ? Array.from(list.querySelectorAll("li")).map((li) => cleanText22(li.textContent)).filter(Boolean) : [];
       sections.push({
-        title: cleanText23(heading.textContent),
+        title: cleanText22(heading.textContent),
         lead: "",
         items
       });
@@ -43010,12 +42955,12 @@ order:initial
         rows: []
       };
     }
-    const formTitle = cleanText23(((_a2 = body.querySelector("h3")) == null ? void 0 : _a2.textContent) || "Submit Nomination");
+    const formTitle = cleanText22(((_a2 = body.querySelector("h3")) == null ? void 0 : _a2.textContent) || "Submit Nomination");
     const introNode = body.querySelector("p");
     const form = body.querySelector("form");
-    const label = cleanText23(((_b = form == null ? void 0 : form.querySelector("label")) == null ? void 0 : _b.textContent) || "Nominate club");
+    const label = cleanText22(((_b = form == null ? void 0 : form.querySelector("label")) == null ? void 0 : _b.textContent) || "Nominate club");
     const input = (form == null ? void 0 : form.querySelector("input")) || null;
-    const tableTitle = cleanText23(((_c = Array.from(body.querySelectorAll("h3"))[1]) == null ? void 0 : _c.textContent) || "Nominated clubs");
+    const tableTitle = cleanText22(((_c = Array.from(body.querySelectorAll("h3"))[1]) == null ? void 0 : _c.textContent) || "Nominated clubs");
     const tableRows = Array.from(body.querySelectorAll("table tbody tr")).slice(1).map((tr) => {
       const cells = Array.from(tr.querySelectorAll("td"));
       if (cells.length < 3) return null;
@@ -43023,13 +42968,13 @@ order:initial
       const clubFlag = cells[0].querySelector(".country_link");
       const nominatorLink = cells[1].querySelector('a[href*="/club/"]');
       const responseDot = cells[2].querySelector(".response");
-      const responseText = cleanText23(cells[2].textContent);
+      const responseText = cleanText22(cells[2].textContent);
       const responseState = (responseDot == null ? void 0 : responseDot.classList.contains("accepted")) ? "accepted" : (responseDot == null ? void 0 : responseDot.classList.contains("rejected")) ? "rejected" : "pending";
       return {
-        clubName: cleanText23((clubLink == null ? void 0 : clubLink.textContent) || cells[0].textContent),
+        clubName: cleanText22((clubLink == null ? void 0 : clubLink.textContent) || cells[0].textContent),
         clubHref: (clubLink == null ? void 0 : clubLink.getAttribute("href")) || "",
         clubFlagHtml: (clubFlag == null ? void 0 : clubFlag.outerHTML) || "",
-        nominatedBy: cleanText23((nominatorLink == null ? void 0 : nominatorLink.textContent) || cells[1].textContent),
+        nominatedBy: cleanText22((nominatorLink == null ? void 0 : nominatorLink.textContent) || cells[1].textContent),
         nominatedByHref: (nominatorLink == null ? void 0 : nominatorLink.getAttribute("href")) || "",
         responseText,
         responseState,
@@ -43039,7 +42984,7 @@ order:initial
           if (nomination) {
             return {
               kind: "nomination-response",
-              label: cleanText23(actionEl.textContent) || (nomination.response === 1 ? "Accept" : "Reject"),
+              label: cleanText22(actionEl.textContent) || (nomination.response === 1 ? "Accept" : "Reject"),
               country: nomination.country,
               response: nomination.response
             };
@@ -43048,7 +42993,7 @@ order:initial
           if (vote) {
             return {
               kind: "vote",
-              label: cleanText23(actionEl.textContent) || "Vote",
+              label: cleanText22(actionEl.textContent) || "Vote",
               clubId: vote.clubId
             };
           }
@@ -43279,11 +43224,11 @@ order:initial
     if (!contentBox) return;
     injectTmPageLayoutStyles();
     injectStyles43();
-    const countryCode = extractCountryCode(sourceRoot3) || cleanText23(((_a2 = window.SESSION) == null ? void 0 : _a2.country) || "").toLowerCase();
-    const title = cleanText23(((_b = contentBox.querySelector(".box_head h2")) == null ? void 0 : _b.textContent) || "National coach election");
+    const countryCode = extractCountryCode(sourceRoot3) || cleanText22(((_a2 = window.SESSION) == null ? void 0 : _a2.country) || "").toLowerCase();
+    const title = cleanText22(((_b = contentBox.querySelector(".box_head h2")) == null ? void 0 : _b.textContent) || "National coach election");
     const overview = parseElectionOverview(contentBox);
     const sideBox = sourceRoot3.querySelector(".column3_a > .box");
-    const sideTitle = cleanText23(((_c = sideBox == null ? void 0 : sideBox.querySelector(".box_head h2")) == null ? void 0 : _c.textContent) || "Info");
+    const sideTitle = cleanText22(((_c = sideBox == null ? void 0 : sideBox.querySelector(".box_head h2")) == null ? void 0 : _c.textContent) || "Info");
     const ruleSections = parseRulesSections(sideBox == null ? void 0 : sideBox.querySelector(".box_body"));
     main2.innerHTML = "";
     main2.classList.add("tmvu-nt-election-page", "tmu-page-layout-3rail", "tmu-page-density-regular");
@@ -43343,7 +43288,7 @@ order:initial
       });
       const input = autocomplete.inputEl;
       input.addEventListener("input", () => {
-        const query = cleanText23(input.value);
+        const query = cleanText22(input.value);
         window.clearTimeout(suggestTimer);
         if (!query) {
           autocomplete.setItems([]);
@@ -43351,7 +43296,7 @@ order:initial
         }
         suggestTimer = window.setTimeout(async () => {
           const token = ++suggestToken;
-          const data = await TmNationalTeamsService.fetchElectionSuggestions(query);
+          const data = await TmNationalTeamsModel.fetchElectionSuggestions(query);
           if (token !== suggestToken) return;
           const suggestions = normalizeElectionSuggestions(data == null ? void 0 : data.clubs);
           autocomplete.setItems(suggestions.map((option) => TmUI.autocompleteItem({
@@ -43464,7 +43409,7 @@ order:initial
     { value: "ao", label: "Asia and Oceania" },
     { value: "eu", label: "Europe" }
   ];
-  var cleanText24 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var cleanText23 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml31 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var injectStyles44 = () => {
     if (document.getElementById(STYLE_ID58)) return;
@@ -43512,7 +43457,7 @@ order:initial
         const table = (_a3 = heading.nextElementSibling) == null ? void 0 : _a3.querySelector("table.group_table");
         if (!table) return null;
         return {
-          title: cleanText24(heading.textContent),
+          title: cleanText23(heading.textContent),
           rows: Array.from(table.querySelectorAll("tbody tr")).slice(1).map((tr) => {
             const cells = tr.querySelectorAll("td");
             if (cells.length < 10) return null;
@@ -43520,16 +43465,16 @@ order:initial
             const flagLink = cells[2].querySelector('a[href*="/national-teams/"]');
             const flagEl = cells[2].querySelector('ib[class*="flag-img-"], img[class*="flag-img-"]');
             return {
-              rank: cleanText24(cells[0].textContent),
-              clubName: cleanText24((teamLink == null ? void 0 : teamLink.textContent) || cells[1].textContent),
-              nameHtml: `<span style="display:inline-flex;align-items:center;gap:var(--tmu-space-xs)">${(flagLink == null ? void 0 : flagLink.innerHTML) || (flagEl == null ? void 0 : flagEl.outerHTML) || ""}<a class="tsa-club-link" href="${(teamLink == null ? void 0 : teamLink.getAttribute("href")) || "#"}">${escapeHtml31(cleanText24((teamLink == null ? void 0 : teamLink.textContent) || cells[1].textContent))}</a></span>`,
-              gp: cleanText24(cells[3].textContent),
-              w: cleanText24(cells[4].textContent),
-              d: cleanText24(cells[5].textContent),
-              l: cleanText24(cells[6].textContent),
-              gf: cleanText24(cells[7].textContent),
-              ga: cleanText24(cells[8].textContent),
-              pts: cleanText24(cells[9].textContent),
+              rank: cleanText23(cells[0].textContent),
+              clubName: cleanText23((teamLink == null ? void 0 : teamLink.textContent) || cells[1].textContent),
+              nameHtml: `<span style="display:inline-flex;align-items:center;gap:var(--tmu-space-xs)">${(flagLink == null ? void 0 : flagLink.innerHTML) || (flagEl == null ? void 0 : flagEl.outerHTML) || ""}<a class="tsa-club-link" href="${(teamLink == null ? void 0 : teamLink.getAttribute("href")) || "#"}">${escapeHtml31(cleanText23((teamLink == null ? void 0 : teamLink.textContent) || cells[1].textContent))}</a></span>`,
+              gp: cleanText23(cells[3].textContent),
+              w: cleanText23(cells[4].textContent),
+              d: cleanText23(cells[5].textContent),
+              l: cleanText23(cells[6].textContent),
+              gf: cleanText23(cells[7].textContent),
+              ga: cleanText23(cells[8].textContent),
+              pts: cleanText23(cells[9].textContent),
               isMe: /highlighted_row/.test(tr.className || "")
             };
           }).filter(Boolean)
@@ -43540,7 +43485,7 @@ order:initial
       });
       return {
         key,
-        label: cleanText24(tab.textContent) || key,
+        label: cleanText23(tab.textContent) || key,
         active: tab.classList.contains("active_tab") || tab.hasAttribute("selected"),
         noteHtml,
         groups,
@@ -43585,10 +43530,10 @@ order:initial
     TmStandingsTable.injectStyles();
     const countryCode = ((_c = (_b = (_a2 = sourceRoot3.querySelector('.content_menu a[href^="/national-teams/"]')) == null ? void 0 : _a2.getAttribute("href")) == null ? void 0 : _b.match(/\/national-teams\/([a-z]{2,3})\//i)) == null ? void 0 : _c[1]) || "";
     const subHeader = contentBox.querySelector(".box_sub_header");
-    const title = cleanText24(((_d = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _d.textContent) || ((_e = contentBox.querySelector(".box_head h2")) == null ? void 0 : _e.textContent) || "Tournaments");
+    const title = cleanText23(((_d = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _d.textContent) || ((_e = contentBox.querySelector(".box_head h2")) == null ? void 0 : _e.textContent) || "Tournaments");
     const tabs = parseTabs(contentBox);
     const sideBox = sourceRoot3.querySelector(".column3_a > .box");
-    const sideTitle = cleanText24(((_f = sideBox == null ? void 0 : sideBox.querySelector(".box_head h2")) == null ? void 0 : _f.textContent) || "Info");
+    const sideTitle = cleanText23(((_f = sideBox == null ? void 0 : sideBox.querySelector(".box_head h2")) == null ? void 0 : _f.textContent) || "Info");
     const sideBody = (_g = sideBox == null ? void 0 : sideBox.querySelector(".box_body")) == null ? void 0 : _g.cloneNode(true);
     (_h = sideBody == null ? void 0 : sideBody.querySelector(".box_shadow")) == null ? void 0 : _h.remove();
     main2.innerHTML = "";
@@ -43665,7 +43610,7 @@ order:initial
     const STYLE_ID60 = "tmvu-national-teams-style";
     const { R5_THRESHOLDS: R5_THRESHOLDS4 } = TmConst;
     const CURRENT_SEASON2 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
-    const cleanText26 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const cleanText25 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml33 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml7 = (opts) => TmUI.metric(opts);
     const decodeHtmlEntities = (value) => {
@@ -43924,7 +43869,7 @@ order:initial
     };
     const parseFactTable = (table) => Array.from((table == null ? void 0 : table.querySelectorAll("tr")) || []).map((row) => {
       var _a2, _b;
-      const label = cleanText26(((_a2 = row.querySelector("th")) == null ? void 0 : _a2.textContent) || "");
+      const label = cleanText25(((_a2 = row.querySelector("th")) == null ? void 0 : _a2.textContent) || "");
       const valueCell = row.querySelector("td:last-child");
       const valueHtml = ((_b = valueCell == null ? void 0 : valueCell.innerHTML) == null ? void 0 : _b.trim()) || "";
       if (!label || !valueHtml) return null;
@@ -43950,7 +43895,7 @@ order:initial
       const logoSrc = ((_a2 = overviewTable == null ? void 0 : overviewTable.querySelector('img[src*="/pics/nt_logos/"]')) == null ? void 0 : _a2.getAttribute("src")) || "";
       const facts = parseFactTable(overviewTable);
       const sections = Array.from(box.querySelectorAll("h3")).map((heading) => {
-        const title = cleanText26(heading.textContent);
+        const title = cleanText25(heading.textContent);
         const body = heading.nextElementSibling;
         if (!body || !body.classList.contains("std")) return null;
         const factTable = body.querySelector("table.zebra:not(.group_table):not(.fixtures_table)");
@@ -43970,8 +43915,8 @@ order:initial
       const countryInfoSection = sections.find((section) => section.type === "facts");
       const uetaChampionsCup = (countryInfoSection == null ? void 0 : countryInfoSection.items.find((item) => /ueta champions cup spots/i.test(item.label))) || null;
       return {
-        countryName: cleanText26((countryNode == null ? void 0 : countryNode.textContent) || "National Team"),
-        countryHtml: (countryNode == null ? void 0 : countryNode.innerHTML) || escapeHtml33(cleanText26((countryNode == null ? void 0 : countryNode.textContent) || "National Team")),
+        countryName: cleanText25((countryNode == null ? void 0 : countryNode.textContent) || "National Team"),
+        countryHtml: (countryNode == null ? void 0 : countryNode.innerHTML) || escapeHtml33(cleanText25((countryNode == null ? void 0 : countryNode.textContent) || "National Team")),
         changeHtml: (changeLink == null ? void 0 : changeLink.outerHTML) || "",
         logoSrc,
         facts,
@@ -43986,7 +43931,7 @@ order:initial
         const flagHtml = flagEl ? flagEl.outerHTML : "";
         return {
           id: "",
-          name: cleanText26((teamAnchor == null ? void 0 : teamAnchor.textContent) || cell.textContent || ""),
+          name: cleanText25((teamAnchor == null ? void 0 : teamAnchor.textContent) || cell.textContent || ""),
           href: (teamAnchor == null ? void 0 : teamAnchor.getAttribute("href")) || "#",
           flagHtml
         };
@@ -44001,7 +43946,7 @@ order:initial
         const matchHref = ((_a2 = resultCell.querySelector("a")) == null ? void 0 : _a2.getAttribute("href")) || "";
         const ntM = matchHref.match(/\/matches\/(?:(nt)\/)?(\d+)\//);
         const matchId = ntM ? (ntM[1] || "") + ntM[2] : "";
-        const scoreText = cleanText26(resultCell.textContent || "vs") || "vs";
+        const scoreText = cleanText25(resultCell.textContent || "vs") || "vs";
         const scoreHref = ntM ? `/matches/${ntM[1] ? ntM[1] + "/" + ntM[2] : ntM[2]}/` : "";
         return {
           matchId,
@@ -44024,7 +43969,7 @@ order:initial
         const icon = row.children[0];
         const content = row.children[1];
         const subtle = content == null ? void 0 : content.querySelector(".subtle");
-        const season = cleanText26((subtle == null ? void 0 : subtle.textContent) || "");
+        const season = cleanText25((subtle == null ? void 0 : subtle.textContent) || "");
         if (subtle) subtle.remove();
         return {
           iconStyle: (icon == null ? void 0 : icon.getAttribute("style")) || "",
@@ -44045,8 +43990,8 @@ order:initial
         const playerId = playerAnchor.getAttribute("player_link") || ((_b = (_a3 = playerAnchor.getAttribute("href")) == null ? void 0 : _a3.match(/\/players\/(\d+)\//)) == null ? void 0 : _b[1]) || "";
         return {
           playerId: String(playerId),
-          number: cleanText26(cells[0].textContent),
-          name: decodeHtmlEntities(cleanText26(playerAnchor.textContent)),
+          number: cleanText25(cells[0].textContent),
+          name: decodeHtmlEntities(cleanText25(playerAnchor.textContent)),
           href: playerAnchor.getAttribute("href") || "#"
         };
       }).filter((row) => row && row.playerId);
@@ -44213,7 +44158,7 @@ order:initial
         root: sourceRoot3,
         id: "tmvu-national-teams-nav",
         className: "tmvu-national-teams-nav tmu-page-sidebar-stack",
-        countryCode: routeMatch[1] || cleanText26(((_a2 = window.SESSION) == null ? void 0 : _a2.country) || ""),
+        countryCode: routeMatch[1] || cleanText25(((_a2 = window.SESSION) == null ? void 0 : _a2.country) || ""),
         currentSeason: CURRENT_SEASON2
       });
       const mainColumn5 = document.createElement("section");
@@ -44863,7 +44808,7 @@ order:initial
   var buildSkillsChart = async (el2, player2) => {
     var _a2, _b;
     if (player2.isOwnPlayer) {
-      const graphData = await TmPlayerService.fetchPlayerGraphs(player2);
+      const graphData = await TmPlayerModel.fetchPlayerGraphs(player2);
       if (((_a2 = graphData == null ? void 0 : graphData.graphs) == null ? void 0 : _a2.strength) == null) {
         buildEnableCard(el2, "skills", player2.id);
         return;
@@ -45709,7 +45654,7 @@ order:initial
     fetchTransfer = () => {
       refs.reload.innerHTML = '<span class="tmu-spinner tmu-spinner-sm ml-1"></span>';
       refs.reload.disabled = true;
-      TmTransferService.fetchTransfer(transferListed.playerId).then((d) => {
+      TmTransferModel.fetchTransfer(transferListed.playerId).then((d) => {
         refs.reload.innerHTML = "\u21BB";
         refs.reload.disabled = false;
         if (d == null ? void 0 : d.success) renderTransfer(d);
@@ -46249,7 +46194,7 @@ order:initial
         return;
       }
       container.innerHTML = TmUI.loading();
-      TmScoutsService.fetchPlayerScouting(player3.id).then((data) => {
+      TmScoutsModel.fetchPlayerScouting(player3.id).then((data) => {
         if (!data) {
           container.innerHTML = TmUI.error("Failed to load data");
           return;
@@ -46660,7 +46605,7 @@ order:initial
       if (!col1) return;
       const el2 = ensureRailSlot(col1, "tmbe-standalone", { prepend: true });
       if (!el2) return;
-      TmScoutsService.fetchPlayerScouting(PLAYER_ID).then((data) => {
+      TmScoutsModel.fetchPlayerScouting(PLAYER_ID).then((data) => {
         if (!data) return;
         player2.scoutReports = data.reports || [];
         player2.scouts = data.scouts || {};
@@ -48484,6 +48429,71 @@ order:initial
     await ctx.save(changed);
   }
 
+  // src/models/tactics.js
+  var SPECIAL_KEYS = ["captain", "corner", "penalty", "freekick"];
+  var _enrichFromDb = async (player2) => {
+    var _a2, _b;
+    const dbPlayer = await TmPlayerDB.get(player2.id);
+    player2.records = (dbPlayer == null ? void 0 : dbPlayer.records) || {};
+    const latestRecord = (_a2 = dbPlayer == null ? void 0 : dbPlayer.records) == null ? void 0 : _a2[player2.ageMonthsString];
+    if (!Array.isArray(latestRecord == null ? void 0 : latestRecord.skills) || !((_b = player2.skills) == null ? void 0 : _b.length)) return player2;
+    player2.skills = player2.skills.map((skill, i) => ({
+      ...skill,
+      value: latestRecord.skills[i] != null ? Number(latestRecord.skills[i]) : skill.value
+    }));
+    applyPlayerPositionRatings(player2);
+    player2.allPositionRatings = player2.positions;
+    const last2 = Object.values(player2.records).reverse().slice(0, 2);
+    if (last2.length === 2) {
+      player2.ti = Number(last2[0].TI);
+      player2.TI_change = Number(last2[0].TI) - Number(last2[1].TI);
+    }
+    return player2;
+  };
+  var TmTacticsModel = {
+    async fetchTactics(reserves, national, miniGameId, { initialSettings = {} } = {}) {
+      const raw = await TmTacticsService.fetchTacticsRaw(reserves, national, miniGameId);
+      if (!raw) return null;
+      const players = await Promise.all(
+        (raw.players || []).map((p) => _enrichFromDb(normalizeTacticsPlayer(p)))
+      );
+      const assoc = raw.formation_assoc || {};
+      players.forEach((player2) => {
+        const position = (player2.positions || []).find((p) => Number(assoc[p.key]) === player2.id);
+        if (position) {
+          position.playing = true;
+        }
+      });
+      const specialRoles = {};
+      for (const role of SPECIAL_KEYS) {
+        specialRoles[role] = assoc[role] ? Number(assoc[role]) : null;
+      }
+      return {
+        players,
+        specialRoles,
+        formation_assoc: assoc,
+        mentality: Number(initialSettings.mentality) || 4,
+        attacking: Number(initialSettings.style) || 1,
+        focus: Number(initialSettings.focus) || 1
+      };
+    },
+    fetchCondOrders(reserves, national, miniGameId) {
+      return TmTacticsService.fetchCondOrders(reserves, national, miniGameId);
+    },
+    saveCondOrder(coData, reserves, national, miniGameId) {
+      return TmTacticsService.saveCondOrder(coData, reserves, national, miniGameId);
+    },
+    deleteCondOrder(num, reserves, national, miniGameId) {
+      return TmTacticsService.deleteCondOrder(num, reserves, national, miniGameId);
+    },
+    postLineupSave(assoc, changedPlayers, reserves, national, miniGameId) {
+      return TmTacticsService.postLineupSave(assoc, changedPlayers, reserves, national, miniGameId);
+    },
+    saveSettingValue(saveKey, value, reserves, national, miniGameId) {
+      return TmTacticsService.saveSettingValue(saveKey, value, reserves, national, miniGameId);
+    }
+  };
+
   // src/components/tactics/tm-tactics-settings.js
   function mountTacticsSettings(container, tactics = {}, opts = {}, lineupApi = null) {
     const { reserves = 0, national = 0, miniGameId = 0 } = opts;
@@ -48518,7 +48528,7 @@ order:initial
             onSave == null ? void 0 : onSave(currentVal);
             ac.setValue(text);
             ac.hideDrop();
-            TmTacticsService.saveSettingValue(saveKey, currentVal, reserves, national, miniGameId);
+            TmTacticsModel.saveSettingValue(saveKey, currentVal, reserves, national, miniGameId);
           }
         }));
       };
@@ -48896,65 +48906,6 @@ order:initial
     mountTacticsSettings(container, tactics, opts, lineupApi);
     return {};
   }
-
-  // src/models/tactics.js
-  var SPECIAL_KEYS = ["captain", "corner", "penalty", "freekick"];
-  var _enrichFromDb = async (player2) => {
-    var _a2, _b;
-    const dbPlayer = await TmPlayerDB.get(player2.id);
-    player2.records = (dbPlayer == null ? void 0 : dbPlayer.records) || {};
-    const latestRecord = (_a2 = dbPlayer == null ? void 0 : dbPlayer.records) == null ? void 0 : _a2[player2.ageMonthsString];
-    if (!Array.isArray(latestRecord == null ? void 0 : latestRecord.skills) || !((_b = player2.skills) == null ? void 0 : _b.length)) return player2;
-    player2.skills = player2.skills.map((skill, i) => ({
-      ...skill,
-      value: latestRecord.skills[i] != null ? Number(latestRecord.skills[i]) : skill.value
-    }));
-    applyPlayerPositionRatings(player2);
-    player2.allPositionRatings = player2.positions;
-    const last2 = Object.values(player2.records).reverse().slice(0, 2);
-    if (last2.length === 2) {
-      player2.ti = Number(last2[0].TI);
-      player2.TI_change = Number(last2[0].TI) - Number(last2[1].TI);
-    }
-    return player2;
-  };
-  var TmTacticsModel = {
-    async fetchTactics(reserves, national, miniGameId, { initialSettings = {} } = {}) {
-      const raw = await TmTacticsService.fetchTacticsRaw(reserves, national, miniGameId);
-      if (!raw) return null;
-      const players = await Promise.all(
-        (raw.players || []).map((p) => _enrichFromDb(normalizeTacticsPlayer(p)))
-      );
-      const assoc = raw.formation_assoc || {};
-      players.forEach((player2) => {
-        const position = (player2.positions || []).find((p) => Number(assoc[p.key]) === player2.id);
-        if (position) {
-          position.playing = true;
-        }
-      });
-      const specialRoles = {};
-      for (const role of SPECIAL_KEYS) {
-        specialRoles[role] = assoc[role] ? Number(assoc[role]) : null;
-      }
-      return {
-        players,
-        specialRoles,
-        formation_assoc: assoc,
-        mentality: Number(initialSettings.mentality) || 4,
-        attacking: Number(initialSettings.style) || 1,
-        focus: Number(initialSettings.focus) || 1
-      };
-    },
-    fetchCondOrders(reserves, national, miniGameId) {
-      return TmTacticsService.fetchCondOrders(reserves, national, miniGameId);
-    },
-    saveCondOrder(coData, reserves, national, miniGameId) {
-      return TmTacticsService.saveCondOrder(coData, reserves, national, miniGameId);
-    },
-    deleteCondOrder(num, reserves, national, miniGameId) {
-      return TmTacticsService.deleteCondOrder(num, reserves, national, miniGameId);
-    }
-  };
 
   // src/components/tactics/tm-tactics-orders.js
   var { escHtml: escHtml3 } = TmUtils;
@@ -49539,7 +49490,7 @@ order:initial
         isForeigner,
         async onSave(changed) {
           try {
-            await TmTacticsService.postLineupSave(buildAssocForSave(tactics), changed, reserves, national, miniGameId);
+            await TmTacticsModel.postLineupSave(buildAssocForSave(tactics), changed, reserves, national, miniGameId);
             TmAlert.show({ message: "Saved", tone: "success" });
           } catch (e) {
             TmAlert.show({ message: "Save failed", tone: "error" });
@@ -49577,7 +49528,7 @@ order:initial
 
   // src/layouts/app-shell.js
   var IMPORT_PATH = "/import/";
-  function cleanText25(value) {
+  function cleanText24(value) {
     return String(value || "").replace(/\s+/g, " ").trim();
   }
   function normalizeHref(href) {
@@ -49608,7 +49559,7 @@ order:initial
     var _a2, _b;
     const session = window.SESSION || {};
     const clubId2 = String(session.main_id || session.club_id || "").trim();
-    const clubName2 = cleanText25(
+    const clubName2 = cleanText24(
       session.main_name || session.clubname || session.club_name || ((_a2 = document.querySelector('a[href*="/club/"]')) == null ? void 0 : _a2.textContent) || "TrophyManager"
     );
     return {

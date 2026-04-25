@@ -11,7 +11,7 @@ import { TmStandingsPanel } from '../components/shared/tm-standings-panel.js';
 import { TmStandingsTable } from '../components/shared/tm-standings-table.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { mountPlayerStatsBrowser, PLAYER_STAT_DEFS, PLAYER_COL_LABELS, parsePlayerStatsHtml } from '../components/shared/tm-player-stats-browser.js';
-import { TMLeagueService } from '../services/league.js';
+import { TmLeagueModel } from '../models/league.js';
 
 'use strict';
 
@@ -97,7 +97,7 @@ const parseFriendlyLeagueFixtures = (payload) => Object.entries(payload || {})
 const getFriendlyLeagueFixtures = () => {
     if (!LEAGUE_FIXTURES_PROMISE) {
         LEAGUE_FIXTURES_PROMISE = LEAGUE_ID
-            ? TMLeagueService.fetchLeagueFixtures('friendly-league', { var1: LEAGUE_ID })
+            ? TmLeagueModel.fetchLeagueFixtures('friendly-league', { var1: LEAGUE_ID })
             : Promise.resolve(null);
     }
     return LEAGUE_FIXTURES_PROMISE;
@@ -108,7 +108,7 @@ const getFriendlyLeagueStatisticsHtml = async (stat = 'goals') => {
     if (!FRIENDLY_STATS_DOC_CACHE) FRIENDLY_STATS_DOC_CACHE = new Map();
     if (FRIENDLY_STATS_DOC_CACHE.has(key)) return FRIENDLY_STATS_DOC_CACHE.get(key);
 
-    const html = await TMLeagueService.fetchFriendlyLeagueStatisticsHtml(LEAGUE_ID, key);
+    const html = await TmLeagueModel.fetchFriendlyLeagueStatisticsHtml(LEAGUE_ID, key);
     FRIENDLY_STATS_DOC_CACHE.set(key, html || '');
     return html || '';
 };
@@ -146,7 +146,7 @@ const getFriendlyLeagueHistoryHtml = async (type = 'standings', seasonValue = ''
         return html;
     }
 
-    const html = await TMLeagueService.fetchFriendlyLeagueHistoryHtml(type, seasonValue);
+    const html = await TmLeagueModel.fetchFriendlyLeagueHistoryHtml(type, seasonValue);
     FRIENDLY_HISTORY_DOC_CACHE.set(key, html || '');
     return html || '';
 };
@@ -835,7 +835,7 @@ export async function initFriendlyLeaguePage(mountedMain) {
     FRIENDLY_HISTORY_META = ACTIVE_TAB === 'history' ? parseFriendlyLeagueHistoryMeta(nativeMain) : null;
 
     if (ACTIVE_TAB !== 'overview' && LEAGUE_ID) {
-        const overviewHtml = await TMLeagueService.fetchFriendlyLeaguePageHtml(LEAGUE_ID);
+        const overviewHtml = await TmLeagueModel.fetchFriendlyLeaguePageHtml(LEAGUE_ID);
         if (overviewHtml) {
             const overviewDoc = new DOMParser().parseFromString(overviewHtml, 'text/html');
             const overviewRoot = overviewDoc.querySelector('.main_center');

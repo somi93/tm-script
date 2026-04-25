@@ -1,6 +1,6 @@
 import { TmConst } from '../../lib/tm-constants.js';
 import { TmClubModel } from '../../models/club.js';
-import { TmMatchService } from '../../services/match.js';
+import { TmMatchModel } from '../../models/match.js';
 import { TmPlayerModel } from '../../models/player.js';
 
 const squadCache = new Map();
@@ -53,14 +53,16 @@ const computeTeamStats = async (playerIds, lineup, squadPost) => {
 const fetchMatchR5 = (matchId) => {
     const key = String(matchId);
     if (!matchCache.has(key)) {
-        matchCache.set(key, TmMatchService.fetchMatchCached(key, { dbSync: false }).then(async data => {
-            if (!data?.club?.home?.id || !data?.club?.away?.id) return null;
-            const homeId = String(data.club.home.id);
-            const awayId = String(data.club.away.id);
+        matchCache.set(key, TmMatchModel.fetchMatchCached(key).then(async data => {
+            if (!data?.home?.club?.id || !data?.away?.club?.id) return null;
+            const homeId = String(data.home.club.id);
+            const awayId = String(data.away.club.id);
+            const homeLineupMap = Object.fromEntries(data.home.lineup.map(p => [String(p.id), p]));
+            const awayLineupMap = Object.fromEntries(data.away.lineup.map(p => [String(p.id), p]));
             const [homeSquad, awaySquad] = await Promise.all([fetchSquad(homeId), fetchSquad(awayId)]);
             const [homeResult, awayResult] = await Promise.all([
-                computeTeamStats(Object.keys(data.lineup.home || {}), data.lineup.home || {}, homeSquad),
-                computeTeamStats(Object.keys(data.lineup.away || {}), data.lineup.away || {}, awaySquad),
+                computeTeamStats(Object.keys(homeLineupMap), homeLineupMap, homeSquad),
+                computeTeamStats(Object.keys(awayLineupMap), awayLineupMap, awaySquad),
             ]);
             return {
                 homeR5: Number((homeResult.totals.R5 / 11).toFixed(2)),

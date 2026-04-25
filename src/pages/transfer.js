@@ -5,7 +5,7 @@ import { TmTransferSidebar } from '../components/transfer/tm-transfer-sidebar.js
 import { TmTransferStyles } from '../components/transfer/tm-transfer-styles.js';
 import { TmPlayersTable } from '../components/shared/tm-players-table.js';
 import { TmTransferTable } from '../components/transfer/tm-transfer-table.js';
-import { TmTransferService } from '../services/transfer.js';
+import { TmTransferModel } from '../models/transfer.js';
 import { TmPlayerModel } from '../models/player.js';
 import { TmTransferFilters } from '../components/transfer/tm-transfer-filters.js';
 import { TmUtils } from '../lib/tm-utils.js';
@@ -46,7 +46,7 @@ export function initTransferPage(main) {
                 if (p._pollCountdown <= 0) {
                     p._pollCountdown = p.timeleft <= 120 ? 10 : 60;
                     if (sessionId) {
-                        TmTransferService.fetchTransferBidDialog(p.id, sessionId).then(data => {
+                        TmTransferModel.fetchTransferBidDialog(p.id, sessionId).then(data => {
                             if (!data) return;
                             const fresh = Number(data.deadline);
                             if (Number.isFinite(fresh) && fresh >= 0) p.timeleft = fresh;
@@ -80,7 +80,7 @@ export function initTransferPage(main) {
     }
 
     function processPlayer(p) {
-        return TmTransferService.normalizeTransferPlayer(p);
+        return TmTransferModel.normalizeTransferPlayer(p);
     }
 
     function scheduleRefresh() {
@@ -177,7 +177,7 @@ export function initTransferPage(main) {
 
         const request = TmPlayerModel.fetchTooltipCached(playerId)
             .then(data => {
-                const result = TmTransferService.enrichTransferFromTooltip(player, data);
+                const result = TmTransferModel.enrichTransferFromTooltip(player, data);
                 if (!result) return null;
                 updateTooltipCells(player);
                 return player;
@@ -221,7 +221,7 @@ export function initTransferPage(main) {
         const hash = TmTransferFilters.buildHash();
         const clubId = window.SESSION ? window.SESSION.id : 0;
 
-        TmTransferService.fetchTransferSearch(hash, clubId).then(function (data) {
+        TmTransferModel.fetchTransferSearch(hash, clubId).then(function (data) {
             isLoading = false;
 
             if (!data) {
@@ -251,7 +251,7 @@ export function initTransferPage(main) {
 
     function fetchWithHash(hash) {
         const clubId = window.SESSION ? window.SESSION.id : 0;
-        return TmTransferService.fetchTransferSearch(hash, clubId)
+        return TmTransferModel.fetchTransferSearch(hash, clubId)
             .then(data => Array.isArray(data?.list) ? data.list : []);
     }
 
@@ -409,6 +409,8 @@ export function initTransferPage(main) {
 
         main.classList.add('tmvu-transfer-page');
         main.querySelectorAll('.column1_d').forEach(node => node.remove());
+        const outer = document.getElementById('tms-outer');
+        if (outer) outer.style.display = 'none';
         main.insertAdjacentHTML('beforeend', layoutHtml);
     }
 
@@ -447,6 +449,14 @@ export function initTransferPage(main) {
                 const pid = bidBtn.dataset.pid;
                 const player = allPlayers.find(x => String(x.id) === pid);
                 if (player) TmBidsDialog.open(player);
+                return;
+            }
+
+            const row = e.target.closest('#tms-table-wrap tr[data-pid]');
+            if (row && !e.target.closest('[data-transfer-bid],[data-transfer-reload],a,button,input')) {
+                const pid = row.dataset.pid;
+                const player = allPlayers.find(x => String(x.id) === pid);
+                if (player && Number(player.timeleft) > 0) TmBidsDialog.open(player);
                 return;
             }
 

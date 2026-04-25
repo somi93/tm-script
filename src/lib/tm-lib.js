@@ -331,18 +331,14 @@ const getPositionIndex = pos => {
 export const TmLib = {
     getPositionIndex,
     calcR5,
-    calcRec,
     calcAsiSkillSum,
     calcASIFromSkillSum,
     calcSkillDecimalsSimple,
     calcSkillDecimals,
-    buildRoutineMap,
     calculatePlayerR5,
     calculatePlayerREC,
     calcASIProjection,
-    getCurrentSession: _getCurrentSession,
     calculateTI,
     calculateTIPerSession,
-    sumSkillValues,
 };
 

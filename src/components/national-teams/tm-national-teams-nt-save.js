@@ -1,6 +1,8 @@
 import { TmUI } from '../shared/tm-ui.js';
 import { TmTable } from '../shared/tm-table.js';
 import { TmApi } from '../../services/index.js';
+import { TmClubModel } from '../../models/club.js';
+import { TmLeagueModel } from '../../models/league.js';
 import { TmConst } from '../../lib/tm-constants.js';
 import { TmLib } from '../../lib/tm-lib.js';
 import { TmUtils } from '../../lib/tm-utils.js';
@@ -649,7 +651,7 @@ async function loadDivisionBounds(state) {
     }
 
     try {
-        const divisionsData = await TmApi.fetchLeagueDivisions(state.countryCode);
+        const divisionsData = await TmLeagueModel.fetchLeagueDivisions(state.countryCode);
         const divisionGroups = normalizeDivisionGroups(divisionsData?.divisions || []);
         if (!divisionGroups.length) {
             updateScopeHint(state);
@@ -1335,7 +1337,7 @@ async function getTooltipCandidateBatch(state, playerIds = [], batchSize = 10) {
 async function getClubPage(state, clubId) {
     if (!clubId) return null;
     if (!state.clubPageCache.has(clubId)) {
-        state.clubPageCache.set(clubId, TmApi.fetchClubPageHtml(clubId)
+        state.clubPageCache.set(clubId, TmClubModel.fetchClubPageHtml(clubId)
             .then(html => html || null)
             .catch(() => null));
     }
@@ -1381,7 +1383,7 @@ async function collectTransferPages(state, divisionGroups) {
             unitLabel: 'batches',
         });
 
-        const leagueHtml = await TmApi.fetchLeaguePageHtml(state.countryCode, groupCtx.division, groupCtx.group);
+        const leagueHtml = await TmLeagueModel.fetchLeaguePageHtml(state.countryCode, groupCtx.division, groupCtx.group);
         parseLeagueFlaggedClubs(leagueHtml, groupCtx).forEach(item => {
             const existing = state.flaggedClubs.get(item.clubId) || { ...item, statuses: [] };
             item.statuses.forEach(status => {
@@ -1415,7 +1417,7 @@ async function collectTransferPages(state, divisionGroups) {
 
             const historyBatch = await Promise.all(seasonBatch.map(async season => ({
                 season,
-                html: await TmApi.fetchLeagueTransferHistory(state.countryCode, groupCtx.division, groupCtx.group, season),
+                html: await TmLeagueModel.fetchLeagueTransferHistory(state.countryCode, groupCtx.division, groupCtx.group, season),
             })));
 
             historyBatch.forEach(({ season, html }) => {
@@ -1659,7 +1661,7 @@ async function runScan(state) {
 
     try {
         setStatus(state, `<strong>Preparing</strong> divisions for ${escapeHtml(state.countryCode.toUpperCase())}...`);
-        const divisionsData = await TmApi.fetchLeagueDivisions(state.countryCode);
+        const divisionsData = await TmLeagueModel.fetchLeagueDivisions(state.countryCode);
         const allDivisionGroups = normalizeDivisionGroups(divisionsData?.divisions || []);
 
         if (allDivisionGroups.length) {

@@ -1,7 +1,7 @@
-/**
- * tm-unity-engine.js — Clean Unity 3D integration layer
+﻿/**
+ * tm-unity-engine.js ΓÇö Clean Unity 3D integration layer
  *
- * Only knows about the Unity API — no match state, no text rendering.
+ * Only knows about the Unity API ΓÇö no match state, no text rendering.
  * Responsibilities:
  *   - Poll for gameInstance availability, suppress TM's own replay
  *   - Move / save the .webgl-content canvas
@@ -13,9 +13,9 @@
  *   SendMessage('ClipsViewerScript', 'PrepareMinute', JSON.stringify({ queue: Clip[], id: number }))
  *     Clip = { video: string, att1?, att2?, gk?, def1?, def2? }
  *   SendMessage('ClipsViewerScript', 'PlayMinute',   JSON.stringify({ id: number }))
- *   SendMessage('ClipsViewerScript', 'OnPauseGame')   — toggles pause/resume
+ *   SendMessage('ClipsViewerScript', 'OnPauseGame')   ΓÇö toggles pause/resume
  *
- * Stargate callbacks (Unity → JS):
+ * Stargate callbacks (Unity ΓåÆ JS):
  *   { flash_ready: 1 }                  Unity WebGL context ready
  *   { finished_loading: { id } }        PrepareMinute done, safe to play
  *   { starting_clip:    { ... } }       A single clip started
@@ -41,12 +41,12 @@ export const TmUnityEngine = {
         let tmStopped = false;
         let canvasParent = null;
 
-        // Maps clip index (0-based within a minute) → play index in match.plays[minute].
+        // Maps clip index (0-based within a minute) ΓåÆ play index in match.plays[minute].
         // Built on every PrepareMinute call so starting_clip can emit the right playIdx.
         let clipStartCounter = 0;
         let clipEndCounter = 0;
 
-        // ── Extract video clip list for one minute from a normalized report ──
+        // ΓöÇΓöÇ Extract video clip list for one minute from a normalized report ΓöÇΓöÇ
         // report[min] is an array of events; each event may have .chance.video[]
         // clipData shape: { video: clipName, att1?, att2?, gk?, def1?, def2? }
         const clipsForMinute = (report, minute) =>
@@ -56,7 +56,7 @@ export const TmUnityEngine = {
                 return Array.isArray(v) ? v : [v];
             });
 
-        // ── Canvas management ─────────────────────────────────────────────
+        // ΓöÇΓöÇ Canvas management ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 
         const saveCanvas = () => {
             if (!available) return;
@@ -87,7 +87,7 @@ export const TmUnityEngine = {
             if (gc) { gc.style.width = '100%'; gc.style.height = '100%'; gc.style.margin = '0'; }
         };
 
-        // ── TM replay suppression ─────────────────────────────────────────
+        // ΓöÇΓöÇ TM replay suppression ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         // TM runs its own flash/JS replay on match pages.
         // We override its entry points so it doesn't fight with our replay.
 
@@ -111,7 +111,7 @@ export const TmUnityEngine = {
             }
         };
 
-        // ── Stargate intercept ────────────────────────────────────────────
+        // ΓöÇΓöÇ Stargate intercept ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         // window.stargate is Unity's callback channel.
         // We replace it (saving the original) to receive lifecycle events.
 
@@ -124,7 +124,7 @@ export const TmUnityEngine = {
                     ready = true;
                 }
 
-                // PrepareMinute finished — now safe to start playback
+                // PrepareMinute finished ΓÇö now safe to start playback
                 if (vars.finished_loading) {
                     const id = vars.finished_loading.id;
                     if (pendingMinute === id) {
@@ -135,14 +135,14 @@ export const TmUnityEngine = {
                     }
                 }
 
-                // An individual clip started — emit sequential index so controller
+                // An individual clip started ΓÇö emit sequential index so controller
                 // can reveal the matching text segment.
                 if (vars.starting_clip) {
                     playing = true;
                     onClipStart?.(clipStartCounter++);
                 }
 
-                // An individual clip ended — emit sequential index.
+                // An individual clip ended ΓÇö emit sequential index.
                 if (vars.finished_clip) {
                     onClipEnd?.(clipEndCounter++);
                 }
@@ -160,7 +160,7 @@ export const TmUnityEngine = {
             };
         };
 
-        // ── Public: load clips for a minute ──────────────────────────────
+        // ΓöÇΓöÇ Public: load clips for a minute ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 
         const load = (report, minute) => {
             const w = uw();
@@ -177,7 +177,7 @@ export const TmUnityEngine = {
             return true;
         };
 
-        // ── Public: toggle pause/resume (OnPauseGame is a toggle in Unity) ──
+        // ΓöÇΓöÇ Public: toggle pause/resume (OnPauseGame is a toggle in Unity) ΓöÇΓöÇ
         // Call once to pause mid-animation, call again to resume.
 
         const sendPauseToggle = () => {
@@ -186,7 +186,7 @@ export const TmUnityEngine = {
             }
         };
 
-        // ── Initialization: poll for gameInstance ─────────────────────────
+        // ΓöÇΓöÇ Initialization: poll for gameInstance ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 
         const init = () => {
             const poll = setInterval(() => {
@@ -201,7 +201,7 @@ export const TmUnityEngine = {
                     onReady?.();
                 }
             }, 500);
-            // Stop polling after 30 s — Unity may not be present on this page
+            // Stop polling after 30 s ΓÇö Unity may not be present on this page
             setTimeout(() => clearInterval(poll), 30_000);
         };
 

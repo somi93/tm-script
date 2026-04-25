@@ -5,8 +5,8 @@ import { TmStatsStyles } from '../components/stats/tm-stats-styles.js';
 import { TmStatsTeamTab } from '../components/stats/tm-stats-team-tab.js';
 import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { initClubLayout, normalizeClubHref } from '../components/club/tm-club-layout.js';
-import { TmClubService } from '../services/club.js';
-import { TmMatchService } from '../services/match.js';
+import { TmClubModel } from '../models/club.js';
+import { TmMatchModel } from '../models/match.js';
 
 export function initStatsPage(main) {
     if (!main || !main.isConnected) return;
@@ -275,7 +275,7 @@ export function initStatsPage(main) {
 
         try {
             // 1. Fetch fixtures
-            const fixtures = await TmClubService.fetchClubFixtures(CLUB_ID);
+            const fixtures = await TmClubModel.fetchClubFixtures(CLUB_ID);
             if (!fixtures) throw new Error('Failed to fetch fixtures');
             const playedMatches = getPlayedMatches(fixtures);
             matchCount.total = playedMatches.length;
@@ -290,7 +290,7 @@ export function initStatsPage(main) {
                 const results = await Promise.all(
                     batch.map(async (matchInfo) => {
                         try {
-                            const statsMatch = await TmMatchService.fetchMatchForStats(matchInfo, CLUB_ID, { dbSync: false });
+                            const statsMatch = await TmMatchModel.fetchMatchForStats(matchInfo, CLUB_ID);
                             if (!statsMatch) throw new Error('null response');
                             return statsMatch;
                         } catch (err) {

@@ -10,7 +10,7 @@
  * play information comes from the normalized model — nothing is pre-parsed from HTML.
  */
 
-import { TmInternationalCupService, parseSections, classifyStage } from '../../services/international-cup.js';
+import { TmInternationalCupModel, parseSections, classifyStage } from '../../models/international-cup.js';
 import { TmMatchModel }      from '../../models/match.js';
 import { snapshotFromMData, buildModalContentEl, injectLeagueMatchStyles } from './tm-match-league.js';
 import { TmStandingsTable }  from '../shared/tm-standings-table.js';
@@ -404,7 +404,7 @@ export const TmMatchIntCupNew = {
         const initialMin = initialReplayState?.currentMinute != null ? initialReplayState.currentMinute : Infinity;
         el.innerHTML = TmUI.loading('Loading cup data…');
 
-        TmInternationalCupService.fetchOverviewDocument(tournamentId)
+        TmInternationalCupModel.fetchOverviewDocument(tournamentId)
             .then(doc => {
                 if (!doc) { el.innerHTML = TmUI.error('Failed to load cup data'); return; }
                 buildView(doc, initialMin);

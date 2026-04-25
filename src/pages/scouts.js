@@ -6,7 +6,7 @@ import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { TmTable } from '../components/shared/tm-table.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmPlayerModel } from '../models/player.js';
-import { TmScoutsService } from '../services/scouts.js';
+import { TmScoutsModel } from '../models/scouts.js';
 import { TmUtils } from '../lib/tm-utils.js';
 
 'use strict';
@@ -165,12 +165,16 @@ const enrichReports = async (reports) => {
         try {
             const [tooltipData, scoutData] = await Promise.all([
                 TmPlayerModel.fetchPlayerTooltip(report.playerId),
-                TmPlayerModel.fetchPlayerInfo(report.playerId, 'scout'),
+                TmScoutsModel.fetchPlayerScouting(report.playerId),
             ]);
+            if (tooltipData && scoutData) {
+                tooltipData.scoutReports = scoutData.reports || [];
+                tooltipData.bestEstimate = scoutData.bestEstimate || null;
+            }
             return {
                 ...report,
-                currentAge: tooltipData?.player ? `${tooltipData.player.age}.${tooltipData.player.months || 0}` : '',
-                tooltipPlayer: tooltipData?.player && Array.isArray(tooltipData.player.skills) ? tooltipData.player : null,
+                currentAge: tooltipData ? `${tooltipData.age}.${tooltipData.month || 0}` : '',
+                tooltipPlayer: tooltipData && Array.isArray(tooltipData.skills) ? tooltipData : null,
                 fullScoutData: Array.isArray(scoutData?.reports) && scoutData.reports.length ? scoutData : null,
             };
         } catch {
@@ -471,7 +475,7 @@ const renderPage = (main, sourceRoot, scouts, reports) => {
 const boot = async (main, sourceRoot) => {
     injectStyles();
     const scouts = parseScoutsFromDom(sourceRoot);
-    const response = await TmScoutsService.fetchReports();
+    const response = await TmScoutsModel.fetchReports();
     const reports = response && Object.keys(response).length ? normalizeReports(response, scouts) : parseFallbackReports(sourceRoot);
     renderPage(main, sourceRoot, scouts, reports);
     const enrichedReports = await enrichReports(reports);

@@ -6,20 +6,6 @@ const createSkills = () => SKILL_DEFS.map(skill => ({
     ...skill,
     value: null,
 }));
-export const Stat = {
-    create() {
-        return {
-            games: null,
-            goals: null,
-            assists: null,
-            productivity: null,
-            cards: null,
-            conceded: null,
-            rating: null,
-        }
-    }
-}
-
 const createPositions = (allPositions = false) => {
     const entries = allPositions
         ? Object.entries(POSITION_MAP)

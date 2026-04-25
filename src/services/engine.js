@@ -1,8 +1,4 @@
-const _errors = [];
 const _logError = (context, err) => {
-    const entry = { context, err, time: Date.now() };
-    _errors.push(entry);
-    if (typeof TmApiEngine?.onError === 'function') TmApiEngine.onError(entry);
     console.warn(`[TmApi] ${context}`, err);
 };
 
@@ -76,14 +72,5 @@ const _dedup = (key, promiseFn) => {
 };
 
 // Named exports for use by individual service modules
-export { _post, _get, _getHtml, _postHtml, _dedup, _logError, _errors };
-
-// ─────────────────────────────────────────────────────────────────────────
-
-export const TmApiEngine = {
-
-    errors: _errors,
-    onError: null,
-
-};
+export { _post, _get, _getHtml, _postHtml, _dedup, _logError };
 

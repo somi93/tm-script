@@ -2,7 +2,7 @@ import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js
 import { TmFixturesList } from '../components/shared/tm-fixtures-list.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { mountNationalTeamsSideMenu } from '../components/national-teams/tm-national-teams-side-menu.js';
-import { TmApi } from '../services/index.js';
+import { TmNationalTeamsModel } from '../models/national-teams.js';
 
 const STYLE_ID = 'tmvu-national-teams-fixtures-style';
 
@@ -165,7 +165,7 @@ export function initNationalTeamsFixturesPage(main) {
 
     const init = async () => {
         panelHost.innerHTML = TmUI.loading('Loading fixtures...');
-        const data = await TmApi.fetchFixtures(countryCode);
+        const data = await TmNationalTeamsModel.fetchFixtures(countryCode);
         if (!data) {
             tabsHost.innerHTML = '';
             panelHost.innerHTML = TmUI.error('Failed to load fixtures.');

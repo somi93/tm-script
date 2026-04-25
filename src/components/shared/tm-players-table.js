@@ -113,9 +113,19 @@ export function buildPlayerHeaders(opts = {}) {
     cols.push(
         {
             key: 'r5', label: 'R5', align: 'r',
-            render: (_, p) => p.r5 != null
-                ? `<span class="tmu-tabular" style="color:${gc(p.r5, R5_THRESHOLDS)};font-weight:700">${p.r5}</span>`
-                : '<span style="color:var(--tmu-text-dim)">—</span>',
+            sort: (a, b) => (a.r5 ?? a.r5Hi ?? -Infinity) - (b.r5 ?? b.r5Hi ?? -Infinity),
+            render: (_, p) => {
+                if (p.r5 != null)
+                    return `<span class="tmu-tabular" style="color:${gc(p.r5, R5_THRESHOLDS)};font-weight:700">${TmUtils.formatR5(p.r5)}</span>`;
+                if (p.r5Lo != null && p.r5Hi != null) {
+                    const loStr = TmUtils.formatR5(p.r5Lo), hiStr = TmUtils.formatR5(p.r5Hi);
+                    const clrLo = gc(p.r5Lo, R5_THRESHOLDS), clrHi = gc(p.r5Hi, R5_THRESHOLDS);
+                    if (loStr === hiStr)
+                        return `<span class="tmu-tabular" style="color:${clrHi};font-weight:700">${hiStr}</span>`;
+                    return `<span class="tmu-tabular"><span style="color:${clrLo}">${loStr}</span><span style="color:var(--tmu-text-dim)"> – </span><span style="color:${clrHi};font-weight:700">${hiStr}</span></span>`;
+                }
+                return '<span style="color:var(--tmu-text-dim)">—</span>';
+            },
         },
         ...(showRec ? [{
             key: 'rec', label: 'REC', align: 'r',

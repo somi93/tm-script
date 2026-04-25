@@ -7,7 +7,7 @@ import { runSyncPipeline } from '../workflows/player-history/sync-pipeline.js';
 import { purgeRetiredPlayers } from '../workflows/purge-retired.js';
 import { TmShortlistTable } from '../components/shortlist/tm-shortlist-table.js';
 import { TmShortlistFilters } from '../components/shortlist/tm-shortlist-filters.js';
-import { TmShortlistService } from '../services/shortlist.js';
+import { TmShortlistModel } from '../models/shortlist.js';
 import { TmUtils } from '../lib/tm-utils.js';
 import { SKILL_DEFS_OUT, SKILL_DEFS_GK } from '../constants/skills.js';
 import { POSITION_MAP } from '../constants/player.js';
@@ -513,7 +513,7 @@ export function initShortlistPage(main) {
         const seen = new Set(initialEntries.map(e => String(e.id)));
         for (let i = 0; i < DISCOVERY_ROUNDS; i++) {
             try {
-                const discoveredEntries = await TmShortlistService.fetchShortlistPage();
+                const discoveredEntries = await TmShortlistModel.fetchShortlistPage();
                 for (const entry of discoveredEntries) {
                     const id = String(entry.id);
                     if (seen.has(id)) continue;

@@ -1,6 +1,5 @@
 import { _dedup, _getHtml, _post } from './engine.js';
-import { TmClubService } from './club.js';
-import { normalizeTransferPlayer, normalizeSquadPlayer } from '../utils/normalize/player.js';
+import { normalizeTransferPlayer } from '../utils/normalize/player.js';
 
 function cleanText(value) {
     return String(value || '').replace(/\s+/g, ' ').trim();
@@ -176,46 +175,6 @@ export const TmShortlistService = {
         const arrayLiteral = extractArrayLiteral(html, 'players_ar');
         if (!arrayLiteral) return [];
         try { return JSON.parse(arrayLiteral); } catch { return []; }
-    },
-
-    async fetchShortlistBidSections() {
-        return _dedup('shortlist:bid-sections', async () => {
-            const players = await this.fetchShortlistPage();
-            return buildBidSections(players);
-        });
-    },
-
-    async fetchOwnSaleBidSections() {
-        return _dedup('bids:own-sale-sections', async () => {
-            const clubId = getOwnClubId();
-            if (!clubId) return [];
-
-            const squadPost = await TmClubService.fetchSquadPost(clubId);
-            const players = Object.values(squadPost || {}).map(raw => ({
-                ...normalizeSquadPlayer(raw),
-                expiry: raw.expiry,
-                transfer_bid: raw.transfer_bid,
-                next_bid: raw.next_bid,
-            }));
-            if (!players.length) return [];
-
-            const saleRows = players
-                .filter(isActiveOwnSale)
-                .map(toOwnSaleRow);
-
-            if (!saleRows.length) return [];
-            return [{ title: 'My Players', rows: saleRows }];
-        });
-    },
-
-    async fetchBidSections() {
-        return _dedup('bids:sections', async () => {
-            const [saleSections, shortlistSections] = await Promise.all([
-                this.fetchOwnSaleBidSections(),
-                this.fetchShortlistBidSections(),
-            ]);
-            return [...saleSections, ...shortlistSections];
-        });
     },
 
     addToShortlist(playerId) {

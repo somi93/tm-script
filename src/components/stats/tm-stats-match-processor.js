@@ -146,7 +146,6 @@ export const TmStatsMatchProcessor = {
         const oppTeam = derived.teams?.[oppSide] || {};
         const ourLineup = ourTeam.lineup || [];
         const oppLineup = oppTeam.lineup || [];
-        const md = derived.match_data || {};
         const matchType = classifyMatchType(matchInfo.matchtype);
 
         // ── Basic match stats ──
@@ -158,9 +157,9 @@ export const TmStatsMatchProcessor = {
             homeGoalsReport: 0, awayGoalsReport: 0,
         };
 
-        if (md.possession) {
-            matchStats.homePoss = Number(md.possession.home) || 0;
-            matchStats.awayPoss = Number(md.possession.away) || 0;
+        if (derived.possession) {
+            matchStats.homePoss = Number(derived.possession.home) || 0;
+            matchStats.awayPoss = Number(derived.possession.away) || 0;
         }
 
         matchStats.homeYellow = homeTeam.stats?.yellowCards || 0;

@@ -2,9 +2,9 @@ import { TmUI } from '../shared/tm-ui.js';
 import { TmButton } from '../shared/tm-button.js';
 import { TmPosition } from '../../lib/tm-position.js';
 import { TmPlayerAge } from '../../lib/tm-player-age.js';
-import { TmTransferService } from '../../services/transfer.js';
+import { TmTransferModel } from '../../models/transfer.js';
 import { TmPlayerPhoto } from '../player/card/tm-player-photo.js';
-import { TmShortlistService } from '../../services/shortlist.js';
+import { TmShortlistModel } from '../../models/shortlist.js';
 import { TmAlert } from '../shared/tm-alert.js';
 
 'use strict';
@@ -307,7 +307,7 @@ function openBidDialog(player, opts = {}) {
         },
     };
 
-    TmTransferService.fetchTransferBidDialog(player.id, sessionId).then(bidData => {
+    TmTransferModel.fetchTransferBidDialog(player.id, sessionId).then(bidData => {
         if (activeBidDialog?.overlay !== overlay) return;
 
         if (!bidData) {
@@ -322,8 +322,8 @@ function openBidDialog(player, opts = {}) {
             btn.disabled = true;
             btn.innerHTML = '<span class="tmu-spinner tmu-spinner-sm"></span>';
             const result = removing
-                ? await TmShortlistService.removeFromShortlist(player.id)
-                : await TmShortlistService.addToShortlist(player.id);
+                ? await TmShortlistModel.removeFromShortlist(player.id)
+                : await TmShortlistModel.addToShortlist(player.id);
             btn.disabled = false;
             if (result !== null) {
                 if (removing) {

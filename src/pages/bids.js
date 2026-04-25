@@ -4,7 +4,7 @@ import { TmBidsDialog } from '../components/bids/tm-bids-dialog.js';
 import { TmShortlistTable } from '../components/shortlist/tm-shortlist-table.js';
 import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 import { TmUI } from '../components/shared/tm-ui.js';
-import { TmShortlistService } from '../services/shortlist.js';
+import { TmShortlistModel } from '../models/shortlist.js';
 import { TmPlayerModel } from '../models/player.js';
 import { TmUtils } from '../lib/tm-utils.js';
 
@@ -60,7 +60,7 @@ export async function initBidsPage(mountedMain) {
     content.appendChild(panel);
     mountedMain.appendChild(content);
 
-    const bidMeta = await TmShortlistService.fetchHomeBids();
+    const bidMeta = await TmShortlistModel.fetchHomeBids();
 
     if (!bidMeta.length) {
         panel.innerHTML = TmUI.empty('No active transfer list bids found.', true);

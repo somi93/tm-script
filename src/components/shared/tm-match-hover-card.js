@@ -1,4 +1,4 @@
-import { TmMatchService } from '../../services/match.js';
+import { TmMatchModel } from '../../models/match.js';
 import { TmUI } from './tm-ui.js';
 import { TmMatchTooltip } from './tm-match-tooltip.js';
 import { TmTooltip } from './tm-tooltip.js';
@@ -64,7 +64,7 @@ const show = (el, matchId, season) => {
     };
 
     if (isCurrentSeason) {
-        TmMatchService.fetchMatchCached(matchId, { dbSync: false }).then(data => {
+        TmMatchModel.fetchMatchCached(matchId).then(data => {
             if (!data) {
                 onFail();
                 return;
@@ -79,7 +79,7 @@ const show = (el, matchId, season) => {
         return;
     }
 
-    TmMatchService.fetchMatchTooltip(matchId, season).then(data => {
+    TmMatchModel.fetchTooltip(matchId, season).then(data => {
         if (!data) {
             onFail();
             return;

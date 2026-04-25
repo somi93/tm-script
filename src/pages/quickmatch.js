@@ -7,7 +7,7 @@ import { TmClubFixturesStyles } from '../components/club/tm-club-fixtures-styles
 import { TmTable } from '../components/shared/tm-table.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmCountdownBlock } from '../components/shared/tm-countdown-block.js';
-import { TmQuickmatchService } from '../services/quickmatch.js';
+import { TmQuickmatchModel } from '../models/quickmatch.js';
 
 'use strict';
 
@@ -652,7 +652,7 @@ const startQueueTick = () => { };
 const startQueuePolling = () => {
     stopQueuePolling();
     const poll = async () => {
-        const data = await TmQuickmatchService.waitForMatch();
+        const data = await TmQuickmatchModel.waitForMatch();
         if (Number(data?.match_id) > 0) {
             window.location.href = `/matches/${data.match_id}/`;
             return;
@@ -692,7 +692,7 @@ const loadRankings = async (mode = state.rankedMode) => {
     state.rankedMode = mode;
     state.rankedLoading = true;
     queueRender();
-    const data = await TmQuickmatchService.fetchRankings(mode);
+    const data = await TmQuickmatchModel.fetchRankings(mode);
     const rankingRows = Array.isArray(data?.rankings)
         ? data.rankings.map((row, i) => ({ ...row, rank: i + 1 }))
         : Object.entries(data?.rankings || {})
@@ -715,7 +715,7 @@ const loadRankings = async (mode = state.rankedMode) => {
 };
 
 const checkExistingQueue = async () => {
-    const data = await TmQuickmatchService.queue('check');
+    const data = await TmQuickmatchModel.queue('check');
     applyQueueState(data);
 };
 
@@ -727,7 +727,7 @@ const startRanked = async () => {
     if (!state.queue.startedAt) state.queue.startedAt = Date.now();
     startQueueTick();
     queueRender();
-    const data = await TmQuickmatchService.queue('ranked');
+    const data = await TmQuickmatchModel.queue('ranked');
     if (!applyQueueState(data, 'ranked')) {
         state.queue.active = false;
         state.queue.startedAt = null;
@@ -746,7 +746,7 @@ const startShowmatch = async () => {
     }
 
     state.notice = '';
-    const data = await TmQuickmatchService.queue('showmatch', opponent);
+    const data = await TmQuickmatchModel.queue('showmatch', opponent);
     if (!applyQueueState(data, 'showmatch')) {
         state.notice = data?.error_text || 'Showmatch queue did not start.';
         queueRender();
@@ -1002,7 +1002,7 @@ const mountRankedContent = (container) => {
     fixtureContainer.innerHTML = TmUI.loading('Loading matches...');
     TmClubFixturesStyles.inject();
 
-    TmQuickmatchService.fetchLatestMatches().then(html => {
+    TmQuickmatchModel.fetchLatestMatches().then(html => {
         const byMonth = parseQmLatestMatchesHtml(html);
         if (!byMonth) {
             fixtureContainer.innerHTML = TmUI.empty('No recent quickmatch games found.');

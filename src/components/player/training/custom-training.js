@@ -1,6 +1,6 @@
 ﻿'use strict';
 
-import { TmTrainingService } from '../../../services/training.js';
+import { TmTrainingModel } from '../../../models/training.js';
 import { TmUI } from '../../shared/tm-ui.js';
 import { TmTable } from '../../shared/tm-table.js';
 import { TRAINING_CUSTOM } from '../../../constants/training.js';
@@ -158,7 +158,7 @@ export const mountCustomTraining = (el, player, { readOnly = false, onStateChang
                 d[`${p}[points]`] = pts;
                 d[`${p}[skills][]`] = [];
             });
-            TmTrainingService.saveTraining(d);
+            TmTrainingModel.saveTraining(d);
         }, 300);
     };
 

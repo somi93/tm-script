@@ -1,4 +1,4 @@
-import { TmClubService } from '../../services/club.js';
+import { TmClubModel } from '../../models/club.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmHistoryHelpers } from './tm-history-helpers.js';
 import { TmSummaryStrip } from '../shared/tm-summary-strip.js';
@@ -15,7 +15,7 @@ let leagueCache = null;
         const el = _el;
         if (leagueCache) { doRenderLeague(el, leagueCache); return; }
         el.innerHTML = TmUI.loading('Loading league history…');
-        TmClubService.fetchClubLeagueHistory(_clubId, _seasons[0].id).then(function(html) {
+        TmClubModel.fetchClubLeagueHistory(_clubId, _seasons[0].id).then(function(html) {
             if (!html) { el.innerHTML = TmUI.error('Failed to load league history.'); return;}
             var data = parseLeagueHtml(html);
             leagueCache = data;

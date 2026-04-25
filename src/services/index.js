@@ -1,4 +1,3 @@
-import { TmApiEngine } from './engine.js';
 import { TmMatchService } from './match.js';
 import { TmPlayerService } from './player.js';
 import { TmClubService } from './club.js';
@@ -14,7 +13,6 @@ import { TmNationalTeamsService } from './national-teams.js';
 import { TmYouthService } from './youth.js';
 
 export const TmApi = {
-    ...TmApiEngine,
     ...TmClubService,
     ...TmMatchService,
     ...TmPlayerService,

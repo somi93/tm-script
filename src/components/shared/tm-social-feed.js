@@ -1,4 +1,4 @@
-import { TmApi } from '../../services/index.js';
+import { TmMessagesModel } from '../../models/messages.js';
 import { buildHomeFeedModel } from '../../utils/home-feed.js';
 import { buildNativeHomeFeedPostMap, findNativeHomeFeedAction, findNativeHomeFeedCommentControls, queryVisibleNativeFeedPosts } from '../../utils/home-feed-native.js';
 import { TmUI } from './tm-ui.js';
@@ -209,7 +209,7 @@ const showFeedLikesDialog = async (post) => {
 
     const body = overlay.querySelector('[data-feed-likes-body]');
     const subtitle = overlay.querySelector('.tmvu-home-feed-likes-subtitle');
-    const likes = normalizeFeedLikes(await TmApi.fetchFeedLikes(postId));
+    const likes = normalizeFeedLikes(await TmMessagesModel.fetchFeedLikes(postId));
 
     subtitle.textContent = likes.length
         ? `${likes.length} club${likes.length === 1 ? '' : 's'} liked this post`
@@ -692,7 +692,7 @@ export const createSocialFeedController = ({
         return buildHomeFeedModel({
             payload,
             nativePostMap: buildNativeHomeFeedPostMap(feedRoot),
-            fetchFeedNames: TmApi.fetchFeedNames,
+            fetchFeedNames: TmMessagesModel.fetchFeedNames.bind(TmMessagesModel),
         });
     };
 
