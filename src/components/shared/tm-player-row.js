@@ -19,6 +19,7 @@ import { TmPosition } from '../../lib/tm-position.js';
 import { TmConst }    from '../../lib/tm-constants.js';
 import { TmUtils }   from '../../lib/tm-utils.js';
 import { TmStars }   from './tm-stars.js';
+import { playerStatusIconsHtml } from './tm-player-status-icons.js';
 
 const STYLE_ID = 'tm-player-row-style';
 
@@ -70,11 +71,6 @@ export function injectTmPlayerRowStyles() {
         /* states */
         .tm-pr[data-state="sub-in"] .tm-pr-icon { color: #4caf50; }
         .tm-pr[data-state="off"] .tm-pr-icon  { color: var(--tmu-danger); }
-        /* badges */
-        .tm-pr-badge { font-size: 10px; font-weight: 800; line-height: 1; flex-shrink: 0; padding: 0 2px; }
-        .tm-pr-badge-yc { color: #f5c518; }
-        .tm-pr-badge-rc { color: var(--tmu-danger); }
-        .tm-pr-badge-inj { color: var(--tmu-danger); font-size: 11px; }
         /* match result overlays */
         .tm-pr-match-rating {
             flex-shrink: 0; min-width: 26px; text-align: right;
@@ -164,28 +160,11 @@ export const TmPlayerRow = {
 
         el.append(bar, no, posWrap, name);
 
-        // Badges: injury / card status
-        const ban = player.ban;
-        const injury = player.injury && player.injury !== '0' && player.injury !== 0 ? player.injury : null;
-        if (injury) {
-            const b = document.createElement('span');
-            b.className = 'tm-pr-badge tm-pr-badge-inj';
-            b.title = typeof injury === 'string' ? injury : 'Injured';
-            b.textContent = '✚';
-            el.appendChild(b);
-        } else if (ban && ban !== '0') {
-            const b = document.createElement('span');
-            if (ban === 'g') {
-                b.className = 'tm-pr-badge tm-pr-badge-yc';
-                b.title = 'Yellow card suspension';
-                b.textContent = '▬';
-            } else {
-                b.className = 'tm-pr-badge tm-pr-badge-rc';
-                const matches = ban.replace('r', '');
-                b.title = `Red card — ${matches} match ban`;
-                b.textContent = `■${matches}`;
-            }
-            el.appendChild(b);
+        const statusHtml = playerStatusIconsHtml(player);
+        if (statusHtml) {
+            const status = document.createElement('span');
+            status.innerHTML = statusHtml;
+            el.appendChild(status.firstElementChild || status);
         }
 
         // Stats: resolve rec/r5/routine from already-normalized player.positions[]

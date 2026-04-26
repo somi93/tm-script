@@ -48,7 +48,7 @@ export function mountTacticsSquadList(container, ctx, fieldApi, { compact = fals
 
     // ── Squad table ─────────────────────────────────────────────────────
 
-    const stateOf = p => (ctx.stateOf ?? (p => p._isBenchPlaceholder ? 'bench' : isFieldSlot(getPlayerSlot(p)) ? 'active' : 'off'))(p);
+    const stateOf = p => (ctx.stateOf ?? (p => p._isBenchPlaceholder ? 'bench' : isFieldSlot(getPlayerSlot(p)) ? 'active' : 'bench'))(p);
 
     const tblWrap = TmTable.table({
         items: sortedPlayers(),

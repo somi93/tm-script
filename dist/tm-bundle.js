@@ -33002,11 +33002,6 @@ order:initial
         /* states */
         .tm-pr[data-state="sub-in"] .tm-pr-icon { color: #4caf50; }
         .tm-pr[data-state="off"] .tm-pr-icon  { color: var(--tmu-danger); }
-        /* badges */
-        .tm-pr-badge { font-size: 10px; font-weight: 800; line-height: 1; flex-shrink: 0; padding: 0 2px; }
-        .tm-pr-badge-yc { color: #f5c518; }
-        .tm-pr-badge-rc { color: var(--tmu-danger); }
-        .tm-pr-badge-inj { color: var(--tmu-danger); font-size: 11px; }
         /* match result overlays */
         .tm-pr-match-rating {
             flex-shrink: 0; min-width: 26px; text-align: right;
@@ -33070,27 +33065,11 @@ order:initial
       name.className = "tm-pr-name";
       name.textContent = cleanName(player2);
       el2.append(bar, no, posWrap, name);
-      const ban = player2.ban;
-      const injury = player2.injury && player2.injury !== "0" && player2.injury !== 0 ? player2.injury : null;
-      if (injury) {
-        const b = document.createElement("span");
-        b.className = "tm-pr-badge tm-pr-badge-inj";
-        b.title = typeof injury === "string" ? injury : "Injured";
-        b.textContent = "\u271A";
-        el2.appendChild(b);
-      } else if (ban && ban !== "0") {
-        const b = document.createElement("span");
-        if (ban === "g") {
-          b.className = "tm-pr-badge tm-pr-badge-yc";
-          b.title = "Yellow card suspension";
-          b.textContent = "\u25AC";
-        } else {
-          b.className = "tm-pr-badge tm-pr-badge-rc";
-          const matches = ban.replace("r", "");
-          b.title = `Red card \u2014 ${matches} match ban`;
-          b.textContent = `\u25A0${matches}`;
-        }
-        el2.appendChild(b);
+      const statusHtml = playerStatusIconsHtml(player2);
+      if (statusHtml) {
+        const status = document.createElement("span");
+        status.innerHTML = statusHtml;
+        el2.appendChild(status.firstElementChild || status);
       }
       const posId = slot ? (_e = TmConst.POSITION_MAP[slot]) == null ? void 0 : _e.id : null;
       const posRating = posId != null ? (_f = player2.positions) == null ? void 0 : _f.find((p) => p.id === posId) : (_i = (_g = player2.positions) == null ? void 0 : _g.find((p) => p.preferred)) != null ? _i : (_h = player2.positions) == null ? void 0 : _h[0];
@@ -33217,7 +33196,7 @@ order:initial
     }
     const stateOf = (p) => {
       var _a2;
-      return ((_a2 = ctx.stateOf) != null ? _a2 : ((p2) => p2._isBenchPlaceholder ? "bench" : isFieldSlot(getPlayerSlot(p2)) ? "active" : "off"))(p);
+      return ((_a2 = ctx.stateOf) != null ? _a2 : ((p2) => p2._isBenchPlaceholder ? "bench" : isFieldSlot(getPlayerSlot(p2)) ? "active" : "bench"))(p);
     };
     const tblWrap = TmTable.table({
       items: sortedPlayers(),
@@ -49388,7 +49367,7 @@ order:initial
       target.appendChild(row);
     }
   }
-  async function applyTacticsAssignment2(ctx, slotMap) {
+  async function applyTacticsAssignment(ctx, slotMap) {
     const { players, players_by_id, isFieldSlot, isBenchSlot, getPlayerSlot, setPlayerSlot } = ctx;
     const prevFieldPids = new Set(
       players.filter((p) => isFieldSlot(getPlayerSlot(p))).map((p) => String(p.id))
@@ -49736,8 +49715,7 @@ order:initial
     var _a2;
     const { players = [] } = tactics;
     const players_by_id = Object.fromEntries(players.map((p) => [String(p.id), p]));
-    const { getAssignment, getActiveKeys } = lineupApi;
-    const applyAssignment = (slotMap) => applyTacticsAssignment(lineupApi.ctx, slotMap);
+    const { getAssignment, getActiveKeys, applyAssignment } = lineupApi;
     const pickBtn = TmButton.button({
       label: "Pick Best 11",
       color: "primary",
@@ -50495,7 +50473,7 @@ order:initial
         refresh: ctx.refreshAll,
         getAssignment: () => buildAssocForSave(tactics),
         getActiveKeys: ctx.getOccupiedFieldKeys,
-        applyAssignment: (slotMap) => applyTacticsAssignment2(ctx, slotMap),
+        applyAssignment: (slotMap) => applyTacticsAssignment(ctx, slotMap),
         mountSpecialRoles: (target) => mountTacticsSpecialRoles(target, ctx)
       };
     })();

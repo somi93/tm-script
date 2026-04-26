@@ -3,6 +3,7 @@ import { TmAlert } from '../shared/tm-alert.js';
 import { TmModal } from '../shared/tm-modal.js';
 import { TmConst } from '../../lib/tm-constants.js';
 import { mountTacticsSettings } from './tm-tactics-settings.js';
+import { applyTacticsAssignment } from './tm-tactics-ctx.js';
 import { CLUB_COUNTRY as clubCountry, isForeigner, isUnavailable } from '../../models/tactics.js';
 import { getTargetRanks } from './tm-tactics-field.js';
 
@@ -222,8 +223,7 @@ function fillSubstitutes(baseFBP, players_by_id) {
 export function mountTacticsPanel(container, tactics, opts, lineupApi) {
     const { players = [] } = tactics;
     const players_by_id = Object.fromEntries(players.map(p => [String(p.id), p]));
-    const { getAssignment, getActiveKeys } = lineupApi;
-    const applyAssignment = slotMap => applyTacticsAssignment(lineupApi.ctx, slotMap);
+    const { getAssignment, getActiveKeys, applyAssignment } = lineupApi;
 
     // Pick Best 11
     const pickBtn = TmButton.button({
