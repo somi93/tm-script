@@ -13,7 +13,6 @@
 
 import { TmMatchService } from '../services/match.js';
 import { normalizeRawMatch } from '../utils/normalize/match.js';
-import { _get } from '../services/engine.js';
 import { TmPlayerModel } from './player.js';
 
 export const TmMatchModel = {
@@ -128,7 +127,7 @@ export const TmMatchModel = {
      * @returns {Promise<object|null>}  normalized match with plays built
      */
     async fetchMatchWithProfiles(matchId) {
-        const raw = await _get(`/ajax/match.ajax.php?id=${matchId}`);
+        const raw = await TmMatchService.fetchMatchRaw(matchId);
         if (!raw) return null;
 
         const allRawPlayers = [

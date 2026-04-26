@@ -434,7 +434,7 @@ export function initNationalTeamsPage(main) {
 
     const formatAge = (player) => {
         const years = Number(player?.age) || 0;
-        const months = Number(player?.months ?? player?.month) || 0;
+        const months = Number(player?.month) || 0;
         return `${years}.${String(months).padStart(2, '0')}`;
     };
 

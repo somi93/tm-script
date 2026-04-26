@@ -67,6 +67,37 @@ export const normalizeScoutReport = (raw, rawScoutsMap = {}) => {
 
     return report;
 };
+export const normalizeScoutListReport = (raw, scouts = []) => {
+    const scoutsById = Object.fromEntries(scouts.map(scout => [String(scout.id), scout]));
+    const scout = scoutsById[String(raw.scoutid)] || null;
+    const playerHref = `/players/${raw.playerid}/${encodeURIComponent(String(raw.name || '').replace(/\s+/g, '-'))}/`;
+    return {
+        id: String(raw.id || raw.playerid || ''),
+        playerId: String(raw.playerid || ''),
+        name: String(raw.name || '').replace(/\s+/g, ' ').trim(),
+        playerHref,
+        displayTime: String(raw.display_time || raw.done || '').replace(/\s+/g, ' ').trim(),
+        done: String(raw.done || '').replace(/\s+/g, ' ').trim(),
+        doneTs: Date.parse(raw.done || '') || 0,
+        displayRec: raw.display_rec != null ? parseFloat(raw.display_rec) : (raw.rec != null ? parseFloat(raw.rec) : null),
+        potentialStars: (raw.potential != null ? parseFloat(raw.potential) : 0) / 2,
+        skill: raw.skill != null ? parseFloat(raw.skill) : null,
+        skillPotential: raw.skill_potential != null ? parseFloat(raw.skill_potential) : null,
+        age: parseInt(raw.age || '0', 10) || 0,
+        position: String(raw.favposition || '').replace(/\s+/g, ' ').trim(),
+        country: String(raw.nationalitet || '').replace(/\s+/g, ' ').trim(),
+        scoutId: String(raw.scoutid || ''),
+        scoutName: scout?.fullName || `Scout ${raw.scoutid || ''}`,
+        peakPhy: parseInt(raw.peak_phy || '0', 10) || 0,
+        peakTac: parseInt(raw.peak_tac || '0', 10) || 0,
+        peakTec: parseInt(raw.peak_tec || '0', 10) || 0,
+        charisma: parseInt(raw.charisma || '0', 10) || 0,
+        professionalism: parseInt(raw.professionalism || '0', 10) || 0,
+        aggression: parseInt(raw.aggression || '0', 10) || 0,
+        specialist: parseInt(raw.specialist || '0', 10) || 0,
+    };
+};
+
 export const normalizeBestEstimate = (reports) => {
     const regular = (reports || []).filter(r => r.scout?.id && r.scout.id !== '0');
     if (!regular.length) return null;

@@ -5,7 +5,11 @@ export const TmScoutsModel = {
         return TmScoutsService.fetchPlayerScouting(playerId);
     },
 
-    fetchReports() {
-        return TmScoutsService.fetchReports();
+    sendScout(playerId, scoutId) {
+        return TmScoutsService.sendScout(playerId, scoutId);
+    },
+
+    fetchReports(scouts = []) {
+        return TmScoutsService.fetchReports(scouts);
     },
 };

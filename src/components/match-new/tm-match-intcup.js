@@ -69,18 +69,21 @@ const injectStyles = () => {
 
 const esc = (v) => String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 
-/** Extract match IDs in section order from a section's li elements. */
+/** Extract match IDs with their round (node) index from a section's li elements.
+ * Groups are determined by which <ul class="match_list"> the match appeared in,
+ * which directly maps to tournament rounds (first leg, second leg, etc.).
+ */
 const parseSectionItems = (section) => {
-    const ids = [];
-    section.nodes.forEach(node => {
+    const items = [];
+    section.nodes.forEach((node, nodeIndex) => {
         Array.from(node.querySelectorAll('li')).forEach(li => {
             const a = li.querySelector('.match_result a[href*="/matches/"]');
             if (!a) return;
             const m = (a.getAttribute('href') || '').match(/\/matches\/(\d+)\//);
-            if (m) ids.push(m[1]);
+            if (m) items.push({ id: m[1], nodeIndex });
         });
     });
-    return ids;
+    return items;
 };
 
 /** Build tooltip content element from mData + minute cutoff. */
@@ -97,8 +100,7 @@ export const TmMatchIntCupNew = {
         const myHomeId  = String(match.home.club.id);
         const myAwayId  = String(match.away.club.id);
         const myMatchId = String(match.id || '') || window.location.pathname.match(/\/matches\/(\d+)/)?.[1] || '';
-        // venue.kickoff is midnight of the match day; match_time_of_day holds the actual start time.
-        // Parse "HH:MM" → seconds offset to add to the midnight timestamp.
+        // match.kickoff = midnight of match day (local time); kickoffTime = actual HH:MM.
         const parseTimeOfDay = (str) => { const [h, m] = (str || '').split(':').map(Number); return ((h || 0) * 3600 + (m || 0) * 60); };
         const myKickoff = match.kickoff ? match.kickoff + parseTimeOfDay(match.kickoffTime) : null;
 
@@ -111,8 +113,9 @@ export const TmMatchIntCupNew = {
         }
 
         // ── State ──────────────────────────────────────────────────────────────
+        const initialMin = initialReplayState?.currentMinute != null ? initialReplayState.currentMinute : Infinity;
         let dataReady = false;
-        let lastMin   = -1;
+        let lastMin   = initialMin;
         let isGroup   = false;
         // rowMap keyed by matchId
         // { matchId, mData: null|object, mDataResolved: bool, rowEl, statusEl, scoreEl }
@@ -135,15 +138,14 @@ export const TmMatchIntCupNew = {
             _tip.style.top  = top+'px';
         };
 
-        // ── Status computation — unified virtual time for all matches ──────────
-        // virtualNow = kickoff of our match + replay minutes elapsed
-        // All matches (including current) are evaluated against the same clock.
-        const toVirtualNow = (minCutoff) =>
-            !myKickoff ? null : myKickoff + (minCutoff < Infinity ? Math.floor(minCutoff) * 60 : 10 * 3600);
+        const toVirtualNow = (minCutoff) => {
+            if (!myKickoff) return null;
+            const min = Number.isFinite(minCutoff) ? Math.floor(minCutoff) : (match.duration?.total ?? 95);
+            return myKickoff + min * 60;
+        };
 
         const computeStatus = (mData, minCutoff) => {
-            const rawKo = mData.match_data?.venue?.kickoff;
-            const itemKickoff = rawKo ? rawKo + parseTimeOfDay(mData.match_data?.match_time_of_day) : null;
+            const itemKickoff = mData.kickoff ? mData.kickoff + parseTimeOfDay(mData.kickoffTime) : null;
             const virtualNow  = toVirtualNow(minCutoff);
 
             if (!itemKickoff || !virtualNow) {
@@ -152,11 +154,12 @@ export const TmMatchIntCupNew = {
             }
 
             const elapsed = virtualNow - itemKickoff;
-            if (elapsed < -60) {
-                const time = mData.match_data?.match_time_of_day || '';
+            if (elapsed < 0) {
+                const time = mData.kickoffTime || '';
                 return { statusText: time || '–', statusCls: '', homeGoals: null, awayGoals: null };
             }
-            if (elapsed > 95 * 60) {
+            const matchDuration = (mData.duration?.total ?? 95) * 60;
+            if (elapsed > matchDuration) {
                 const snap = snapshotFromMData(mData, Infinity);
                 return { statusText: 'FT', statusCls: 'ft', homeGoals: snap.homeGoals, awayGoals: snap.awayGoals };
             }
@@ -211,8 +214,8 @@ export const TmMatchIntCupNew = {
             for (const entry of Object.values(rowMap)) {
                 if (!entry.mDataResolved || !entry.mData) continue;
                 const mData  = entry.mData;
-                const homeId = String(mData.teams.home.id);
-                const awayId = String(mData.teams.away.id);
+                const homeId = String(mData.home.club.id);
+                const awayId = String(mData.away.club.id);
                 ensure(homeId, mData.home.club.name);
                 ensure(awayId, mData.away.club.name);
 
@@ -236,8 +239,8 @@ export const TmMatchIntCupNew = {
         // ── Wire click + tooltip for an inflated row ───────────────────────────
         const wireRow = (entry, row) => {
             const { matchId, mData } = entry;
-            const homeId  = String(mData.teams.home.id);
-            const awayId  = String(mData.teams.away.id);
+            const homeId  = String(mData.home.club.id);
+            const awayId  = String(mData.away.club.id);
             const isCur   = (homeId === myHomeId && awayId === myAwayId) ||
                             (homeId === myAwayId && awayId === myHomeId);
             const flipped = homeId === myAwayId;
@@ -245,7 +248,7 @@ export const TmMatchIntCupNew = {
             row.style.cursor = 'pointer';
             row.addEventListener('click', (e) => {
                 if (e.target.closest('a')) return;
-                window.location.href = `/match/${matchId}/`;
+                window.location.href = `/matches/${matchId}/`;
             });
 
             row.addEventListener('mouseenter', () => {
@@ -261,12 +264,11 @@ export const TmMatchIntCupNew = {
                     _tip.addEventListener('mouseleave', () => { _hideT = setTimeout(destroyTip, 200); });
 
                     const tipMin = (() => {
-                        const vn  = toVirtualNow(lastMin < 0 ? Infinity : lastMin);
-                        const rawIko = mData.match_data?.venue?.kickoff;
-                        const iko = rawIko ? rawIko + parseTimeOfDay(mData.match_data?.match_time_of_day) : null;
+                        const vn  = toVirtualNow(lastMin);
+                        const iko = mData.kickoff ? mData.kickoff + parseTimeOfDay(mData.kickoffTime) : null;
                         if (!vn || !iko) return Infinity;
                         const el  = vn - iko;
-                        if (el > 95 * 60) return Infinity;
+                        if (el > (mData.duration?.total ?? 95) * 60) return Infinity;
                         if (el < 0) return 0;
                         return Math.max(1, Math.floor(el / 60)) + 1;
                     })();
@@ -286,30 +288,28 @@ export const TmMatchIntCupNew = {
             isGroup = groupStage;
             el.innerHTML = TmUI.loading('Loading matches…');
 
-            Promise.all(matchIds.map(id =>
+            Promise.all(matchIds.map(({ id, nodeIndex }) =>
                 TmMatchModel.fetchMatch(id, { dbSync: false })
-                    .then(mData => { if (mData) rowMap[id] = { matchId: id, mData, mDataResolved: true, rowEl: null, statusEl: null, scoreEl: null }; })
+                    .then(mData => { if (mData) rowMap[id] = { matchId: id, mData, mDataResolved: true, rowEl: null, statusEl: null, scoreEl: null, nodeIndex }; })
                     .catch(() => {})
             )).then(() => {
-                // Group entries by kickoff date → Match Days
-                const byDate = {};
-                matchIds.forEach(id => {
+                // Group entries by HTML node index (= tournament round order: first leg, second leg, …)
+                const byRound = {};
+                matchIds.forEach(({ id, nodeIndex }) => {
                     const entry = rowMap[id];
                     if (!entry) return;
-                    const ko   = entry.mData.match_data?.venue?.kickoff;
-                    const date = ko ? new Date(ko * 1000).toISOString().slice(0, 10) : 'z_unknown';
-                    (byDate[date] = byDate[date] || []).push(entry);
+                    (byRound[nodeIndex] = byRound[nodeIndex] || []).push(entry);
                 });
-                const matchDays = Object.keys(byDate).sort().map((date, i) => ({
+                const matchDays = Object.keys(byRound).map(Number).sort((a, b) => a - b).map((nodeIndex, i) => ({
                     label:   `Match Day ${i + 1}`,
-                    entries: byDate[date].sort((a, b) =>
-                        (a.mData.match_data?.venue?.kickoff || 0) - (b.mData.match_data?.venue?.kickoff || 0)
+                    entries: byRound[nodeIndex].sort((a, b) =>
+                        (a.mData.kickoff || 0) - (b.mData.kickoff || 0)
                     ),
                 }));
 
                 const rowsHtml = (entries) => entries.map(({ matchId, mData }) => {
-                    const homeId = String(mData.teams.home.id);
-                    const awayId = String(mData.teams.away.id);
+                    const homeId = String(mData.home.club.id);
+                    const awayId = String(mData.away.club.id);
                     const isCur  = (homeId === myHomeId && awayId === myAwayId) || (homeId === myAwayId && awayId === myHomeId);
                     return TmFixtureMatchRow.render(
                         { homeId, awayId, homeName: mData.home.club.name, awayName: mData.away.club.name, matchId, scoreText: '' },
@@ -401,7 +401,6 @@ export const TmMatchIntCupNew = {
         };
 
         // ── Bootstrap ──────────────────────────────────────────────────────────
-        const initialMin = initialReplayState?.currentMinute != null ? initialReplayState.currentMinute : Infinity;
         el.innerHTML = TmUI.loading('Loading cup data…');
 
         TmInternationalCupModel.fetchOverviewDocument(tournamentId)

@@ -1,6 +1,7 @@
 import { TmUI } from '../shared/tm-ui.js';
 import { TmTable } from '../shared/tm-table.js';
 import { TmApi } from '../../services/index.js';
+import { TmPlayerModel } from '../../models/player.js';
 import { TmClubModel } from '../../models/club.js';
 import { TmLeagueModel } from '../../models/league.js';
 import { TmConst } from '../../lib/tm-constants.js';
@@ -856,18 +857,18 @@ function computeCandidateR5(player = {}) {
 
 function buildCandidateRecord(player, club, clubId = '', clubName = '') {
     return {
-        playerId: cleanText(player?.id || player?.player_id),
-        name: cleanText(player?.name || player?.player_name) || 'Unknown player',
+        playerId: cleanText(player?.id),
+        name: cleanText(player?.name) || 'Unknown player',
         country: resolvePlayerCountryCode(player),
         age: Number(player?.age) || 0,
-        months: Number(player?.months ?? player?.month) || 0,
-        asi: TmUtils.parseNum(player?.asi ?? player?.skill_index),
+        months: Number(player?.month) || 0,
+        asi: TmUtils.parseNum(player?.asi),
         r5: computeCandidateR5(player),
         position: Array.isArray(player?.positions) && player.positions.some(p => p.preferred)
             ? player.positions.filter(p => p.preferred).map(p => p.key).join(',')
-            : cleanText(player?.favposition || player?.fp),
+            : '',
         clubId: cleanText(clubId || player?.club_id || club?.id),
-        clubName: cleanText(clubName || player?.club_name || club?.club_name) || 'Unknown club',
+        clubName: cleanText(clubName || player?.club_name || club?.name) || 'Unknown club',
         clubCreated: lowerText(club?.created),
         sources: [],
         reasons: [],
@@ -1308,8 +1309,7 @@ function ensureDialog(state) {
 async function getTooltipCandidate(state, playerId) {
     if (!playerId) return null;
     if (!state.tooltipCache.has(playerId)) {
-        state.tooltipCache.set(playerId, TmApi.fetchTooltipRaw(playerId)
-            .then(data => data || null)
+        state.tooltipCache.set(playerId, TmPlayerModel.fetchTooltipCached(playerId)
             .catch(() => null));
     }
     return state.tooltipCache.get(playerId);
@@ -1488,11 +1488,11 @@ async function processTransferCandidates(state, transferCandidates) {
         const clubIdsToCheck = eligibleBatch
             .map(candidate => {
                 const tooltipData = tooltipMap.get(candidate.playerId) || null;
-                const player = tooltipData?.player;
+                const player = tooltipData;
                 const club = tooltipData?.club;
                 if (!player || !matchesTargetCountry(player, state.countryCode)) return '';
                 if (lowerText(club?.created) === 'inactive') return '';
-                return cleanText(club?.id || player?.club_id || club?.club_id);
+                return cleanText(club?.id || player?.club_id);
             })
             .filter(Boolean);
 
@@ -1505,7 +1505,7 @@ async function processTransferCandidates(state, transferCandidates) {
             if (candidate.playerCountryCode !== targetCountryCode) continue;
 
             const tooltipData = tooltipMap.get(candidate.playerId) || null;
-            const player = tooltipData?.player;
+            const player = tooltipData;
             const club = tooltipData?.club;
             if (!player) continue;
             if (!matchesTargetCountry(player, state.countryCode)) continue;
@@ -1604,11 +1604,11 @@ async function processFlaggedClubs(state) {
 
         const squadPlayersMissingCountry = squadPlayers.filter(squadPlayer => {
             const countryCode = resolvePlayerCountryCode(squadPlayer);
-            return !countryCode && cleanText(squadPlayer.id || squadPlayer.player_id);
+            return !countryCode && cleanText(squadPlayer.id);
         });
         const squadTooltipMap = await getTooltipCandidateBatch(
             state,
-            squadPlayersMissingCountry.map(squadPlayer => squadPlayer.id || squadPlayer.player_id),
+            squadPlayersMissingCountry.map(squadPlayer => squadPlayer.id),
             10,
         );
 
@@ -1616,15 +1616,15 @@ async function processFlaggedClubs(state) {
             let countryCode = resolvePlayerCountryCode(squadPlayer);
             let tooltipData = null;
             if (!countryCode) {
-                tooltipData = squadTooltipMap.get(cleanText(squadPlayer.id || squadPlayer.player_id)) || null;
-                countryCode = resolvePlayerCountryCode(tooltipData?.player);
+                tooltipData = squadTooltipMap.get(cleanText(squadPlayer.id)) || null;
+                countryCode = resolvePlayerCountryCode(tooltipData);
             }
             if (countryCode !== normalizeCountryCode(state.countryCode)) continue;
 
-            const player = tooltipData?.player || squadPlayer;
+            const player = tooltipData || squadPlayer;
             const club = tooltipData?.club || {
                 id: flaggedClub.clubId,
-                club_name: flaggedClub.clubName,
+                name: flaggedClub.clubName,
                 created: flaggedClub.statuses.includes('league-inactive') ? 'inactive' : '',
             };
 

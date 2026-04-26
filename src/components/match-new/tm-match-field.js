@@ -21,8 +21,8 @@ export const TmMatchField = {
         const col = document.createElement('div');
         col.className = 'mp-lu-tactics-col';
 
-        const { refresh } = mountTacticsFieldReadOnly(col, posPlayerMap, players);
+        const { refresh, showMatchRatingRef } = mountTacticsFieldReadOnly(col, posPlayerMap, players);
 
-        return { el: col, refresh };
+        return { el: col, refresh, showMatchRatingRef };
     },
 };

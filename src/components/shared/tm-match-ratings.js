@@ -33,7 +33,7 @@ const getPlayerDataFromSquad = async (playerId, squadPost, matchPos) => {
     if (!player) return { R5: 0 };
     const posData = player.positions?.find(pos => pos.position?.toLowerCase() === matchPos);
     const r5 = Number(posData?.r5 ?? player.r5 ?? 0);
-    return { R5: r5 };
+    return { R5: Number.isFinite(r5) ? r5 : 0 };
 };
 
 const computeTeamStats = async (playerIds, lineup, squadPost) => {

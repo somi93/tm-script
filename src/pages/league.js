@@ -63,18 +63,24 @@ export function initLeaguePage(main) {
 
     // ─── Per-player R5 resolution ─────────────────────────────────────────
     // squadData is the fetchSquad result: {id, name, squad: [normalizedPlayer]}.
-    // Players are already normalized by fetchRawPlayers (r5/rec/positions/ageMonths present).
-    // Tooltip fallback (via TmPlayerModel.fetchTooltipCached) for transferred players.
+    // players_get_select.ajax.php returns only minimal data (no ASI, no skills, no age),
+    // so we always need a tooltip fetch to get real R5/REC.
+    // The squad pre-fetch is still useful to avoid duplicate tooltip fetches for the same club.
     const getPlayerDataFromSquad = async (pid, squadData, matchPos) => {
-        let player = (squadData.squad || []).find(p => String(p.id) === String(pid));
+        // players_get_select only gives name/fp/no — no asi/skills → always need tooltip for ratings
+        let player = await TmPlayerModel.fetchTooltipCached(pid).catch(() => null);
+        // squad fallback: if tooltip fails (e.g. player deleted), try squad data
         if (!player) {
-            player = await TmPlayerModel.fetchTooltipCached(pid).catch(() => null);
+            player = (squadData.squad || []).find(p => String(p.id) === String(pid)) || null;
         }
         if (!player) return { Age: 0, R5: 0, REC: 0, isGK: false, skills: [], routine: 0 };
-        const posData = player.positions?.find(p => p.position?.toLowerCase() === matchPos);
-        const r5 = Number(posData?.r5 ?? player.r5 ?? 0);
-        const rec = Number(posData?.rec ?? player.rec ?? 0);
-        return { Age: player.ageMonths, R5: r5, REC: rec, isGK: player.isGK, skills: player.skills, routine: player.routine };
+        const posData = player.positions?.find(p => p.key?.toLowerCase() === matchPos);
+        const posR5  = posData ? Number(posData.r5)  : NaN;
+        const posRec = posData ? Number(posData.rec) : NaN;
+        const r5  = Number.isFinite(posR5)  ? posR5  : (Number.isFinite(Number(player.r5))  ? Number(player.r5)  : 0);
+        const rec = Number.isFinite(posRec) ? posRec : (Number.isFinite(Number(player.rec)) ? Number(player.rec) : 0);
+        const age = Number.isFinite(player.ageMonths) ? player.ageMonths : 0;
+        return { Age: age, R5: r5, REC: rec, isGK: player.isGK, skills: player.skills, routine: player.routine };
     };
 
     // ─── Team statistics (average R5 of 11 starters) ─────────────────────

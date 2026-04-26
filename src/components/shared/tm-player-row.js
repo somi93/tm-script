@@ -75,6 +75,15 @@ export function injectTmPlayerRowStyles() {
         .tm-pr-badge-yc { color: #f5c518; }
         .tm-pr-badge-rc { color: var(--tmu-danger); }
         .tm-pr-badge-inj { color: var(--tmu-danger); font-size: 11px; }
+        /* match result overlays */
+        .tm-pr-match-rating {
+            flex-shrink: 0; min-width: 26px; text-align: right;
+            font-size: 11px; font-weight: 800; font-variant-numeric: tabular-nums;
+        }
+        .tm-pr-mom {
+            flex-shrink: 0; font-size: 11px; color: #f5c518;
+            line-height: 1; padding: 0 1px;
+        }
     `;
     document.head.appendChild(s);
 }
@@ -114,7 +123,7 @@ export const TmPlayerRow = {
      *   @param {string}  [opts.state]   — 'active' | 'bench' | 'off' | 'sub-in'  (default: 'active')
      * @returns {HTMLDivElement}
      */
-    build(player, { posKey, state = 'active', compact = false } = {}) {
+    build(player, { posKey, state = 'active', compact = false, showMatchRating = false } = {}) {
         injectTmPlayerRowStyles();
 
         // Resolve the actual playing slot — explicit posKey or player.position (match ctx).
@@ -217,6 +226,26 @@ export const TmPlayerRow = {
                 stats.appendChild(rv);
             }
             el.appendChild(stats);
+        }
+
+        // Match result overlays (shown only at FT)
+        if (showMatchRating) {
+            const matchRating = player.rating ?? null;
+            const isMom = player.mom && player.mom !== 0;
+            if (matchRating != null) {
+                const rv = document.createElement('span');
+                rv.className = 'tm-pr-match-rating';
+                rv.style.color = TmUtils.getColor(matchRating, TmConst.R5_THRESHOLDS);
+                rv.textContent = matchRating.toFixed(1);
+                el.appendChild(rv);
+            }
+            if (isMom) {
+                const mv = document.createElement('span');
+                mv.className = 'tm-pr-mom';
+                mv.title = 'Man of the Match';
+                mv.textContent = '★';
+                el.appendChild(mv);
+            }
         }
 
         const icon = document.createElement('span');

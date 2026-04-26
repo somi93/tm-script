@@ -209,6 +209,10 @@ export const TmMatchService = {
         return result;
     },
 
+    fetchMatchRaw(matchId) {
+        return _get(`/ajax/match.ajax.php?id=${matchId}`);
+    },
+
     /**
      * Fetch and normalize a match.
      * Returns a canonical Match object (lib/match.js shape).

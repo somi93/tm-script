@@ -5823,8 +5823,8 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   var applyPlayerPositionRatings = (player2) => {
     player2.positions = player2.positions.map((position) => ({
       ...position,
-      r5: position.id != null ? TmLib.calculatePlayerR5(position, player2) : null,
-      rec: position.id != null ? TmLib.calculatePlayerREC(position, player2) : null
+      r5: position.id != null && player2.asi > 0 ? TmLib.calculatePlayerR5(position, player2) : null,
+      rec: position.id != null && player2.asi > 0 ? TmLib.calculatePlayerREC(position, player2) : null
     }));
     const preferredPositions = player2.positions.filter((position) => position.preferred);
     const positionsForRatings = preferredPositions.length ? preferredPositions : player2.positions;
@@ -5841,7 +5841,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     return player2;
   };
   var normalizeTooltipPlayer = (playerData) => {
-    var _a2;
+    var _a2, _b;
     const player2 = Player.create();
     const rawClub = (_a2 = playerData.club) != null ? _a2 : {};
     player2.club = normalizeClubFromTooltip(rawClub);
@@ -5859,6 +5859,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     player2.routine = Number(playerTooltip.routine);
     player2.wage = TmUtils.parseNum(playerTooltip.wage, null);
     player2.asi = TmUtils.parseNum(playerTooltip.skill_index, null);
+    player2.rec_sort = (_b = playerTooltip.rec_sort) != null ? _b : null;
     player2.no = playerTooltip.no;
     player2.retire = playerTooltip.isretirering;
     player2.isGK = playerTooltip.fp === "GK";
@@ -5916,6 +5917,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     return player2;
   };
   var normalizeSquadPlayer = (postPlayer) => {
+    var _a2;
     const player2 = Player.create();
     player2.id = Number(postPlayer.player_id || postPlayer.id);
     player2.club_id = Number(postPlayer.club_id);
@@ -5930,7 +5932,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     player2.country = postPlayer.country;
     player2.routine = TmUtils.parseNum(Number(postPlayer.rutine), 0);
     player2.wage = TmUtils.parseNum(postPlayer.wage, null);
-    player2.asi = postPlayer.asi;
+    player2.asi = (_a2 = postPlayer.asi) != null ? _a2 : null;
     player2.no = postPlayer.no;
     player2.retire = postPlayer.retire;
     player2.ban = postPlayer.ban;
@@ -10250,6 +10252,9 @@ order:initial
       }
       return result;
     },
+    fetchMatchRaw(matchId) {
+      return _get(`/ajax/match.ajax.php?id=${matchId}`);
+    },
     /**
      * Fetch and normalize a match.
      * Returns a canonical Match object (lib/match.js shape).
@@ -10514,7 +10519,7 @@ order:initial
      */
     async fetchMatchWithProfiles(matchId) {
       var _a2, _b;
-      const raw = await _get(`/ajax/match.ajax.php?id=${matchId}`);
+      const raw = await TmMatchService.fetchMatchRaw(matchId);
       if (!raw) return null;
       const allRawPlayers = [
         ...Object.values(((_a2 = raw.lineup) == null ? void 0 : _a2.home) || {}),
@@ -10620,9 +10625,30 @@ order:initial
     return finalScore;
   };
   var buildRichEvents = (matchData, homeId) => {
+    var _a2, _b, _c, _d;
     const report = matchData.report || {};
     const allMins = Object.keys(report).map(Number).sort((a, b) => a - b);
     const keyEvents = [];
+    const byPid = /* @__PURE__ */ new Map();
+    const homeArr = Array.isArray((_a2 = matchData.home) == null ? void 0 : _a2.lineup) ? matchData.home.lineup : Object.values(((_b = matchData.lineup) == null ? void 0 : _b.home) || {});
+    const awayArr = Array.isArray((_c = matchData.away) == null ? void 0 : _c.lineup) ? matchData.away.lineup : Object.values(((_d = matchData.lineup) == null ? void 0 : _d.away) || {});
+    const homeIds = /* @__PURE__ */ new Set();
+    homeArr.forEach((p) => {
+      var _a3, _b2;
+      const pid = String((_b2 = (_a3 = p.id) != null ? _a3 : p.player_id) != null ? _b2 : "");
+      byPid.set(pid, p);
+      homeIds.add(pid);
+    });
+    awayArr.forEach((p) => {
+      var _a3, _b2;
+      const pid = String((_b2 = (_a3 = p.id) != null ? _a3 : p.player_id) != null ? _b2 : "");
+      byPid.set(pid, p);
+    });
+    const pName = (pid) => {
+      const p = byPid.get(String(pid != null ? pid : ""));
+      return p ? p.lastname || p.nameLast || p.name || "?" : "?";
+    };
+    const pIsHome = (pid) => homeIds.has(String(pid != null ? pid : ""));
     allMins.forEach((min) => {
       const events = report[min];
       if (!Array.isArray(events)) return;
@@ -10632,32 +10658,23 @@ order:initial
         const clubId2 = String(event.club || "");
         const isHome = clubId2 === homeId;
         params.forEach((param) => {
-          var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s2, _t, _u, _v, _w;
           if (param.goal) {
-            const scorer = ((_b = (_a2 = matchData.lineup) == null ? void 0 : _a2.home) == null ? void 0 : _b[param.goal.player]) || ((_d = (_c = matchData.lineup) == null ? void 0 : _c.away) == null ? void 0 : _d[param.goal.player]);
-            const assistPlayer = ((_f = (_e = matchData.lineup) == null ? void 0 : _e.home) == null ? void 0 : _f[param.goal.assist]) || ((_h = (_g = matchData.lineup) == null ? void 0 : _g.away) == null ? void 0 : _h[param.goal.assist]);
             keyEvents.push({
               min,
               type: "goal",
               isHome,
-              name: (scorer == null ? void 0 : scorer.nameLast) || (scorer == null ? void 0 : scorer.name) || "?",
-              assist: (assistPlayer == null ? void 0 : assistPlayer.nameLast) || (assistPlayer == null ? void 0 : assistPlayer.name) || ""
+              name: pName(param.goal.player),
+              assist: param.goal.assist ? pName(param.goal.assist) === "?" ? "" : pName(param.goal.assist) : ""
             });
           }
           if (param.yellow) {
-            const player2 = ((_j = (_i = matchData.lineup) == null ? void 0 : _i.home) == null ? void 0 : _j[param.yellow]) || ((_l = (_k = matchData.lineup) == null ? void 0 : _k.away) == null ? void 0 : _l[param.yellow]);
-            const cardIsHome = param.yellow in (((_m = matchData.lineup) == null ? void 0 : _m.home) || {});
-            keyEvents.push({ min, type: "yellow", isHome: cardIsHome, name: (player2 == null ? void 0 : player2.nameLast) || (player2 == null ? void 0 : player2.name) || "?" });
+            keyEvents.push({ min, type: "yellow", isHome: pIsHome(param.yellow), name: pName(param.yellow) });
           }
           if (param.yellow_red) {
-            const player2 = ((_o = (_n = matchData.lineup) == null ? void 0 : _n.home) == null ? void 0 : _o[param.yellow_red]) || ((_q = (_p = matchData.lineup) == null ? void 0 : _p.away) == null ? void 0 : _q[param.yellow_red]);
-            const cardIsHome = param.yellow_red in (((_r = matchData.lineup) == null ? void 0 : _r.home) || {});
-            keyEvents.push({ min, type: "red", isHome: cardIsHome, name: (player2 == null ? void 0 : player2.nameLast) || (player2 == null ? void 0 : player2.name) || "?" });
+            keyEvents.push({ min, type: "red", isHome: pIsHome(param.yellow_red), name: pName(param.yellow_red) });
           }
           if (param.red) {
-            const player2 = ((_t = (_s2 = matchData.lineup) == null ? void 0 : _s2.home) == null ? void 0 : _t[param.red]) || ((_v = (_u = matchData.lineup) == null ? void 0 : _u.away) == null ? void 0 : _v[param.red]);
-            const cardIsHome = param.red in (((_w = matchData.lineup) == null ? void 0 : _w.home) || {});
-            keyEvents.push({ min, type: "red", isHome: cardIsHome, name: (player2 == null ? void 0 : player2.nameLast) || (player2 == null ? void 0 : player2.name) || "?" });
+            keyEvents.push({ min, type: "red", isHome: pIsHome(param.red), name: pName(param.red) });
           }
         });
       });
@@ -10705,15 +10722,16 @@ order:initial
       return html2;
     },
     buildRichTooltip(matchData) {
-      var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j;
+      var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m;
       const md = matchData.match_data || {};
-      const club = matchData.club || {};
-      const homeName = ((_a2 = club.home) == null ? void 0 : _a2.club_name) || "";
-      const awayName = ((_b = club.away) == null ? void 0 : _b.club_name) || "";
-      const homeId = String(((_c = club.home) == null ? void 0 : _c.id) || "");
-      const awayId = String(((_d = club.away) == null ? void 0 : _d.id) || "");
-      const homeLogo = ((_e = club.home) == null ? void 0 : _e.logo) || `/pics/club_logos/${homeId}_140.png`;
-      const awayLogo = ((_f = club.away) == null ? void 0 : _f.logo) || `/pics/club_logos/${awayId}_140.png`;
+      const homeClub = ((_a2 = matchData.home) == null ? void 0 : _a2.club) || ((_b = matchData.club) == null ? void 0 : _b.home) || {};
+      const awayClub = ((_c = matchData.away) == null ? void 0 : _c.club) || ((_d = matchData.club) == null ? void 0 : _d.away) || {};
+      const homeName = homeClub.name || homeClub.club_name || "";
+      const awayName = awayClub.name || awayClub.club_name || "";
+      const homeId = String(homeClub.id || "");
+      const awayId = String(awayClub.id || "");
+      const homeLogo = homeClub.logo || (homeId ? `/pics/club_logos/${homeId}_140.png` : "");
+      const awayLogo = awayClub.logo || (awayId ? `/pics/club_logos/${awayId}_140.png` : "");
       let html2 = buildHeader({
         homeName,
         awayName,
@@ -10721,22 +10739,27 @@ order:initial
         awayLogo,
         score: buildFinalScore(matchData)
       });
-      const kickoff = ((_g = md.venue) == null ? void 0 : _g.kickoff_readable) || "";
+      const venueName = ((_e = matchData.venue) == null ? void 0 : _e.name) || ((_f = md.venue) == null ? void 0 : _f.name) || "";
+      const kickoffReadable = ((_g = md.venue) == null ? void 0 : _g.kickoff_readable) || (matchData.date ? `${matchData.date} ${matchData.kickoffTime || ""}` : "");
+      const attendance = (_h = matchData.attendance) != null ? _h : md.attendance ? Number(md.attendance) : null;
       html2 += buildMeta([
-        kickoff ? `\u{1F4C5} ${new Date(kickoff.replace(" ", "T")).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}` : "",
-        ((_h = md.venue) == null ? void 0 : _h.name) ? `\u{1F3DF} ${md.venue.name}` : "",
-        md.attendance ? `\u{1F465} ${Number(md.attendance).toLocaleString()}` : ""
+        kickoffReadable ? `\u{1F4C5} ${new Date(kickoffReadable.replace(" ", "T")).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}` : "",
+        venueName ? `\u{1F3DF} ${venueName}` : "",
+        attendance ? `\u{1F465} ${Number(attendance).toLocaleString()}` : ""
       ]);
       const events = buildRichEvents(matchData, homeId);
       html2 += TmMatchUtils.renderRichEvents(events.goals, events.cards);
-      const possession = md.possession;
+      const possession = (_i = matchData.possession) != null ? _i : md.possession;
       const stats = md.statistics || {};
       if (possession || stats.home_shots || stats.away_shots || stats.home_on_target || stats.away_on_target) {
         html2 += TmUI.matchTooltipStats({ possession, statistics: stats, cls: "rnd-h2h-tooltip-stats" });
       }
-      const allPlayers2 = [...Object.values(((_i = matchData.lineup) == null ? void 0 : _i.home) || {}), ...Object.values(((_j = matchData.lineup) == null ? void 0 : _j.away) || {})];
+      const homeArr = Array.isArray((_j = matchData.home) == null ? void 0 : _j.lineup) ? matchData.home.lineup : Object.values(((_k = matchData.lineup) == null ? void 0 : _k.home) || {});
+      const awayArr = Array.isArray((_l = matchData.away) == null ? void 0 : _l.lineup) ? matchData.away.lineup : Object.values(((_m = matchData.lineup) == null ? void 0 : _m.away) || {});
+      const allPlayers2 = [...homeArr, ...awayArr];
       const mom = allPlayers2.find((player2) => player2.mom === 1 || player2.mom === "1");
-      html2 += buildMom("Man of the Match", (mom == null ? void 0 : mom.nameLast) || (mom == null ? void 0 : mom.name) || "", mom ? parseFloat(mom.rating).toFixed(1) : null);
+      const momName = mom ? mom.lastname || mom.nameLast || mom.name || "" : "";
+      html2 += buildMom("Man of the Match", momName, (mom == null ? void 0 : mom.rating) != null ? parseFloat(mom.rating).toFixed(1) : null);
       return html2;
     }
   };
@@ -11019,7 +11042,7 @@ order:initial
       return ((_a3 = pos.position) == null ? void 0 : _a3.toLowerCase()) === matchPos;
     });
     const r5 = Number((_d = (_c = posData == null ? void 0 : posData.r5) != null ? _c : player2.r5) != null ? _d : 0);
-    return { R5: r5 };
+    return { R5: Number.isFinite(r5) ? r5 : 0 };
   };
   var computeTeamStats = async (playerIds, lineup, squadPost) => {
     const starters = playerIds.filter((id) => {
@@ -15733,6 +15756,36 @@ order:initial
     report.personality[2] = { key: "aggression", label: "Aggression", reliability: psyRel, value: raw.aggression != null ? parseInt(raw.aggression, 10) : null };
     return report;
   };
+  var normalizeScoutListReport = (raw, scouts = []) => {
+    const scoutsById = Object.fromEntries(scouts.map((scout2) => [String(scout2.id), scout2]));
+    const scout = scoutsById[String(raw.scoutid)] || null;
+    const playerHref = `/players/${raw.playerid}/${encodeURIComponent(String(raw.name || "").replace(/\s+/g, "-"))}/`;
+    return {
+      id: String(raw.id || raw.playerid || ""),
+      playerId: String(raw.playerid || ""),
+      name: String(raw.name || "").replace(/\s+/g, " ").trim(),
+      playerHref,
+      displayTime: String(raw.display_time || raw.done || "").replace(/\s+/g, " ").trim(),
+      done: String(raw.done || "").replace(/\s+/g, " ").trim(),
+      doneTs: Date.parse(raw.done || "") || 0,
+      displayRec: raw.display_rec != null ? parseFloat(raw.display_rec) : raw.rec != null ? parseFloat(raw.rec) : null,
+      potentialStars: (raw.potential != null ? parseFloat(raw.potential) : 0) / 2,
+      skill: raw.skill != null ? parseFloat(raw.skill) : null,
+      skillPotential: raw.skill_potential != null ? parseFloat(raw.skill_potential) : null,
+      age: parseInt(raw.age || "0", 10) || 0,
+      position: String(raw.favposition || "").replace(/\s+/g, " ").trim(),
+      country: String(raw.nationalitet || "").replace(/\s+/g, " ").trim(),
+      scoutId: String(raw.scoutid || ""),
+      scoutName: (scout == null ? void 0 : scout.fullName) || `Scout ${raw.scoutid || ""}`,
+      peakPhy: parseInt(raw.peak_phy || "0", 10) || 0,
+      peakTac: parseInt(raw.peak_tac || "0", 10) || 0,
+      peakTec: parseInt(raw.peak_tec || "0", 10) || 0,
+      charisma: parseInt(raw.charisma || "0", 10) || 0,
+      professionalism: parseInt(raw.professionalism || "0", 10) || 0,
+      aggression: parseInt(raw.aggression || "0", 10) || 0,
+      specialist: parseInt(raw.specialist || "0", 10) || 0
+    };
+  };
   var normalizeBestEstimate = (reports) => {
     var _a2, _b, _c;
     const regular = (reports || []).filter((r) => {
@@ -15823,8 +15876,28 @@ order:initial
       const bestEstimate = normalizeBestEstimate(reports);
       return { reports, scouts, interested, bestEstimate };
     },
-    fetchReports() {
-      return _post("/ajax/scouts_get_reports.ajax.php", {});
+    async sendScout(playerId, scoutId) {
+      var _a2;
+      const data = await _post("/ajax/players_get_info.ajax.php", {
+        player_id: playerId,
+        type: "scout",
+        show_non_pro_graphs: true,
+        scout_id: scoutId
+      });
+      if (!data) return null;
+      const rawScouts = (_a2 = data.scouts) != null ? _a2 : {};
+      const scouts = Object.fromEntries(
+        Object.entries(rawScouts).map(([id, raw]) => [id, normalizeScout(raw)])
+      );
+      const reports = Array.isArray(data.reports) ? data.reports.map((raw) => normalizeScoutReport(raw, rawScouts)) : [];
+      const interested = Array.isArray(data.interested) ? data.interested.map((club) => normalizeClubFromScoutReport(club)) : [];
+      const bestEstimate = normalizeBestEstimate(reports);
+      return { reports, scouts, interested, bestEstimate };
+    },
+    async fetchReports(scouts = []) {
+      const data = await _post("/ajax/scouts_get_reports.ajax.php", {});
+      if (!data || typeof data !== "object") return [];
+      return Object.values(data).map((raw) => normalizeScoutListReport(raw, scouts)).sort((a, b) => b.doneTs - a.doneTs || parseInt(b.id, 10) - parseInt(a.id, 10));
     }
   };
 
@@ -15833,8 +15906,11 @@ order:initial
     fetchPlayerScouting(playerId) {
       return TmScoutsService.fetchPlayerScouting(playerId);
     },
-    fetchReports() {
-      return TmScoutsService.fetchReports();
+    sendScout(playerId, scoutId) {
+      return TmScoutsService.sendScout(playerId, scoutId);
+    },
+    fetchReports(scouts = []) {
+      return TmScoutsService.fetchReports(scouts);
     }
   };
 
@@ -15843,16 +15919,11 @@ order:initial
   var mainColumn2 = null;
   var cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml15 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  var parseNumber = (value) => {
-    const num = parseFloat(String(value != null ? value : "").replace(/[^\d.-]/g, ""));
-    return Number.isFinite(num) ? num : 0;
-  };
   var parseCellNumber = (cell) => {
     if (!cell) return 0;
     const img = cell.querySelector("img[alt], img[title]");
     return parseInt((img == null ? void 0 : img.getAttribute("alt")) || (img == null ? void 0 : img.getAttribute("title")) || cleanText9(cell.textContent), 10) || 0;
   };
-  var formatPosition = (value) => cleanText9(String(value || "")).split(",").filter(Boolean).map((part) => part.trim().toUpperCase()).join(", ") || "-";
   var parseMenu6 = (sourceRoot3) => Array.from(sourceRoot3.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
     if (node.tagName === "HR") return [{ type: "separator" }];
     if (node.tagName !== "A") return [];
@@ -15927,39 +15998,6 @@ order:initial
       specialist: 0
     };
   }).filter(Boolean);
-  var normalizeReports = (rawReports, scouts) => {
-    const scoutsById = Object.fromEntries(scouts.map((scout) => [String(scout.id), scout]));
-    return Object.values(rawReports || {}).map((report) => {
-      var _a2;
-      const scout = scoutsById[String(report.scoutid)] || null;
-      const playerHref = `/players/${report.playerid}/${encodeURIComponent(String(report.name || "").replace(/\s+/g, "-"))}/`;
-      return {
-        id: String(report.id || report.playerid || ""),
-        playerId: String(report.playerid || ""),
-        name: cleanText9(report.name || ""),
-        playerHref,
-        displayTime: cleanText9(report.display_time || report.done || ""),
-        done: cleanText9(report.done || ""),
-        doneTs: Date.parse(report.done || "") || 0,
-        displayRec: parseNumber((_a2 = report.display_rec) != null ? _a2 : report.rec),
-        potentialStars: (parseNumber(report.potential) || 0) / 2,
-        skill: parseNumber(report.skill),
-        skillPotential: parseNumber(report.skill_potential),
-        age: parseInt(report.age || "0", 10) || 0,
-        position: formatPosition(report.favposition),
-        country: cleanText9(report.nationalitet || ""),
-        scoutId: String(report.scoutid || ""),
-        scoutName: (scout == null ? void 0 : scout.fullName) || `Scout ${report.scoutid || ""}`,
-        peakPhy: parseInt(report.peak_phy || "0", 10) || 0,
-        peakTac: parseInt(report.peak_tac || "0", 10) || 0,
-        peakTec: parseInt(report.peak_tec || "0", 10) || 0,
-        charisma: parseInt(report.charisma || "0", 10) || 0,
-        professionalism: parseInt(report.professionalism || "0", 10) || 0,
-        aggression: parseInt(report.aggression || "0", 10) || 0,
-        specialist: parseInt(report.specialist || "0", 10) || 0
-      };
-    }).sort((left, right) => right.doneTs - left.doneTs || parseInt(right.id, 10) - parseInt(left.id, 10));
-  };
   var buildSummary = (scouts, reports) => {
     const scoutCount = scouts.length;
     const reportCount = reports.length;
@@ -16273,8 +16311,8 @@ order:initial
   var boot = async (main2, sourceRoot3) => {
     injectStyles23();
     const scouts = parseScoutsFromDom(sourceRoot3);
-    const response = await TmScoutsModel.fetchReports();
-    const reports = response && Object.keys(response).length ? normalizeReports(response, scouts) : parseFallbackReports(sourceRoot3);
+    const response = await TmScoutsModel.fetchReports(scouts);
+    const reports = response && response.length ? response : parseFallbackReports(sourceRoot3);
     renderPage2(main2, sourceRoot3, scouts, reports);
     const enrichedReports = await enrichReports(reports);
     renderPage2(main2, sourceRoot3, scouts, enrichedReports);
@@ -28327,18 +28365,11 @@ order:initial
     if (!homeStarters.length || !awayStarters.length) {
       console.warn(`[League] match=${matchId} lineup problem \u2014 home=${homeLineupArr.length} starters=${homeStarters.length}, away=${awayLineupArr.length} starters=${awayStarters.length}`);
     }
-    Promise.all([s6.fetchSquad(homeId, data.home.club.name), s6.fetchSquad(awayId, data.away.club.name)]).then(([homeSquad, awaySquad]) => {
-      return Promise.all([
-        s6.computeTeamStats(Object.keys(homeLineupMap), homeLineupMap, homeSquad),
-        s6.computeTeamStats(Object.keys(awayLineupMap), awayLineupMap, awaySquad)
-      ]).then(([homeResult, awayResult]) => ({ homeResult, awayResult, homeSquad, awaySquad }));
-    }).then(({ homeResult, awayResult, homeSquad, awaySquad }) => {
-      if (homeResult.totals.R5 === 0) {
-        console.log(homeResult, homeSquad);
-      }
-      if (awayResult.totals.R5 === 0) {
-        console.log(awayResult, awaySquad);
-      }
+    const emptySquad = { squad: [] };
+    Promise.all([
+      s6.computeTeamStats(Object.keys(homeLineupMap), homeLineupMap, emptySquad),
+      s6.computeTeamStats(Object.keys(awayLineupMap), awayLineupMap, emptySquad)
+    ]).then(([homeResult, awayResult]) => {
       if (!s6.clubDatas.has(homeId)) s6.clubDatas.set(homeId, []);
       if (!s6.clubDatas.has(awayId)) s6.clubDatas.set(awayId, []);
       s6.clubDatas.get(homeId).push(homeResult.totals);
@@ -28367,9 +28398,6 @@ order:initial
       }));
       const homeR5 = Number((homeResult.totals.R5 / 11).toFixed(2));
       const awayR5 = Number((awayResult.totals.R5 / 11).toFixed(2));
-      if (!homeR5) {
-        console.warn(`[League] Home team ${data.home.club.name} has R5=0 in match ${matchId}`);
-      }
       roundMatchCache.set(String(matchId), { homeR5, awayR5, data });
       fillRatingCells(String(matchId), homeR5, awayR5);
       s6.totalProcessed += 2;
@@ -28399,22 +28427,14 @@ order:initial
       const dates = Object.keys(byDate).sort((a, b) => new Date(b) - new Date(a)).slice(0, s6.numLastRounds);
       const selectedMatches = dates.flatMap((d) => byDate[d]);
       const matchIds = selectedMatches.map((m) => String(m.id));
-      const clubsToFetch = /* @__PURE__ */ new Map();
-      selectedMatches.forEach((m) => {
-        if (m.hometeam) clubsToFetch.set(String(m.hometeam), m.hometeam_name || "");
-        if (m.awayteam) clubsToFetch.set(String(m.awayteam), m.awayteam_name || "");
-      });
-      s6.updateProgress(`Fetching ${clubsToFetch.size} squads...`);
-      Promise.all([...clubsToFetch.entries()].map(([id, name]) => s6.fetchSquad(id, name))).then(() => {
-        s6.totalExpected = matchIds.length * 2;
-        s6.updateProgress(`Loading ${matchIds.length} matches (${dates.length} rounds)...`);
-        matchIds.forEach((id) => {
-          TmMatchModel.fetchMatchCached(id).then((data) => {
-            if (data) processMatchData(id, data);
-            else s6.totalProcessed += 2;
-          }).catch(() => {
-            s6.totalProcessed += 2;
-          });
+      s6.totalExpected = matchIds.length * 2;
+      s6.updateProgress(`Loading ${matchIds.length} matches (${dates.length} rounds)...`);
+      matchIds.forEach((id) => {
+        TmMatchModel.fetchMatchCached(id).then((data) => {
+          if (data) processMatchData(id, data);
+          else s6.totalProcessed += 2;
+        }).catch(() => {
+          s6.totalProcessed += 2;
         });
       });
       if (s6.analysisInterval) clearInterval(s6.analysisInterval);
@@ -29563,19 +29583,22 @@ order:initial
       return squadCache2.get(clubId2);
     };
     const getPlayerDataFromSquad2 = async (pid, squadData, matchPos) => {
-      var _a2, _b, _c, _d, _e;
-      let player2 = (squadData.squad || []).find((p) => String(p.id) === String(pid));
+      var _a2;
+      let player2 = await TmPlayerModel.fetchTooltipCached(pid).catch(() => null);
       if (!player2) {
-        player2 = await TmPlayerModel.fetchTooltipCached(pid).catch(() => null);
+        player2 = (squadData.squad || []).find((p) => String(p.id) === String(pid)) || null;
       }
       if (!player2) return { Age: 0, R5: 0, REC: 0, isGK: false, skills: [], routine: 0 };
       const posData = (_a2 = player2.positions) == null ? void 0 : _a2.find((p) => {
         var _a3;
-        return ((_a3 = p.position) == null ? void 0 : _a3.toLowerCase()) === matchPos;
+        return ((_a3 = p.key) == null ? void 0 : _a3.toLowerCase()) === matchPos;
       });
-      const r5 = Number((_c = (_b = posData == null ? void 0 : posData.r5) != null ? _b : player2.r5) != null ? _c : 0);
-      const rec = Number((_e = (_d = posData == null ? void 0 : posData.rec) != null ? _d : player2.rec) != null ? _e : 0);
-      return { Age: player2.ageMonths, R5: r5, REC: rec, isGK: player2.isGK, skills: player2.skills, routine: player2.routine };
+      const posR5 = posData ? Number(posData.r5) : NaN;
+      const posRec = posData ? Number(posData.rec) : NaN;
+      const r5 = Number.isFinite(posR5) ? posR5 : Number.isFinite(Number(player2.r5)) ? Number(player2.r5) : 0;
+      const rec = Number.isFinite(posRec) ? posRec : Number.isFinite(Number(player2.rec)) ? Number(player2.rec) : 0;
+      const age = Number.isFinite(player2.ageMonths) ? player2.ageMonths : 0;
+      return { Age: age, R5: r5, REC: rec, isGK: player2.isGK, skills: player2.skills, routine: player2.routine };
     };
     const computeTeamStats2 = async (playerIds, lineup, squadData) => {
       const starters = playerIds.filter((id) => !lineup[id].position.includes("sub"));
@@ -30487,7 +30510,7 @@ order:initial
     const events = [];
     const allPlayers2 = [...match.home.lineup || [], ...match.away.lineup || []];
     const nameOf = (pid) => {
-      const p = allPlayers2.find((pl) => String(pl.id || pl.player_id) === pid);
+      const p = allPlayers2.find((pl) => String(pl.id) === pid);
       return (p == null ? void 0 : p.nameLast) || (p == null ? void 0 : p.name) || pid;
     };
     const minuteKeys = Object.keys(match.plays).map(Number).sort((a, b) => a - b);
@@ -32071,6 +32094,15 @@ order:initial
             vertical-align: middle;
             flex-shrink: 0;
         }
+        .tmtc-slot-mom {
+            display: inline-block;
+            margin-left: 3px;
+            color: #f5c518;
+            font-size: 10px;
+            line-height: 1;
+            vertical-align: middle;
+            flex-shrink: 0;
+        }
         .tmtc-slot-pos {
             font-key: var(--tmu-font-2xs);
         }
@@ -32604,7 +32636,8 @@ order:initial
       getOccupiedFieldKeys,
       drag,
       save,
-      readOnly = false
+      readOnly = false,
+      showMatchRatingRef = null
     } = ctx;
     let hoverTimer = null;
     container.addEventListener("mouseover", (event) => {
@@ -32747,19 +32780,22 @@ order:initial
         } else {
           slotEl.dataset.playerId = String(player2.id);
         }
-        const slotRating = ((v) => v != null ? TmUtils.formatR5(v, "\u2014") : "\u2014")((_a2 = getPositionRating(player2, posKey)) == null ? void 0 : _a2.r5);
-        const slotRec = (_c = (_b = getPositionRating(player2, posKey)) == null ? void 0 : _b.rec) != null ? _c : null;
-        const slotRoutine = player2.routine > 0 ? Number(player2.routine).toFixed(1) : "\u2014";
-        const moodPenalty = TmPosition.moodPenalty(player2, posKey);
+        const showMR = (showMatchRatingRef == null ? void 0 : showMatchRatingRef.value) && player2.rating != null;
+        const slotNoText = showMR ? player2.rating.toFixed(1) : ((v) => v != null ? TmUtils.formatR5(v, "\u2014") : "\u2014")((_a2 = getPositionRating(player2, posKey)) == null ? void 0 : _a2.r5);
+        const slotNoColor = showMR ? gc(player2.rating, TmConst.R5_THRESHOLDS) : null;
+        const slotRec = showMR ? null : (_c = (_b = getPositionRating(player2, posKey)) == null ? void 0 : _b.rec) != null ? _c : null;
+        const slotRoutine = showMR || player2.routine == null || player2.routine <= 0 ? null : Number(player2.routine).toFixed(1);
+        const moodPenalty = showMR ? 0 : TmPosition.moodPenalty(player2, posKey);
+        const momBadge = showMR && player2.mom ? '<span class="tmtc-slot-mom" title="Man of the Match">\u2605</span>' : "";
         slotEl.innerHTML = `
-                <span class="tmtc-slot-no">${escHtml2(slotRating)}</span>
-                <span class="tmtc-slot-name">${escHtml2(player2.lastname || player2.name || "")}${player2.captain ? '<span class="tmtc-capt-badge">C</span>' : ""}${playerStatusIconsHtml(player2)}</span>
+                <span class="tmtc-slot-no"${slotNoColor ? ` style="color:${slotNoColor}"` : ""}>${escHtml2(slotNoText)}</span>
+                <span class="tmtc-slot-name">${escHtml2(player2.lastname || player2.name || "")}${player2.captain ? '<span class="tmtc-capt-badge">C</span>' : ""}${playerStatusIconsHtml(player2)}${momBadge}</span>
                 ${TmPosition.chip([posKey || ""])}
                 <span class="tmtc-slot-meta">
-                    <span class="tmtc-slot-rec">${TmStars.recommendation(slotRec, "tmtc-rec-stars tmtc-rec-stars-sm") || '<span class="tmtc-slot-rec-empty">\u2014</span>'}</span>
+                    <span class="tmtc-slot-rec">${!showMR && slotRec != null ? TmStars.recommendation(slotRec, "tmtc-rec-stars tmtc-rec-stars-sm") || '<span class="tmtc-slot-rec-empty">\u2014</span>' : '<span class="tmtc-slot-rec-empty">\u2014</span>'}</span>
                     ${moodPenalty > 0 ? `<span class="tmtc-slot-mood tmtc-slot-mood-${moodPenalty}" title="Out of natural position">\u2639</span>` : ""}
                 </span>
-                <span class="tmtc-slot-rtn" style="color:${slotRoutine !== "\u2014" ? gc(Number(slotRoutine), RTN_THRESHOLDS2) : "var(--tmu-text-dim)"}">${slotRoutine}</span>
+                ${slotRoutine != null ? `<span class="tmtc-slot-rtn" style="color:${gc(Number(slotRoutine), RTN_THRESHOLDS2)}">${slotRoutine}</span>` : '<span class="tmtc-slot-rtn"></span>'}
             `;
       } else {
         slotEl.removeAttribute("draggable");
@@ -32859,15 +32895,17 @@ order:initial
       normalizeAll
     };
   }
-  function mountTacticsFieldReadOnly(container, posPlayerMap, players = []) {
+  function mountTacticsFieldReadOnly(container, posPlayerMap, players = [], opts = {}) {
+    var _a2;
     const players_by_id = Object.fromEntries(players.map((p) => [String(p.id), p]));
     const { POSITION_MAP: POSITION_MAP2 } = TmConst;
-    return mountTacticsField(container, {
+    const showMatchRatingRef = (_a2 = opts.showMatchRatingRef) != null ? _a2 : { value: false };
+    const result = mountTacticsField(container, {
       readOnly: true,
       players_by_id,
       getPlayerAtSlot: (posKey) => {
-        var _a2;
-        return (_a2 = posPlayerMap[posKey]) != null ? _a2 : null;
+        var _a3;
+        return (_a3 = posPlayerMap[posKey]) != null ? _a3 : null;
       },
       getPlayerSlot: () => null,
       setPlayerSlot: () => {
@@ -32881,8 +32919,10 @@ order:initial
       save: () => {
       },
       refreshAll: () => {
-      }
+      },
+      showMatchRatingRef
     });
+    return { ...result, showMatchRatingRef };
   }
 
   // src/components/match-new/tm-match-field.js
@@ -32896,8 +32936,8 @@ order:initial
       injectTacticsStyles();
       const col = document.createElement("div");
       col.className = "mp-lu-tactics-col";
-      const { refresh } = mountTacticsFieldReadOnly(col, posPlayerMap, players);
-      return { el: col, refresh };
+      const { refresh, showMatchRatingRef } = mountTacticsFieldReadOnly(col, posPlayerMap, players);
+      return { el: col, refresh, showMatchRatingRef };
     }
   };
 
@@ -32956,6 +32996,15 @@ order:initial
         .tm-pr-badge-yc { color: #f5c518; }
         .tm-pr-badge-rc { color: var(--tmu-danger); }
         .tm-pr-badge-inj { color: var(--tmu-danger); font-size: 11px; }
+        /* match result overlays */
+        .tm-pr-match-rating {
+            flex-shrink: 0; min-width: 26px; text-align: right;
+            font-size: 11px; font-weight: 800; font-variant-numeric: tabular-nums;
+        }
+        .tm-pr-mom {
+            flex-shrink: 0; font-size: 11px; color: #f5c518;
+            line-height: 1; padding: 0 1px;
+        }
     `;
     document.head.appendChild(s6);
   }
@@ -32984,8 +33033,8 @@ order:initial
      *   @param {string}  [opts.state]   — 'active' | 'bench' | 'off' | 'sub-in'  (default: 'active')
      * @returns {HTMLDivElement}
      */
-    build(player2, { posKey, state: state5 = "active", compact = false } = {}) {
-      var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j;
+    build(player2, { posKey, state: state5 = "active", compact = false, showMatchRating = false } = {}) {
+      var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
       injectTmPlayerRowStyles();
       const raw = posKey || player2.position || "";
       const slot = /^sub/i.test(raw) ? "" : raw.toLowerCase();
@@ -33067,9 +33116,27 @@ order:initial
         }
         el2.appendChild(stats);
       }
+      if (showMatchRating) {
+        const matchRating = (_j = player2.rating) != null ? _j : null;
+        const isMom = player2.mom && player2.mom !== 0;
+        if (matchRating != null) {
+          const rv = document.createElement("span");
+          rv.className = "tm-pr-match-rating";
+          rv.style.color = TmUtils.getColor(matchRating, TmConst.R5_THRESHOLDS);
+          rv.textContent = matchRating.toFixed(1);
+          el2.appendChild(rv);
+        }
+        if (isMom) {
+          const mv = document.createElement("span");
+          mv.className = "tm-pr-mom";
+          mv.title = "Man of the Match";
+          mv.textContent = "\u2605";
+          el2.appendChild(mv);
+        }
+      }
       const icon = document.createElement("span");
       icon.className = "tm-pr-icon";
-      icon.textContent = (_j = ICONS3[state5]) != null ? _j : "";
+      icon.textContent = (_k = ICONS3[state5]) != null ? _k : "";
       el2.appendChild(icon);
       return el2;
     },
@@ -33177,6 +33244,7 @@ order:initial
       emptyText: "No players.",
       afterRender: ({ table }) => {
         table.querySelectorAll("tbody [data-tpr-pid]").forEach((placeholder) => {
+          var _a2;
           const pid = placeholder.dataset.tprPid;
           const state5 = placeholder.dataset.tprState || "active";
           const benchRole = placeholder.dataset.tprBench || null;
@@ -33184,7 +33252,7 @@ order:initial
           if (!player2) return;
           const slot = getPlayerSlot(player2);
           const posKey = isFieldSlot(slot) ? slot : null;
-          const row = TmPlayerRow.build(player2, { posKey, state: state5, compact });
+          const row = TmPlayerRow.build(player2, { posKey, state: state5, compact, showMatchRating: (_a2 = ctx.showMatchRating) != null ? _a2 : false });
           if (benchRole) {
             const num = benchRole.replace("sub", "");
             const posWrap = row.querySelector(".tm-pr-pos");
@@ -33491,13 +33559,18 @@ order:initial
       ]);
       let lastMinute = -1;
       function update(replayState) {
-        var _a2;
+        var _a2, _b, _c;
         const minute = (_a2 = replayState == null ? void 0 : replayState.currentMinute) != null ? _a2 : 0;
         if (minute === lastMinute) return;
         lastMinute = minute;
+        const isFinished = minute >= ((_c = (_b = match.duration) == null ? void 0 : _b.total) != null ? _c : 95);
         const playerSlot = derivePitchState(match, minute);
         rebuildPosMap(homePosMap, "home", playerSlot, allPlayersById);
         rebuildPosMap(awayPosMap, "away", playerSlot, allPlayersById);
+        homeField.showMatchRatingRef.value = isFinished;
+        awayField.showMatchRatingRef.value = isFinished;
+        luHomeField.showMatchRatingRef.value = isFinished;
+        luAwayField.showMatchRatingRef.value = isFinished;
         homeField.refresh();
         awayField.refresh();
         luHomeField.refresh();
@@ -33506,6 +33579,8 @@ order:initial
         const awayPitchPids = new Set([...playerSlot].filter(([, s6]) => s6.startsWith("away:")).map(([pid]) => pid));
         luHomeCtx.stateOf = (p) => homePitchPids.has(String(p.id)) ? starterHomePids.has(String(p.id)) ? "active" : "sub-in" : starterHomePids.has(String(p.id)) ? "off" : "bench";
         luAwayCtx.stateOf = (p) => awayPitchPids.has(String(p.id)) ? starterAwayPids.has(String(p.id)) ? "active" : "sub-in" : starterAwayPids.has(String(p.id)) ? "off" : "bench";
+        luHomeCtx.showMatchRating = isFinished;
+        luAwayCtx.showMatchRating = isFinished;
         luHomeSquad.refresh();
         luAwaySquad.refresh();
       }
@@ -34516,16 +34591,16 @@ order:initial
   };
   var esc2 = (v) => String(v != null ? v : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var parseSectionItems = (section) => {
-    const ids = [];
-    section.nodes.forEach((node) => {
+    const items = [];
+    section.nodes.forEach((node, nodeIndex) => {
       Array.from(node.querySelectorAll("li")).forEach((li) => {
         const a = li.querySelector('.match_result a[href*="/matches/"]');
         if (!a) return;
         const m = (a.getAttribute("href") || "").match(/\/matches\/(\d+)\//);
-        if (m) ids.push(m[1]);
+        if (m) items.push({ id: m[1], nodeIndex });
       });
     });
-    return ids;
+    return items;
   };
   var buildTip = (mData, minCutoff) => buildModalContentEl(snapshotFromMData(mData, minCutoff));
   var TmMatchIntCupNew = {
@@ -34548,8 +34623,9 @@ order:initial
         return { el: el2, update: () => {
         } };
       }
+      const initialMin = (initialReplayState == null ? void 0 : initialReplayState.currentMinute) != null ? initialReplayState.currentMinute : Infinity;
       let dataReady = false;
-      let lastMin = -1;
+      let lastMin = initialMin;
       let isGroup = false;
       const rowMap = {};
       let standingsHost = null;
@@ -34572,22 +34648,27 @@ order:initial
         _tip.style.left = left + "px";
         _tip.style.top = top + "px";
       };
-      const toVirtualNow = (minCutoff) => !myKickoff ? null : myKickoff + (minCutoff < Infinity ? Math.floor(minCutoff) * 60 : 10 * 3600);
+      const toVirtualNow = (minCutoff) => {
+        var _a3, _b2;
+        if (!myKickoff) return null;
+        const min = Number.isFinite(minCutoff) ? Math.floor(minCutoff) : (_b2 = (_a3 = match.duration) == null ? void 0 : _a3.total) != null ? _b2 : 95;
+        return myKickoff + min * 60;
+      };
       const computeStatus = (mData, minCutoff) => {
-        var _a3, _b2, _c2, _d;
-        const rawKo = (_b2 = (_a3 = mData.match_data) == null ? void 0 : _a3.venue) == null ? void 0 : _b2.kickoff;
-        const itemKickoff = rawKo ? rawKo + parseTimeOfDay((_c2 = mData.match_data) == null ? void 0 : _c2.match_time_of_day) : null;
+        var _a3, _b2;
+        const itemKickoff = mData.kickoff ? mData.kickoff + parseTimeOfDay(mData.kickoffTime) : null;
         const virtualNow = toVirtualNow(minCutoff);
         if (!itemKickoff || !virtualNow) {
           const snap2 = snapshotFromMData(mData, Infinity);
           return { statusText: "FT", statusCls: "ft", homeGoals: snap2.homeGoals, awayGoals: snap2.awayGoals };
         }
         const elapsed = virtualNow - itemKickoff;
-        if (elapsed < -60) {
-          const time = ((_d = mData.match_data) == null ? void 0 : _d.match_time_of_day) || "";
+        if (elapsed < 0) {
+          const time = mData.kickoffTime || "";
           return { statusText: time || "\u2013", statusCls: "", homeGoals: null, awayGoals: null };
         }
-        if (elapsed > 95 * 60) {
+        const matchDuration = ((_b2 = (_a3 = mData.duration) == null ? void 0 : _a3.total) != null ? _b2 : 95) * 60;
+        if (elapsed > matchDuration) {
           const snap2 = snapshotFromMData(mData, Infinity);
           return { statusText: "FT", statusCls: "ft", homeGoals: snap2.homeGoals, awayGoals: snap2.awayGoals };
         }
@@ -34650,8 +34731,8 @@ order:initial
         for (const entry of Object.values(rowMap)) {
           if (!entry.mDataResolved || !entry.mData) continue;
           const mData = entry.mData;
-          const homeId = String(mData.teams.home.id);
-          const awayId = String(mData.teams.away.id);
+          const homeId = String(mData.home.club.id);
+          const awayId = String(mData.away.club.id);
           ensure(homeId, mData.home.club.name);
           ensure(awayId, mData.away.club.name);
           const st = computeStatus(mData, minCutoff);
@@ -34678,14 +34759,14 @@ order:initial
       };
       const wireRow = (entry, row) => {
         const { matchId, mData } = entry;
-        const homeId = String(mData.teams.home.id);
-        const awayId = String(mData.teams.away.id);
+        const homeId = String(mData.home.club.id);
+        const awayId = String(mData.away.club.id);
         const isCur = homeId === myHomeId && awayId === myAwayId || homeId === myAwayId && awayId === myHomeId;
         const flipped = homeId === myAwayId;
         row.style.cursor = "pointer";
         row.addEventListener("click", (e) => {
           if (e.target.closest("a")) return;
-          window.location.href = `/match/${matchId}/`;
+          window.location.href = `/matches/${matchId}/`;
         });
         row.addEventListener("mouseenter", () => {
           clearTimeout(_hideT);
@@ -34701,13 +34782,12 @@ order:initial
               _hideT = setTimeout(destroyTip, 200);
             });
             const tipMin = (() => {
-              var _a3, _b2, _c2;
-              const vn = toVirtualNow(lastMin < 0 ? Infinity : lastMin);
-              const rawIko = (_b2 = (_a3 = mData.match_data) == null ? void 0 : _a3.venue) == null ? void 0 : _b2.kickoff;
-              const iko = rawIko ? rawIko + parseTimeOfDay((_c2 = mData.match_data) == null ? void 0 : _c2.match_time_of_day) : null;
+              var _a3, _b2;
+              const vn = toVirtualNow(lastMin);
+              const iko = mData.kickoff ? mData.kickoff + parseTimeOfDay(mData.kickoffTime) : null;
               if (!vn || !iko) return Infinity;
               const el3 = vn - iko;
-              if (el3 > 95 * 60) return Infinity;
+              if (el3 > ((_b2 = (_a3 = mData.duration) == null ? void 0 : _a3.total) != null ? _b2 : 95) * 60) return Infinity;
               if (el3 < 0) return 0;
               return Math.max(1, Math.floor(el3 / 60)) + 1;
             })();
@@ -34728,32 +34808,26 @@ order:initial
         isGroup = groupStage;
         el2.innerHTML = TmUI.loading("Loading matches\u2026");
         Promise.all(matchIds.map(
-          (id) => TmMatchModel.fetchMatch(id, { dbSync: false }).then((mData) => {
-            if (mData) rowMap[id] = { matchId: id, mData, mDataResolved: true, rowEl: null, statusEl: null, scoreEl: null };
+          ({ id, nodeIndex }) => TmMatchModel.fetchMatch(id, { dbSync: false }).then((mData) => {
+            if (mData) rowMap[id] = { matchId: id, mData, mDataResolved: true, rowEl: null, statusEl: null, scoreEl: null, nodeIndex };
           }).catch(() => {
           })
         )).then(() => {
-          const byDate = {};
-          matchIds.forEach((id) => {
-            var _a3, _b2;
+          const byRound = {};
+          matchIds.forEach(({ id, nodeIndex }) => {
             const entry = rowMap[id];
             if (!entry) return;
-            const ko = (_b2 = (_a3 = entry.mData.match_data) == null ? void 0 : _a3.venue) == null ? void 0 : _b2.kickoff;
-            const date = ko ? new Date(ko * 1e3).toISOString().slice(0, 10) : "z_unknown";
-            (byDate[date] = byDate[date] || []).push(entry);
+            (byRound[nodeIndex] = byRound[nodeIndex] || []).push(entry);
           });
-          const matchDays = Object.keys(byDate).sort().map((date, i) => ({
+          const matchDays = Object.keys(byRound).map(Number).sort((a, b) => a - b).map((nodeIndex, i) => ({
             label: `Match Day ${i + 1}`,
-            entries: byDate[date].sort(
-              (a, b) => {
-                var _a3, _b2, _c2, _d;
-                return (((_b2 = (_a3 = a.mData.match_data) == null ? void 0 : _a3.venue) == null ? void 0 : _b2.kickoff) || 0) - (((_d = (_c2 = b.mData.match_data) == null ? void 0 : _c2.venue) == null ? void 0 : _d.kickoff) || 0);
-              }
+            entries: byRound[nodeIndex].sort(
+              (a, b) => (a.mData.kickoff || 0) - (b.mData.kickoff || 0)
             )
           }));
           const rowsHtml = (entries) => entries.map(({ matchId, mData }) => {
-            const homeId = String(mData.teams.home.id);
-            const awayId = String(mData.teams.away.id);
+            const homeId = String(mData.home.club.id);
+            const awayId = String(mData.away.club.id);
             const isCur = homeId === myHomeId && awayId === myAwayId || homeId === myAwayId && awayId === myHomeId;
             return TmFixtureMatchRow.render(
               { homeId, awayId, homeName: mData.home.club.name, awayName: mData.away.club.name, matchId, scoreText: "" },
@@ -34832,7 +34906,6 @@ order:initial
         }
         buildDOM(parseSectionItems(matchSection), matchSection.title, groupStage, initialMin2);
       };
-      const initialMin = (initialReplayState == null ? void 0 : initialReplayState.currentMinute) != null ? initialReplayState.currentMinute : Infinity;
       el2.innerHTML = TmUI.loading("Loading cup data\u2026");
       TmInternationalCupModel.fetchOverviewDocument(tournamentId).then((doc) => {
         if (!doc) {
@@ -41093,18 +41166,17 @@ order:initial
     }
   }
   function buildCandidateRecord(player2, club, clubId2 = "", clubName2 = "") {
-    var _a2, _b;
     return {
-      playerId: cleanText17((player2 == null ? void 0 : player2.id) || (player2 == null ? void 0 : player2.player_id)),
-      name: cleanText17((player2 == null ? void 0 : player2.name) || (player2 == null ? void 0 : player2.player_name)) || "Unknown player",
+      playerId: cleanText17(player2 == null ? void 0 : player2.id),
+      name: cleanText17(player2 == null ? void 0 : player2.name) || "Unknown player",
       country: resolvePlayerCountryCode(player2),
       age: Number(player2 == null ? void 0 : player2.age) || 0,
-      months: Number((_a2 = player2 == null ? void 0 : player2.months) != null ? _a2 : player2 == null ? void 0 : player2.month) || 0,
-      asi: TmUtils.parseNum((_b = player2 == null ? void 0 : player2.asi) != null ? _b : player2 == null ? void 0 : player2.skill_index),
+      months: Number(player2 == null ? void 0 : player2.month) || 0,
+      asi: TmUtils.parseNum(player2 == null ? void 0 : player2.asi),
       r5: computeCandidateR5(player2),
-      position: Array.isArray(player2 == null ? void 0 : player2.positions) && player2.positions.some((p) => p.preferred) ? player2.positions.filter((p) => p.preferred).map((p) => p.key).join(",") : cleanText17((player2 == null ? void 0 : player2.favposition) || (player2 == null ? void 0 : player2.fp)),
+      position: Array.isArray(player2 == null ? void 0 : player2.positions) && player2.positions.some((p) => p.preferred) ? player2.positions.filter((p) => p.preferred).map((p) => p.key).join(",") : "",
       clubId: cleanText17(clubId2 || (player2 == null ? void 0 : player2.club_id) || (club == null ? void 0 : club.id)),
-      clubName: cleanText17(clubName2 || (player2 == null ? void 0 : player2.club_name) || (club == null ? void 0 : club.club_name)) || "Unknown club",
+      clubName: cleanText17(clubName2 || (player2 == null ? void 0 : player2.club_name) || (club == null ? void 0 : club.name)) || "Unknown club",
       clubCreated: lowerText(club == null ? void 0 : club.created),
       sources: [],
       reasons: []
@@ -41511,7 +41583,7 @@ order:initial
   async function getTooltipCandidate(state5, playerId) {
     if (!playerId) return null;
     if (!state5.tooltipCache.has(playerId)) {
-      state5.tooltipCache.set(playerId, TmApi.fetchTooltipRaw(playerId).then((data) => data || null).catch(() => null));
+      state5.tooltipCache.set(playerId, TmPlayerModel.fetchTooltipCached(playerId).catch(() => null));
     }
     return state5.tooltipCache.get(playerId);
   }
@@ -41663,11 +41735,11 @@ order:initial
       const tooltipMap = await getTooltipCandidateBatch(state5, eligibleBatch.map((candidate) => candidate.playerId), 10);
       const clubIdsToCheck = eligibleBatch.map((candidate) => {
         const tooltipData = tooltipMap.get(candidate.playerId) || null;
-        const player2 = tooltipData == null ? void 0 : tooltipData.player;
+        const player2 = tooltipData;
         const club = tooltipData == null ? void 0 : tooltipData.club;
         if (!player2 || !matchesTargetCountry(player2, state5.countryCode)) return "";
         if (lowerText(club == null ? void 0 : club.created) === "inactive") return "";
-        return cleanText17((club == null ? void 0 : club.id) || (player2 == null ? void 0 : player2.club_id) || (club == null ? void 0 : club.club_id));
+        return cleanText17((club == null ? void 0 : club.id) || (player2 == null ? void 0 : player2.club_id));
       }).filter(Boolean);
       setStatus(state5, `<strong>Inspecting players</strong> ${batchStart + 1}-${Math.min(batchStart + batch.length, transferCandidates.length)}/${transferCandidates.length} \xB7 fetching club batch`);
       const clubPageMap = await getClubPageBatch(state5, clubIdsToCheck, 10);
@@ -41676,7 +41748,7 @@ order:initial
         const candidate = batch[offset];
         if (candidate.playerCountryCode !== targetCountryCode) continue;
         const tooltipData = tooltipMap.get(candidate.playerId) || null;
-        const player2 = tooltipData == null ? void 0 : tooltipData.player;
+        const player2 = tooltipData;
         const club = tooltipData == null ? void 0 : tooltipData.club;
         if (!player2) continue;
         if (!matchesTargetCountry(player2, state5.countryCode)) continue;
@@ -41767,25 +41839,25 @@ order:initial
       const squadPlayers = await TmClubModel.fetchSquadRaw(flaggedClub.clubId) || [];
       const squadPlayersMissingCountry = squadPlayers.filter((squadPlayer) => {
         const countryCode = resolvePlayerCountryCode(squadPlayer);
-        return !countryCode && cleanText17(squadPlayer.id || squadPlayer.player_id);
+        return !countryCode && cleanText17(squadPlayer.id);
       });
       const squadTooltipMap = await getTooltipCandidateBatch(
         state5,
-        squadPlayersMissingCountry.map((squadPlayer) => squadPlayer.id || squadPlayer.player_id),
+        squadPlayersMissingCountry.map((squadPlayer) => squadPlayer.id),
         10
       );
       for (const squadPlayer of squadPlayers) {
         let countryCode = resolvePlayerCountryCode(squadPlayer);
         let tooltipData = null;
         if (!countryCode) {
-          tooltipData = squadTooltipMap.get(cleanText17(squadPlayer.id || squadPlayer.player_id)) || null;
-          countryCode = resolvePlayerCountryCode(tooltipData == null ? void 0 : tooltipData.player);
+          tooltipData = squadTooltipMap.get(cleanText17(squadPlayer.id)) || null;
+          countryCode = resolvePlayerCountryCode(tooltipData);
         }
         if (countryCode !== normalizeCountryCode(state5.countryCode)) continue;
-        const player2 = (tooltipData == null ? void 0 : tooltipData.player) || squadPlayer;
+        const player2 = tooltipData || squadPlayer;
         const club = (tooltipData == null ? void 0 : tooltipData.club) || {
           id: flaggedClub.clubId,
-          club_name: flaggedClub.clubName,
+          name: flaggedClub.clubName,
           created: flaggedClub.statuses.includes("league-inactive") ? "inactive" : ""
         };
         const record = buildCandidateRecord(player2, club, flaggedClub.clubId, flaggedClub.clubName);
@@ -43998,9 +44070,8 @@ order:initial
       return { rows };
     };
     const formatAge2 = (player2) => {
-      var _a2;
       const years = Number(player2 == null ? void 0 : player2.age) || 0;
-      const months = Number((_a2 = player2 == null ? void 0 : player2.months) != null ? _a2 : player2 == null ? void 0 : player2.month) || 0;
+      const months = Number(player2 == null ? void 0 : player2.month) || 0;
       return `${years}.${String(months).padStart(2, "0")}`;
     };
     const formatR52 = (value) => {
@@ -45952,7 +46023,7 @@ order:initial
       const scoutId = btn4.dataset.scoutId;
       btn4.disabled = true;
       btn4.textContent = "...";
-      TmPlayerModel.fetchPlayerInfo(player2 == null ? void 0 : player2.id, "scout", { scout_id: scoutId }).then((d) => {
+      TmScoutsModel.sendScout(player2 == null ? void 0 : player2.id, scoutId).then((d) => {
         if (!d) {
           btn4.textContent = "Error";
           btn4.style.color = "var(--tmu-danger)";
@@ -45963,7 +46034,10 @@ order:initial
           }, 2e3);
           return;
         }
-        if ((d.scouts || d.reports) && onReRender) {
+        if (onReRender) {
+          player2.scoutReports = d.reports || [];
+          player2.scouts = d.scouts || {};
+          player2.bestEstimate = d.bestEstimate || null;
           onReRender(d);
           return;
         }

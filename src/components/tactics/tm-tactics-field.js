@@ -46,6 +46,7 @@ export function mountTacticsField(container, ctx) {
         isFieldSlot,
         getOccupiedFieldKeys, drag, save,
         readOnly = false,
+        showMatchRatingRef = null,
     } = ctx;
 
     // ── Tooltip delegation ───────────────────────────────────────────────
@@ -201,19 +202,26 @@ export function mountTacticsField(container, ctx) {
             } else {
                 slotEl.dataset.playerId = String(player.id);
             }
-            const slotRating = (v => v != null ? TmUtils.formatR5(v, '—') : '—')(getPositionRating(player, posKey)?.r5);
-            const slotRec = getPositionRating(player, posKey)?.rec ?? null;
-            const slotRoutine = player.routine > 0 ? Number(player.routine).toFixed(1) : '—';
-            const moodPenalty = TmPosition.moodPenalty(player, posKey);
+            const showMR = showMatchRatingRef?.value && player.rating != null;
+            const slotNoText = showMR
+                ? player.rating.toFixed(1)
+                : (v => v != null ? TmUtils.formatR5(v, '—') : '—')(getPositionRating(player, posKey)?.r5);
+            const slotNoColor = showMR
+                ? gc(player.rating, TmConst.R5_THRESHOLDS)
+                : null;
+            const slotRec = showMR ? null : (getPositionRating(player, posKey)?.rec ?? null);
+            const slotRoutine = (showMR || player.routine == null || player.routine <= 0) ? null : Number(player.routine).toFixed(1);
+            const moodPenalty = showMR ? 0 : TmPosition.moodPenalty(player, posKey);
+            const momBadge = showMR && player.mom ? '<span class="tmtc-slot-mom" title="Man of the Match">★</span>' : '';
             slotEl.innerHTML = `
-                <span class="tmtc-slot-no">${escHtml(slotRating)}</span>
-                <span class="tmtc-slot-name">${escHtml(player.lastname || player.name || '')}${player.captain ? '<span class="tmtc-capt-badge">C</span>' : ''}${playerStatusIconsHtml(player)}</span>
+                <span class="tmtc-slot-no"${slotNoColor ? ` style="color:${slotNoColor}"` : ''}>${escHtml(slotNoText)}</span>
+                <span class="tmtc-slot-name">${escHtml(player.lastname || player.name || '')}${player.captain ? '<span class="tmtc-capt-badge">C</span>' : ''}${playerStatusIconsHtml(player)}${momBadge}</span>
                 ${TmPosition.chip([posKey || ''])}
                 <span class="tmtc-slot-meta">
-                    <span class="tmtc-slot-rec">${TmStars.recommendation(slotRec, 'tmtc-rec-stars tmtc-rec-stars-sm') || '<span class="tmtc-slot-rec-empty">—</span>'}</span>
+                    <span class="tmtc-slot-rec">${!showMR && slotRec != null ? TmStars.recommendation(slotRec, 'tmtc-rec-stars tmtc-rec-stars-sm') || '<span class="tmtc-slot-rec-empty">—</span>' : '<span class="tmtc-slot-rec-empty">—</span>'}</span>
                     ${moodPenalty > 0 ? `<span class="tmtc-slot-mood tmtc-slot-mood-${moodPenalty}" title="Out of natural position">☹</span>` : ''}
                 </span>
-                <span class="tmtc-slot-rtn" style="color:${slotRoutine !== '—' ? gc(Number(slotRoutine), RTN_THRESHOLDS) : 'var(--tmu-text-dim)'}">${slotRoutine}</span>
+                ${slotRoutine != null ? `<span class="tmtc-slot-rtn" style="color:${gc(Number(slotRoutine), RTN_THRESHOLDS)}">${slotRoutine}</span>` : '<span class="tmtc-slot-rtn"></span>'}
             `;
         } else {
             slotEl.removeAttribute('draggable');
@@ -321,10 +329,11 @@ export function mountTacticsField(container, ctx) {
  * @param {object}      posPlayerMap  — { [posKey]: playerObject }
  * @param {Array}       players       — full player list (for tooltips)
  */
-export function mountTacticsFieldReadOnly(container, posPlayerMap, players = []) {
+export function mountTacticsFieldReadOnly(container, posPlayerMap, players = [], opts = {}) {
     const players_by_id = Object.fromEntries(players.map(p => [String(p.id), p]));
     const { POSITION_MAP } = TmConst;
-    return mountTacticsField(container, {
+    const showMatchRatingRef = opts.showMatchRatingRef ?? { value: false };
+    const result = mountTacticsField(container, {
         readOnly: true,
         players_by_id,
         getPlayerAtSlot:      posKey => posPlayerMap[posKey] ?? null,
@@ -338,5 +347,7 @@ export function mountTacticsFieldReadOnly(container, posPlayerMap, players = [])
         drag:    { state: null },
         save:    () => {},
         refreshAll: () => {},
+        showMatchRatingRef,
     });
+    return { ...result, showMatchRatingRef };
 }

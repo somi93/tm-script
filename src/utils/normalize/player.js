@@ -7,8 +7,8 @@ import { normalizeClubFromTooltip } from './club.js';
 export const applyPlayerPositionRatings = (player) => {
     player.positions = player.positions.map(position => ({
         ...position,
-        r5: position.id != null ? TmLib.calculatePlayerR5(position, player) : null,
-        rec: position.id != null ? TmLib.calculatePlayerREC(position, player) : null,
+        r5: position.id != null && player.asi > 0 ? TmLib.calculatePlayerR5(position, player) : null,
+        rec: position.id != null && player.asi > 0 ? TmLib.calculatePlayerREC(position, player) : null,
     }));
 
     const preferredPositions = player.positions.filter(position => position.preferred);
@@ -47,6 +47,7 @@ export const normalizeTooltipPlayer = (playerData) => {
     player.routine = Number(playerTooltip.routine);
     player.wage = TmUtils.parseNum(playerTooltip.wage, null);
     player.asi = TmUtils.parseNum(playerTooltip.skill_index, null);
+    player.rec_sort = playerTooltip.rec_sort ?? null;
     player.no = playerTooltip.no;
     player.retire = playerTooltip.isretirering;
     player.isGK = playerTooltip.fp === 'GK';
@@ -122,7 +123,7 @@ export const normalizeSquadPlayer = (postPlayer) => {
     player.country = postPlayer.country;
     player.routine = TmUtils.parseNum(Number(postPlayer.rutine), 0);
     player.wage = TmUtils.parseNum(postPlayer.wage, null);
-    player.asi = postPlayer.asi;
+    player.asi = postPlayer.asi ?? null;
     player.no = postPlayer.no;
     player.retire = postPlayer.retire;
     player.ban = postPlayer.ban;

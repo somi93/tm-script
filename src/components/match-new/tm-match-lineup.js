@@ -254,10 +254,18 @@ export const TmMatchLineup = {
             if (minute === lastMinute) return;
             lastMinute = minute;
 
+            const isFinished = minute >= (match.duration?.total ?? 95);
+
             const playerSlot = derivePitchState(match, minute);
 
             rebuildPosMap(homePosMap, 'home', playerSlot, allPlayersById);
             rebuildPosMap(awayPosMap, 'away', playerSlot, allPlayersById);
+
+            homeField.showMatchRatingRef.value = isFinished;
+            awayField.showMatchRatingRef.value = isFinished;
+            luHomeField.showMatchRatingRef.value = isFinished;
+            luAwayField.showMatchRatingRef.value = isFinished;
+
             homeField.refresh();
             awayField.refresh();
             luHomeField.refresh();
@@ -272,6 +280,10 @@ export const TmMatchLineup = {
             luAwayCtx.stateOf = p => awayPitchPids.has(String(p.id))
                 ? (starterAwayPids.has(String(p.id)) ? 'active' : 'sub-in')
                 : (starterAwayPids.has(String(p.id)) ? 'off' : 'bench');
+
+            luHomeCtx.showMatchRating = isFinished;
+            luAwayCtx.showMatchRating = isFinished;
+
             luHomeSquad.refresh();
             luAwaySquad.refresh();
         }

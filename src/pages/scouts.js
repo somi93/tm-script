@@ -22,16 +22,11 @@ const escapeHtml = (value) => String(value || '')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 const metricHtml = (opts) => TmUI.metric(opts);
-const parseNumber = (value) => {
-    const num = parseFloat(String(value ?? '').replace(/[^\d.-]/g, ''));
-    return Number.isFinite(num) ? num : 0;
-};
 const parseCellNumber = (cell) => {
     if (!cell) return 0;
     const img = cell.querySelector('img[alt], img[title]');
     return parseInt(img?.getAttribute('alt') || img?.getAttribute('title') || cleanText(cell.textContent), 10) || 0;
 };
-const formatPosition = (value) => cleanText(String(value || '')).split(',').filter(Boolean).map(part => part.trim().toUpperCase()).join(', ') || '-';
 const parseMenu = (sourceRoot) => Array.from(sourceRoot.querySelectorAll('.column1 .content_menu > *')).flatMap(node => {
     if (node.tagName === 'HR') return [{ type: 'separator' }];
     if (node.tagName !== 'A') return [];
@@ -111,39 +106,6 @@ const parseFallbackReports = (sourceRoot) => Array.from(sourceRoot.querySelector
         specialist: 0,
     };
 }).filter(Boolean);
-
-const normalizeReports = (rawReports, scouts) => {
-    const scoutsById = Object.fromEntries(scouts.map(scout => [String(scout.id), scout]));
-    return Object.values(rawReports || {}).map(report => {
-        const scout = scoutsById[String(report.scoutid)] || null;
-        const playerHref = `/players/${report.playerid}/${encodeURIComponent(String(report.name || '').replace(/\s+/g, '-'))}/`;
-        return {
-            id: String(report.id || report.playerid || ''),
-            playerId: String(report.playerid || ''),
-            name: cleanText(report.name || ''),
-            playerHref,
-            displayTime: cleanText(report.display_time || report.done || ''),
-            done: cleanText(report.done || ''),
-            doneTs: Date.parse(report.done || '') || 0,
-            displayRec: parseNumber(report.display_rec ?? report.rec),
-            potentialStars: (parseNumber(report.potential) || 0) / 2,
-            skill: parseNumber(report.skill),
-            skillPotential: parseNumber(report.skill_potential),
-            age: parseInt(report.age || '0', 10) || 0,
-            position: formatPosition(report.favposition),
-            country: cleanText(report.nationalitet || ''),
-            scoutId: String(report.scoutid || ''),
-            scoutName: scout?.fullName || `Scout ${report.scoutid || ''}`,
-            peakPhy: parseInt(report.peak_phy || '0', 10) || 0,
-            peakTac: parseInt(report.peak_tac || '0', 10) || 0,
-            peakTec: parseInt(report.peak_tec || '0', 10) || 0,
-            charisma: parseInt(report.charisma || '0', 10) || 0,
-            professionalism: parseInt(report.professionalism || '0', 10) || 0,
-            aggression: parseInt(report.aggression || '0', 10) || 0,
-            specialist: parseInt(report.specialist || '0', 10) || 0,
-        };
-    }).sort((left, right) => (right.doneTs - left.doneTs) || (parseInt(right.id, 10) - parseInt(left.id, 10)));
-};
 
 const buildSummary = (scouts, reports) => {
     const scoutCount = scouts.length;
@@ -475,8 +437,8 @@ const renderPage = (main, sourceRoot, scouts, reports) => {
 const boot = async (main, sourceRoot) => {
     injectStyles();
     const scouts = parseScoutsFromDom(sourceRoot);
-    const response = await TmScoutsModel.fetchReports();
-    const reports = response && Object.keys(response).length ? normalizeReports(response, scouts) : parseFallbackReports(sourceRoot);
+    const response = await TmScoutsModel.fetchReports(scouts);
+    const reports = response && response.length ? response : parseFallbackReports(sourceRoot);
     renderPage(main, sourceRoot, scouts, reports);
     const enrichedReports = await enrichReports(reports);
     renderPage(main, sourceRoot, scouts, enrichedReports);

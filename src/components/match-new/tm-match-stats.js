@@ -27,7 +27,7 @@ export const deriveStats = (match, replayState) => {
     };
     const events = [];
     const allPlayers = [...(match.home.lineup || []), ...(match.away.lineup || [])];
-    const nameOf = (pid) => { const p = allPlayers.find(pl => String(pl.id || pl.player_id) === pid); return p?.nameLast || p?.name || pid; };
+    const nameOf = (pid) => { const p = allPlayers.find(pl => String(pl.id) === pid); return p?.nameLast || p?.name || pid; };
 
     const minuteKeys = Object.keys(match.plays).map(Number).sort((a, b) => a - b);
 

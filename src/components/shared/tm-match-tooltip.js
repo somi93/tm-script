@@ -99,6 +99,17 @@ const buildRichEvents = (matchData, homeId) => {
     const allMins = Object.keys(report).map(Number).sort((a, b) => a - b);
     const keyEvents = [];
 
+    // Build lookup: pid (string) → player — works for both raw (lineup.home[pid]) and normalized (home.lineup array)
+    const byPid = new Map();
+    const homeArr = Array.isArray(matchData.home?.lineup) ? matchData.home.lineup : Object.values(matchData.lineup?.home || {});
+    const awayArr = Array.isArray(matchData.away?.lineup) ? matchData.away.lineup : Object.values(matchData.lineup?.away || {});
+    const homeIds = new Set();
+    homeArr.forEach(p => { const pid = String(p.id ?? p.player_id ?? ''); byPid.set(pid, p); homeIds.add(pid); });
+    awayArr.forEach(p => { const pid = String(p.id ?? p.player_id ?? ''); byPid.set(pid, p); });
+
+    const pName = (pid) => { const p = byPid.get(String(pid ?? '')); return p ? (p.lastname || p.nameLast || p.name || '?') : '?'; };
+    const pIsHome = (pid) => homeIds.has(String(pid ?? ''));
+
     allMins.forEach(min => {
         const events = report[min];
         if (!Array.isArray(events)) return;
@@ -110,30 +121,22 @@ const buildRichEvents = (matchData, homeId) => {
 
             params.forEach(param => {
                 if (param.goal) {
-                    const scorer = matchData.lineup?.home?.[param.goal.player] || matchData.lineup?.away?.[param.goal.player];
-                    const assistPlayer = matchData.lineup?.home?.[param.goal.assist] || matchData.lineup?.away?.[param.goal.assist];
                     keyEvents.push({
                         min,
                         type: 'goal',
                         isHome,
-                        name: scorer?.nameLast || scorer?.name || '?',
-                        assist: assistPlayer?.nameLast || assistPlayer?.name || '',
+                        name: pName(param.goal.player),
+                        assist: param.goal.assist ? (pName(param.goal.assist) === '?' ? '' : pName(param.goal.assist)) : '',
                     });
                 }
                 if (param.yellow) {
-                    const player = matchData.lineup?.home?.[param.yellow] || matchData.lineup?.away?.[param.yellow];
-                    const cardIsHome = param.yellow in (matchData.lineup?.home || {});
-                    keyEvents.push({ min, type: 'yellow', isHome: cardIsHome, name: player?.nameLast || player?.name || '?' });
+                    keyEvents.push({ min, type: 'yellow', isHome: pIsHome(param.yellow), name: pName(param.yellow) });
                 }
                 if (param.yellow_red) {
-                    const player = matchData.lineup?.home?.[param.yellow_red] || matchData.lineup?.away?.[param.yellow_red];
-                    const cardIsHome = param.yellow_red in (matchData.lineup?.home || {});
-                    keyEvents.push({ min, type: 'red', isHome: cardIsHome, name: player?.nameLast || player?.name || '?' });
+                    keyEvents.push({ min, type: 'red', isHome: pIsHome(param.yellow_red), name: pName(param.yellow_red) });
                 }
                 if (param.red) {
-                    const player = matchData.lineup?.home?.[param.red] || matchData.lineup?.away?.[param.red];
-                    const cardIsHome = param.red in (matchData.lineup?.home || {});
-                    keyEvents.push({ min, type: 'red', isHome: cardIsHome, name: player?.nameLast || player?.name || '?' });
+                    keyEvents.push({ min, type: 'red', isHome: pIsHome(param.red), name: pName(param.red) });
                 }
             });
         });
@@ -189,13 +192,15 @@ export const TmMatchTooltip = {
 
     buildRichTooltip(matchData) {
         const md = matchData.match_data || {};
-        const club = matchData.club || {};
-        const homeName = club.home?.club_name || '';
-        const awayName = club.away?.club_name || '';
-        const homeId = String(club.home?.id || '');
-        const awayId = String(club.away?.id || '');
-        const homeLogo = club.home?.logo || `/pics/club_logos/${homeId}_140.png`;
-        const awayLogo = club.away?.logo || `/pics/club_logos/${awayId}_140.png`;
+        // Support both normalized (matchData.home.club / matchData.venue) and raw (matchData.club.home / matchData.match_data.venue)
+        const homeClub = matchData.home?.club || matchData.club?.home || {};
+        const awayClub = matchData.away?.club || matchData.club?.away || {};
+        const homeName = homeClub.name || homeClub.club_name || '';
+        const awayName = awayClub.name || awayClub.club_name || '';
+        const homeId = String(homeClub.id || '');
+        const awayId = String(awayClub.id || '');
+        const homeLogo = homeClub.logo || (homeId ? `/pics/club_logos/${homeId}_140.png` : '');
+        const awayLogo = awayClub.logo || (awayId ? `/pics/club_logos/${awayId}_140.png` : '');
 
         let html = buildHeader({
             homeName,
@@ -205,25 +210,32 @@ export const TmMatchTooltip = {
             score: buildFinalScore(matchData),
         });
 
-        const kickoff = md.venue?.kickoff_readable || '';
+        // Meta: date / venue / attendance — support both normalized and raw field paths
+        const venueName = matchData.venue?.name || md.venue?.name || '';
+        const kickoffReadable = md.venue?.kickoff_readable || (matchData.date ? `${matchData.date} ${matchData.kickoffTime || ''}` : '');
+        const attendance = matchData.attendance ?? (md.attendance ? Number(md.attendance) : null);
         html += buildMeta([
-            kickoff ? `📅 ${new Date(kickoff.replace(' ', 'T')).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : '',
-            md.venue?.name ? `🏟 ${md.venue.name}` : '',
-            md.attendance ? `👥 ${Number(md.attendance).toLocaleString()}` : '',
+            kickoffReadable ? `📅 ${new Date(kickoffReadable.replace(' ', 'T')).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : '',
+            venueName ? `🏟 ${venueName}` : '',
+            attendance ? `👥 ${Number(attendance).toLocaleString()}` : '',
         ]);
 
         const events = buildRichEvents(matchData, homeId);
         html += TmMatchUtils.renderRichEvents(events.goals, events.cards);
 
-        const possession = md.possession;
+        // Stats — support both normalized (matchData.possession) and raw (md.possession / md.statistics)
+        const possession = matchData.possession ?? md.possession;
         const stats = md.statistics || {};
         if (possession || stats.home_shots || stats.away_shots || stats.home_on_target || stats.away_on_target) {
             html += TmUI.matchTooltipStats({ possession, statistics: stats, cls: 'rnd-h2h-tooltip-stats' });
         }
 
-        const allPlayers = [...Object.values(matchData.lineup?.home || {}), ...Object.values(matchData.lineup?.away || {})];
+        const homeArr = Array.isArray(matchData.home?.lineup) ? matchData.home.lineup : Object.values(matchData.lineup?.home || {});
+        const awayArr = Array.isArray(matchData.away?.lineup) ? matchData.away.lineup : Object.values(matchData.lineup?.away || {});
+        const allPlayers = [...homeArr, ...awayArr];
         const mom = allPlayers.find(player => player.mom === 1 || player.mom === '1');
-        html += buildMom('Man of the Match', mom?.nameLast || mom?.name || '', mom ? parseFloat(mom.rating).toFixed(1) : null);
+        const momName = mom ? (mom.lastname || mom.nameLast || mom.name || '') : '';
+        html += buildMom('Man of the Match', momName, mom?.rating != null ? parseFloat(mom.rating).toFixed(1) : null);
 
         return html;
     },

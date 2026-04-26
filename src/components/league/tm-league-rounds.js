@@ -120,12 +120,11 @@ const processRoundMatchData = (matchId, data) => {
     const awayId = String(data.away.club.id);
     const homeLineupMap = Object.fromEntries(data.home.lineup.map(p => [String(p.id), p]));
     const awayLineupMap = Object.fromEntries(data.away.lineup.map(p => [String(p.id), p]));
-    Promise.all([s.fetchSquad(homeId, data.home.club.name), s.fetchSquad(awayId, data.away.club.name)]).then(([homeSquad, awaySquad]) => {
-        return Promise.all([
-            s.computeTeamStats(Object.keys(homeLineupMap), homeLineupMap, homeSquad),
-            s.computeTeamStats(Object.keys(awayLineupMap), awayLineupMap, awaySquad)
-        ]);
-    }).then(([homeResult, awayResult]) => {
+    const emptySquad = { squad: [] };
+    Promise.all([
+        s.computeTeamStats(Object.keys(homeLineupMap), homeLineupMap, emptySquad),
+        s.computeTeamStats(Object.keys(awayLineupMap), awayLineupMap, emptySquad),
+    ]).then(([homeResult, awayResult]) => {
         const homeR5 = Number((homeResult.totals.R5 / 11).toFixed(2));
         const awayR5 = Number((awayResult.totals.R5 / 11).toFixed(2));
         roundMatchCache.set(String(matchId), { homeR5, awayR5, data });
@@ -162,19 +161,12 @@ const processMatchData = (matchId, data) => {
     if (!homeStarters.length || !awayStarters.length) {
         console.warn(`[League] match=${matchId} lineup problem — home=${homeLineupArr.length} starters=${homeStarters.length}, away=${awayLineupArr.length} starters=${awayStarters.length}`);
     }
-    Promise.all([s.fetchSquad(homeId, data.home.club.name), s.fetchSquad(awayId, data.away.club.name)]).then(([homeSquad, awaySquad]) => {
-        return Promise.all([
-            s.computeTeamStats(Object.keys(homeLineupMap), homeLineupMap, homeSquad),
-            s.computeTeamStats(Object.keys(awayLineupMap), awayLineupMap, awaySquad)
-        ]).then(([homeResult, awayResult]) => ({ homeResult, awayResult, homeSquad, awaySquad }));
-    }).then(({ homeResult, awayResult, homeSquad, awaySquad }) => {
-        if(homeResult.totals.R5 === 0) {
-            console.log(homeResult, homeSquad);
-        }
-        if(awayResult.totals.R5 === 0) {
-            console.log(awayResult, awaySquad);
-        }
-
+    // empty squadData stubs — getPlayerDataFromSquad now uses tooltip directly
+    const emptySquad = { squad: [] };
+    Promise.all([
+        s.computeTeamStats(Object.keys(homeLineupMap), homeLineupMap, emptySquad),
+        s.computeTeamStats(Object.keys(awayLineupMap), awayLineupMap, emptySquad),
+    ]).then(([homeResult, awayResult]) => {
         if (!s.clubDatas.has(homeId)) s.clubDatas.set(homeId, []);
         if (!s.clubDatas.has(awayId)) s.clubDatas.set(awayId, []);
         s.clubDatas.get(homeId).push(homeResult.totals);
@@ -195,9 +187,6 @@ const processMatchData = (matchId, data) => {
         // Cache per-match R5 for Rounds panel
         const homeR5 = Number((homeResult.totals.R5 / 11).toFixed(2));
         const awayR5 = Number((awayResult.totals.R5 / 11).toFixed(2));
-        if(!homeR5) {
-            console.warn(`[League] Home team ${data.home.club.name} has R5=0 in match ${matchId}`);
-        }
         roundMatchCache.set(String(matchId), { homeR5, awayR5, data });
         fillRatingCells(String(matchId), homeR5, awayR5);
 
@@ -234,26 +223,16 @@ const startAnalysis = n => {
         const selectedMatches = dates.flatMap(d => byDate[d]);
         const matchIds = selectedMatches.map(m => String(m.id));
 
-        // Pre-fetch all squads for all clubs in the selected rounds in parallel
-        const clubsToFetch = new Map();
-        selectedMatches.forEach(m => {
-            if (m.hometeam) clubsToFetch.set(String(m.hometeam), m.hometeam_name || '');
-            if (m.awayteam) clubsToFetch.set(String(m.awayteam), m.awayteam_name || '');
-        });
-        s.updateProgress(`Fetching ${clubsToFetch.size} squads...`);
+        s.totalExpected = matchIds.length * 2;
+        s.updateProgress(`Loading ${matchIds.length} matches (${dates.length} rounds)...`);
 
-        Promise.all([...clubsToFetch.entries()].map(([id, name]) => s.fetchSquad(id, name))).then(() => {
-            s.totalExpected = matchIds.length * 2;
-            s.updateProgress(`Loading ${matchIds.length} matches (${dates.length} rounds)...`);
-
-            matchIds.forEach(id => {
-                TmMatchModel.fetchMatchCached(id)
-                    .then(data => {
-                        if (data) processMatchData(id, data);
-                        else s.totalProcessed += 2;
-                    })
-                    .catch(() => { s.totalProcessed += 2; });
-            });
+        matchIds.forEach(id => {
+            TmMatchModel.fetchMatchCached(id)
+                .then(data => {
+                    if (data) processMatchData(id, data);
+                    else s.totalProcessed += 2;
+                })
+                .catch(() => { s.totalProcessed += 2; });
         });
 
         // Poll for completion, then show skill table

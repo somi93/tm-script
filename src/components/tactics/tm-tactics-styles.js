@@ -261,6 +261,15 @@ export function injectTacticsStyles() {
             vertical-align: middle;
             flex-shrink: 0;
         }
+        .tmtc-slot-mom {
+            display: inline-block;
+            margin-left: 3px;
+            color: #f5c518;
+            font-size: 10px;
+            line-height: 1;
+            vertical-align: middle;
+            flex-shrink: 0;
+        }
         .tmtc-slot-pos {
             font-key: var(--tmu-font-2xs);
         }

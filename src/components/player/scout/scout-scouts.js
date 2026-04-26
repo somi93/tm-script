@@ -1,6 +1,6 @@
 'use strict';
 
-import { TmPlayerModel } from '../../../models/player.js';
+import { TmScoutsModel } from '../../../models/scouts.js';
 import { TmPlayerDataTable } from '../skills/tm-player-data-table.js';
 import { TmUI } from '../../shared/tm-ui.js';
 import { TmUtils } from '../../../lib/tm-utils.js';
@@ -57,14 +57,20 @@ export const mountScoutScouts = (el, scouts, player, { onReRender = null } = {})
         const scoutId = btn.dataset.scoutId;
         btn.disabled = true;
         btn.textContent = '...';
-        TmPlayerModel.fetchPlayerInfo(player?.id, 'scout', { scout_id: scoutId }).then(d => {
+        TmScoutsModel.sendScout(player?.id, scoutId).then(d => {
             if (!d) {
                 btn.textContent = 'Error';
                 btn.style.color = 'var(--tmu-danger)';
                 setTimeout(() => { btn.textContent = 'Send'; btn.disabled = false; btn.style.color = ''; }, 2000);
                 return;
             }
-            if ((d.scouts || d.reports) && onReRender) { onReRender(d); return; }
+            if (onReRender) {
+                player.scoutReports = d.reports || [];
+                player.scouts = d.scouts || {};
+                player.bestEstimate = d.bestEstimate || null;
+                onReRender(d);
+                return;
+            }
             btn.textContent = 'Sent';
             btn.style.background = 'var(--tmu-surface-tab-hover)';
             btn.style.color = 'var(--tmu-success)';
