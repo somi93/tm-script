@@ -20,8 +20,17 @@ import { POSITION_MAP } from '../../constants/player.js';
 import { TmConst } from '../../lib/tm-constants.js';
 import { TmMatchField }           from './tm-match-field.js';
 import { mountTacticsSquadList }  from '../tactics/tm-tactics-squad-list.js';
+import { TmMatchPlayerDialog }    from './tm-match-player-dialog.js';
+import { buildMatchPlayerStats, buildMinutesPlayed } from './tm-match-postmatch.js';
 
 const STYLE_ID = 'mp-lineup-style';
+
+const positionOrder = (player) => TmConst.POSITION_MAP[(player?.position || '').toLowerCase()]?.ordering ?? 99;
+const sortPlayersByPosition = (players) => [...players].sort((a, b) =>
+    positionOrder(a) - positionOrder(b)
+    || Number(a?.no ?? 999) - Number(b?.no ?? 999)
+    || String(a?.nameLast || a?.name || '').localeCompare(String(b?.nameLast || b?.name || ''))
+);
 
 // ── Styles ────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -160,7 +169,7 @@ function rebuildPosMap(map, side, playerSlot, allPlayersById) {
 
 function makeMatchSquadCtx(lineup) {
     const { BENCH_SLOTS, POSITION_MAP: PM } = TmConst;
-    const players = lineup.map(p => ({ ...p, positions: p.positions || [] }));
+    const players = sortPlayersByPosition(lineup).map(p => ({ ...p, positions: p.positions || [] }));
     const players_by_id = Object.fromEntries(players.map(p => [String(p.id), p]));
 
     const getPlayerSlot  = p => p.positions.find(pos => pos.playing)?.key ?? null;
@@ -213,15 +222,29 @@ export const TmMatchLineup = {
         const awayPanel = document.createElement('div');
         awayPanel.className = 'mp-lu-side mp-lu-side-away';
 
+        // ── Shared lookup + click handler (defined early to avoid TDZ) ──
+        const allPlayersById = new Map([
+            ...match.home.lineup.map(p => [String(p.id), p]),
+            ...match.away.lineup.map(p => [String(p.id), p]),
+        ]);
+        let lastMinute = -1;
+        const handlePlayerClick = (player) => {
+            const min = lastMinute < 0 ? 0 : lastMinute;
+            const stats = buildMatchPlayerStats(match, min);
+            const mins  = buildMinutesPlayed(match, min);
+            const showRating = min >= (match.duration?.total ?? 95);
+            TmMatchPlayerDialog.open(player, stats[String(player.id)] || {}, mins.get(String(player.id)) ?? 0, { showRating });
+        };
+
         const homePosMap = buildInitialPosMap(match.home.lineup);
-        const homeField = TmMatchField.create(homePosMap, match.home.lineup);
+        const homeField = TmMatchField.create(homePosMap, match.home.lineup, { onPlayerClick: handlePlayerClick });
 
         const awayPosMap = buildInitialPosMap(match.away.lineup);
-        const awayField = TmMatchField.create(awayPosMap, match.away.lineup);
+        const awayField = TmMatchField.create(awayPosMap, match.away.lineup, { onPlayerClick: handlePlayerClick });
 
-        // ── Lineups-tab instances (separate DOM, shared posMap) ───────
-        const luHomeField = TmMatchField.create(homePosMap, match.home.lineup);
-        const luAwayField = TmMatchField.create(awayPosMap, match.away.lineup);
+        // ── Lineups-tab instances (separate DOM, shared posMap) ───────────
+        const luHomeField = TmMatchField.create(homePosMap, match.home.lineup, { onPlayerClick: handlePlayerClick });
+        const luAwayField = TmMatchField.create(awayPosMap, match.away.lineup, { onPlayerClick: handlePlayerClick });
 
         const starterHomePids = new Set(match.home.lineup.filter(p => POSITION_MAP[(p.position||'').toLowerCase()]).map(p => String(p.id)));
         const starterAwayPids = new Set(match.away.lineup.filter(p => POSITION_MAP[(p.position||'').toLowerCase()]).map(p => String(p.id)));
@@ -242,12 +265,17 @@ export const TmMatchLineup = {
         homePanel.append(homeField.el);
         awayPanel.append(awayField.el);
 
-        const allPlayersById = new Map([
-            ...match.home.lineup.map(p => [String(p.id), p]),
-            ...match.away.lineup.map(p => [String(p.id), p]),
-        ]);
-
-        let lastMinute = -1;
+        // Squad-list delegated click (rows have data-id)
+        const wireListClick = (listEl) => {
+            listEl.addEventListener('click', e => {
+                const row = e.target.closest('.tm-pr[data-id]');
+                if (!row) return;
+                const player = allPlayersById.get(row.dataset.id);
+                if (player) handlePlayerClick(player);
+            });
+        };
+        wireListClick(luHomeListEl);
+        wireListClick(luAwayListEl);
 
         function update(replayState) {
             const minute = replayState?.currentMinute ?? 0;

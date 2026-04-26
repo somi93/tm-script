@@ -14,6 +14,8 @@ import { TmMatchH2HNew }   from '../components/match-new/tm-match-h2h.js';
 import { TmMatchReportNew }   from '../components/match-new/tm-match-report.js';
 import { TmMatchLeagueNew }  from '../components/match-new/tm-match-league.js';
 import { TmMatchIntCupNew }  from '../components/match-new/tm-match-intcup.js';
+import { TmMatchTimeline }   from '../components/match-new/tm-match-timeline.js';
+import { TmMatchPostMatch }  from '../components/match-new/tm-match-postmatch.js';
 import { MENTALITY_MAP_LONG } from '../constants/match.js';
 
 // ── Overlay shell styles ──────────────────────────────────────────────────────
@@ -258,6 +260,7 @@ const openPlayer = async (matchId) => {
     let activeTab = 'details';
     let reportInstance = null;
     let leagueInstance = null;
+    let timelineInstance = null;
 
     const ctrl = TmReplayController.create({
         match, maximumMinute, schedule, unity,
@@ -271,6 +274,7 @@ const openPlayer = async (matchId) => {
             if (activeTab === 'report' && reportInstance) reportInstance.update(replayState);
             if (activeTab === 'statistics') stats.update(deriveStats(match, replayState));
             if (activeTab === 'league' && leagueInstance) leagueInstance.update(replayState);
+            if (activeTab === 'timeline' && timelineInstance) timelineInstance.update(replayState);
         },
         onMinuteAdvanced: (replayState) => { unity.updateHUD(); header.update(match, replayState, maximumMinute); },
         onEnded: (replayState) => {
@@ -281,6 +285,14 @@ const openPlayer = async (matchId) => {
             if (activeTab === 'report' && reportInstance) reportInstance.update(replayState);
             if (activeTab === 'statistics') stats.update(deriveStats(match, replayState));
             if (activeTab === 'league' && leagueInstance) leagueInstance.update(replayState);
+            if (activeTab === 'timeline' && timelineInstance) timelineInstance.update(replayState);
+            if (!matchEnded && activeTab === 'details') {
+                matchEnded = true;
+                unity.el.style.display = 'none';
+                postMatch.el.style.display = '';
+            } else {
+                matchEnded = true;
+            }
         },
     });
 
@@ -301,6 +313,12 @@ const openPlayer = async (matchId) => {
     const center = document.createElement('div');
     center.className = 'mp-center';
     center.appendChild(unity.el);
+
+    const postMatch = TmMatchPostMatch.create(match);
+    postMatch.el.style.display = 'none';
+    center.appendChild(postMatch.el);
+
+    let matchEnded = false;
 
     body.appendChild(lineup.homePanel.el);
     if (!isFuture) body.appendChild(center);
@@ -341,6 +359,9 @@ const openPlayer = async (matchId) => {
                 leagueInstance = TmMatchLeagueNew.create(match, ctrl.getState());
             }
             tabContent.appendChild(leagueInstance.el);
+        } else if (key === 'timeline') {
+            timelineInstance = TmMatchTimeline.create(match, ctrl.getState());
+            tabContent.appendChild(timelineInstance.el);
         }
         // other tabs: to be implemented
     };
@@ -355,6 +376,7 @@ const openPlayer = async (matchId) => {
             { key: 'report',     label: 'Report'     },
             { key: 'h2h',        label: 'H2H'        },
             { key: 'league',     label: match.competition?.type === 'international_cup' ? (match.competition.name || 'Cup') : 'League' },
+            { key: 'timeline',   label: 'Timeline'   },
             { key: 'venue',      label: 'Venue'      },
         ],
         active: 'details',
@@ -363,7 +385,15 @@ const openPlayer = async (matchId) => {
             activeTab = key;
             if (key === 'details') {
                 body.style.display = '';
-                unity.el.style.visibility = '';
+                if (matchEnded) {
+                    unity.el.style.display = 'none';
+                    unity.el.style.visibility = 'hidden';
+                    postMatch.el.style.display = '';
+                } else {
+                    unity.el.style.display = '';
+                    unity.el.style.visibility = '';
+                    postMatch.el.style.display = 'none';
+                }
                 tabContent.style.display = 'none';
             } else {
                 body.style.display = 'none';
@@ -371,6 +401,7 @@ const openPlayer = async (matchId) => {
                 tabContent.innerHTML = '';
                 reportInstance = null;
                 leagueInstance = null;
+                timelineInstance = null;
                 renderedTabs.clear();
                 renderTab(key);
                 tabContent.style.display = '';
