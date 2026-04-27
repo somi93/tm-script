@@ -58,6 +58,48 @@ function formatCountdown(totalSeconds) {
     return `${seconds}s`;
 }
 
+function isExpiredState(player, deadline, transfer) {
+    if (cleanText(transfer?.expiry).toLowerCase() === 'expired') return true;
+    if (cleanText(player?.timeleft_string).toLowerCase() === 'expired') return true;
+    return Number(deadline) <= 0 && cleanText(player?.timeleft_string).length > 0;
+}
+
+function buildOwnListingSnapshot(player, transfer, minimumBid, currentBid, isExpired) {
+    const transferBid = formatBidValue(transfer?.current_bid || player.bid);
+    const nextBid = formatBidValue(transfer?.next_bid || minimumBid);
+    const buyerId = cleanText(transfer?.buyer_id);
+    const buyerName = cleanText(transfer?.buyer_name);
+    const hasBuyer = buyerId && buyerId !== '0' && buyerName;
+    const numericBid = Number(String(transfer?.current_bid || player.bid || '').replace(/[^\d]/g, '')) || 0;
+
+    let markup = `
+        <tm-stat data-label="Current Bid" data-value="${escapeHtml(currentBid)}"></tm-stat>
+        <tm-stat data-label="Next Bid" data-value="${escapeHtml(nextBid)}"></tm-stat>
+        <tm-stat data-label="Expiry" data-value="${isExpired ? 'Expired' : escapeHtml(cleanText(player.timeleft_string) || '-')}" data-variant="${isExpired ? 'red' : 'yellow'}"></tm-stat>
+    `;
+
+    if (!isExpired) return markup;
+
+    if (hasBuyer) {
+        markup += `
+            <tm-stat data-label="Sold To" class="green"><a href="/club/${escapeHtml(buyerId)}">${escapeHtml(buyerName)}</a></tm-stat>
+            <tm-stat data-label="Price" data-value="${escapeHtml(transferBid)}" data-variant="green"></tm-stat>
+        `;
+        return markup;
+    }
+
+    if (numericBid > 0) {
+        markup += `
+            <tm-stat data-label="Result" data-value="Sold to Agent" data-variant="purple"></tm-stat>
+            <tm-stat data-label="Price" data-value="${escapeHtml(transferBid)}" data-variant="green"></tm-stat>
+        `;
+        return markup;
+    }
+
+    markup += '<tm-stat data-label="Result" data-value="Not Sold" data-variant="red"></tm-stat>';
+    return markup;
+}
+
 function injectStyles() {
     if (document.getElementById(STYLE_ID)) return;
 
@@ -99,7 +141,10 @@ function renderBidHistory(history = []) {
 function createBidDialogMarkup({ deadline, shortlist, bid_history, transfer }, player) {
     const minimumBid = formatBidValue(transfer?.next_bid || player.bid);
     const currentBid = formatBidValue(player.bid);
-    const timeLeft = Number.isFinite(Number(deadline)) ? formatCountdown(Number(deadline)) : cleanText(player.timeleft_string);
+    const isExpired = isExpiredState(player, deadline, transfer);
+    const timeLeft = isExpired
+        ? 'Expired'
+        : (Number.isFinite(Number(deadline)) ? formatCountdown(Number(deadline)) : cleanText(player.timeleft_string));
     const preferredPositions = (player.positions || []).filter(p => p.preferred);
     const posChips = preferredPositions.length ? TmPosition.chip(preferredPositions) : '';
     const showBidForm = !player.isOwnPlayer;
@@ -125,9 +170,9 @@ function createBidDialogMarkup({ deadline, shortlist, bid_history, transfer }, p
                 </div>
             </div>
             <div class="tmvu-bids-dialog-deadline">
-                <p class="tmu-kicker" style="margin:0 0 var(--tmu-space-xs);">Deadline</p>
+                <p class="tmu-kicker" style="margin:0 0 var(--tmu-space-xs);">${isExpired ? 'Status' : 'Deadline'}</p>
                 <div id="tl_pop_countdown" class="tmvu-bids-dialog-countdown">${escapeHtml(timeLeft || '-')}</div>
-                <p class="tmu-note" style="margin:0;">Time remaining</p>
+                <p class="tmu-note" style="margin:0;">${isExpired ? 'Listing closed' : 'Time remaining'}</p>
             </div>
         </div>
 
@@ -149,9 +194,7 @@ function createBidDialogMarkup({ deadline, shortlist, bid_history, transfer }, p
                         </div>
                     </form>
                 ` : `
-                    <tm-stat data-label="Current Bid" data-value="${escapeHtml(currentBid)}"></tm-stat>
-                    <tm-stat data-label="Next Bid" data-value="${escapeHtml(minimumBid)}"></tm-stat>
-                    <tm-stat data-label="Expires" data-value="${escapeHtml(cleanText(player.timeleft_string))}"></tm-stat>
+                    ${buildOwnListingSnapshot(player, transfer, minimumBid, currentBid, isExpired)}
                 `}
             </div>
         </div>

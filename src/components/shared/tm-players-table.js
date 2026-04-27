@@ -38,6 +38,24 @@ function posBarCol() {
     };
 }
 
+function isExpiredTimeleft(player) {
+    return String(player?.timeleft_string || '').trim().toLowerCase() === 'expired';
+}
+
+function hasVisibleBidRowState(player) {
+    return Number(player?.timeleft) > 0 || isExpiredTimeleft(player);
+}
+
+function renderTimeleftCell(player) {
+    if (Number(player?.timeleft) > 0) {
+        return `<span class="tmu-tabular${Number(player.timeleft) < 3600 ? ' tmpt-time-exp' : ''}" data-time-pid="${player.id}">${player.timeleft_string || ''}</span>`;
+    }
+    if (isExpiredTimeleft(player)) {
+        return '<span class="tmu-tabular tmpt-time-exp">Expired</span>';
+    }
+    return '<span style="color:var(--tmu-text-dim)">—</span>';
+}
+
 /**
  * Build TmTable-compatible column definitions for a player table.
  * @param {object} [opts]
@@ -151,10 +169,8 @@ export function buildPlayerHeaders(opts = {}) {
 
     if (showTimeleft) cols.push({
         key: 'timeleft', label: 'Time', align: 'r',
-        sort: (a, b) => (Number(a.timeleft) > 0 ? Number(a.timeleft) : 999999999) - (Number(b.timeleft) > 0 ? Number(b.timeleft) : 999999999),
-        render: (_, p) => Number(p.timeleft) > 0
-            ? `<span class="tmu-tabular${Number(p.timeleft) < 3600 ? ' tmpt-time-exp' : ''}" data-time-pid="${p.id}">${p.timeleft_string || ''}</span>`
-            : '<span style="color:var(--tmu-text-dim)">—</span>',
+        sort: (a, b) => (Number(a.timeleft) > 0 ? Number(a.timeleft) : (isExpiredTimeleft(a) ? 999999998 : 999999999)) - (Number(b.timeleft) > 0 ? Number(b.timeleft) : (isExpiredTimeleft(b) ? 999999998 : 999999999)),
+        render: (_, p) => renderTimeleftCell(p),
     });
 
     if (showCurbid) cols.push({
@@ -218,11 +234,11 @@ export const TmPlayersTable = {
             emptyText: opts.emptyText || 'No players found.',
             rowCls: opts.rowCls !== undefined
                 ? opts.rowCls
-                : (p) => Number(p.timeleft) > 0 ? 'tmpt-row-clickable' : null,
+                : (p) => hasVisibleBidRowState(p) ? 'tmpt-row-clickable' : null,
             rowAttrs: opts.rowAttrs || null,
             onRowClick: opts.onRowClick !== undefined
                 ? opts.onRowClick
-                : (p) => { if (Number(p.timeleft) > 0) TmBidsDialog.open({ ...p, sectionTitle }); },
+                : (p) => { if (hasVisibleBidRowState(p)) TmBidsDialog.open({ ...p, sectionTitle }); },
         });
 
         const wrap = document.createElement('div');

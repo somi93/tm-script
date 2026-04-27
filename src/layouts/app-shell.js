@@ -42,6 +42,7 @@ import { initNationalTeamsHistoryPage } from '../pages/national-teams-history.js
 import { initNationalTeamsStatisticsPage } from '../pages/national-teams-statistics.js';
 import { initNationalTeamsElectionPage } from '../pages/national-teams-election.js';
 import { initNationalTeamsRegionPage } from '../pages/national-teams-region.js';
+import { initNationalTeamsSquadPage } from '../pages/national-teams-squad.js';
 import { initNationalTeamsPage } from '../pages/national-teams.js';
 import { initSupportProPage } from '../pages/support-pro.js';
 import { initPlayerPage } from '../pages/player.js';
@@ -709,6 +710,10 @@ function initCurrentPage() {
     }
     if (/^\/national-teams\/region\//i.test(currentPath)) {
         initNationalTeamsRegionPage(main);
+    }
+    if (/^\/national-teams\/[a-z]{2,3}\/squad\/?$/i.test(currentPath)) {
+        initNationalTeamsSquadPage(main);
+        return;
     }
     if (/^\/national-teams\//i.test(currentPath)) {
         initNationalTeamsPage(main);

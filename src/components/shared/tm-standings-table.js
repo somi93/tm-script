@@ -185,7 +185,7 @@ function buildHtml({ rows = [], liveZoneMap = {}, isFiltered = false, showForm =
     const bodyRows = rows.map((row, index) => {
         let bg, color;
         const effectiveDirect = promoDirectCount || promotionCount;
-        const effectivePlayoff = promoPlayoffCount || 4;
+        const effectivePlayoff = promoPlayoffCount || 0;
         if (row.rank <= effectiveDirect) {
             bg = 'var(--tmu-success-fill-hover)'; color = 'var(--tmu-success)';
         } else if (row.rank <= effectivePlayoff) {

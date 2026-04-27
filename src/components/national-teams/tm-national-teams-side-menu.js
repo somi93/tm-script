@@ -40,7 +40,16 @@ export const buildNationalTeamsMenu = (root, currentPath = window.location.pathn
         }];
     });
 
-    const activeHref = items.find(item => item.type === 'link' && item.isSelected)?.href || normalizedCurrentPath;
+    const linkItems = items.filter(item => item.type === 'link');
+    const selectedHref = linkItems.find(item => item.isSelected)?.href || '';
+    const matchingItem = linkItems
+        .filter(item => {
+            const normalizedHref = normalizePath(item.href);
+            return normalizedHref && normalizedCurrentPath.startsWith(normalizedHref);
+        })
+        .sort((left, right) => normalizePath(right.href).length - normalizePath(left.href).length)[0] || null;
+    const exactItem = linkItems.find(item => normalizePath(item.href) === normalizedCurrentPath) || null;
+    const activeHref = exactItem?.href || matchingItem?.href || selectedHref || normalizedCurrentPath;
     return { items, activeHref };
 };
 

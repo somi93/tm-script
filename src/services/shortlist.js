@@ -68,11 +68,16 @@ function normalizeBidValue(value) {
     return new Intl.NumberFormat('en-US').format(Number(value) || 0);
 }
 
+function isExpiredTimeleftText(value) {
+    return cleanText(value).toLowerCase() === 'expired';
+}
+
 function isActiveBid(player) {
     return Boolean(player && (player.timeleft_string || player.curbid));
 }
 
 function parseTimeleft(str) {
+    if (isExpiredTimeleftText(str)) return -1;
     const m = String(str || '').trim().match(/^(\d+)\s*(d|h|m)$/i);
     if (!m) return 0;
     const v = parseInt(m[1]);
@@ -105,6 +110,7 @@ function parseHomeBidRows(doc, selector, direction) {
         const clubA = li.querySelector('.cell-club a[club_link]');
         const tlSpan = li.querySelector('.cell-timeleft span');
         const timeleft_string = tlSpan ? (tlSpan.childNodes[0]?.textContent?.trim() || '') : '';
+        const isExpired = isExpiredTimeleftText(timeleft_string);
         const row = {
             id,
             direction,
@@ -113,7 +119,7 @@ function parseHomeBidRows(doc, selector, direction) {
             club_id: clubA ? Number(clubA.getAttribute('club_link')) || 0 : 0,
             club_name: clubA?.textContent?.trim() || '',
             timeleft: parseTimeleft(timeleft_string),
-            timeleft_string,
+            timeleft_string: isExpired ? 'Expired' : timeleft_string,
         };
         console.log(`[TM Bids] parsed ${direction} id=${id} bid="${bidText}" timeleft="${timeleft_string}"`);
         return row;
