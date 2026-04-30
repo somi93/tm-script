@@ -153,7 +153,7 @@ function generateMainStub(bundleHash) {
 
     const BASE = isLocal
         ? 'file://H:/projects/Moji/tmscripts'
-        : 'https://raw.githubusercontent.com/somi93/tm-script/main';
+        : 'https://cdn.jsdelivr.net/gh/somi93/tm-script@main';
 
     // Append hash as cache-buster query string so the stub always points at the latest bundle.
     const bundleUrl = BASE + '/dist/tm-bundle.js?v=' + bundleHash;
