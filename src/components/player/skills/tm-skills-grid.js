@@ -7,8 +7,8 @@ const CSS = `
 .tmps-star { line-height: 1; }
 .tmps-star-suffix { font-size: var(--tmu-font-xs); opacity: .8; margin-left: 0; vertical-align: top; }
 .tmps-grid { border-radius: var(--tmu-space-md); }
-.tmps-hidden { background: linear-gradient(180deg, var(--tmu-surface-dark-strong), var(--tmu-surface-dark-soft)); }
-.tmps-unlock { background: linear-gradient(180deg, var(--tmu-surface-dark-mid), var(--tmu-surface-item-dark)); }
+.tmps-hidden { background: var(--tmu-card-bg); }
+.tmps-unlock { background: var(--tmu-card-bg); }
 .tmps-unlock .tmu-btn img { height: 12px; vertical-align: middle; }
 .tmps-wrap .tmu-stat-row + .tmu-stat-row { border-top-color: var(--tmu-border-soft-alpha); }
 .tmps-wrap .tmu-stat-lbl { color: var(--tmu-text-muted); }

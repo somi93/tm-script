@@ -6,8 +6,9 @@ import { TmButton } from '../components/shared/tm-button.js';
 import { TmSectionCard } from '../components/shared/tm-section-card.js';
 import { createSocialFeedController } from '../components/shared/tm-social-feed.js';
 import { TmUI } from '../components/shared/tm-ui.js';
+import { POSITION_MAP } from '../constants/player.js';
 import { TmConst } from '../lib/tm-constants.js';
-import { fetchRawPlayers } from '../models/club.js';
+import { TmClubModel } from '../models/club.js';
 import { TmMessagesModel } from '../models/messages.js';
 import { TmPlayerModel } from '../models/player.js';
 import { TmUtils } from '../lib/tm-utils.js';
@@ -49,7 +50,7 @@ export function initLeaguePage(main) {
 
     const fetchSquad = (clubId, name = '') => {
         if (!squadCache.has(clubId)) {
-            squadCache.set(clubId, fetchRawPlayers(clubId).then(players => {
+            squadCache.set(clubId, TmClubModel.fetchSquadRaw(clubId).then(players => {
                 const result = { id: String(clubId), name, squad: players || [] };
                 if (!result.squad.length) squadCache.delete(clubId);
                 return result;
@@ -63,23 +64,48 @@ export function initLeaguePage(main) {
 
     // ─── Per-player R5 resolution ─────────────────────────────────────────
     // squadData is the fetchSquad result: {id, name, squad: [normalizedPlayer]}.
-    // players_get_select.ajax.php returns only minimal data (no ASI, no skills, no age),
-    // so we always need a tooltip fetch to get real R5/REC.
-    // The squad pre-fetch is still useful to avoid duplicate tooltip fetches for the same club.
+    // Prefer squad data for speed; fall back to tooltip only if the player is missing.
+    const resolveMatchPosition = (player, matchPos) => {
+        const rawPos = String(matchPos || '').toLowerCase();
+        const mappedKey = ({ dcl: 'dc', dcr: 'dc', dmcl: 'dmc', dmcr: 'dmc', mcl: 'mc', mcr: 'mc', omcl: 'omc', omcr: 'omc', fcl: 'fc', fcr: 'fc' })[rawPos] || rawPos;
+        const direct = player.positions?.find(p => String(p.key || '').toLowerCase() === mappedKey);
+        if (direct) return { lookupPos: mappedKey, selectedPosition: direct };
+        const targetPos = POSITION_MAP[rawPos] || POSITION_MAP[mappedKey] || null;
+        if (!targetPos) return { lookupPos: mappedKey, selectedPosition: null };
+        const fallback = player.positions?.find(p => p?.main && Number(p.id) === Number(targetPos.id)) || null;
+        return { lookupPos: mappedKey, selectedPosition: fallback };
+    };
+
+    const resolvePlayerRatings = (player, matchPos) => {
+        const { lookupPos, selectedPosition } = resolveMatchPosition(player, matchPos);
+        const r5 = Number(selectedPosition?.r5 ?? player?.r5 ?? 0);
+        const rec = Number(selectedPosition?.rec ?? player?.rec ?? 0);
+        return {
+            lookupPos,
+            selectedPosition,
+            r5: Number.isFinite(r5) ? r5 : 0,
+            rec: Number.isFinite(rec) ? rec : 0,
+        };
+    };
+
     const getPlayerDataFromSquad = async (pid, squadData, matchPos) => {
-        // players_get_select only gives name/fp/no — no asi/skills → always need tooltip for ratings
-        let player = await TmPlayerModel.fetchTooltipCached(pid).catch(() => null);
-        // squad fallback: if tooltip fails (e.g. player deleted), try squad data
+        let player = (squadData.squad || []).find(p => String(p.id) === String(pid)) || null;
+        let fromSquad = !!player;
         if (!player) {
-            player = (squadData.squad || []).find(p => String(p.id) === String(pid)) || null;
+            player = await TmPlayerModel.fetchTooltipCached(pid).catch(() => null);
+            fromSquad = false;
         }
         if (!player) return { Age: 0, R5: 0, REC: 0, isGK: false, skills: [], routine: 0 };
-        const posData = player.positions?.find(p => p.key?.toLowerCase() === matchPos);
-        const posR5  = posData ? Number(posData.r5)  : NaN;
-        const posRec = posData ? Number(posData.rec) : NaN;
-        const r5  = Number.isFinite(posR5)  ? posR5  : (Number.isFinite(Number(player.r5))  ? Number(player.r5)  : 0);
-        const rec = Number.isFinite(posRec) ? posRec : (Number.isFinite(Number(player.rec)) ? Number(player.rec) : 0);
+        let { lookupPos, r5, rec } = resolvePlayerRatings(player, matchPos);
+        if (fromSquad && player.isGK && r5 <= 0) {
+            const tooltipPlayer = await TmPlayerModel.fetchTooltipCached(pid).catch(() => null);
+            if (tooltipPlayer) {
+                player = tooltipPlayer;
+                ({ lookupPos, r5, rec } = resolvePlayerRatings(player, matchPos));
+            }
+        }
         const age = Number.isFinite(player.ageMonths) ? player.ageMonths : 0;
+        console.log(`[League R5] ${player.name || pid} | pos=${lookupPos} | r5=${r5}`);
         return { Age: age, R5: r5, REC: rec, isGK: player.isGK, skills: player.skills, routine: player.routine };
     };
 

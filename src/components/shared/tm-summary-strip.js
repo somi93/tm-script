@@ -14,7 +14,7 @@ const CSS_TEXT = `
 .tmu-summary-strip-boxed{
     gap:var(--tmu-space-sm);
     padding:var(--tmu-space-sm) var(--tmu-space-md);
-    background:var(--tmu-color-base);
+    background:var(--tmu-card-bg);
 }
 .tmu-summary-item{
     display:flex;

@@ -215,7 +215,7 @@ export function mountInternationalCupOverviewPage(main) {
 
             .tmvu-icup-node-card {
                 padding: var(--tmu-space-md);
-                background: var(--tmu-surface-tab-active);
+                background: var(--tmu-card-bg, var(--tmu-surface-tab-active));
                 border: 1px solid var(--tmu-border-input-overlay);
                 border-radius: var(--tmu-space-sm);
             }

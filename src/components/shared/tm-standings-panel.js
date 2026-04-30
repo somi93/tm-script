@@ -29,9 +29,9 @@ function injectStyles() {
         }
         .form-badge:hover { opacity: 0.75; }
         .std-form-row { display: inline-flex; align-items: center; gap: 2px; flex-wrap: nowrap; white-space: nowrap; }
-        .form-w { background: var(--tmu-success); color: #fff; }
-        .form-d { background: var(--tmu-warning); color: #fff; }
-        .form-l { background: var(--tmu-danger); color: #fff; }
+        .form-w { background: var(--tmu-form-win-bg, var(--tmu-success)); color: #fff; }
+        .form-d { background: var(--tmu-form-draw-bg, var(--tmu-warning)); color: #fff; }
+        .form-l { background: var(--tmu-form-loss-bg, var(--tmu-danger)); color: #fff; }
         .form-u { background: var(--tmu-border-soft); color: var(--tmu-text-faint); }
         .std-hover-opp td { background: var(--tmu-success-fill-strong) !important; outline: 1px solid var(--tmu-success); }
         .std-hover-opp td:first-child { border-left: 3px solid var(--tmu-success) !important; }

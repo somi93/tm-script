@@ -9,7 +9,7 @@ const CSS = `
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 .tmps-note {
-    background: linear-gradient(180deg, var(--tmu-surface-dark-strong), var(--tmu-surface-dark-mid)); border: 1px solid var(--tmu-border-soft-alpha);
+    background: var(--tmu-card-bg); border: 1px solid var(--tmu-border-soft-alpha);
     line-height: 1.4;
 }
 .tmps-award-list {

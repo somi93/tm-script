@@ -174,7 +174,7 @@ export function initFixturesPage(main) {
                     { label: 'Goals Against', value: String(summary.goalsAgainst) },
                 ], { cls: 'tmcf-summary', variant: 'boxed', valueFirst: true, align: 'center' })}
                 <section class="tmcf-filters">${getFilterButtons(allMatches)}</section>
-                <section id="tmcf-months"></section>
+                <section class="tmcf-months-panel"><div id="tmcf-months"></div></section>
             </div>
         `;
 

@@ -66,7 +66,7 @@ const injectStyles = () => {
             .tmvu-sponsors-group {
                 border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: var(--tmu-space-md);
-                background: linear-gradient(180deg, var(--tmu-surface-panel) 0%, var(--tmu-surface-dark-mid) 100%);
+                background: var(--tmu-card-bg);
                 padding: var(--tmu-space-md);
             }
 
@@ -104,7 +104,7 @@ const injectStyles = () => {
                 width: 100%;
                 border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: var(--tmu-space-md);
-                background: var(--tmu-surface-item-dark);
+                background: rgba(255,255,255,.03);
                 color: var(--tmu-text-strong);
                 cursor: pointer;
                 padding: var(--tmu-space-md);
@@ -114,14 +114,14 @@ const injectStyles = () => {
 
             .tmvu-sponsors-option:hover {
                 border-color: var(--tmu-border-success);
-                background: var(--tmu-success-fill-faint);
+                background: rgba(255,255,255,.05);
                 transform: translateY(-1px);
             }
 
             .tmvu-sponsors-option.is-selected {
                 border-color: var(--tmu-border-success);
-                background: var(--tmu-success-fill-soft);
-                box-shadow: inset 0 0 0 1px var(--tmu-success-fill-hover);
+                background: rgba(255,255,255,.06);
+                box-shadow: inset 0 0 0 1px var(--tmu-border-success);
             }
 
             .tmvu-sponsors-option-name {
@@ -170,7 +170,7 @@ const injectStyles = () => {
             .tmvu-sponsors-offer {
                 border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: var(--tmu-space-lg);
-                background: linear-gradient(180deg, var(--tmu-surface-panel) 0%, var(--tmu-surface-dark-mid) 100%);
+                background: var(--tmu-card-bg);
                 overflow: hidden;
             }
 
@@ -243,7 +243,7 @@ const injectStyles = () => {
             .tmvu-sponsors-offer-meta-item {
                 border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: var(--tmu-space-md);
-                background: var(--tmu-border-contrast);
+                background: rgba(255,255,255,.03);
                 padding: var(--tmu-space-md);
             }
 
@@ -295,7 +295,7 @@ const injectStyles = () => {
                 align-items: center;
                 border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: var(--tmu-space-md);
-                background: var(--tmu-border-contrast);
+                background: rgba(255,255,255,.03);
                 padding: var(--tmu-space-md);
             }
 

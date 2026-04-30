@@ -3,6 +3,7 @@ const THEME_STYLE_ID = 'tmu-theme-style';
 const TMU_THEME_CSS = `
 :root{
 --tmu-color-primary:#00fea7;
+--tmu-color-primary-rgb:0,254,167;
 --tmu-color-secondary:#0a1614;
 --tmu-color-accent:#001810;
 --tmu-color-surface:#142420;
@@ -134,6 +135,7 @@ const TMU_THEME_CSS = `
 --tmu-metal-silver:silver;
 --tmu-metal-bronze:#cd7f32;
 --tmu-tabs-primary-bg:var(--tmu-surface-card);
+--tmu-tabs-bg:var(--tmu-color-secondary);
 --tmu-tabs-primary-border:var(--tmu-border-soft-alpha-strong);
 --tmu-tabs-primary-text:var(--tmu-text-muted);
 --tmu-tabs-primary-hover-text:var(--tmu-text-strong);
@@ -148,7 +150,14 @@ const TMU_THEME_CSS = `
 --tmu-tabs-secondary-hover-bg:var(--tmu-surface-item-strong);
 --tmu-tabs-secondary-active-text:var(--tmu-text-inverse);
 --tmu-tabs-secondary-active-bg:var(--tmu-surface-card-elevated);
---tmu-tabs-secondary-active-border:var(--tmu-color-primary)
+--tmu-tabs-secondary-active-border:var(--tmu-color-primary);
+--tmu-match-list-bg:var(--tmu-surface-dark-soft);
+--tmu-match-row-odd:transparent;
+--tmu-match-row-even:rgba(255,255,255,.02);
+--tmu-match-row-hover:var(--tmu-surface-tab-hover);
+--tmu-match-score-bg:rgba(255,255,255,.03);
+--tmu-match-score-hover-bg:var(--tmu-border-contrast);
+--tmu-match-score-border:rgba(255,255,255,.05)
 }
 `;
 
@@ -160,6 +169,7 @@ const TMU_THEME_SHADOW_CSS = TMU_THEME_CSS.replace(':root{', ':host{');
 const TMU_THEME_DIFF_BLUE = `
 :root{
 --tmu-color-primary:#ff0046;
+--tmu-color-primary-rgb:255,0,70;
 --tmu-color-secondary:#0f2d37;
 --tmu-color-accent:#001e28;
 --tmu-color-surface:#0f2d37;
@@ -207,14 +217,236 @@ const TMU_THEME_DIFF_BLUE = `
 }
 `;
 
+const TMU_THEME_DIFF_PITCH = `
+:root{
+--tmu-color-primary:#8ecf47;
+--tmu-color-primary-rgb:142,207,71;
+--tmu-color-secondary:#12311d;
+--tmu-color-accent:#08170c;
+--tmu-color-surface:#183624;
+--tmu-color-base:#07100a;
+--tmu-color-elevated:#264a34;
+--tmu-surface-card-soft:#183624;
+--tmu-surface-panel:#07100a;
+--tmu-surface-dark-soft:rgba(2,8,4,.24);
+--tmu-surface-dark-mid:rgba(2,8,4,.34);
+--tmu-surface-dark-strong:rgba(2,8,4,.5);
+--tmu-surface-dark-muted:rgba(2,8,4,.28);
+--tmu-surface-item-dark:rgba(255,255,255,.02);
+--tmu-surface-input-dark:rgba(4,12,6,.94);
+--tmu-surface-input-dark-focus:rgba(4,12,6,.98);
+--tmu-surface-panel-dark:rgba(5,14,8,.94);
+--tmu-surface-accent-soft:rgba(142,207,71,.11);
+--tmu-surface-card-elevated:#264a34;
+--tmu-surface-card-hero:rgba(22,52,33,.96);
+--tmu-surface-item-strong:rgba(255,255,255,.06);
+--tmu-surface-item-hover:rgba(142,207,71,.14);
+--tmu-surface-header:rgba(5,14,8,.98);
+--tmu-surface-header-soft:rgba(5,14,8,.88);
+--tmu-surface-nav-pill-active:rgba(142,207,71,.16);
+--tmu-surface-embedded:#183624;
+--tmu-surface-tab:#183624;
+--tmu-surface-tab-hover:#264a34;
+--tmu-surface-tab-active:rgba(142,207,71,.12);
+--tmu-border-strong:#8ecf47;
+--tmu-border-embedded:#8ecf47;
+--tmu-border-glow-soft:rgba(142,207,71,.24);
+--tmu-border-header:rgba(0,0,0,.45);
+--tmu-border-pill-active:rgba(142,207,71,.42);
+--tmu-border-input-overlay:rgba(142,207,71,.36);
+--tmu-border-success:rgba(142,207,71,.28);
+--tmu-border-accent:rgba(142,207,71,.24);
+--tmu-border-live:#7ddc62;
+--tmu-shadow-ring:rgba(0,0,0,.38);
+--tmu-shadow-elev:rgba(0,0,0,.34);
+--tmu-shadow-panel:rgba(0,0,0,.58);
+--tmu-shadow-soft:rgba(0,0,0,.24);
+--tmu-shadow-deep:rgba(0,0,0,.42);
+--tmu-shadow-glow:rgba(142,207,71,.1);
+--tmu-text-strong:#f1f6ee;
+--tmu-text-main:#c6d0c3;
+--tmu-text-muted:#839180;
+--tmu-text-dim:#536250;
+--tmu-text-faint:#687663;
+--tmu-text-disabled:#394836;
+--tmu-text-disabled-strong:#2a3628;
+--tmu-text-panel-label:#95a48f;
+--tmu-text-accent-soft:#e0f2c8;
+--tmu-text-live:#9be27c;
+--tmu-accent:var(--tmu-color-primary);
+--tmu-success-fill:var(--tmu-color-secondary);
+--tmu-success-fill-faint:rgba(142,207,71,.075);
+--tmu-success-fill-soft:rgba(142,207,71,.11);
+--tmu-success-fill-hover:rgba(142,207,71,.16);
+--tmu-success-fill-strong:rgba(142,207,71,.22);
+--tmu-accent-fill:var(--tmu-color-accent);
+--tmu-accent-fill-soft:rgba(8,23,12,.72);
+--tmu-live-fill:#0a1f0d;
+--tmu-compare-fill:rgba(142,207,71,.08);
+--tmu-compare-home-grad-start:#12311d;
+--tmu-compare-home-grad-end:#8ecf47;
+--tmu-tabs-primary-active-border:#8ecf47;
+--tmu-tabs-secondary-active-border:#8ecf47
+}
+`;
+
+const TMU_THEME_DIFF_CLASSIC = `
+:root{
+--tmu-color-primary:#84bf1f;
+--tmu-color-primary-rgb:132,191,31;
+--tmu-color-secondary:#41631f;
+--tmu-color-accent:#333;
+--tmu-color-surface:#649024;
+--tmu-color-base:#333;
+--tmu-color-elevated:#649024;
+--tmu-surface-card:#649024;
+--tmu-surface-card-soft:#649024;
+--tmu-surface-panel:#649024;
+--tmu-surface-dark-soft:rgba(100,144,36,.22);
+--tmu-surface-dark-mid:rgba(65,99,31,.3);
+--tmu-surface-dark-strong:rgba(51,51,51,.88);
+--tmu-surface-dark-muted:rgba(65,99,31,.82);
+--tmu-surface-item-dark:rgba(255,255,255,.035);
+--tmu-surface-input-dark:rgba(22,24,20,.96);
+--tmu-surface-input-dark-focus:rgba(28,31,25,.98);
+--tmu-surface-panel-dark:rgba(51,51,51,.95);
+--tmu-surface-accent-soft:rgba(255,255,255,.03);
+--tmu-surface-card-elevated:#578029;
+--tmu-surface-card-hero:rgba(100,144,36,.96);
+--tmu-card-bg:#24330f;
+--tmu-card-head-bg:#333;
+--tmu-surface-item-strong:rgba(87,128,41,.22);
+--tmu-surface-item-hover:rgba(87,128,41,.3);
+--tmu-shell-body-bg:#41631f;
+--tmu-shell-header-bg:#41631f;
+--tmu-league-panel-bg:#578029;
+--tmu-league-panel-border:rgba(255,255,255,.09);
+--tmu-league-head-bg:#333;
+--tmu-league-head-border:rgba(255,255,255,.1);
+--tmu-league-table-shell:#2a3b12;
+--tmu-league-table-odd:#314718;
+--tmu-league-table-even:#39541d;
+--tmu-league-table-row-hover:#41631f;
+--tmu-table-row-odd:#314718;
+--tmu-table-row-even:#39541d;
+--tmu-table-row-hover:#41631f;
+--tmu-standings-row-odd:#314718;
+--tmu-standings-row-even:#39541d;
+--tmu-standings-row-hover:#41631f;
+--tmu-transfer-table-odd:var(--tmu-card-bg);
+--tmu-transfer-table-even:var(--tmu-card-bg);
+--tmu-transfer-table-hover:#2f4415;
+--tmu-fixture-row-odd:#24330f;
+--tmu-fixture-row-even:#2b3d13;
+--tmu-fixture-row-hover:#39541d;
+--tmu-fixture-head-bg:#333;
+--tmu-fixture-panel-bg:#24330f;
+--tmu-fixture-score-bg:rgba(0,0,0,.16);
+--tmu-fixture-score-border:rgba(255,255,255,.06);
+--tmu-match-list-bg:var(--tmu-fixture-panel-bg);
+--tmu-match-row-odd:var(--tmu-fixture-row-odd);
+--tmu-match-row-even:var(--tmu-fixture-row-even);
+--tmu-match-row-hover:var(--tmu-fixture-row-hover);
+--tmu-match-score-bg:var(--tmu-fixture-score-bg);
+--tmu-match-score-hover-bg:#4b6e24;
+--tmu-match-score-border:var(--tmu-fixture-score-border);
+--tmu-form-win-bg:#6c9728;
+--tmu-form-draw-bg:#b97512;
+--tmu-form-loss-bg:#a12a1f;
+--tmu-league-sidebar-card-bg:#4f721f;
+--tmu-league-sidebar-stripe:rgba(36,51,15,.14);
+--tmu-league-sidebar-stripe-alt:rgba(255,255,255,.015);
+--tmu-match-shell-bg:var(--tmu-shell-body-bg);
+--tmu-match-content-bg:linear-gradient(180deg, rgba(49,95,5,.18) 0%, rgba(45,70,15,.92) 100%);
+--tmu-match-header-bg:var(--tmu-shell-header-bg);
+--tmu-match-panel-accent:rgba(132,191,31,.1);
+--tmu-match-panel-border:rgba(132,191,31,.16);
+--tmu-surface-header:rgba(100,144,36,.96);
+--tmu-surface-header-soft:rgba(100,144,36,.86);
+--tmu-surface-nav-pill-active:rgba(255,255,255,.07);
+--tmu-surface-embedded:#578029;
+--tmu-surface-overlay-soft:rgba(65,99,31,.12);
+--tmu-surface-overlay:rgba(65,99,31,.24);
+--tmu-surface-overlay-strong:rgba(51,51,51,.34);
+--tmu-surface-tab:#333;
+--tmu-surface-tab-hover:#578029;
+--tmu-surface-tab-active:#649024;
+--tmu-border-soft:rgba(255,255,255,.09);
+--tmu-border-strong:var(--tmu-color-primary);
+--tmu-border-embedded:var(--tmu-color-primary);
+--tmu-border-soft-alpha:rgba(255,255,255,.1);
+--tmu-border-soft-alpha-mid:rgba(255,255,255,.15);
+--tmu-border-soft-alpha-strong:rgba(255,255,255,.22);
+--tmu-border-glow-soft:rgba(132,191,31,.22);
+--tmu-border-header:rgba(27,35,8,.44);
+--tmu-border-pill:rgba(255,255,255,.14);
+--tmu-border-pill-active:rgba(132,191,31,.32);
+--tmu-border-contrast:rgba(255,255,255,.035);
+--tmu-border-faint:rgba(255,255,255,.09);
+--tmu-border-input:rgba(255,255,255,.14);
+--tmu-border-input-overlay:rgba(132,191,31,.28);
+--tmu-border-success:rgba(132,191,31,.24);
+--tmu-border-accent:rgba(132,191,31,.2);
+--tmu-border-live:var(--tmu-color-primary);
+--tmu-shadow-ring:rgba(5,6,5,.34);
+--tmu-shadow-elev:rgba(4,5,4,.3);
+--tmu-shadow-panel:rgba(3,4,3,.46);
+--tmu-shadow-soft:rgba(4,5,4,.22);
+--tmu-shadow-deep:rgba(2,3,2,.34);
+--tmu-shadow-glow:rgba(132,191,31,.08);
+--tmu-shadow-header:rgba(10,16,3,.32);
+--tmu-shadow-card-strong:rgba(4,5,4,.3);
+--tmu-text-strong:#f8f9ef;
+--tmu-text-main:#e8eadf;
+--tmu-text-muted:#cfd4c4;
+--tmu-text-dim:#959d87;
+--tmu-text-faint:#acb39d;
+--tmu-text-disabled:#7a8f49;
+--tmu-text-disabled-strong:#65783d;
+--tmu-text-panel-label:#e1e6d4;
+--tmu-text-accent-soft:#f3f5ed;
+--tmu-text-live:#dce98f;
+--tmu-accent:var(--tmu-color-primary);
+--tmu-success:var(--tmu-color-primary);
+--tmu-success-fill:#649024;
+--tmu-success-fill-faint:rgba(100,144,36,.12);
+--tmu-success-fill-soft:rgba(100,144,36,.18);
+--tmu-success-fill-hover:rgba(100,144,36,.24);
+--tmu-success-fill-strong:rgba(100,144,36,.3);
+--tmu-accent-fill:#333;
+--tmu-accent-fill-soft:rgba(23,25,20,.72);
+--tmu-danger-fill:#5d1b10;
+--tmu-info-fill:#41631f;
+--tmu-live-fill:#41631f;
+--tmu-compare-fill:rgba(255,255,255,.04);
+--tmu-compare-home-grad-start:#41631f;
+--tmu-compare-home-grad-end:#649024;
+--tmu-tabs-secondary-bg:#41631f;
+--tmu-tabs-secondary-border:rgba(255,255,255,.1);
+--tmu-tabs-secondary-text:#cfd4c4;
+--tmu-tabs-secondary-hover-text:#f8f9ef;
+--tmu-tabs-secondary-hover-bg:#578029;
+--tmu-tabs-secondary-active-text:#f8f9ef;
+--tmu-tabs-secondary-active-bg:#649024;
+--tmu-tabs-primary-active-border:var(--tmu-color-primary);
+--tmu-tabs-secondary-active-border:var(--tmu-color-primary)
+}
+`;
+
 const THEME_STORAGE_KEY = 'tmu-theme-id';
 
 export function getSavedThemeId() {
-    try { return localStorage.getItem(THEME_STORAGE_KEY) || 'green'; } catch { return 'green'; }
+    try {
+        const saved = localStorage.getItem(THEME_STORAGE_KEY) || 'green';
+        return ['green', 'blue', 'pitch', 'classic'].includes(saved) ? saved : 'green';
+    } catch { return 'green'; }
 }
 
 function buildThemeCss(id) {
-    return id === 'blue' ? TMU_THEME_CSS + TMU_THEME_DIFF_BLUE : TMU_THEME_CSS;
+    if (id === 'blue') return TMU_THEME_CSS + TMU_THEME_DIFF_BLUE;
+    if (id === 'pitch') return TMU_THEME_CSS + TMU_THEME_DIFF_PITCH;
+    if (id === 'classic') return TMU_THEME_CSS + TMU_THEME_DIFF_CLASSIC;
+    return TMU_THEME_CSS;
 }
 
 export function applyTheme(id) {

@@ -384,7 +384,7 @@ const mountOverview = (host) => {
         title: 'Squad Training Overview',
         icon: '🏋',
         titleMode: 'body',
-        cardVariant: 'soft',
+        cardVariant: 'flatpanel',
         hostClass: 'tmvu-tr-card-host',
         bodyClass: 'tmvu-tr-card-body tmu-stack tmu-stack-density-regular',
     });
@@ -398,7 +398,7 @@ const mountEditor = (host) => {
         title: 'Training Editor',
         icon: '🛠',
         titleMode: 'body',
-        cardVariant: 'soft',
+        cardVariant: 'flatpanel',
         hostClass: 'tmvu-tr-editor-host',
         bodyClass: 'tmvu-tr-editor-body tmu-stack tmu-stack-density-regular',
     });

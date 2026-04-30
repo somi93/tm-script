@@ -12,8 +12,8 @@ const injectStyles = () => {
             gap: var(--tmu-space-lg);
             padding: var(--tmu-space-xl);
             background:
-                radial-gradient(ellipse 70% 90% at 30% 50%, rgba(40,70,110,.20) 0%, transparent 100%),
-                var(--tmu-surface-dark-strong);
+                radial-gradient(ellipse 70% 90% at 30% 50%, var(--tmu-success-fill-soft) 0%, transparent 100%),
+                var(--tmu-card-bg);
             box-shadow: 0 12px 28px var(--tmu-shadow-elev);
         }
 

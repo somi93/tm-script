@@ -69,7 +69,7 @@ export function initTransferPage(main) {
                 const span = document.querySelector(`[data-time-pid="${p.id}"]`);
                 if (!span) continue;
                 span.textContent = p.timeleft_string;
-                if (p.timeleft < 3600) span.classList.add('tmpt-time-exp');
+                if (p.timeleft < 120) span.classList.add('tmpt-time-exp');
             }
             if (needsRefresh) scheduleRefresh();
         }, 1000);
@@ -395,7 +395,7 @@ export function initTransferPage(main) {
         if (document.getElementById('tms-main') || document.getElementById('tms-sidebar')) return;
         const layoutHtml = `
   ${TmTransferSidebar.build()}
-    <div id="tms-main" class="tmvu-transfer-main tmu-panel">
+    <div id="tms-main" class="tmvu-transfer-main tmu-card">
     <div id="tms-toolbar">
       <span id="tms-hits">0</span>
       <span class="tms-toolbar-label"> players</span>

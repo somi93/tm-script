@@ -8,13 +8,13 @@ const injectStyles = () => {
     const style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent = `
-        .tmvu-fix-list { display: flex; flex-direction: column; }
+        .tmvu-fix-list { display: flex; flex-direction: column; background: var(--tmu-fixture-panel-bg, transparent); }
         .tmvu-fix-date-header {
             display: flex; align-items: center; justify-content: space-between;
-            padding: var(--tmu-space-xs) var(--tmu-space-md);
+            padding: var(--tmu-space-sm) var(--tmu-space-md);
             font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-text-faint);
             text-transform: uppercase; letter-spacing: 0.5px;
-            background: var(--tmu-color-accent); border-top: 1px solid var(--tmu-border-soft-alpha);
+            background: var(--tmu-fixture-head-bg, var(--tmu-color-accent)); border-top: 1px solid var(--tmu-border-soft-alpha);
         }
         .tmvu-fix-list .tmvu-fix-date-header:first-child { border-top: none; }
         .tmvu-fix-date-sub { color: var(--tmu-text-dim); font-size: var(--tmu-font-xs); font-weight: 700; }

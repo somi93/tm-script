@@ -34,8 +34,8 @@ if (!document.getElementById('tsa-league-panel-style')) {
             .tsa-ssnpick { position: relative; flex-shrink: 0; }
             /* ── Panel flat container (like squad) ── */
             #tsa-standings-panel {
-                background: var(--tmu-border-header);
-                border: 1px solid var(--tmu-border-soft-alpha);
+                background: var(--tmu-league-panel-bg, var(--tmu-border-header));
+                border: 1px solid var(--tmu-league-panel-border, var(--tmu-border-soft-alpha));
                 border-radius: var(--tmu-space-md);
                 overflow: hidden;
                 margin-bottom: var(--tmu-space-lg);

@@ -3,6 +3,21 @@ import { TmUI } from './tm-ui.js';
 
 const STYLE_ID = 'tmvu-match-tooltip-style';
 
+const formatKickoffDate = (kickoffReadable) => {
+    const readable = String(kickoffReadable || '').trim();
+    if (!readable) return '';
+
+    const datePart = readable.split(' ')[0] || '';
+    const match = datePart.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!match) return datePart || readable;
+
+    const [, year, month, day] = match;
+    const parsed = new Date(Number(year), Number(month) - 1, Number(day));
+    if (Number.isNaN(parsed.getTime())) return datePart;
+
+    return parsed.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+};
+
 const ensureStyles = () => {
     if (document.getElementById(STYLE_ID)) return;
     const style = document.createElement('style');
@@ -10,7 +25,7 @@ const ensureStyles = () => {
     style.textContent = `
         .rnd-h2h-tooltip {
             position: absolute; z-index: 100;
-            background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-success);
+            background: var(--tmu-card-bg); border: 1px solid var(--tmu-border-soft-alpha);
             border-radius: var(--tmu-space-md); padding: var(--tmu-space-xl) var(--tmu-space-xxl);
             min-width: 520px; max-width: 600px;
             max-height: 75vh; overflow-y: auto;
@@ -215,7 +230,7 @@ export const TmMatchTooltip = {
         const kickoffReadable = md.venue?.kickoff_readable || (matchData.date ? `${matchData.date} ${matchData.kickoffTime || ''}` : '');
         const attendance = matchData.attendance ?? (md.attendance ? Number(md.attendance) : null);
         html += buildMeta([
-            kickoffReadable ? `📅 ${new Date(kickoffReadable.replace(' ', 'T')).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : '',
+            kickoffReadable ? `📅 ${formatKickoffDate(kickoffReadable)}` : '',
             venueName ? `🏟 ${venueName}` : '',
             attendance ? `👥 ${Number(attendance).toLocaleString()}` : '',
         ]);

@@ -28,8 +28,8 @@ const injectStyles = () => {
     s.textContent = `
         .mp-head {
             flex-shrink: 0; padding: 12px 48px 8px; position: relative;
-            background: linear-gradient(180deg, var(--tmu-surface-card-soft) 0%, var(--tmu-surface-panel) 100%);
-            border-bottom: 1px solid var(--tmu-border-soft);
+            background: var(--tmu-match-header-bg, linear-gradient(180deg, var(--tmu-surface-card-soft) 0%, var(--tmu-surface-panel) 100%));
+            border-bottom: 1px solid var(--tmu-match-panel-border, var(--tmu-border-soft));
         }
         .mp-head-row {
             display: flex; align-items: center; justify-content: center; gap: 16px;
@@ -72,7 +72,7 @@ const injectStyles = () => {
         /* ── Tactic strip ── removed — chips now inside .mp-team-chips */
         .mp-progress {
             flex: 1; max-width: 400px; height: 4px;
-            background: var(--tmu-accent-fill); border-radius: 2px; overflow: hidden;
+            background: var(--tmu-match-panel-accent, var(--tmu-accent-fill)); border-radius: 2px; overflow: hidden;
         }
         .mp-progress-fill {
             height: 100%; width: 0; border-radius: 2px;

@@ -1,50 +1,38 @@
-import { TmConst } from '../../lib/tm-constants.js';
 import { TmUtils } from '../../lib/tm-utils.js';
 import { TmUI } from '../shared/tm-ui.js';
-
-const getColor = TmUtils.getColor;
 
 function fmtNum(n) { return TmUtils.fmtCoins(n); }
 
 export function fmtRec(val) {
-    const { REC_THRESHOLDS } = TmConst;
     if (val == null || val === '') return '<span class="tms-muted tmu-text-faint">—</span>';
     const num = parseFloat(val);
     const disp = Number.isInteger(num) ? String(num) : num.toFixed(2);
-    const clr = getColor(num, REC_THRESHOLDS);
-    return `<span class="tms-rec tmu-tabular" style="border-color:${clr}44;color:${clr}">${disp}</span>`;
+    return `<span class="tms-rec tmu-tabular">${disp}</span>`;
 }
 
 export function tiHtml(ti) {
-    const { TI_THRESHOLDS } = TmConst;
     if (ti === null || ti === undefined) return '<span class="tms-muted tmu-text-faint">—</span>';
-    const clr = getColor(ti, TI_THRESHOLDS);
-    return `<span class="tms-strong-val tmu-tabular" style="color:${clr}">${ti.toFixed(1)}</span>`;
+    return `<span class="tms-strong-val tmu-tabular">${ti.toFixed(1)}</span>`;
 }
 
 export function fmtR5(r5) {
-    const { R5_THRESHOLDS } = TmConst;
     if (r5 == null) return '<span class="tms-tip-pending">…</span>';
-    const clr = getColor(r5, R5_THRESHOLDS);
-    return `<span class="tms-strong-val tmu-tabular" style="color:${clr}">${TmUtils.formatR5(r5)}</span>`;
+    return `<span class="tms-strong-val tmu-tabular">${TmUtils.formatR5(r5)}</span>`;
 }
 
 export function fmtR5Range(lo, hi) {
-    const { R5_THRESHOLDS } = TmConst;
     if (lo == null || hi == null) return '<span class="tms-tip-pending">…</span>';
     const loFixed = TmUtils.formatR5(lo), hiFixed = TmUtils.formatR5(hi);
-    const clrLo = getColor(lo, R5_THRESHOLDS);
-    const clrHi = getColor(hi, R5_THRESHOLDS);
     if (loFixed === hiFixed)
-        return `<span class="tms-range-wrap tmu-tabular"><span class="tms-strong-val tmu-tabular" style="color:${clrHi}">${hiFixed}</span></span>`;
+        return `<span class="tms-range-wrap tmu-tabular"><span class="tms-strong-val tmu-tabular">${hiFixed}</span></span>`;
     return `<span class="tms-range-wrap tmu-tabular">` +
-        `<span class="tms-range-val tmu-tabular" style="color:${clrLo}">${loFixed}</span>` +
+        `<span class="tms-range-val tmu-tabular">${loFixed}</span>` +
         `<span class="tms-range-sep">–</span>` +
-        `<span class="tms-range-val tmu-tabular" style="color:${clrHi}">${hiFixed}</span></span>`;
+        `<span class="tms-range-val tmu-tabular">${hiFixed}</span></span>`;
 }
 
 const MOUNT_OPTIONS = {
-    columns: { rtn: false },
+    columns: { rtn: false, colorize: false },
     sortKey: 'timeleft',
     sortDir: 1,
     onRowClick: null,

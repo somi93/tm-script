@@ -17,6 +17,20 @@ const THEMES_META = [
         bg: '#00141e',
         nav: '#001e28',
     },
+    {
+        id: 'pitch',
+        name: 'Pitch Green',
+        primary: '#8ecf47',
+        bg: '#07100a',
+        nav: '#12311d',
+    },
+    {
+        id: 'classic',
+        name: 'Classic Olive',
+        primary: '#c7df3a',
+        bg: '#345f08',
+        nav: '#315f05',
+    },
 ];
 
 function buildDialogCss() {

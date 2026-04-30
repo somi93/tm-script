@@ -23,6 +23,9 @@ const injectStyles = () => {
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            background: var(--tmu-match-list-bg, transparent);
+            border: 1px solid var(--tmu-border-input-overlay, var(--tmu-border-soft));
+            border-radius: var(--tmu-space-sm);
         }
 
         .tmvu-match-row {
@@ -38,12 +41,20 @@ const injectStyles = () => {
             font-size: var(--tmu-font-sm);
         }
 
+        .tmvu-match-row.tmvu-match-row-odd {
+            background: var(--tmu-match-row-odd, transparent);
+        }
+
+        .tmvu-match-row.tmvu-match-row-even {
+            background: var(--tmu-match-row-even, rgba(255,255,255,.02));
+        }
+
         .tmvu-match-row:last-child {
             border-bottom: none;
         }
 
         .tmvu-match-row:hover {
-            background: var(--tmu-surface-tab-hover) !important;
+            background: var(--tmu-match-row-hover, var(--tmu-surface-tab-hover)) !important;
         }
 
         .tmvu-match-highlight {
@@ -115,10 +126,12 @@ const injectStyles = () => {
             display: inline-block;
             color: var(--tmu-text-strong);
             text-decoration: none;
+            background: var(--tmu-match-score-bg, rgba(255,255,255,.03));
+            border: 1px solid var(--tmu-match-score-border, rgba(255,255,255,.05));
         }
 
         .tmvu-match-score:hover {
-            background: var(--tmu-border-contrast);
+            background: var(--tmu-match-score-hover-bg, var(--tmu-border-contrast));
         }
 
         .tmvu-match-score-upcoming {
@@ -188,7 +201,7 @@ const render = ({
         : `<span class="${scoreClass}">${safeScore}</span>`;
 
     return `
-        <div class="tmvu-match-row${isHighlight ? ' tmvu-match-highlight' : ''}"
+        <div class="tmvu-match-row tmvu-match-row-${index % 2 === 0 ? 'odd' : 'even'}${isHighlight ? ' tmvu-match-highlight' : ''}"
             data-mid="${matchId || ''}" data-season="${season || ''}" data-played="${isPlayed ? '1' : '0'}">
             <div class="tmvu-match-team tmvu-match-team-home">
                 <span class="tmvu-match-team-inner">${renderTeam(home, 'home', showLogos)}</span>

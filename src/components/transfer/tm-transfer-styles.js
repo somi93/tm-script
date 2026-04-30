@@ -7,6 +7,7 @@ export const TmTransferStyles = {
         display: flex !important;
         gap: var(--tmu-space-lg);
         align-items: flex-start;
+        padding-top: var(--tmu-space-lg);
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         color: var(--tmu-text-main);
     }
@@ -142,20 +143,25 @@ export const TmTransferStyles = {
     }
 
     /* ─── Table ─── */
-    .tms-table-wrap { overflow-x: auto; border-radius: var(--tmu-space-sm); border: 1px solid var(--tmu-border-soft); }
+    .tms-table-wrap { overflow-x: auto; border-radius: var(--tmu-space-sm); border: 1px solid var(--tmu-border-soft); background: var(--tmu-card-bg); }
     .tms-table-wrap::-webkit-scrollbar { height: 4px; }
     .tms-table-wrap::-webkit-scrollbar-track { background: var(--tmu-shadow-panel); }
     .tms-table-wrap::-webkit-scrollbar-thumb { background: var(--tmu-border-embedded); border-radius: var(--tmu-space-xs); }
+
+    .tmvu-main.tmvu-transfer-page .tmu-tbl tbody td {
+        border-bottom: none;
+    }
 
     #tms-table {
         width: 100%;
         border-collapse: collapse;
         font-size: var(--tmu-font-xs);
         color: var(--tmu-text-main);
+        background: var(--tmu-card-bg);
     }
-    #tms-table thead tr { border-bottom: 1px solid var(--tmu-border-soft);background: var(--tmu-surface-overlay); }
+    #tms-table thead tr { border-bottom: 1px solid var(--tmu-border-soft); background: var(--tmu-card-bg); }
     #tms-table th {
-        background: var(--tmu-surface-embedded);
+        background: var(--tmu-card-bg);
         color: var(--tmu-text-faint);
         font-size: var(--tmu-font-xs);
         font-weight: 700;
@@ -168,22 +174,34 @@ export const TmTransferStyles = {
         position: sticky;
         top: 0;
         z-index: 2;
-        background: var(--tmu-surface-embedded);
+        background: var(--tmu-card-bg);
     }
-    #tms-table th:hover { color: var(--tmu-text-main); background: var(--tmu-surface-tab-hover); }
+    #tms-table th:hover { color: var(--tmu-text-main); background: #2f4415; }
     #tms-table th.sort-asc::after  { content: ' ▲'; color: var(--tmu-success); }
     #tms-table th.sort-desc::after { content: ' ▼'; color: var(--tmu-success); }
     #tms-table td {
         padding: var(--tmu-space-xs) var(--tmu-space-sm);
-        border-bottom: 1px solid var(--tmu-border-input-overlay);
+        border-bottom: none;
         vertical-align: middle;
         white-space: nowrap;
     }
-    #tms-table .tms-player-row { background: var(--tmu-surface-panel); }
-    #tms-table tbody .tms-player-row:nth-child(odd)  { background: var(--tmu-surface-panel); }
-    #tms-table tbody .tms-player-row:nth-child(even) { background: var(--tmu-surface-embedded); }
-    #tms-table .tms-player-row:hover { background: var(--tmu-surface-tab-hover) !important; cursor: pointer; }
-    #tms-table .tms-player-row.tms-expanded { background: var(--tmu-border-contrast); }
+    #tms-table .tms-player-row,
+    #tms-table tbody .tms-player-row:nth-child(odd),
+    #tms-table tbody .tms-player-row:nth-child(even) {
+        background: var(--tmu-card-bg) !important;
+    }
+    #tms-table .tms-player-row td {
+        background: var(--tmu-card-bg) !important;
+    }
+    #tms-table .tms-player-row:hover,
+    #tms-table .tms-player-row:hover td {
+        background: var(--tmu-card-bg) !important;
+        cursor: pointer;
+    }
+    #tms-table .tms-player-row.tms-expanded,
+    #tms-table .tms-player-row.tms-expanded td {
+        background: var(--tmu-card-bg) !important;
+    }
 
     /* Column-specific */
     .tms-col-flag { width: 24px; text-align: center; }

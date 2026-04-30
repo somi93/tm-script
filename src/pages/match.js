@@ -33,13 +33,30 @@ const injectShellStyles = () => {
             z-index: 10000; display: flex; align-items: flex-start; justify-content: center;
         }
         .mp-dialog {
-            background: var(--tmu-surface-panel);
+            background: var(--tmu-match-shell-bg, var(--tmu-surface-panel));
             width: 100vw; height: 100vh;
             display: flex; flex-direction: column; overflow: hidden;
         }
-        .mp-body { flex: 1; display: flex; flex-direction: row; overflow: hidden; min-height: 0; padding: 8px; gap: 8px; }
+        .mp-body { flex: 1; display: flex; flex-direction: row; overflow: hidden; min-height: 0; padding: 8px; gap: 8px; background: var(--tmu-match-content-bg, transparent); }
         .mp-center { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; padding: 0 16px; }
         .mp-tab-content { flex: 1; overflow-y: auto; min-height: 0; }
+        .mp-tabs.tmu-tabs,
+        .mp-tabs.tmu-card-body-flush > .tmu-tabs:first-child {
+            background: #0d110d;
+            box-shadow: inset 0 -1px 0 rgba(255,255,255,.06);
+        }
+        .mp-tabs .tmu-tab {
+            color: rgba(244,247,238,.84);
+        }
+        .mp-tabs .tmu-tab:hover:not(:disabled) {
+            background: rgba(255,255,255,.05);
+            color: #f8f9ef;
+        }
+        .mp-tabs .tmu-tab.active {
+            background: rgba(255,255,255,.07);
+            color: #f8f9ef;
+            box-shadow: inset 0 -2px 0 var(--tmu-color-primary);
+        }
     `;
     document.head.appendChild(s);
 };
@@ -381,6 +398,7 @@ const openPlayer = async (matchId) => {
         ],
         active: 'details',
         stretch: true,
+        cls: 'mp-tabs',
         onChange: (key) => {
             activeTab = key;
             if (key === 'details') {

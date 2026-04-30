@@ -7,16 +7,16 @@ const TMU_TABLE_CSS = `
 .tmu-tbl{width:100%;border-collapse:collapse;font-size:var(--tmu-font-sm);--tmu-tbl-head-py:var(--tmu-space-sm);--tmu-tbl-head-px:var(--tmu-space-sm);--tmu-tbl-body-py:var(--tmu-space-xs);--tmu-tbl-body-px:var(--tmu-space-sm)}
 .tmu-tbl.tmu-tbl-density-cozy{--tmu-tbl-head-py:var(--tmu-space-sm);--tmu-tbl-head-px:var(--tmu-space-sm);--tmu-tbl-body-py:var(--tmu-space-sm);--tmu-tbl-body-px:var(--tmu-space-sm)}
 .tmu-tbl.tmu-tbl-density-tight{--tmu-tbl-head-py:var(--tmu-space-xs);--tmu-tbl-head-px:var(--tmu-space-xs);--tmu-tbl-body-py:var(--tmu-space-xs);--tmu-tbl-body-px:var(--tmu-space-xs)}
-.tmu-tbl thead th{padding:var(--tmu-tbl-head-py) var(--tmu-tbl-head-px);font-size:var(--tmu-font-xs);font-weight:700;color:var(--tmu-text-faint);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--tmu-border-soft);text-align:left;white-space:nowrap;transition:color .15s}
+.tmu-tbl thead th{padding:var(--tmu-tbl-head-py) var(--tmu-tbl-head-px);font-size:var(--tmu-font-xs);font-weight:700;color:var(--tmu-text-faint);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--tmu-border-soft);text-align:left;white-space:nowrap;transition:color .15s;background:var(--tmu-card-bg)}
 .tmu-tbl thead th.r{text-align:right} .tmu-tbl thead th.c{text-align:center}
 .tmu-tbl thead th.sortable{cursor:pointer;user-select:none}
 .tmu-tbl thead th.sortable:hover{color:var(--tmu-text-main)}
 .tmu-tbl thead th.sort-active{color:var(--tmu-text-main)}
 .tmu-tbl tbody td{padding:var(--tmu-tbl-body-py) var(--tmu-tbl-body-px);border-bottom:1px solid var(--tmu-border-faint);color:var(--tmu-text-main);font-variant-numeric:tabular-nums;}
 .tmu-tbl tbody td.r{text-align:right} .tmu-tbl tbody td.c{text-align:center}
-.tmu-tbl tbody tr:nth-child(odd){background:var(--tmu-color-accent)}
-.tmu-tbl tbody tr:nth-child(even){background:var(--tmu-color-base)}
-.tmu-tbl tbody tr:hover{background:var(--tmu-surface-dark-mid) !important}
+.tmu-tbl tbody tr:nth-child(odd){background:var(--tmu-table-row-odd,var(--tmu-color-accent))}
+.tmu-tbl tbody tr:nth-child(even){background:var(--tmu-table-row-even,var(--tmu-color-base))}
+.tmu-tbl tbody tr:hover{background:var(--tmu-table-row-hover,var(--tmu-surface-dark-mid)) !important}
 .tmu-tbl thead th.tmu-tbl-col-action,.tmu-tbl tbody td.tmu-tbl-col-action{width:1%;white-space:nowrap;text-align:right}
 .tmu-tbl tbody tr.tmu-tbl-empty-row:hover{background:transparent}
 .tmu-tbl tbody tr.tmu-tbl-empty-row td{padding:0;border-bottom:none}

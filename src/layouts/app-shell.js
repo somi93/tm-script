@@ -23,6 +23,7 @@ import { initTransferPage } from '../pages/transfer.js';
 import { initLeaguePage } from '../pages/league.js';
 import { initMatchPage } from '../pages/match.js';
 import { initCupPage } from '../pages/cup.js';
+import { initCupFixturesPage } from '../pages/cup-fixtures.js';
 import { initHomePage } from '../pages/home.js';
 import { initInternationalCupPage } from '../pages/international-cup.js';
 import { initForumPage } from '../pages/forum.js';
@@ -154,8 +155,8 @@ function injectStyles() {
             margin: 0 !important;
             padding-top: var(--tmvu-header-height) !important;
             background-image: none !important;
-            background-color: var(--tmu-surface-panel) !important;
-            background: var(--tmu-surface-panel) !important;
+            background-color: var(--tmu-shell-body-bg, var(--tmu-surface-panel)) !important;
+            background: var(--tmu-shell-body-bg, var(--tmu-surface-panel)) !important;
             color: var(--tmvu-text) !important;
             font-family: var(--tmvu-font) !important;
             font-size: var(--tmu-font-sm) !important;
@@ -195,7 +196,7 @@ function injectStyles() {
             top: 0;
             left: 0;
             right: 0;
-            background: var(--tmu-color-accent);
+            background: var(--tmu-shell-header-bg, var(--tmu-surface-header));
             color: var(--tmvu-text-inverse);
             border-bottom: 1px solid var(--tmu-border-header);
             box-shadow: inset 0 -1px 0 var(--tmu-shadow-ring);
@@ -659,6 +660,9 @@ function initCurrentPage() {
     }
     if (/^\/matches\/(?:nt\/)?\d+/.test(currentPath)) {
         initMatchPage(main);
+    }
+    if (/^\/fixtures\/cup\/[a-z]{2,3}\/\d+\/?$/i.test(currentPath)) {
+        initCupFixturesPage(main);
     }
     if (/^\/cup\/?$/i.test(currentPath)) {
         initCupPage(main);

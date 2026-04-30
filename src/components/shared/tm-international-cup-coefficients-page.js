@@ -137,7 +137,7 @@ export function mountInternationalCupCoefficientsPage(main) {
             .tmvu-icup-table-shell {
                 overflow-x: auto;
                 border-radius: var(--tmu-space-md);
-                border: 1px solid var(--tmu-border-contrast);
+                border: 1px solid var(--tmu-border-input-overlay);
             }
 
             .tmvu-icup-coeff table:not(.tsa-table) {
@@ -151,15 +151,23 @@ export function mountInternationalCupCoefficientsPage(main) {
                 padding: var(--tmu-space-sm) var(--tmu-space-xs);
                 font-size: var(--tmu-font-xs);
                 white-space: nowrap;
-                border-bottom: 1px solid var(--tmu-border-contrast);
+                border-bottom: 1px solid transparent;
             }
 
             .tmvu-icup-coeff table:not(.tsa-table) thead th {
-                border-bottom: 1px solid var(--tmu-border-input-overlay);
+                border-bottom: 1px solid rgba(132,191,31,.32);
+            }
+
+            .tmvu-icup-coeff table:not(.tsa-table) tbody tr {
+                box-shadow: inset 0 -1px 0 rgba(132,191,31,.18);
             }
 
             .tmvu-icup-coeff table:not(.tsa-table) tbody tr:last-child td {
                 border-bottom: none;
+            }
+
+            .tmvu-icup-coeff table:not(.tsa-table) tbody tr:last-child {
+                box-shadow: none;
             }
 
             .tmvu-icup-coeff table:not(.tsa-table) th:first-child,
@@ -247,19 +255,27 @@ export function mountInternationalCupCoefficientsPage(main) {
 
             .tmvu-icup-coeff .tmu-tbl thead th {
                 color: var(--tmu-text-strong);
-                border-bottom-color: var(--tmu-border-input-overlay);
+                border-bottom-color: rgba(132,191,31,.32);
                 text-transform: none;
                 letter-spacing: 0;
             }
 
+            .tmvu-icup-coeff .tmu-tbl tbody tr {
+                box-shadow: inset 0 -1px 0 rgba(132,191,31,.18);
+            }
+
             .tmvu-icup-coeff .tmu-tbl tbody td {
-                border-bottom-color: var(--tmu-border-contrast);
+                border-bottom-color: transparent;
+            }
+
+            .tmvu-icup-coeff .tmu-tbl tbody tr:last-child {
+                box-shadow: none;
             }
 
             .tmvu-icup-coeff .tmu-tbl thead .tmu-grp-row th {
                 color: var(--tmu-text-strong);
-                border-bottom-color: var(--tmu-border-input-overlay);
-                border-right-color: var(--tmu-border-contrast);
+                border-bottom-color: rgba(132,191,31,.32);
+                border-right-color: rgba(132,191,31,.18);
                 background: var(--tmu-surface-overlay);
             }
 

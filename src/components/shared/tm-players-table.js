@@ -14,8 +14,8 @@ export function injectPlayersTableCSS() {
         .tmpt-wrap { overflow-x: auto; }
         .tmpt-wrap::-webkit-scrollbar { height: 4px; }
         .tmpt-wrap::-webkit-scrollbar-thumb { background: var(--tmu-border-embedded); border-radius: 2px; }
-        .tmpt-pb-cell { width: 4px !important; padding: 0 !important; }
-        .tmpt-pb-inner { display: block; width: 3px; min-height: 16px; border-radius: 2px; }
+        .tmpt-pb-cell { width: 4px !important; padding: 0 !important; height: 1px; }
+        .tmpt-pb-inner { display: block; width: 3px; height: 90%; min-height: 90%; border-radius: 0; }
         .tmpt-link { color: var(--tmu-text-inverse); text-decoration: none; font-weight: 500; }
         .tmpt-link:hover { color: var(--tmu-text-accent-soft) !important; text-decoration: underline; }
         .tmpt-flag { margin-right: var(--tmu-space-xs); vertical-align: middle; }
@@ -46,9 +46,10 @@ function hasVisibleBidRowState(player) {
     return Number(player?.timeleft) > 0 || isExpiredTimeleft(player);
 }
 
-function renderTimeleftCell(player) {
+function renderTimeleftCell(player, colorize = true) {
     if (Number(player?.timeleft) > 0) {
-        return `<span class="tmu-tabular${Number(player.timeleft) < 3600 ? ' tmpt-time-exp' : ''}" data-time-pid="${player.id}">${player.timeleft_string || ''}</span>`;
+        const expCls = Number(player.timeleft) < 120 ? ' tmpt-time-exp' : '';
+        return `<span class="tmu-tabular${expCls}" data-time-pid="${player.id}">${player.timeleft_string || ''}</span>`;
     }
     if (isExpiredTimeleft(player)) {
         return '<span class="tmu-tabular tmpt-time-exp">Expired</span>';
@@ -78,6 +79,7 @@ export function buildPlayerHeaders(opts = {}) {
     const tiLabel = opts.tiLabel || 'TI';
     const nameDecorator = typeof opts.nameDecorator === 'function' ? opts.nameDecorator : null;
     const gc = TmUtils.getColor;
+    const colorize = opts.colorize !== false;
     const { R5_THRESHOLDS, REC_THRESHOLDS, TI_THRESHOLDS, RTN_THRESHOLDS } = TmConst;
     const AGE_THRESHOLDS = TmConst.AGE_THRESHOLDS;
 
@@ -116,7 +118,7 @@ export function buildPlayerHeaders(opts = {}) {
             render: (_, p) => {
                 const yr = p.age || 0;
                 const mo = p.month || 0;
-                return `<span class="tmu-tabular" style="color:${gc(yr + mo / 12, AGE_THRESHOLDS)}">${yr}.${mo}</span>`;
+                return `<span class="tmu-tabular"${colorize ? ` style="color:${gc(yr + mo / 12, AGE_THRESHOLDS)}"` : ''}>${yr}.${mo}</span>`;
             },
         },
     ];
@@ -134,13 +136,18 @@ export function buildPlayerHeaders(opts = {}) {
             sort: (a, b) => (a.r5 ?? a.r5Hi ?? -Infinity) - (b.r5 ?? b.r5Hi ?? -Infinity),
             render: (_, p) => {
                 if (p.r5 != null)
-                    return `<span class="tmu-tabular" style="color:${gc(p.r5, R5_THRESHOLDS)};font-weight:700">${TmUtils.formatR5(p.r5)}</span>`;
+                    return `<span class="tmu-tabular" style="${colorize ? `color:${gc(p.r5, R5_THRESHOLDS)};` : ''}font-weight:700">${TmUtils.formatR5(p.r5)}</span>`;
                 if (p.r5Lo != null && p.r5Hi != null) {
                     const loStr = TmUtils.formatR5(p.r5Lo), hiStr = TmUtils.formatR5(p.r5Hi);
-                    const clrLo = gc(p.r5Lo, R5_THRESHOLDS), clrHi = gc(p.r5Hi, R5_THRESHOLDS);
+                    if (colorize) {
+                        const clrLo = gc(p.r5Lo, R5_THRESHOLDS), clrHi = gc(p.r5Hi, R5_THRESHOLDS);
+                        if (loStr === hiStr)
+                            return `<span class="tmu-tabular" style="color:${clrHi};font-weight:700">${hiStr}</span>`;
+                        return `<span class="tmu-tabular"><span style="color:${clrLo}">${loStr}</span><span style="color:var(--tmu-text-dim)"> – </span><span style="color:${clrHi};font-weight:700">${hiStr}</span></span>`;
+                    }
                     if (loStr === hiStr)
-                        return `<span class="tmu-tabular" style="color:${clrHi};font-weight:700">${hiStr}</span>`;
-                    return `<span class="tmu-tabular"><span style="color:${clrLo}">${loStr}</span><span style="color:var(--tmu-text-dim)"> – </span><span style="color:${clrHi};font-weight:700">${hiStr}</span></span>`;
+                        return `<span class="tmu-tabular" style="font-weight:700">${hiStr}</span>`;
+                    return `<span class="tmu-tabular"><span>${loStr}</span><span style="color:var(--tmu-text-dim)"> – </span><span style="font-weight:700">${hiStr}</span></span>`;
                 }
                 return '<span style="color:var(--tmu-text-dim)">—</span>';
             },
@@ -148,14 +155,14 @@ export function buildPlayerHeaders(opts = {}) {
         ...(showRec ? [{
             key: 'rec', label: 'REC', align: 'r',
             render: (_, p) => p.rec != null
-                ? `<span class="tmu-tabular" style="color:${gc(p.rec, REC_THRESHOLDS)};font-weight:700">${p.rec}</span>`
+                ? `<span class="tmu-tabular" style="${colorize ? `color:${gc(p.rec, REC_THRESHOLDS)};` : ''}font-weight:700">${p.rec}</span>`
                 : '<span style="color:var(--tmu-text-dim)">—</span>',
         }] : []),
         {
             key: 'ti', label: tiLabel, align: 'r',
             sort: (a, b) => (a.ti ?? -Infinity) - (b.ti ?? -Infinity),
             render: (_, p) => p.ti != null
-                ? `<span class="tmu-tabular" style="color:${gc(p.ti, TI_THRESHOLDS)}">${(p.ti || 0).toFixed(1)}</span>`
+                ? `<span class="tmu-tabular"${colorize ? ` style="color:${gc(p.ti, TI_THRESHOLDS)}"` : ''}>${(p.ti || 0).toFixed(1)}</span>`
                 : '<span style="color:var(--tmu-text-dim)">—</span>',
         },
     );
@@ -163,14 +170,14 @@ export function buildPlayerHeaders(opts = {}) {
     if (showRtn) cols.push({
         key: 'routine', label: 'RTN', align: 'r',
         render: (_, p) => p.routine != null
-            ? `<span class="tmu-tabular" style="color:${gc(p.routine, RTN_THRESHOLDS)}">${(p.routine || 0).toFixed(1)}</span>`
+            ? `<span class="tmu-tabular"${colorize ? ` style="color:${gc(p.routine, RTN_THRESHOLDS)}"` : ''}>${(p.routine || 0).toFixed(1)}</span>`
             : '<span style="color:var(--tmu-text-dim)">—</span>',
     });
 
     if (showTimeleft) cols.push({
         key: 'timeleft', label: 'Time', align: 'r',
         sort: (a, b) => (Number(a.timeleft) > 0 ? Number(a.timeleft) : (isExpiredTimeleft(a) ? 999999998 : 999999999)) - (Number(b.timeleft) > 0 ? Number(b.timeleft) : (isExpiredTimeleft(b) ? 999999998 : 999999999)),
-        render: (_, p) => renderTimeleftCell(p),
+        render: (_, p) => renderTimeleftCell(p, colorize),
     });
 
     if (showCurbid) cols.push({

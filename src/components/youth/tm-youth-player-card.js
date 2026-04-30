@@ -27,7 +27,7 @@ export const TmYouthPlayerCard = {
                 padding: var(--tmu-space-lg);
                 min-width: 0;
                 border-radius: var(--tmu-space-lg);
-                background: linear-gradient(180deg, var(--tmu-surface-dark-strong), var(--tmu-surface-dark-muted));
+                background: var(--tmu-card-bg);
                 border: 1px solid var(--tmu-border-soft-alpha);
                 box-shadow: 0 10px 22px var(--tmu-shadow-elev);
                 position: relative;
@@ -38,10 +38,10 @@ export const TmYouthPlayerCard = {
                 inset: 0 auto 0 0;
                 width: var(--tmu-space-xs);
                 border-radius: var(--tmu-space-lg) 0 0 var(--tmu-space-lg);
-                background: linear-gradient(180deg, var(--tmu-success-strong), var(--tmu-success-fill-strong));
+                background: linear-gradient(180deg, #5f8925, #3f5f1c);
             }
             .tmvu-yd-player-card-status::before {
-                background: linear-gradient(180deg, var(--tmu-success-fill-strong), var(--tmu-success-fill-soft));
+                background: linear-gradient(180deg, #547b22, #39551a);
             }
             .tmvu-yd-player-name {
                 color: var(--tmu-text-strong);
@@ -70,13 +70,17 @@ export const TmYouthPlayerCard = {
                 border-radius: var(--tmu-space-md);
                 border: 1px solid var(--tmu-border-soft-alpha);
             }
+            .tmvu-yd-rating-row .tmu-metric {
+                background: #324a17;
+                box-shadow: 0 8px 18px var(--tmu-shadow-soft);
+            }
             .tmvu-yd-rating-row .tmu-metric { min-width: 0; }
             .tmvu-yd-rating-row .tmu-metric-value { font-size: var(--tmu-font-xl); line-height: 1; }
             .tmvu-yd-skills-panel {
                 padding: var(--tmu-space-md);
                 border-radius: var(--tmu-space-lg);
                 border: 1px solid var(--tmu-border-soft-alpha);
-                background: var(--tmu-surface-dark-muted);
+                background: #35501a;
             }
             .tmvu-yd-skills-panel-hidden {
                 display: flex;
@@ -90,7 +94,7 @@ export const TmYouthPlayerCard = {
                 grid-template-columns: repeat(auto-fit, minmax(62px, 1fr));
                 gap: var(--tmu-space-sm);
             }
-            .tmvu-yd-skills .tmu-metric { background: var(--tmu-surface-input-dark); }
+            .tmvu-yd-skills .tmu-metric { background: #1f2c0d; }
             .tmvu-yd-skills .tmu-metric-value { font-size: var(--tmu-font-md); line-height: 1; }
             @keyframes tmvu-yd-skill-in {
                 from { opacity: 0; transform: scale(0.82) translateY(3px); }

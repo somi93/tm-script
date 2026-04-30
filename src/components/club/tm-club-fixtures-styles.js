@@ -14,6 +14,14 @@ export const TmClubFixturesStyles = {
                 width: 100%;
             }
 
+            .tmcf-months-panel {
+                background: var(--tmu-card-bg);
+                border: 1px solid var(--tmu-border-soft-alpha);
+                border-radius: var(--tmu-space-md);
+                overflow: hidden;
+                box-shadow: 0 14px 30px var(--tmu-shadow-elev);
+            }
+
             .tmcf-summary {
                 margin-bottom: 0;
             }
@@ -30,8 +38,9 @@ export const TmClubFixturesStyles = {
             .tmcf-summary.tmu-summary-strip-boxed .tmu-summary-item {
                 min-width: 0;
                 padding: var(--tmu-space-md) var(--tmu-space-md);
-                background: var(--tmu-surface-card);
+                background: var(--tmu-card-bg);
                 border: 1px solid var(--tmu-border-soft);
+                box-shadow: 0 8px 18px var(--tmu-shadow-soft);
             }
 
             .tmcf-summary .tmu-summary-value {
@@ -43,14 +52,49 @@ export const TmClubFixturesStyles = {
                 display: flex;
                 gap: var(--tmu-space-sm);
                 flex-wrap: wrap;
+                padding: var(--tmu-space-md);
+                background: #1d290c;
+                border: 1px solid var(--tmu-border-soft-alpha);
+                border-radius: var(--tmu-space-md);
             }
 
             .tmcf-filters .tmu-btn {
                 flex: 0 0 auto;
             }
 
+            .tmcf-months-panel #tmcf-months {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .tmcf-months-panel #tmcf-months > .tmu-tabs {
+                background: var(--tmu-card-bg);
+                box-shadow: inset 0 -1px 0 var(--tmu-border-soft-alpha);
+            }
+
+            .tmcf-months-panel #tmcf-months > .tmu-tabs .tmu-tab {
+                min-height: 42px;
+            }
+
             .tmcf-month-content {
-                padding-top: var(--tmu-space-sm);
+                background: var(--tmu-fixture-panel-bg, var(--tmu-card-bg));
+            }
+
+            .tmcf-month-content .tmvu-fix-list {
+                border-top: 1px solid var(--tmu-border-soft-alpha);
+                background: var(--tmu-fixture-panel-bg, var(--tmu-card-bg));
+            }
+
+            @media (max-width: 1100px) {
+                .tmcf-summary.tmu-summary-strip-boxed {
+                    grid-template-columns: repeat(3, 1fr);
+                }
+            }
+
+            @media (max-width: 700px) {
+                .tmcf-summary.tmu-summary-strip-boxed {
+                    grid-template-columns: repeat(2, 1fr);
+                }
             }
         `;
 

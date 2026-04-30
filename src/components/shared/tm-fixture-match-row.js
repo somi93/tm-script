@@ -16,15 +16,17 @@ const injectStyles = () => {
             position: relative;
             display: flex;
             align-items: center;
-            background: var(--tmu-surface-dark-strong);
-            padding: var(--tmu-space-xs) var(--tmu-space-md);
+            background: var(--tmu-fixture-row-odd, var(--tmu-surface-dark-strong));
+            padding: var(--tmu-space-sm) var(--tmu-space-md);
             border-bottom: 1px solid var(--tmu-border-faint);
             cursor: pointer;
             transition: background 0.12s;
             font-size: var(--tmu-font-md);
             gap: var(--tmu-space-xs);
+            min-height: 56px;
         }
-        .tmvu-fixture-row:hover { background: var(--tmu-surface-tab-hover) !important; }
+        .tmvu-fixture-row.tmvu-fixture-row-even { background: var(--tmu-fixture-row-even, var(--tmu-border-contrast)); }
+        .tmvu-fixture-row:hover { background: var(--tmu-fixture-row-hover, var(--tmu-surface-tab-hover)) !important; }
         .tmvu-fixture-team { flex: 1; display: flex; align-items: center; gap: var(--tmu-space-xs); color: var(--tmu-text-main); min-width: 0; }
         .tmvu-fixture-team-home { justify-content: flex-end; }
         .tmvu-fixture-team-away { justify-content: flex-start; }
@@ -38,6 +40,8 @@ const injectStyles = () => {
             border-radius: var(--tmu-space-xs); display: inline-block; flex-shrink: 0;
             text-decoration: none; color: var(--tmu-text-main);
             font-variant-numeric: tabular-nums;
+            background: var(--tmu-fixture-score-bg, var(--tmu-border-contrast));
+            box-shadow: inset 0 0 0 1px var(--tmu-fixture-score-border, var(--tmu-border-soft-alpha));
         }
         .tmvu-fixture-score-upcoming { color: var(--tmu-text-dim); font-weight: 400; font-size: var(--tmu-font-sm); }
         .tmvu-fixture-goal-lose { font-weight: 400; color: var(--tmu-text-faint); }
@@ -45,7 +49,7 @@ const injectStyles = () => {
         .tmvu-fixture-logo { width: 25px; height: 25px; flex-shrink: 0; }
         .tmvu-fixture-flag { width: 25px; height: 25px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; }
         .tmvu-fixture-date { font-size: var(--tmu-font-xs); color: var(--tmu-text-faint); white-space: nowrap; flex-shrink: 0; min-width: 72px; }
-        .tmvu-fixture-type-slot { width: 52px; flex-shrink: 0; display: flex; align-items: center; }
+        .tmvu-fixture-type-slot { width: 74px; flex-shrink: 0; display: flex; align-items: center; }
         .tmvu-fixture-type { font-size: 10px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; padding: 1px 5px; border-radius: 3px; flex-shrink: 0; opacity: 0.75; }
         .tmvu-fixture-type-league          { background: rgba(var(--tmu-color-primary-rgb,56,132,255),0.15); color: var(--tmu-color-primary); }
         .tmvu-fixture-type-friendly        { background: var(--tmu-surface-accent); color: var(--tmu-text-dim); }
@@ -160,7 +164,8 @@ const render = (match, {
     const awayWinCls = winner === 'away' ? ' tmvu-fixture-team-winner' : winner === 'home' ? ' tmvu-fixture-team-loser' : '';
 
     const dateBadge = dateText ? `<span class="tmvu-fixture-date">${escapeHtml(String(dateText))}</span>` : '';
-    return `<div class="tmvu-fixture-row${extraClass ? ` ${extraClass}` : ''}"
+    const parityClass = index % 2 === 0 ? ' tmvu-fixture-row-even' : ' tmvu-fixture-row-odd';
+    return `<div class="tmvu-fixture-row${parityClass}${extraClass ? ` ${extraClass}` : ''}"
             data-mid="${escapeHtml(matchId)}" data-season="${escapeHtml(season)}"
             data-href="${escapeHtml(scoreHref)}"
             data-home-id="${escapeHtml(homeId)}" data-away-id="${escapeHtml(awayId)}">

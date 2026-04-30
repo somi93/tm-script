@@ -43,6 +43,53 @@ const inject = () => {
             .tmvu-league-feed-card {
                 margin-top: var(--tmu-space-lg);
             }
+
+            .tmvu-main.tmvu-league-layout .tmu-card,
+            .tmvu-main.tmvu-league-layout .tmu-flat-panel,
+            .tmvu-main.tmvu-league-layout .tmu-panel,
+            .tmvu-main.tmvu-league-layout .tmvu-round-panel,
+            .tmvu-main.tmvu-league-layout .tmvu-league-feed-card tm-card {
+                background: var(--tmu-league-panel-bg, var(--tmu-surface-panel));
+                border-color: var(--tmu-league-panel-border, var(--tmu-border-soft-alpha));
+            }
+
+            .tmvu-main.tmvu-league-layout .tmu-card-head,
+            .tmvu-main.tmvu-league-layout .tmu-flat-panel .tmu-card-head,
+            .tmvu-main.tmvu-league-layout .tmvu-round-panel .tmu-card-head {
+                background: var(--tmu-league-head-bg, linear-gradient(180deg, var(--tmu-success-fill-soft), var(--tmu-success-fill-faint)));
+                border-bottom-color: var(--tmu-league-head-border, var(--tmu-border-soft-alpha));
+            }
+
+            .tmvu-main.tmvu-league-layout .tmvu-standings-wrap {
+                background: var(--tmu-league-table-shell, var(--tmu-surface-dark-soft));
+                border-color: var(--tmu-league-panel-border, var(--tmu-border-soft-alpha-mid));
+            }
+
+            .tmvu-main.tmvu-league-layout .tmvu-standings-wrap tr:nth-child(even) {
+                background: var(--tmu-league-table-even, var(--tmu-border-contrast)) !important;
+            }
+
+            .tmvu-main.tmvu-league-layout .tmvu-standings-wrap tbody tr:nth-child(odd) {
+                background: var(--tmu-league-table-odd, transparent) !important;
+            }
+
+            .tmvu-main.tmvu-league-layout .tmvu-standings-wrap tbody tr:hover {
+                background: var(--tmu-league-table-row-hover, var(--tmu-surface-dark-mid)) !important;
+            }
+
+            .tmvu-main.tmvu-league-layout .tmvu-league-sidebar .tmvu-match-row:nth-child(even),
+            .tmvu-main.tmvu-league-layout .tmvu-league-sidebar .tsa-skill-row:nth-child(even) {
+                background: var(--tmu-league-sidebar-stripe, rgba(255,255,255,.035));
+            }
+
+            .tmvu-main.tmvu-league-layout .tmvu-league-sidebar .tmvu-match-row:nth-child(odd),
+            .tmvu-main.tmvu-league-layout .tmvu-league-sidebar .tsa-skill-row:nth-child(odd) {
+                background: var(--tmu-league-sidebar-stripe-alt, transparent);
+            }
+
+            .tmvu-main.tmvu-league-layout .tsa-skill-row:hover {
+                background: var(--tmu-league-table-row-hover, var(--tmu-surface-tab-hover));
+            }
            
             /* ── History mode banner ── */
             .tsa-history-banner {

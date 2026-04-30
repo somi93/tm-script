@@ -18,7 +18,7 @@ const injectStyles = () => {
     style.textContent = `
         .tmvu-cup-note {
             padding: var(--tmu-space-md) var(--tmu-space-md);
-            background: var(--tmu-surface-tab-active);
+            background: var(--tmu-card-bg, var(--tmu-fixture-panel-bg, var(--tmu-surface-tab-active)));
             border: 1px solid var(--tmu-border-input-overlay);
             border-radius: var(--tmu-space-sm);
             color: var(--tmu-text-main);
@@ -59,7 +59,7 @@ const injectStyles = () => {
 
         .tmvu-cup-round-group {
             padding: var(--tmu-space-md);
-            background: var(--tmu-surface-tab-active);
+            background: var(--tmu-card-bg, var(--tmu-fixture-panel-bg, var(--tmu-surface-tab-active)));
             border: 1px solid var(--tmu-border-input-overlay);
             border-radius: var(--tmu-space-sm);
         }
@@ -80,7 +80,7 @@ const injectStyles = () => {
             align-items: center;
             gap: var(--tmu-space-md);
             padding: var(--tmu-space-md);
-            background: var(--tmu-surface-tab-active);
+            background: var(--tmu-card-bg, var(--tmu-surface-tab-active));
             border: 1px solid var(--tmu-border-input-overlay);
             border-radius: var(--tmu-space-sm);
         }

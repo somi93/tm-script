@@ -60,7 +60,7 @@ const injectStyles = () => {
                 border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: var(--tmu-space-md);
                 overflow: hidden;
-                background: var(--tmu-surface-dark-mid);
+                background: var(--tmu-card-bg);
             }
 
             .tmvu-fin-wages-table {
@@ -78,7 +78,7 @@ const injectStyles = () => {
             }
 
             .tmvu-fin-wages-table thead th {
-                background: var(--tmu-success-fill-faint);
+                background: rgba(255,255,255,.04);
                 color: var(--tmu-text-panel-label);
                 font-size: var(--tmu-font-xs);
                 font-weight: 800;
@@ -86,8 +86,12 @@ const injectStyles = () => {
                 text-transform: uppercase;
             }
 
+            .tmvu-fin-wages-table tbody tr {
+                background: #2d4315;
+            }
+
             .tmvu-fin-wages-table tbody tr:nth-child(even) {
-                background: var(--tmu-border-contrast);
+                background: #35501a;
             }
 
             .tmvu-fin-wages-table td,
@@ -116,7 +120,7 @@ const injectStyles = () => {
             }
 
             .tmvu-fin-wages-table tr.tmvu-fin-wages-total {
-                background: var(--tmu-success-fill-faint);
+                background: #41631f;
             }
 
             .tmvu-fin-wages-table tr.tmvu-fin-wages-total td {

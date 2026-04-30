@@ -184,7 +184,7 @@ const render = (container, p) => {
             disabled: key === 'nt' ? !player.stats.nationalTeam : !(player.stats[key] || []).length,
         })),
         active: activeTab,
-        color: 'primary',
+        color: 'secondary',
         cls: 'tmph-tabs',
         stretch: true,
         onChange: (key) => {

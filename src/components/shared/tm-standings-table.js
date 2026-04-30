@@ -21,8 +21,9 @@ function injectStyles() {
             border-collapse: collapse;
         }
 
-        .tmvu-standings-wrap tr { background: transparent !important; }
-        .tmvu-standings-wrap tr:nth-child(even) { background: var(--tmu-border-contrast) !important; }
+        .tmvu-standings-wrap tr { background: var(--tmu-standings-row-odd, transparent) !important; }
+        .tmvu-standings-wrap tr:nth-child(even) { background: var(--tmu-standings-row-even, var(--tmu-border-contrast)) !important; }
+        .tmvu-standings-wrap tbody tr:hover { background: var(--tmu-standings-row-hover, var(--tmu-surface-dark-mid)) !important; }
 
         .tmvu-standings-wrap td,
         .tmvu-standings-wrap th {

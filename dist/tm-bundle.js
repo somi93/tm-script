@@ -1275,7 +1275,7 @@
   document.head.appendChild(Object.assign(document.createElement("style"), {
     textContent: `
 /* \u2500\u2500 Card \u2500\u2500 */
-.tmu-card { background: radial-gradient(circle at top left, var(--tmu-success-fill-faint), transparent 42%), linear-gradient(180deg, var(--tmu-surface-card-soft) 0%, var(--tmu-surface-dark-muted) 100%); border: 1px solid var(--tmu-border-soft); border-radius: var(--tmu-space-md); overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin-bottom: var(--tmu-space-md); box-shadow: 0 14px 30px var(--tmu-shadow-elev); }
+.tmu-card { background: var(--tmu-card-bg, radial-gradient(circle at top left, var(--tmu-success-fill-faint), transparent 42%), linear-gradient(180deg, var(--tmu-surface-card-soft) 0%, var(--tmu-surface-dark-muted) 100%)); border: 1px solid var(--tmu-border-soft); border-radius: var(--tmu-space-md); overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin-bottom: var(--tmu-space-md); box-shadow: 0 14px 30px var(--tmu-shadow-elev); }
 .tmu-card.tmu-card-variant-soft { background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-soft-alpha-strong); border-radius: var(--tmu-space-lg); box-shadow: none; }
 .tmu-card.tmu-card-variant-sidebar { margin-bottom: var(--tmu-space-xl); }
 .tmu-card.tmu-card-variant-sidebar .tmu-card-body { padding: var(--tmu-space-lg) var(--tmu-space-lg); gap: var(--tmu-space-lg); }
@@ -1283,9 +1283,9 @@
 .tmu-card.tmu-card-variant-embedded { margin-bottom: 0; background: var(--tmu-surface-embedded); box-shadow: none; color: var(--tmu-text-main); }
 .tmu-card.tmu-card-variant-embedded .tmu-card-body,
 .tmu-card.tmu-card-variant-embedded .tmu-card-body.tmu-card-body-flush { padding: 0; gap: 0; }
-.tmu-card.tmu-card-variant-flatpanel { background: var(--tmu-surface-dark-strong); border: 1px solid var(--tmu-border-soft-alpha); border-radius: var(--tmu-space-md); box-shadow: none; margin-bottom: 0; }
-.tmu-card.tmu-card-variant-flatpanel .tmu-card-head { background: none; border-bottom: 1px solid var(--tmu-border-soft-alpha); }
-.tmu-card-head { font-size: var(--tmu-font-md); font-weight: 800; color: var(--tmu-text-strong); text-transform: none; letter-spacing: 0.02em; padding: 0 var(--tmu-space-lg); min-height: 48px; display: flex; align-items: center; justify-content: space-between; gap: var(--tmu-space-sm); border-bottom: 1px solid var(--tmu-border-soft-alpha); background: linear-gradient(180deg, var(--tmu-success-fill-soft), var(--tmu-success-fill-faint)); }
+.tmu-card.tmu-card-variant-flatpanel { background: var(--tmu-card-bg); border: 1px solid var(--tmu-border-soft-alpha); border-radius: var(--tmu-space-md); box-shadow: none; margin-bottom: 0; }
+.tmu-card.tmu-card-variant-flatpanel .tmu-card-head { background: var(--tmu-card-head-bg, var(--tmu-color-base)); border-bottom: 1px solid var(--tmu-border-soft-alpha); }
+.tmu-card-head { font-size: var(--tmu-font-md); font-weight: 800; color: var(--tmu-text-strong); text-transform: none; letter-spacing: 0.02em; padding: 0 var(--tmu-space-lg); min-height: 48px; display: flex; align-items: center; justify-content: space-between; gap: var(--tmu-space-sm); border-bottom: 1px solid var(--tmu-border-soft-alpha); background: var(--tmu-card-head-bg, linear-gradient(180deg, var(--tmu-success-fill-soft), var(--tmu-success-fill-faint))); }
 .tmu-card-head-btn { background: none; border: none; color: var(--tmu-text-faint); cursor: pointer; font-size: var(--tmu-font-md); padding: 0; line-height: 1; transition: color .15s, transform .15s; }
 .tmu-card-head-btn:hover { color: var(--tmu-accent); }
 .tmu-card-head-btn:hover { transform: none; }
@@ -1295,8 +1295,8 @@
 .tmu-panel { background: var(--tmu-surface-panel); border: 1px solid var(--tmu-border-soft); border-radius: var(--tmu-space-sm); color: var(--tmu-text-main); box-shadow: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
 .tmu-panel-page { padding: var(--tmu-space-lg); }
 /* \u2500\u2500 Flat panel (squad, league standings \u2014 no card gradient) \u2500\u2500 */
-.tmu-flat-panel { background: var(--tmu-surface-dark-strong); border: 1px solid var(--tmu-border-soft-alpha); border-radius: var(--tmu-space-md); overflow: hidden; margin-bottom: var(--tmu-space-lg); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: var(--tmu-text-main); }
-.tmu-flat-panel .tmu-card-head { background: none; border-bottom: 1px solid var(--tmu-border-soft-alpha); }
+.tmu-flat-panel { background: var(--tmu-card-bg); border: 1px solid var(--tmu-border-soft-alpha); border-radius: var(--tmu-space-md); overflow: hidden; margin-bottom: var(--tmu-space-lg); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: var(--tmu-text-main); }
+.tmu-flat-panel .tmu-card-head { background: var(--tmu-card-head-bg, var(--tmu-color-base)); border-bottom: 1px solid var(--tmu-border-soft-alpha); }
 /* \u2500\u2500 Divider \u2500\u2500 */
 .tmu-divider { height: 1px; background: var(--tmu-border-embedded); margin: 0; }
 .tmu-divider-label { display: flex; align-items: center; gap: var(--tmu-space-sm); color: var(--tmu-text-faint); font-size: var(--tmu-font-2xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: var(--tmu-space-sm) 0 0; margin-top: 0; }
@@ -2560,16 +2560,16 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
 .tmu-tbl{width:100%;border-collapse:collapse;font-size:var(--tmu-font-sm);--tmu-tbl-head-py:var(--tmu-space-sm);--tmu-tbl-head-px:var(--tmu-space-sm);--tmu-tbl-body-py:var(--tmu-space-xs);--tmu-tbl-body-px:var(--tmu-space-sm)}
 .tmu-tbl.tmu-tbl-density-cozy{--tmu-tbl-head-py:var(--tmu-space-sm);--tmu-tbl-head-px:var(--tmu-space-sm);--tmu-tbl-body-py:var(--tmu-space-sm);--tmu-tbl-body-px:var(--tmu-space-sm)}
 .tmu-tbl.tmu-tbl-density-tight{--tmu-tbl-head-py:var(--tmu-space-xs);--tmu-tbl-head-px:var(--tmu-space-xs);--tmu-tbl-body-py:var(--tmu-space-xs);--tmu-tbl-body-px:var(--tmu-space-xs)}
-.tmu-tbl thead th{padding:var(--tmu-tbl-head-py) var(--tmu-tbl-head-px);font-size:var(--tmu-font-xs);font-weight:700;color:var(--tmu-text-faint);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--tmu-border-soft);text-align:left;white-space:nowrap;transition:color .15s}
+.tmu-tbl thead th{padding:var(--tmu-tbl-head-py) var(--tmu-tbl-head-px);font-size:var(--tmu-font-xs);font-weight:700;color:var(--tmu-text-faint);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--tmu-border-soft);text-align:left;white-space:nowrap;transition:color .15s;background:var(--tmu-card-bg)}
 .tmu-tbl thead th.r{text-align:right} .tmu-tbl thead th.c{text-align:center}
 .tmu-tbl thead th.sortable{cursor:pointer;user-select:none}
 .tmu-tbl thead th.sortable:hover{color:var(--tmu-text-main)}
 .tmu-tbl thead th.sort-active{color:var(--tmu-text-main)}
 .tmu-tbl tbody td{padding:var(--tmu-tbl-body-py) var(--tmu-tbl-body-px);border-bottom:1px solid var(--tmu-border-faint);color:var(--tmu-text-main);font-variant-numeric:tabular-nums;}
 .tmu-tbl tbody td.r{text-align:right} .tmu-tbl tbody td.c{text-align:center}
-.tmu-tbl tbody tr:nth-child(odd){background:var(--tmu-color-accent)}
-.tmu-tbl tbody tr:nth-child(even){background:var(--tmu-color-base)}
-.tmu-tbl tbody tr:hover{background:var(--tmu-surface-dark-mid) !important}
+.tmu-tbl tbody tr:nth-child(odd){background:var(--tmu-table-row-odd,var(--tmu-color-accent))}
+.tmu-tbl tbody tr:nth-child(even){background:var(--tmu-table-row-even,var(--tmu-color-base))}
+.tmu-tbl tbody tr:hover{background:var(--tmu-table-row-hover,var(--tmu-surface-dark-mid)) !important}
 .tmu-tbl thead th.tmu-tbl-col-action,.tmu-tbl tbody td.tmu-tbl-col-action{width:1%;white-space:nowrap;text-align:right}
 .tmu-tbl tbody tr.tmu-tbl-empty-row:hover{background:transparent}
 .tmu-tbl tbody tr.tmu-tbl-empty-row td{padding:0;border-bottom:none}
@@ -2964,6 +2964,7 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
   var TMU_THEME_CSS = `
 :root{
 --tmu-color-primary:#00fea7;
+--tmu-color-primary-rgb:0,254,167;
 --tmu-color-secondary:#0a1614;
 --tmu-color-accent:#001810;
 --tmu-color-surface:#142420;
@@ -3095,6 +3096,7 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
 --tmu-metal-silver:silver;
 --tmu-metal-bronze:#cd7f32;
 --tmu-tabs-primary-bg:var(--tmu-surface-card);
+--tmu-tabs-bg:var(--tmu-color-secondary);
 --tmu-tabs-primary-border:var(--tmu-border-soft-alpha-strong);
 --tmu-tabs-primary-text:var(--tmu-text-muted);
 --tmu-tabs-primary-hover-text:var(--tmu-text-strong);
@@ -3109,13 +3111,21 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
 --tmu-tabs-secondary-hover-bg:var(--tmu-surface-item-strong);
 --tmu-tabs-secondary-active-text:var(--tmu-text-inverse);
 --tmu-tabs-secondary-active-bg:var(--tmu-surface-card-elevated);
---tmu-tabs-secondary-active-border:var(--tmu-color-primary)
+--tmu-tabs-secondary-active-border:var(--tmu-color-primary);
+--tmu-match-list-bg:var(--tmu-surface-dark-soft);
+--tmu-match-row-odd:transparent;
+--tmu-match-row-even:rgba(255,255,255,.02);
+--tmu-match-row-hover:var(--tmu-surface-tab-hover);
+--tmu-match-score-bg:rgba(255,255,255,.03);
+--tmu-match-score-hover-bg:var(--tmu-border-contrast);
+--tmu-match-score-border:rgba(255,255,255,.05)
 }
 `;
   var TMU_THEME_SHADOW_CSS = TMU_THEME_CSS.replace(":root{", ":host{");
   var TMU_THEME_DIFF_BLUE = `
 :root{
 --tmu-color-primary:#ff0046;
+--tmu-color-primary-rgb:255,0,70;
 --tmu-color-secondary:#0f2d37;
 --tmu-color-accent:#001e28;
 --tmu-color-surface:#0f2d37;
@@ -3162,16 +3172,234 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
 --tmu-tabs-secondary-active-border:#ff0046
 }
 `;
+  var TMU_THEME_DIFF_PITCH = `
+:root{
+--tmu-color-primary:#8ecf47;
+--tmu-color-primary-rgb:142,207,71;
+--tmu-color-secondary:#12311d;
+--tmu-color-accent:#08170c;
+--tmu-color-surface:#183624;
+--tmu-color-base:#07100a;
+--tmu-color-elevated:#264a34;
+--tmu-surface-card-soft:#183624;
+--tmu-surface-panel:#07100a;
+--tmu-surface-dark-soft:rgba(2,8,4,.24);
+--tmu-surface-dark-mid:rgba(2,8,4,.34);
+--tmu-surface-dark-strong:rgba(2,8,4,.5);
+--tmu-surface-dark-muted:rgba(2,8,4,.28);
+--tmu-surface-item-dark:rgba(255,255,255,.02);
+--tmu-surface-input-dark:rgba(4,12,6,.94);
+--tmu-surface-input-dark-focus:rgba(4,12,6,.98);
+--tmu-surface-panel-dark:rgba(5,14,8,.94);
+--tmu-surface-accent-soft:rgba(142,207,71,.11);
+--tmu-surface-card-elevated:#264a34;
+--tmu-surface-card-hero:rgba(22,52,33,.96);
+--tmu-surface-item-strong:rgba(255,255,255,.06);
+--tmu-surface-item-hover:rgba(142,207,71,.14);
+--tmu-surface-header:rgba(5,14,8,.98);
+--tmu-surface-header-soft:rgba(5,14,8,.88);
+--tmu-surface-nav-pill-active:rgba(142,207,71,.16);
+--tmu-surface-embedded:#183624;
+--tmu-surface-tab:#183624;
+--tmu-surface-tab-hover:#264a34;
+--tmu-surface-tab-active:rgba(142,207,71,.12);
+--tmu-border-strong:#8ecf47;
+--tmu-border-embedded:#8ecf47;
+--tmu-border-glow-soft:rgba(142,207,71,.24);
+--tmu-border-header:rgba(0,0,0,.45);
+--tmu-border-pill-active:rgba(142,207,71,.42);
+--tmu-border-input-overlay:rgba(142,207,71,.36);
+--tmu-border-success:rgba(142,207,71,.28);
+--tmu-border-accent:rgba(142,207,71,.24);
+--tmu-border-live:#7ddc62;
+--tmu-shadow-ring:rgba(0,0,0,.38);
+--tmu-shadow-elev:rgba(0,0,0,.34);
+--tmu-shadow-panel:rgba(0,0,0,.58);
+--tmu-shadow-soft:rgba(0,0,0,.24);
+--tmu-shadow-deep:rgba(0,0,0,.42);
+--tmu-shadow-glow:rgba(142,207,71,.1);
+--tmu-text-strong:#f1f6ee;
+--tmu-text-main:#c6d0c3;
+--tmu-text-muted:#839180;
+--tmu-text-dim:#536250;
+--tmu-text-faint:#687663;
+--tmu-text-disabled:#394836;
+--tmu-text-disabled-strong:#2a3628;
+--tmu-text-panel-label:#95a48f;
+--tmu-text-accent-soft:#e0f2c8;
+--tmu-text-live:#9be27c;
+--tmu-accent:var(--tmu-color-primary);
+--tmu-success-fill:var(--tmu-color-secondary);
+--tmu-success-fill-faint:rgba(142,207,71,.075);
+--tmu-success-fill-soft:rgba(142,207,71,.11);
+--tmu-success-fill-hover:rgba(142,207,71,.16);
+--tmu-success-fill-strong:rgba(142,207,71,.22);
+--tmu-accent-fill:var(--tmu-color-accent);
+--tmu-accent-fill-soft:rgba(8,23,12,.72);
+--tmu-live-fill:#0a1f0d;
+--tmu-compare-fill:rgba(142,207,71,.08);
+--tmu-compare-home-grad-start:#12311d;
+--tmu-compare-home-grad-end:#8ecf47;
+--tmu-tabs-primary-active-border:#8ecf47;
+--tmu-tabs-secondary-active-border:#8ecf47
+}
+`;
+  var TMU_THEME_DIFF_CLASSIC = `
+:root{
+--tmu-color-primary:#84bf1f;
+--tmu-color-primary-rgb:132,191,31;
+--tmu-color-secondary:#41631f;
+--tmu-color-accent:#333;
+--tmu-color-surface:#649024;
+--tmu-color-base:#333;
+--tmu-color-elevated:#649024;
+--tmu-surface-card:#649024;
+--tmu-surface-card-soft:#649024;
+--tmu-surface-panel:#649024;
+--tmu-surface-dark-soft:rgba(100,144,36,.22);
+--tmu-surface-dark-mid:rgba(65,99,31,.3);
+--tmu-surface-dark-strong:rgba(51,51,51,.88);
+--tmu-surface-dark-muted:rgba(65,99,31,.82);
+--tmu-surface-item-dark:rgba(255,255,255,.035);
+--tmu-surface-input-dark:rgba(22,24,20,.96);
+--tmu-surface-input-dark-focus:rgba(28,31,25,.98);
+--tmu-surface-panel-dark:rgba(51,51,51,.95);
+--tmu-surface-accent-soft:rgba(255,255,255,.03);
+--tmu-surface-card-elevated:#578029;
+--tmu-surface-card-hero:rgba(100,144,36,.96);
+--tmu-card-bg:#24330f;
+--tmu-card-head-bg:#333;
+--tmu-surface-item-strong:rgba(87,128,41,.22);
+--tmu-surface-item-hover:rgba(87,128,41,.3);
+--tmu-shell-body-bg:#41631f;
+--tmu-shell-header-bg:#41631f;
+--tmu-league-panel-bg:#578029;
+--tmu-league-panel-border:rgba(255,255,255,.09);
+--tmu-league-head-bg:#333;
+--tmu-league-head-border:rgba(255,255,255,.1);
+--tmu-league-table-shell:#2a3b12;
+--tmu-league-table-odd:#314718;
+--tmu-league-table-even:#39541d;
+--tmu-league-table-row-hover:#41631f;
+--tmu-table-row-odd:#314718;
+--tmu-table-row-even:#39541d;
+--tmu-table-row-hover:#41631f;
+--tmu-standings-row-odd:#314718;
+--tmu-standings-row-even:#39541d;
+--tmu-standings-row-hover:#41631f;
+--tmu-transfer-table-odd:var(--tmu-card-bg);
+--tmu-transfer-table-even:var(--tmu-card-bg);
+--tmu-transfer-table-hover:#2f4415;
+--tmu-fixture-row-odd:#24330f;
+--tmu-fixture-row-even:#2b3d13;
+--tmu-fixture-row-hover:#39541d;
+--tmu-fixture-head-bg:#333;
+--tmu-fixture-panel-bg:#24330f;
+--tmu-fixture-score-bg:rgba(0,0,0,.16);
+--tmu-fixture-score-border:rgba(255,255,255,.06);
+--tmu-match-list-bg:var(--tmu-fixture-panel-bg);
+--tmu-match-row-odd:var(--tmu-fixture-row-odd);
+--tmu-match-row-even:var(--tmu-fixture-row-even);
+--tmu-match-row-hover:var(--tmu-fixture-row-hover);
+--tmu-match-score-bg:var(--tmu-fixture-score-bg);
+--tmu-match-score-hover-bg:#4b6e24;
+--tmu-match-score-border:var(--tmu-fixture-score-border);
+--tmu-form-win-bg:#6c9728;
+--tmu-form-draw-bg:#b97512;
+--tmu-form-loss-bg:#a12a1f;
+--tmu-league-sidebar-card-bg:#4f721f;
+--tmu-league-sidebar-stripe:rgba(36,51,15,.14);
+--tmu-league-sidebar-stripe-alt:rgba(255,255,255,.015);
+--tmu-match-shell-bg:var(--tmu-shell-body-bg);
+--tmu-match-content-bg:linear-gradient(180deg, rgba(49,95,5,.18) 0%, rgba(45,70,15,.92) 100%);
+--tmu-match-header-bg:var(--tmu-shell-header-bg);
+--tmu-match-panel-accent:rgba(132,191,31,.1);
+--tmu-match-panel-border:rgba(132,191,31,.16);
+--tmu-surface-header:rgba(100,144,36,.96);
+--tmu-surface-header-soft:rgba(100,144,36,.86);
+--tmu-surface-nav-pill-active:rgba(255,255,255,.07);
+--tmu-surface-embedded:#578029;
+--tmu-surface-overlay-soft:rgba(65,99,31,.12);
+--tmu-surface-overlay:rgba(65,99,31,.24);
+--tmu-surface-overlay-strong:rgba(51,51,51,.34);
+--tmu-surface-tab:#333;
+--tmu-surface-tab-hover:#578029;
+--tmu-surface-tab-active:#649024;
+--tmu-border-soft:rgba(255,255,255,.09);
+--tmu-border-strong:var(--tmu-color-primary);
+--tmu-border-embedded:var(--tmu-color-primary);
+--tmu-border-soft-alpha:rgba(255,255,255,.1);
+--tmu-border-soft-alpha-mid:rgba(255,255,255,.15);
+--tmu-border-soft-alpha-strong:rgba(255,255,255,.22);
+--tmu-border-glow-soft:rgba(132,191,31,.22);
+--tmu-border-header:rgba(27,35,8,.44);
+--tmu-border-pill:rgba(255,255,255,.14);
+--tmu-border-pill-active:rgba(132,191,31,.32);
+--tmu-border-contrast:rgba(255,255,255,.035);
+--tmu-border-faint:rgba(255,255,255,.09);
+--tmu-border-input:rgba(255,255,255,.14);
+--tmu-border-input-overlay:rgba(132,191,31,.28);
+--tmu-border-success:rgba(132,191,31,.24);
+--tmu-border-accent:rgba(132,191,31,.2);
+--tmu-border-live:var(--tmu-color-primary);
+--tmu-shadow-ring:rgba(5,6,5,.34);
+--tmu-shadow-elev:rgba(4,5,4,.3);
+--tmu-shadow-panel:rgba(3,4,3,.46);
+--tmu-shadow-soft:rgba(4,5,4,.22);
+--tmu-shadow-deep:rgba(2,3,2,.34);
+--tmu-shadow-glow:rgba(132,191,31,.08);
+--tmu-shadow-header:rgba(10,16,3,.32);
+--tmu-shadow-card-strong:rgba(4,5,4,.3);
+--tmu-text-strong:#f8f9ef;
+--tmu-text-main:#e8eadf;
+--tmu-text-muted:#cfd4c4;
+--tmu-text-dim:#959d87;
+--tmu-text-faint:#acb39d;
+--tmu-text-disabled:#7a8f49;
+--tmu-text-disabled-strong:#65783d;
+--tmu-text-panel-label:#e1e6d4;
+--tmu-text-accent-soft:#f3f5ed;
+--tmu-text-live:#dce98f;
+--tmu-accent:var(--tmu-color-primary);
+--tmu-success:var(--tmu-color-primary);
+--tmu-success-fill:#649024;
+--tmu-success-fill-faint:rgba(100,144,36,.12);
+--tmu-success-fill-soft:rgba(100,144,36,.18);
+--tmu-success-fill-hover:rgba(100,144,36,.24);
+--tmu-success-fill-strong:rgba(100,144,36,.3);
+--tmu-accent-fill:#333;
+--tmu-accent-fill-soft:rgba(23,25,20,.72);
+--tmu-danger-fill:#5d1b10;
+--tmu-info-fill:#41631f;
+--tmu-live-fill:#41631f;
+--tmu-compare-fill:rgba(255,255,255,.04);
+--tmu-compare-home-grad-start:#41631f;
+--tmu-compare-home-grad-end:#649024;
+--tmu-tabs-secondary-bg:#41631f;
+--tmu-tabs-secondary-border:rgba(255,255,255,.1);
+--tmu-tabs-secondary-text:#cfd4c4;
+--tmu-tabs-secondary-hover-text:#f8f9ef;
+--tmu-tabs-secondary-hover-bg:#578029;
+--tmu-tabs-secondary-active-text:#f8f9ef;
+--tmu-tabs-secondary-active-bg:#649024;
+--tmu-tabs-primary-active-border:var(--tmu-color-primary);
+--tmu-tabs-secondary-active-border:var(--tmu-color-primary)
+}
+`;
   var THEME_STORAGE_KEY = "tmu-theme-id";
   function getSavedThemeId() {
     try {
-      return localStorage.getItem(THEME_STORAGE_KEY) || "green";
+      const saved = localStorage.getItem(THEME_STORAGE_KEY) || "green";
+      return ["green", "blue", "pitch", "classic"].includes(saved) ? saved : "green";
     } catch (e) {
       return "green";
     }
   }
   function buildThemeCss(id) {
-    return id === "blue" ? TMU_THEME_CSS + TMU_THEME_DIFF_BLUE : TMU_THEME_CSS;
+    if (id === "blue") return TMU_THEME_CSS + TMU_THEME_DIFF_BLUE;
+    if (id === "pitch") return TMU_THEME_CSS + TMU_THEME_DIFF_PITCH;
+    if (id === "classic") return TMU_THEME_CSS + TMU_THEME_DIFF_CLASSIC;
+    return TMU_THEME_CSS;
   }
   function applyTheme(id) {
     try {
@@ -5139,6 +5367,20 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       primary: "#ff0046",
       bg: "#00141e",
       nav: "#001e28"
+    },
+    {
+      id: "pitch",
+      name: "Pitch Green",
+      primary: "#8ecf47",
+      bg: "#07100a",
+      nav: "#12311d"
+    },
+    {
+      id: "classic",
+      name: "Classic Olive",
+      primary: "#c7df3a",
+      bg: "#345f08",
+      nav: "#315f05"
     }
   ];
   function buildDialogCss() {
@@ -5539,7 +5781,8 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   };
   var calcRec = (posIdx, skills, asi) => _calcRemainderRaw(posIdx, skills, asi).rec;
   var calculatePlayerR5 = (position, player2) => {
-    return calcR5(position.id, player2.skills.map(_sv), player2.asi, player2.routine || 0).toFixed(2);
+    const skillValues = player2.skills.map(_sv);
+    return calcR5(position.id, skillValues, player2.asi, player2.routine || 0).toFixed(2);
   };
   var calculatePlayerREC = (position, player2) => calcRec(position.id, player2.skills.map(_sv), player2.asi).toFixed(2);
   var _getCurrentSession = () => {
@@ -6831,8 +7074,8 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         .tmpt-wrap { overflow-x: auto; }
         .tmpt-wrap::-webkit-scrollbar { height: 4px; }
         .tmpt-wrap::-webkit-scrollbar-thumb { background: var(--tmu-border-embedded); border-radius: 2px; }
-        .tmpt-pb-cell { width: 4px !important; padding: 0 !important; }
-        .tmpt-pb-inner { display: block; width: 3px; min-height: 16px; border-radius: 2px; }
+        .tmpt-pb-cell { width: 4px !important; padding: 0 !important; height: 1px; }
+        .tmpt-pb-inner { display: block; width: 3px; height: 90%; min-height: 90%; border-radius: 0; }
         .tmpt-link { color: var(--tmu-text-inverse); text-decoration: none; font-weight: 500; }
         .tmpt-link:hover { color: var(--tmu-text-accent-soft) !important; text-decoration: underline; }
         .tmpt-flag { margin-right: var(--tmu-space-xs); vertical-align: middle; }
@@ -6864,9 +7107,10 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   function hasVisibleBidRowState(player2) {
     return Number(player2 == null ? void 0 : player2.timeleft) > 0 || isExpiredTimeleft(player2);
   }
-  function renderTimeleftCell(player2) {
+  function renderTimeleftCell(player2, colorize = true) {
     if (Number(player2 == null ? void 0 : player2.timeleft) > 0) {
-      return `<span class="tmu-tabular${Number(player2.timeleft) < 3600 ? " tmpt-time-exp" : ""}" data-time-pid="${player2.id}">${player2.timeleft_string || ""}</span>`;
+      const expCls = Number(player2.timeleft) < 120 ? " tmpt-time-exp" : "";
+      return `<span class="tmu-tabular${expCls}" data-time-pid="${player2.id}">${player2.timeleft_string || ""}</span>`;
     }
     if (isExpiredTimeleft(player2)) {
       return '<span class="tmu-tabular tmpt-time-exp">Expired</span>';
@@ -6884,6 +7128,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     const tiLabel = opts.tiLabel || "TI";
     const nameDecorator = typeof opts.nameDecorator === "function" ? opts.nameDecorator : null;
     const gc2 = TmUtils.getColor;
+    const colorize = opts.colorize !== false;
     const { R5_THRESHOLDS: R5_THRESHOLDS4, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS3 } = TmConst;
     const AGE_THRESHOLDS2 = TmConst.AGE_THRESHOLDS;
     const cols = [
@@ -6927,7 +7172,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         render: (_, p) => {
           const yr = p.age || 0;
           const mo = p.month || 0;
-          return `<span class="tmu-tabular" style="color:${gc2(yr + mo / 12, AGE_THRESHOLDS2)}">${yr}.${mo}</span>`;
+          return `<span class="tmu-tabular"${colorize ? ` style="color:${gc2(yr + mo / 12, AGE_THRESHOLDS2)}"` : ""}>${yr}.${mo}</span>`;
         }
       }
     ];
@@ -6948,13 +7193,18 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         },
         render: (_, p) => {
           if (p.r5 != null)
-            return `<span class="tmu-tabular" style="color:${gc2(p.r5, R5_THRESHOLDS4)};font-weight:700">${TmUtils.formatR5(p.r5)}</span>`;
+            return `<span class="tmu-tabular" style="${colorize ? `color:${gc2(p.r5, R5_THRESHOLDS4)};` : ""}font-weight:700">${TmUtils.formatR5(p.r5)}</span>`;
           if (p.r5Lo != null && p.r5Hi != null) {
             const loStr = TmUtils.formatR5(p.r5Lo), hiStr = TmUtils.formatR5(p.r5Hi);
-            const clrLo = gc2(p.r5Lo, R5_THRESHOLDS4), clrHi = gc2(p.r5Hi, R5_THRESHOLDS4);
+            if (colorize) {
+              const clrLo = gc2(p.r5Lo, R5_THRESHOLDS4), clrHi = gc2(p.r5Hi, R5_THRESHOLDS4);
+              if (loStr === hiStr)
+                return `<span class="tmu-tabular" style="color:${clrHi};font-weight:700">${hiStr}</span>`;
+              return `<span class="tmu-tabular"><span style="color:${clrLo}">${loStr}</span><span style="color:var(--tmu-text-dim)"> \u2013 </span><span style="color:${clrHi};font-weight:700">${hiStr}</span></span>`;
+            }
             if (loStr === hiStr)
-              return `<span class="tmu-tabular" style="color:${clrHi};font-weight:700">${hiStr}</span>`;
-            return `<span class="tmu-tabular"><span style="color:${clrLo}">${loStr}</span><span style="color:var(--tmu-text-dim)"> \u2013 </span><span style="color:${clrHi};font-weight:700">${hiStr}</span></span>`;
+              return `<span class="tmu-tabular" style="font-weight:700">${hiStr}</span>`;
+            return `<span class="tmu-tabular"><span>${loStr}</span><span style="color:var(--tmu-text-dim)"> \u2013 </span><span style="font-weight:700">${hiStr}</span></span>`;
           }
           return '<span style="color:var(--tmu-text-dim)">\u2014</span>';
         }
@@ -6963,7 +7213,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         key: "rec",
         label: "REC",
         align: "r",
-        render: (_, p) => p.rec != null ? `<span class="tmu-tabular" style="color:${gc2(p.rec, REC_THRESHOLDS2)};font-weight:700">${p.rec}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
+        render: (_, p) => p.rec != null ? `<span class="tmu-tabular" style="${colorize ? `color:${gc2(p.rec, REC_THRESHOLDS2)};` : ""}font-weight:700">${p.rec}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
       }] : [],
       {
         key: "ti",
@@ -6973,21 +7223,21 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
           var _a2, _b;
           return ((_a2 = a.ti) != null ? _a2 : -Infinity) - ((_b = b.ti) != null ? _b : -Infinity);
         },
-        render: (_, p) => p.ti != null ? `<span class="tmu-tabular" style="color:${gc2(p.ti, TI_THRESHOLDS2)}">${(p.ti || 0).toFixed(1)}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
+        render: (_, p) => p.ti != null ? `<span class="tmu-tabular"${colorize ? ` style="color:${gc2(p.ti, TI_THRESHOLDS2)}"` : ""}>${(p.ti || 0).toFixed(1)}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
       }
     );
     if (showRtn) cols.push({
       key: "routine",
       label: "RTN",
       align: "r",
-      render: (_, p) => p.routine != null ? `<span class="tmu-tabular" style="color:${gc2(p.routine, RTN_THRESHOLDS3)}">${(p.routine || 0).toFixed(1)}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
+      render: (_, p) => p.routine != null ? `<span class="tmu-tabular"${colorize ? ` style="color:${gc2(p.routine, RTN_THRESHOLDS3)}"` : ""}>${(p.routine || 0).toFixed(1)}</span>` : '<span style="color:var(--tmu-text-dim)">\u2014</span>'
     });
     if (showTimeleft) cols.push({
       key: "timeleft",
       label: "Time",
       align: "r",
       sort: (a, b) => (Number(a.timeleft) > 0 ? Number(a.timeleft) : isExpiredTimeleft(a) ? 999999998 : 999999999) - (Number(b.timeleft) > 0 ? Number(b.timeleft) : isExpiredTimeleft(b) ? 999999998 : 999999999),
-      render: (_, p) => renderTimeleftCell(p)
+      render: (_, p) => renderTimeleftCell(p, colorize)
     });
     if (showCurbid) cols.push({
       key: "curbid",
@@ -7773,8 +8023,8 @@ order:initial
             gap: var(--tmu-space-lg);
             padding: var(--tmu-space-xl);
             background:
-                radial-gradient(ellipse 70% 90% at 30% 50%, rgba(40,70,110,.20) 0%, transparent 100%),
-                var(--tmu-surface-dark-strong);
+                radial-gradient(ellipse 70% 90% at 30% 50%, var(--tmu-success-fill-soft) 0%, transparent 100%),
+                var(--tmu-card-bg);
             box-shadow: 0 12px 28px var(--tmu-shadow-elev);
         }
 
@@ -7856,7 +8106,7 @@ order:initial
             }
 
             .tmvu-fin-maint-section-head {
-                background: var(--tmu-surface-dark-strong);
+                background: var(--tmu-card-head-bg);
             }
 
             .tmvu-fin-maint-section-head th {
@@ -7874,7 +8124,7 @@ order:initial
                 border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: var(--tmu-space-md);
                 overflow: hidden;
-                background: var(--tmu-surface-dark-mid);
+                background: var(--tmu-card-bg);
             }
 
             .tmvu-fin-maint-table {
@@ -7892,7 +8142,7 @@ order:initial
             }
 
             .tmvu-fin-maint-table thead th {
-                background: var(--tmu-success-fill-faint);
+                background: rgba(255,255,255,.04);
                 color: var(--tmu-text-panel-label);
                 font-size: var(--tmu-font-xs);
                 font-weight: 800;
@@ -7900,8 +8150,12 @@ order:initial
                 text-transform: uppercase;
             }
 
+            .tmvu-fin-maint-table tbody tr {
+                background: #2d4315;
+            }
+
             .tmvu-fin-maint-table tbody tr:nth-child(even) {
-                background: var(--tmu-border-contrast);
+                background: #35501a;
             }
 
             .tmvu-fin-maint-table td,
@@ -7930,7 +8184,7 @@ order:initial
             }
 
             .tmvu-fin-maint-table tr.tmvu-fin-maint-total {
-                background: var(--tmu-success-fill-faint);
+                background: #41631f;
             }
 
             .tmvu-fin-maint-table tr.tmvu-fin-maint-total td,
@@ -8567,7 +8821,7 @@ order:initial
                 border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: var(--tmu-space-md);
                 overflow: hidden;
-                background: var(--tmu-surface-dark-mid);
+                background: var(--tmu-card-bg);
             }
 
             .tmvu-fin-wages-table {
@@ -8585,7 +8839,7 @@ order:initial
             }
 
             .tmvu-fin-wages-table thead th {
-                background: var(--tmu-success-fill-faint);
+                background: rgba(255,255,255,.04);
                 color: var(--tmu-text-panel-label);
                 font-size: var(--tmu-font-xs);
                 font-weight: 800;
@@ -8593,8 +8847,12 @@ order:initial
                 text-transform: uppercase;
             }
 
+            .tmvu-fin-wages-table tbody tr {
+                background: #2d4315;
+            }
+
             .tmvu-fin-wages-table tbody tr:nth-child(even) {
-                background: var(--tmu-border-contrast);
+                background: #35501a;
             }
 
             .tmvu-fin-wages-table td,
@@ -8623,7 +8881,7 @@ order:initial
             }
 
             .tmvu-fin-wages-table tr.tmvu-fin-wages-total {
-                background: var(--tmu-success-fill-faint);
+                background: #41631f;
             }
 
             .tmvu-fin-wages-table tr.tmvu-fin-wages-total td {
@@ -10596,6 +10854,17 @@ order:initial
 
   // src/components/shared/tm-match-tooltip.js
   var STYLE_ID18 = "tmvu-match-tooltip-style";
+  var formatKickoffDate = (kickoffReadable) => {
+    const readable = String(kickoffReadable || "").trim();
+    if (!readable) return "";
+    const datePart = readable.split(" ")[0] || "";
+    const match = datePart.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!match) return datePart || readable;
+    const [, year, month, day] = match;
+    const parsed = new Date(Number(year), Number(month) - 1, Number(day));
+    if (Number.isNaN(parsed.getTime())) return datePart;
+    return parsed.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  };
   var ensureStyles = () => {
     if (document.getElementById(STYLE_ID18)) return;
     const style = document.createElement("style");
@@ -10603,7 +10872,7 @@ order:initial
     style.textContent = `
         .rnd-h2h-tooltip {
             position: absolute; z-index: 100;
-            background: var(--tmu-surface-card-soft); border: 1px solid var(--tmu-border-success);
+            background: var(--tmu-card-bg); border: 1px solid var(--tmu-border-soft-alpha);
             border-radius: var(--tmu-space-md); padding: var(--tmu-space-xl) var(--tmu-space-xxl);
             min-width: 520px; max-width: 600px;
             max-height: 75vh; overflow-y: auto;
@@ -10800,7 +11069,7 @@ order:initial
       const kickoffReadable = ((_g = md.venue) == null ? void 0 : _g.kickoff_readable) || (matchData.date ? `${matchData.date} ${matchData.kickoffTime || ""}` : "");
       const attendance = (_h = matchData.attendance) != null ? _h : md.attendance ? Number(md.attendance) : null;
       html2 += buildMeta([
-        kickoffReadable ? `\u{1F4C5} ${new Date(kickoffReadable.replace(" ", "T")).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}` : "",
+        kickoffReadable ? `\u{1F4C5} ${formatKickoffDate(kickoffReadable)}` : "",
         venueName ? `\u{1F3DF} ${venueName}` : "",
         attendance ? `\u{1F465} ${Number(attendance).toLocaleString()}` : ""
       ]);
@@ -11067,48 +11336,71 @@ order:initial
 
   // src/components/shared/tm-match-ratings.js
   var squadCache = /* @__PURE__ */ new Map();
-  var tooltipCache2 = /* @__PURE__ */ new Map();
   var matchCache = /* @__PURE__ */ new Map();
+  var POS_CANONICAL = {
+    dcl: "dc",
+    dcr: "dc",
+    dmcl: "dmc",
+    dmcr: "dmc",
+    mcl: "mc",
+    mcr: "mc",
+    omcl: "omc",
+    omcr: "omc",
+    fcl: "fc",
+    fcr: "fc"
+  };
+  var resolveMatchPosition = (player2, matchPos) => {
+    var _a2, _b;
+    const rawPos = String(matchPos || "").toLowerCase();
+    const mappedKey = POS_CANONICAL[rawPos] || rawPos;
+    const direct = (_a2 = player2.positions) == null ? void 0 : _a2.find((pos) => String(pos.key || pos.position || "").toLowerCase() === mappedKey);
+    if (direct) return { lookupPos: mappedKey, selectedPosition: direct };
+    const targetPos = POSITION_MAP[rawPos] || POSITION_MAP[mappedKey] || null;
+    if (!targetPos) return { lookupPos: mappedKey, selectedPosition: null };
+    const fallback = ((_b = player2.positions) == null ? void 0 : _b.find((pos) => (pos == null ? void 0 : pos.main) && Number(pos.id) === Number(targetPos.id))) || null;
+    return { lookupPos: mappedKey, selectedPosition: fallback };
+  };
+  var resolvePlayerR5 = (player2, matchPos) => {
+    var _a2, _b;
+    const { lookupPos, selectedPosition } = resolveMatchPosition(player2, matchPos);
+    const r5 = Number((_b = (_a2 = selectedPosition == null ? void 0 : selectedPosition.r5) != null ? _a2 : player2 == null ? void 0 : player2.r5) != null ? _b : 0);
+    return { lookupPos, r5: Number.isFinite(r5) ? r5 : 0 };
+  };
   var fetchSquad = (clubId2) => {
     if (!squadCache.has(clubId2)) {
       squadCache.set(clubId2, TmClubModel.fetchSquadRaw(clubId2).then((data) => {
-        const post = {};
-        (data || []).forEach((player2) => {
-          post[String(player2.id)] = player2;
-        });
-        return { post };
-      }).catch(() => ({ post: {} })));
+        return { squad: data || [] };
+      }).catch(() => ({ squad: [] })));
     }
     return squadCache.get(clubId2);
   };
-  var getPlayerDataFromSquad = async (playerId, squadPost, matchPos) => {
-    var _a2, _b, _c, _d;
-    let player2 = (_a2 = squadPost.post) == null ? void 0 : _a2[String(playerId)];
+  var getPlayerDataFromSquad = async (playerId, squadData, matchPos) => {
+    let player2 = (squadData.squad || []).find((p) => String(p.id) === String(playerId)) || null;
+    let fromSquad = !!player2;
     if (!player2) {
-      if (!tooltipCache2.has(playerId)) {
-        tooltipCache2.set(playerId, TmPlayerModel.fetchPlayerTooltip(playerId).then((response) => {
-          var _a3;
-          return (_a3 = response == null ? void 0 : response.player) != null ? _a3 : null;
-        }).catch(() => null));
-      }
-      player2 = await tooltipCache2.get(playerId);
+      player2 = await TmPlayerModel.fetchTooltipCached(playerId).catch(() => null);
+      fromSquad = false;
     }
     if (!player2) return { R5: 0 };
-    const posData = (_b = player2.positions) == null ? void 0 : _b.find((pos) => {
-      var _a3;
-      return ((_a3 = pos.position) == null ? void 0 : _a3.toLowerCase()) === matchPos;
-    });
-    const r5 = Number((_d = (_c = posData == null ? void 0 : posData.r5) != null ? _c : player2.r5) != null ? _d : 0);
+    let { lookupPos, r5 } = resolvePlayerR5(player2, matchPos);
+    if (fromSquad && player2.isGK && r5 <= 0) {
+      const tooltipPlayer = await TmPlayerModel.fetchTooltipCached(playerId).catch(() => null);
+      if (tooltipPlayer) {
+        player2 = tooltipPlayer;
+        ({ lookupPos, r5 } = resolvePlayerR5(player2, matchPos));
+      }
+    }
+    console.log(`[Round R5] ${player2.name || playerId} | pos=${lookupPos} | r5=${Number.isFinite(r5) ? r5 : 0}`);
     return { R5: Number.isFinite(r5) ? r5 : 0 };
   };
-  var computeTeamStats = async (playerIds, lineup, squadPost) => {
+  var computeTeamStats = async (playerIds, lineup, squadData) => {
     const starters = playerIds.filter((id) => {
       var _a2;
       return !String(((_a2 = lineup[id]) == null ? void 0 : _a2.position) || "").includes("sub");
     });
     const players = await Promise.all(starters.map(async (id) => {
       const matchPos = lineup[id].position;
-      const data = await getPlayerDataFromSquad(id, squadPost, matchPos);
+      const data = await getPlayerDataFromSquad(id, squadData, matchPos);
       return { id, ...data };
     }));
     const totals = { R5: 0 };
@@ -11160,6 +11452,9 @@ order:initial
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            background: var(--tmu-match-list-bg, transparent);
+            border: 1px solid var(--tmu-border-input-overlay, var(--tmu-border-soft));
+            border-radius: var(--tmu-space-sm);
         }
 
         .tmvu-match-row {
@@ -11175,12 +11470,20 @@ order:initial
             font-size: var(--tmu-font-sm);
         }
 
+        .tmvu-match-row.tmvu-match-row-odd {
+            background: var(--tmu-match-row-odd, transparent);
+        }
+
+        .tmvu-match-row.tmvu-match-row-even {
+            background: var(--tmu-match-row-even, rgba(255,255,255,.02));
+        }
+
         .tmvu-match-row:last-child {
             border-bottom: none;
         }
 
         .tmvu-match-row:hover {
-            background: var(--tmu-surface-tab-hover) !important;
+            background: var(--tmu-match-row-hover, var(--tmu-surface-tab-hover)) !important;
         }
 
         .tmvu-match-highlight {
@@ -11252,10 +11555,12 @@ order:initial
             display: inline-block;
             color: var(--tmu-text-strong);
             text-decoration: none;
+            background: var(--tmu-match-score-bg, rgba(255,255,255,.03));
+            border: 1px solid var(--tmu-match-score-border, rgba(255,255,255,.05));
         }
 
         .tmvu-match-score:hover {
-            background: var(--tmu-border-contrast);
+            background: var(--tmu-match-score-hover-bg, var(--tmu-border-contrast));
         }
 
         .tmvu-match-score-upcoming {
@@ -11318,7 +11623,7 @@ order:initial
     const safeScore = escapeHtml10(scoreText || "\u2014");
     const scoreHtml = scoreHref ? `<a class="${scoreClass}" href="${scoreHref}">${safeScore}</a>` : `<span class="${scoreClass}">${safeScore}</span>`;
     return `
-        <div class="tmvu-match-row${isHighlight ? " tmvu-match-highlight" : ""}"
+        <div class="tmvu-match-row tmvu-match-row-${index % 2 === 0 ? "odd" : "even"}${isHighlight ? " tmvu-match-highlight" : ""}"
             data-mid="${matchId || ""}" data-season="${season || ""}" data-played="${isPlayed ? "1" : "0"}">
             <div class="tmvu-match-team tmvu-match-team-home">
                 <span class="tmvu-match-team-inner">${renderTeam(home, "home", showLogos)}</span>
@@ -11563,15 +11868,17 @@ order:initial
             position: relative;
             display: flex;
             align-items: center;
-            background: var(--tmu-surface-dark-strong);
-            padding: var(--tmu-space-xs) var(--tmu-space-md);
+            background: var(--tmu-fixture-row-odd, var(--tmu-surface-dark-strong));
+            padding: var(--tmu-space-sm) var(--tmu-space-md);
             border-bottom: 1px solid var(--tmu-border-faint);
             cursor: pointer;
             transition: background 0.12s;
             font-size: var(--tmu-font-md);
             gap: var(--tmu-space-xs);
+            min-height: 56px;
         }
-        .tmvu-fixture-row:hover { background: var(--tmu-surface-tab-hover) !important; }
+        .tmvu-fixture-row.tmvu-fixture-row-even { background: var(--tmu-fixture-row-even, var(--tmu-border-contrast)); }
+        .tmvu-fixture-row:hover { background: var(--tmu-fixture-row-hover, var(--tmu-surface-tab-hover)) !important; }
         .tmvu-fixture-team { flex: 1; display: flex; align-items: center; gap: var(--tmu-space-xs); color: var(--tmu-text-main); min-width: 0; }
         .tmvu-fixture-team-home { justify-content: flex-end; }
         .tmvu-fixture-team-away { justify-content: flex-start; }
@@ -11585,6 +11892,8 @@ order:initial
             border-radius: var(--tmu-space-xs); display: inline-block; flex-shrink: 0;
             text-decoration: none; color: var(--tmu-text-main);
             font-variant-numeric: tabular-nums;
+            background: var(--tmu-fixture-score-bg, var(--tmu-border-contrast));
+            box-shadow: inset 0 0 0 1px var(--tmu-fixture-score-border, var(--tmu-border-soft-alpha));
         }
         .tmvu-fixture-score-upcoming { color: var(--tmu-text-dim); font-weight: 400; font-size: var(--tmu-font-sm); }
         .tmvu-fixture-goal-lose { font-weight: 400; color: var(--tmu-text-faint); }
@@ -11592,7 +11901,7 @@ order:initial
         .tmvu-fixture-logo { width: 25px; height: 25px; flex-shrink: 0; }
         .tmvu-fixture-flag { width: 25px; height: 25px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; }
         .tmvu-fixture-date { font-size: var(--tmu-font-xs); color: var(--tmu-text-faint); white-space: nowrap; flex-shrink: 0; min-width: 72px; }
-        .tmvu-fixture-type-slot { width: 52px; flex-shrink: 0; display: flex; align-items: center; }
+        .tmvu-fixture-type-slot { width: 74px; flex-shrink: 0; display: flex; align-items: center; }
         .tmvu-fixture-type { font-size: 10px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; padding: 1px 5px; border-radius: 3px; flex-shrink: 0; opacity: 0.75; }
         .tmvu-fixture-type-league          { background: rgba(var(--tmu-color-primary-rgb,56,132,255),0.15); color: var(--tmu-color-primary); }
         .tmvu-fixture-type-friendly        { background: var(--tmu-surface-accent); color: var(--tmu-text-dim); }
@@ -11689,7 +11998,8 @@ order:initial
     const homeWinCls = winner === "home" ? " tmvu-fixture-team-winner" : winner === "away" ? " tmvu-fixture-team-loser" : "";
     const awayWinCls = winner === "away" ? " tmvu-fixture-team-winner" : winner === "home" ? " tmvu-fixture-team-loser" : "";
     const dateBadge = dateText ? `<span class="tmvu-fixture-date">${escapeHtml11(String(dateText))}</span>` : "";
-    return `<div class="tmvu-fixture-row${extraClass ? ` ${extraClass}` : ""}"
+    const parityClass = index % 2 === 0 ? " tmvu-fixture-row-even" : " tmvu-fixture-row-odd";
+    return `<div class="tmvu-fixture-row${parityClass}${extraClass ? ` ${extraClass}` : ""}"
             data-mid="${escapeHtml11(matchId)}" data-season="${escapeHtml11(season)}"
             data-href="${escapeHtml11(scoreHref)}"
             data-home-id="${escapeHtml11(homeId)}" data-away-id="${escapeHtml11(awayId)}">
@@ -11716,13 +12026,13 @@ order:initial
     const style = document.createElement("style");
     style.id = STYLE_ID22;
     style.textContent = `
-        .tmvu-fix-list { display: flex; flex-direction: column; }
+        .tmvu-fix-list { display: flex; flex-direction: column; background: var(--tmu-fixture-panel-bg, transparent); }
         .tmvu-fix-date-header {
             display: flex; align-items: center; justify-content: space-between;
-            padding: var(--tmu-space-xs) var(--tmu-space-md);
+            padding: var(--tmu-space-sm) var(--tmu-space-md);
             font-size: var(--tmu-font-xs); font-weight: 700; color: var(--tmu-text-faint);
             text-transform: uppercase; letter-spacing: 0.5px;
-            background: var(--tmu-color-accent); border-top: 1px solid var(--tmu-border-soft-alpha);
+            background: var(--tmu-fixture-head-bg, var(--tmu-color-accent)); border-top: 1px solid var(--tmu-border-soft-alpha);
         }
         .tmvu-fix-list .tmvu-fix-date-header:first-child { border-top: none; }
         .tmvu-fix-date-sub { color: var(--tmu-text-dim); font-size: var(--tmu-font-xs); font-weight: 700; }
@@ -12032,8 +12342,9 @@ order:initial
             border-collapse: collapse;
         }
 
-        .tmvu-standings-wrap tr { background: transparent !important; }
-        .tmvu-standings-wrap tr:nth-child(even) { background: var(--tmu-border-contrast) !important; }
+        .tmvu-standings-wrap tr { background: var(--tmu-standings-row-odd, transparent) !important; }
+        .tmvu-standings-wrap tr:nth-child(even) { background: var(--tmu-standings-row-even, var(--tmu-border-contrast)) !important; }
+        .tmvu-standings-wrap tbody tr:hover { background: var(--tmu-standings-row-hover, var(--tmu-surface-dark-mid)) !important; }
 
         .tmvu-standings-wrap td,
         .tmvu-standings-wrap th {
@@ -12283,9 +12594,9 @@ order:initial
         }
         .form-badge:hover { opacity: 0.75; }
         .std-form-row { display: inline-flex; align-items: center; gap: 2px; flex-wrap: nowrap; white-space: nowrap; }
-        .form-w { background: var(--tmu-success); color: #fff; }
-        .form-d { background: var(--tmu-warning); color: #fff; }
-        .form-l { background: var(--tmu-danger); color: #fff; }
+        .form-w { background: var(--tmu-form-win-bg, var(--tmu-success)); color: #fff; }
+        .form-d { background: var(--tmu-form-draw-bg, var(--tmu-warning)); color: #fff; }
+        .form-l { background: var(--tmu-form-loss-bg, var(--tmu-danger)); color: #fff; }
         .form-u { background: var(--tmu-border-soft); color: var(--tmu-text-faint); }
         .std-hover-opp td { background: var(--tmu-success-fill-strong) !important; outline: 1px solid var(--tmu-success); }
         .std-hover-opp td:first-child { border-left: 3px solid var(--tmu-success) !important; }
@@ -13590,6 +13901,14 @@ order:initial
                 width: 100%;
             }
 
+            .tmcf-months-panel {
+                background: var(--tmu-card-bg);
+                border: 1px solid var(--tmu-border-soft-alpha);
+                border-radius: var(--tmu-space-md);
+                overflow: hidden;
+                box-shadow: 0 14px 30px var(--tmu-shadow-elev);
+            }
+
             .tmcf-summary {
                 margin-bottom: 0;
             }
@@ -13606,8 +13925,9 @@ order:initial
             .tmcf-summary.tmu-summary-strip-boxed .tmu-summary-item {
                 min-width: 0;
                 padding: var(--tmu-space-md) var(--tmu-space-md);
-                background: var(--tmu-surface-card);
+                background: var(--tmu-card-bg);
                 border: 1px solid var(--tmu-border-soft);
+                box-shadow: 0 8px 18px var(--tmu-shadow-soft);
             }
 
             .tmcf-summary .tmu-summary-value {
@@ -13619,14 +13939,49 @@ order:initial
                 display: flex;
                 gap: var(--tmu-space-sm);
                 flex-wrap: wrap;
+                padding: var(--tmu-space-md);
+                background: #1d290c;
+                border: 1px solid var(--tmu-border-soft-alpha);
+                border-radius: var(--tmu-space-md);
             }
 
             .tmcf-filters .tmu-btn {
                 flex: 0 0 auto;
             }
 
+            .tmcf-months-panel #tmcf-months {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .tmcf-months-panel #tmcf-months > .tmu-tabs {
+                background: var(--tmu-card-bg);
+                box-shadow: inset 0 -1px 0 var(--tmu-border-soft-alpha);
+            }
+
+            .tmcf-months-panel #tmcf-months > .tmu-tabs .tmu-tab {
+                min-height: 42px;
+            }
+
             .tmcf-month-content {
-                padding-top: var(--tmu-space-sm);
+                background: var(--tmu-fixture-panel-bg, var(--tmu-card-bg));
+            }
+
+            .tmcf-month-content .tmvu-fix-list {
+                border-top: 1px solid var(--tmu-border-soft-alpha);
+                background: var(--tmu-fixture-panel-bg, var(--tmu-card-bg));
+            }
+
+            @media (max-width: 1100px) {
+                .tmcf-summary.tmu-summary-strip-boxed {
+                    grid-template-columns: repeat(3, 1fr);
+                }
+            }
+
+            @media (max-width: 700px) {
+                .tmcf-summary.tmu-summary-strip-boxed {
+                    grid-template-columns: repeat(2, 1fr);
+                }
             }
         `;
       document.head.appendChild(style);
@@ -16709,7 +17064,7 @@ order:initial
             .tmvu-sponsors-group {
                 border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: var(--tmu-space-md);
-                background: linear-gradient(180deg, var(--tmu-surface-panel) 0%, var(--tmu-surface-dark-mid) 100%);
+                background: var(--tmu-card-bg);
                 padding: var(--tmu-space-md);
             }
 
@@ -16747,7 +17102,7 @@ order:initial
                 width: 100%;
                 border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: var(--tmu-space-md);
-                background: var(--tmu-surface-item-dark);
+                background: rgba(255,255,255,.03);
                 color: var(--tmu-text-strong);
                 cursor: pointer;
                 padding: var(--tmu-space-md);
@@ -16757,14 +17112,14 @@ order:initial
 
             .tmvu-sponsors-option:hover {
                 border-color: var(--tmu-border-success);
-                background: var(--tmu-success-fill-faint);
+                background: rgba(255,255,255,.05);
                 transform: translateY(-1px);
             }
 
             .tmvu-sponsors-option.is-selected {
                 border-color: var(--tmu-border-success);
-                background: var(--tmu-success-fill-soft);
-                box-shadow: inset 0 0 0 1px var(--tmu-success-fill-hover);
+                background: rgba(255,255,255,.06);
+                box-shadow: inset 0 0 0 1px var(--tmu-border-success);
             }
 
             .tmvu-sponsors-option-name {
@@ -16813,7 +17168,7 @@ order:initial
             .tmvu-sponsors-offer {
                 border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: var(--tmu-space-lg);
-                background: linear-gradient(180deg, var(--tmu-surface-panel) 0%, var(--tmu-surface-dark-mid) 100%);
+                background: var(--tmu-card-bg);
                 overflow: hidden;
             }
 
@@ -16886,7 +17241,7 @@ order:initial
             .tmvu-sponsors-offer-meta-item {
                 border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: var(--tmu-space-md);
-                background: var(--tmu-border-contrast);
+                background: rgba(255,255,255,.03);
                 padding: var(--tmu-space-md);
             }
 
@@ -16938,7 +17293,7 @@ order:initial
                 align-items: center;
                 border: 1px solid var(--tmu-border-soft-alpha);
                 border-radius: var(--tmu-space-md);
-                background: var(--tmu-border-contrast);
+                background: rgba(255,255,255,.03);
                 padding: var(--tmu-space-md);
             }
 
@@ -17397,7 +17752,7 @@ order:initial
 .tmt-state-copy{color:var(--tmu-text-faint);font-size:var(--tmu-font-xs)}
 .tmt-tabs{display:flex;width:100%;gap:0;padding:var(--tmu-space-md) var(--tmu-space-lg) var(--tmu-space-sm);flex-wrap:nowrap;background:transparent;border:none;overflow:visible}.tmt-tab{flex:1 1 0;padding:var(--tmu-space-xs) var(--tmu-space-md);font-size:var(--tmu-font-xs);border:1px solid var(--tmu-border-input);border-radius:0;text-align:center;justify-content:center}.tmt-tab:hover:not(:disabled){border-color:var(--tmu-border-embedded)}.tmt-tab.active{border-bottom-color:var(--tmu-border-embedded)}.tmt-tab-pro::after{content:'PRO';display:inline-block;background:var(--tmu-success-fill);color:var(--tmu-success);padding:0 var(--tmu-space-xs);border-radius:var(--tmu-space-xs);font-size:var(--tmu-font-2xs);font-weight:800;letter-spacing:.5px;margin-left:var(--tmu-space-xs);vertical-align:middle}
 .tmt-body{display:flex;flex-direction:column;gap:var(--tmu-space-md);padding:var(--tmu-space-sm) var(--tmu-space-lg) var(--tmu-space-lg);font-size:var(--tmu-font-sm)}
-.tmt-sbar,.tmt-summary-card,.tmt-summary-pool,.tmt-table-shell,.tmt-footer{background:var(--tmu-surface-card-soft);border:1px solid var(--tmu-border-soft-alpha-strong);border-radius:var(--tmu-space-md);box-shadow:none}
+.tmt-sbar,.tmt-summary-card,.tmt-summary-pool,.tmt-table-shell,.tmt-footer{background:var(--tmu-card-bg);border:1px solid var(--tmu-border-soft-alpha-strong);border-radius:var(--tmu-space-md);box-shadow:none}
 .tmt-sbar{display:flex;align-items:center;gap:var(--tmu-space-sm);padding:var(--tmu-space-sm) var(--tmu-space-md);flex-wrap:wrap}
 .tmt-sbar-label{color:var(--tmu-text-faint);font-size:var(--tmu-font-xs);font-weight:600;text-transform:uppercase;letter-spacing:0.4px}
 .tmt-sbar select{background:var(--tmu-surface-overlay-soft);color:var(--tmu-text-main);border:1px solid var(--tmu-border-soft-alpha-mid);padding:var(--tmu-space-xs) var(--tmu-space-sm);border-radius:var(--tmu-space-sm);font-size:var(--tmu-font-xs);cursor:pointer;font-weight:600;font-family:inherit}
@@ -18344,7 +18699,7 @@ order:initial
       title: "Squad Training Overview",
       icon: "\u{1F3CB}",
       titleMode: "body",
-      cardVariant: "soft",
+      cardVariant: "flatpanel",
       hostClass: "tmvu-tr-card-host",
       bodyClass: "tmvu-tr-card-body tmu-stack tmu-stack-density-regular"
     });
@@ -18357,7 +18712,7 @@ order:initial
       title: "Training Editor",
       icon: "\u{1F6E0}",
       titleMode: "body",
-      cardVariant: "soft",
+      cardVariant: "flatpanel",
       hostClass: "tmvu-tr-editor-host",
       bodyClass: "tmvu-tr-editor-body tmu-stack tmu-stack-density-regular"
     });
@@ -18492,7 +18847,7 @@ order:initial
                 padding: var(--tmu-space-lg);
                 min-width: 0;
                 border-radius: var(--tmu-space-lg);
-                background: linear-gradient(180deg, var(--tmu-surface-dark-strong), var(--tmu-surface-dark-muted));
+                background: var(--tmu-card-bg);
                 border: 1px solid var(--tmu-border-soft-alpha);
                 box-shadow: 0 10px 22px var(--tmu-shadow-elev);
                 position: relative;
@@ -18503,10 +18858,10 @@ order:initial
                 inset: 0 auto 0 0;
                 width: var(--tmu-space-xs);
                 border-radius: var(--tmu-space-lg) 0 0 var(--tmu-space-lg);
-                background: linear-gradient(180deg, var(--tmu-success-strong), var(--tmu-success-fill-strong));
+                background: linear-gradient(180deg, #5f8925, #3f5f1c);
             }
             .tmvu-yd-player-card-status::before {
-                background: linear-gradient(180deg, var(--tmu-success-fill-strong), var(--tmu-success-fill-soft));
+                background: linear-gradient(180deg, #547b22, #39551a);
             }
             .tmvu-yd-player-name {
                 color: var(--tmu-text-strong);
@@ -18535,13 +18890,17 @@ order:initial
                 border-radius: var(--tmu-space-md);
                 border: 1px solid var(--tmu-border-soft-alpha);
             }
+            .tmvu-yd-rating-row .tmu-metric {
+                background: #324a17;
+                box-shadow: 0 8px 18px var(--tmu-shadow-soft);
+            }
             .tmvu-yd-rating-row .tmu-metric { min-width: 0; }
             .tmvu-yd-rating-row .tmu-metric-value { font-size: var(--tmu-font-xl); line-height: 1; }
             .tmvu-yd-skills-panel {
                 padding: var(--tmu-space-md);
                 border-radius: var(--tmu-space-lg);
                 border: 1px solid var(--tmu-border-soft-alpha);
-                background: var(--tmu-surface-dark-muted);
+                background: #35501a;
             }
             .tmvu-yd-skills-panel-hidden {
                 display: flex;
@@ -18555,7 +18914,7 @@ order:initial
                 grid-template-columns: repeat(auto-fit, minmax(62px, 1fr));
                 gap: var(--tmu-space-sm);
             }
-            .tmvu-yd-skills .tmu-metric { background: var(--tmu-surface-input-dark); }
+            .tmvu-yd-skills .tmu-metric { background: #1f2c0d; }
             .tmvu-yd-skills .tmu-metric-value { font-size: var(--tmu-font-md); line-height: 1; }
             @keyframes tmvu-yd-skill-in {
                 from { opacity: 0; transform: scale(0.82) translateY(3px); }
@@ -19181,7 +19540,7 @@ order:initial
   styleEl.textContent = CSS3;
   document.head.appendChild(styleEl);
   var renderHTML = (player2) => {
-    const { getColor: getColor5 } = TmUtils;
+    const { getColor: getColor4 } = TmUtils;
     const { R5_THRESHOLDS: R5_THRESHOLDS4, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
     const badge2 = (label, val, color) => TmUI.badge({ label, value: val, size: "sm", shape: "rounded", weight: "bold" }, "muted").replace('tmu-badge-tone-muted"', `tmu-badge-tone-muted" style="color:${color}"`);
     const prefPositions = (player2.positions || []).filter((p) => p.preferred);
@@ -19191,7 +19550,7 @@ order:initial
       const hiStr = TmUtils.formatR5(player2.r5Hi, "");
       return player2.r5Lo != null && loStr !== hiStr ? `${loStr}\u2013${hiStr}` : hiStr;
     })() : null;
-    const r5Color3 = player2.r5 != null ? getColor5(player2.r5, R5_THRESHOLDS4) : player2.r5Hi != null ? getColor5(player2.r5Hi, R5_THRESHOLDS4) : "var(--tmu-text-dim)";
+    const r5Color3 = player2.r5 != null ? getColor4(player2.r5, R5_THRESHOLDS4) : player2.r5Hi != null ? getColor4(player2.r5Hi, R5_THRESHOLDS4) : "var(--tmu-text-dim)";
     let h = '<div class="tmpt-header">';
     h += `<div class="tmpt-header-left">`;
     h += `<div class="tmpt-name">${player2.name}</div>`;
@@ -19201,7 +19560,7 @@ order:initial
     h += `</div></div>`;
     h += `<div class="tmpt-header-right">`;
     h += r5Val != null ? badge2("R5", r5Val, r5Color3) : "";
-    h += player2.ti != null ? badge2("TI", player2.ti.toFixed(1), getColor5(player2.ti, TI_THRESHOLDS2)) : "";
+    h += player2.ti != null ? badge2("TI", player2.ti.toFixed(1), getColor4(player2.ti, TI_THRESHOLDS2)) : "";
     h += `</div>`;
     h += "</div>";
     const fieldLeft = [0, 1, 2, 3, 4, 5, 6];
@@ -19227,7 +19586,7 @@ order:initial
     h += '<div class="tmpt-skills">' + renderCol(leftIdx) + renderCol(rightIdx) + "</div>";
     const stats = player2.footerStats || [
       player2.asi != null ? { val: player2.asi.toLocaleString(), lbl: "ASI", color: "var(--tmu-text-strong)" } : null,
-      player2.rec != null ? { val: Number(player2.rec), lbl: "REC", color: getColor5(Number(player2.rec), REC_THRESHOLDS2) } : null,
+      player2.rec != null ? { val: Number(player2.rec), lbl: "REC", color: getColor4(Number(player2.rec), REC_THRESHOLDS2) } : null,
       player2.routine != null ? { val: player2.routine.toFixed(1), lbl: "Routine", color: "var(--tmu-success)" } : null
     ].filter(Boolean);
     if (stats.length)
@@ -20577,7 +20936,7 @@ order:initial
 .tmu-summary-strip-boxed{
     gap:var(--tmu-space-sm);
     padding:var(--tmu-space-sm) var(--tmu-space-md);
-    background:var(--tmu-color-base);
+    background:var(--tmu-card-bg);
 }
 .tmu-summary-item{
     display:flex;
@@ -20755,7 +21114,7 @@ order:initial
 
   // src/components/squad/tm-squad-table.js
   var buildSummary2 = (players) => {
-    const { getColor: getColor5 } = TmUtils;
+    const { getColor: getColor4 } = TmUtils;
     const { AGE_THRESHOLDS: AGE_THRESHOLDS2, REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS4, TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
     const n = players.length;
     if (!n) return "";
@@ -20767,10 +21126,10 @@ order:initial
     const avgTI = tiPlayers.length ? tiPlayers.reduce((s6, p) => s6 + p.ti, 0) / tiPlayers.length : 0;
     return TmSummaryStrip.render([
       { label: "Players", value: String(n) },
-      { label: "Avg R5", value: avgR5.toFixed(2), valueStyle: `color:${getColor5(avgR5, R5_THRESHOLDS4)}` },
-      { label: "Avg REC", value: avgRec.toFixed(2), valueStyle: `color:${getColor5(avgRec, REC_THRESHOLDS2)}` },
-      ...tiPlayers.length ? [{ label: "Avg TI", value: avgTI.toFixed(1), valueStyle: `color:${getColor5(avgTI, TI_THRESHOLDS2)}` }] : [],
-      { label: "Avg Age", value: avgAge.toFixed(1), valueStyle: `color:${getColor5(avgAge, AGE_THRESHOLDS2)}` },
+      { label: "Avg R5", value: avgR5.toFixed(2), valueStyle: `color:${getColor4(avgR5, R5_THRESHOLDS4)}` },
+      { label: "Avg REC", value: avgRec.toFixed(2), valueStyle: `color:${getColor4(avgRec, REC_THRESHOLDS2)}` },
+      ...tiPlayers.length ? [{ label: "Avg TI", value: avgTI.toFixed(1), valueStyle: `color:${getColor4(avgTI, TI_THRESHOLDS2)}` }] : [],
+      { label: "Avg Age", value: avgAge.toFixed(1), valueStyle: `color:${getColor4(avgAge, AGE_THRESHOLDS2)}` },
       { label: "Avg ASI", value: Math.round(avgASI).toLocaleString(), valueStyle: "color:var(--tmu-text-strong)" }
     ], { cls: "tmsq-summary", variant: "boxed", valueFirst: true });
   };
@@ -23803,8 +24162,8 @@ order:initial
     const layout = initClubLayout({ main: main2, currentPath: normalizeClubHref(window.location.pathname) });
     if (!(layout == null ? void 0 : layout.mainColumn)) return;
     const container = layout.mainColumn;
-    const htmlOf6 = (node) => (node == null ? void 0 : node.outerHTML) || "";
-    const buttonHtml12 = (opts) => htmlOf6(TmUI.button(opts));
+    const htmlOf7 = (node) => (node == null ? void 0 : node.outerHTML) || "";
+    const buttonHtml12 = (opts) => htmlOf7(TmUI.button(opts));
     const MATCH_TYPE_KEYS = {
       "League": "league",
       "Friendly": "friendly",
@@ -23932,7 +24291,7 @@ order:initial
         { label: "Goals Against", value: String(summary.goalsAgainst) }
       ], { cls: "tmcf-summary", variant: "boxed", valueFirst: true, align: "center" })}
                 <section class="tmcf-filters">${getFilterButtons(allMatches)}</section>
-                <section id="tmcf-months"></section>
+                <section class="tmcf-months-panel"><div id="tmcf-months"></div></section>
             </div>
         `;
       const monthsHost = container.querySelector("#tmcf-months");
@@ -25841,6 +26200,7 @@ order:initial
         display: flex !important;
         gap: var(--tmu-space-lg);
         align-items: flex-start;
+        padding-top: var(--tmu-space-lg);
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         color: var(--tmu-text-main);
     }
@@ -25976,20 +26336,25 @@ order:initial
     }
 
     /* \u2500\u2500\u2500 Table \u2500\u2500\u2500 */
-    .tms-table-wrap { overflow-x: auto; border-radius: var(--tmu-space-sm); border: 1px solid var(--tmu-border-soft); }
+    .tms-table-wrap { overflow-x: auto; border-radius: var(--tmu-space-sm); border: 1px solid var(--tmu-border-soft); background: var(--tmu-card-bg); }
     .tms-table-wrap::-webkit-scrollbar { height: 4px; }
     .tms-table-wrap::-webkit-scrollbar-track { background: var(--tmu-shadow-panel); }
     .tms-table-wrap::-webkit-scrollbar-thumb { background: var(--tmu-border-embedded); border-radius: var(--tmu-space-xs); }
+
+    .tmvu-main.tmvu-transfer-page .tmu-tbl tbody td {
+        border-bottom: none;
+    }
 
     #tms-table {
         width: 100%;
         border-collapse: collapse;
         font-size: var(--tmu-font-xs);
         color: var(--tmu-text-main);
+        background: var(--tmu-card-bg);
     }
-    #tms-table thead tr { border-bottom: 1px solid var(--tmu-border-soft);background: var(--tmu-surface-overlay); }
+    #tms-table thead tr { border-bottom: 1px solid var(--tmu-border-soft); background: var(--tmu-card-bg); }
     #tms-table th {
-        background: var(--tmu-surface-embedded);
+        background: var(--tmu-card-bg);
         color: var(--tmu-text-faint);
         font-size: var(--tmu-font-xs);
         font-weight: 700;
@@ -26002,22 +26367,34 @@ order:initial
         position: sticky;
         top: 0;
         z-index: 2;
-        background: var(--tmu-surface-embedded);
+        background: var(--tmu-card-bg);
     }
-    #tms-table th:hover { color: var(--tmu-text-main); background: var(--tmu-surface-tab-hover); }
+    #tms-table th:hover { color: var(--tmu-text-main); background: #2f4415; }
     #tms-table th.sort-asc::after  { content: ' \u25B2'; color: var(--tmu-success); }
     #tms-table th.sort-desc::after { content: ' \u25BC'; color: var(--tmu-success); }
     #tms-table td {
         padding: var(--tmu-space-xs) var(--tmu-space-sm);
-        border-bottom: 1px solid var(--tmu-border-input-overlay);
+        border-bottom: none;
         vertical-align: middle;
         white-space: nowrap;
     }
-    #tms-table .tms-player-row { background: var(--tmu-surface-panel); }
-    #tms-table tbody .tms-player-row:nth-child(odd)  { background: var(--tmu-surface-panel); }
-    #tms-table tbody .tms-player-row:nth-child(even) { background: var(--tmu-surface-embedded); }
-    #tms-table .tms-player-row:hover { background: var(--tmu-surface-tab-hover) !important; cursor: pointer; }
-    #tms-table .tms-player-row.tms-expanded { background: var(--tmu-border-contrast); }
+    #tms-table .tms-player-row,
+    #tms-table tbody .tms-player-row:nth-child(odd),
+    #tms-table tbody .tms-player-row:nth-child(even) {
+        background: var(--tmu-card-bg) !important;
+    }
+    #tms-table .tms-player-row td {
+        background: var(--tmu-card-bg) !important;
+    }
+    #tms-table .tms-player-row:hover,
+    #tms-table .tms-player-row:hover td {
+        background: var(--tmu-card-bg) !important;
+        cursor: pointer;
+    }
+    #tms-table .tms-player-row.tms-expanded,
+    #tms-table .tms-player-row.tms-expanded td {
+        background: var(--tmu-card-bg) !important;
+    }
 
     /* Column-specific */
     .tms-col-flag { width: 24px; text-align: center; }
@@ -26200,39 +26577,29 @@ order:initial
   };
 
   // src/components/transfer/tm-transfer-table.js
-  var getColor4 = TmUtils.getColor;
   function fmtRec(val) {
-    const { REC_THRESHOLDS: REC_THRESHOLDS2 } = TmConst;
     if (val == null || val === "") return '<span class="tms-muted tmu-text-faint">\u2014</span>';
     const num = parseFloat(val);
     const disp = Number.isInteger(num) ? String(num) : num.toFixed(2);
-    const clr = getColor4(num, REC_THRESHOLDS2);
-    return `<span class="tms-rec tmu-tabular" style="border-color:${clr}44;color:${clr}">${disp}</span>`;
+    return `<span class="tms-rec tmu-tabular">${disp}</span>`;
   }
   function tiHtml(ti) {
-    const { TI_THRESHOLDS: TI_THRESHOLDS2 } = TmConst;
     if (ti === null || ti === void 0) return '<span class="tms-muted tmu-text-faint">\u2014</span>';
-    const clr = getColor4(ti, TI_THRESHOLDS2);
-    return `<span class="tms-strong-val tmu-tabular" style="color:${clr}">${ti.toFixed(1)}</span>`;
+    return `<span class="tms-strong-val tmu-tabular">${ti.toFixed(1)}</span>`;
   }
   function fmtR5(r5) {
-    const { R5_THRESHOLDS: R5_THRESHOLDS4 } = TmConst;
     if (r5 == null) return '<span class="tms-tip-pending">\u2026</span>';
-    const clr = getColor4(r5, R5_THRESHOLDS4);
-    return `<span class="tms-strong-val tmu-tabular" style="color:${clr}">${TmUtils.formatR5(r5)}</span>`;
+    return `<span class="tms-strong-val tmu-tabular">${TmUtils.formatR5(r5)}</span>`;
   }
   function fmtR5Range(lo, hi) {
-    const { R5_THRESHOLDS: R5_THRESHOLDS4 } = TmConst;
     if (lo == null || hi == null) return '<span class="tms-tip-pending">\u2026</span>';
     const loFixed = TmUtils.formatR5(lo), hiFixed = TmUtils.formatR5(hi);
-    const clrLo = getColor4(lo, R5_THRESHOLDS4);
-    const clrHi = getColor4(hi, R5_THRESHOLDS4);
     if (loFixed === hiFixed)
-      return `<span class="tms-range-wrap tmu-tabular"><span class="tms-strong-val tmu-tabular" style="color:${clrHi}">${hiFixed}</span></span>`;
-    return `<span class="tms-range-wrap tmu-tabular"><span class="tms-range-val tmu-tabular" style="color:${clrLo}">${loFixed}</span><span class="tms-range-sep">\u2013</span><span class="tms-range-val tmu-tabular" style="color:${clrHi}">${hiFixed}</span></span>`;
+      return `<span class="tms-range-wrap tmu-tabular"><span class="tms-strong-val tmu-tabular">${hiFixed}</span></span>`;
+    return `<span class="tms-range-wrap tmu-tabular"><span class="tms-range-val tmu-tabular">${loFixed}</span><span class="tms-range-sep">\u2013</span><span class="tms-range-val tmu-tabular">${hiFixed}</span></span>`;
   }
   var MOUNT_OPTIONS = {
-    columns: { rtn: false },
+    columns: { rtn: false, colorize: false },
     sortKey: "timeleft",
     sortDir: 1,
     onRowClick: null,
@@ -26549,7 +26916,7 @@ order:initial
           const span = document.querySelector(`[data-time-pid="${p.id}"]`);
           if (!span) continue;
           span.textContent = p.timeleft_string;
-          if (p.timeleft < 3600) span.classList.add("tmpt-time-exp");
+          if (p.timeleft < 120) span.classList.add("tmpt-time-exp");
         }
         if (needsRefresh) scheduleRefresh();
       }, 1e3);
@@ -26801,7 +27168,7 @@ order:initial
       if (document.getElementById("tms-main") || document.getElementById("tms-sidebar")) return;
       const layoutHtml = `
   ${TmTransferSidebar.build()}
-    <div id="tms-main" class="tmvu-transfer-main tmu-panel">
+    <div id="tms-main" class="tmvu-transfer-main tmu-card">
     <div id="tms-toolbar">
       <span id="tms-hits">0</span>
       <span class="tms-toolbar-label"> players</span>
@@ -28156,8 +28523,8 @@ order:initial
             .tsa-ssnpick { position: relative; flex-shrink: 0; }
             /* \u2500\u2500 Panel flat container (like squad) \u2500\u2500 */
             #tsa-standings-panel {
-                background: var(--tmu-border-header);
-                border: 1px solid var(--tmu-border-soft-alpha);
+                background: var(--tmu-league-panel-bg, var(--tmu-border-header));
+                border: 1px solid var(--tmu-league-panel-border, var(--tmu-border-soft-alpha));
                 border-radius: var(--tmu-space-md);
                 overflow: hidden;
                 margin-bottom: var(--tmu-space-lg);
@@ -28290,7 +28657,7 @@ order:initial
   ];
   var renderSkillTable = () => {
     const s6 = window.TmLeagueCtx;
-    const { skillData, skillSortCol, skillSortAsc, REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS4, AGE_THRESHOLDS: AGE_THRESHOLDS2, getColor: getColor5 } = s6;
+    const { skillData, skillSortCol, skillSortAsc, REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS4, AGE_THRESHOLDS: AGE_THRESHOLDS2, getColor: getColor4 } = s6;
     const thresholds = { REC: REC_THRESHOLDS2, R5: R5_THRESHOLDS4, Age: AGE_THRESHOLDS2 };
     const decimals = { REC: 2, R5: 2, Age: 1 };
     const arrow = (key) => key === skillSortCol ? skillSortAsc ? " \u25B2" : " \u25BC" : "";
@@ -28304,7 +28671,7 @@ order:initial
             <div class="tsa-skill-row">
                 <span class="tsa-skill-rank">${i + 1}</span>
                 <span class="tsa-skill-club">${row.name}</span>
-                ${STAT_COLS.map((c) => `<span class="tsa-skill-val" style="color:${getColor5(row[c.key], thresholds[c.key])};font-weight:700">${row[c.key].toFixed(decimals[c.key])}</span>`).join("")}
+                ${STAT_COLS.map((c) => `<span class="tsa-skill-val" style="color:${getColor4(row[c.key], thresholds[c.key])};font-weight:700">${row[c.key].toFixed(decimals[c.key])}</span>`).join("")}
             </div>`).join("");
     const container = document.getElementById("tsa-content");
     if (!container) return;
@@ -28399,6 +28766,7 @@ order:initial
     if (content) content.innerHTML = TmUI.loading("Analyzing...");
   };
   var processMatchData = (matchId, data) => {
+    var _a2, _b;
     const s6 = window.TmLeagueCtx;
     const homeId = String(data.home.club.id);
     const awayId = String(data.away.club.id);
@@ -28412,21 +28780,23 @@ order:initial
     const homeLineupMap = Object.fromEntries(homeLineupArr.map((p) => [String(p.id), p]));
     const awayLineupMap = Object.fromEntries(awayLineupArr.map((p) => [String(p.id), p]));
     const homeStarters = homeLineupArr.filter((p) => {
-      var _a2;
-      return !((_a2 = p.position) == null ? void 0 : _a2.includes("sub"));
+      var _a3;
+      return !((_a3 = p.position) == null ? void 0 : _a3.includes("sub"));
     });
     const awayStarters = awayLineupArr.filter((p) => {
-      var _a2;
-      return !((_a2 = p.position) == null ? void 0 : _a2.includes("sub"));
+      var _a3;
+      return !((_a3 = p.position) == null ? void 0 : _a3.includes("sub"));
     });
     if (!homeStarters.length || !awayStarters.length) {
       console.warn(`[League] match=${matchId} lineup problem \u2014 home=${homeLineupArr.length} starters=${homeStarters.length}, away=${awayLineupArr.length} starters=${awayStarters.length}`);
     }
-    const emptySquad = { squad: [] };
     Promise.all([
-      s6.computeTeamStats(Object.keys(homeLineupMap), homeLineupMap, emptySquad),
-      s6.computeTeamStats(Object.keys(awayLineupMap), awayLineupMap, emptySquad)
-    ]).then(([homeResult, awayResult]) => {
+      s6.fetchSquad(homeId, ((_a2 = data.home.club) == null ? void 0 : _a2.name) || ""),
+      s6.fetchSquad(awayId, ((_b = data.away.club) == null ? void 0 : _b.name) || "")
+    ]).then(([homeSquad, awaySquad]) => Promise.all([
+      s6.computeTeamStats(Object.keys(homeLineupMap), homeLineupMap, homeSquad),
+      s6.computeTeamStats(Object.keys(awayLineupMap), awayLineupMap, awaySquad)
+    ])).then(([homeResult, awayResult]) => {
       if (!s6.clubDatas.has(homeId)) s6.clubDatas.set(homeId, []);
       if (!s6.clubDatas.has(awayId)) s6.clubDatas.set(awayId, []);
       s6.clubDatas.get(homeId).push(homeResult.totals);
@@ -28560,6 +28930,53 @@ order:initial
 
             .tmvu-league-feed-card {
                 margin-top: var(--tmu-space-lg);
+            }
+
+            .tmvu-main.tmvu-league-layout .tmu-card,
+            .tmvu-main.tmvu-league-layout .tmu-flat-panel,
+            .tmvu-main.tmvu-league-layout .tmu-panel,
+            .tmvu-main.tmvu-league-layout .tmvu-round-panel,
+            .tmvu-main.tmvu-league-layout .tmvu-league-feed-card tm-card {
+                background: var(--tmu-league-panel-bg, var(--tmu-surface-panel));
+                border-color: var(--tmu-league-panel-border, var(--tmu-border-soft-alpha));
+            }
+
+            .tmvu-main.tmvu-league-layout .tmu-card-head,
+            .tmvu-main.tmvu-league-layout .tmu-flat-panel .tmu-card-head,
+            .tmvu-main.tmvu-league-layout .tmvu-round-panel .tmu-card-head {
+                background: var(--tmu-league-head-bg, linear-gradient(180deg, var(--tmu-success-fill-soft), var(--tmu-success-fill-faint)));
+                border-bottom-color: var(--tmu-league-head-border, var(--tmu-border-soft-alpha));
+            }
+
+            .tmvu-main.tmvu-league-layout .tmvu-standings-wrap {
+                background: var(--tmu-league-table-shell, var(--tmu-surface-dark-soft));
+                border-color: var(--tmu-league-panel-border, var(--tmu-border-soft-alpha-mid));
+            }
+
+            .tmvu-main.tmvu-league-layout .tmvu-standings-wrap tr:nth-child(even) {
+                background: var(--tmu-league-table-even, var(--tmu-border-contrast)) !important;
+            }
+
+            .tmvu-main.tmvu-league-layout .tmvu-standings-wrap tbody tr:nth-child(odd) {
+                background: var(--tmu-league-table-odd, transparent) !important;
+            }
+
+            .tmvu-main.tmvu-league-layout .tmvu-standings-wrap tbody tr:hover {
+                background: var(--tmu-league-table-row-hover, var(--tmu-surface-dark-mid)) !important;
+            }
+
+            .tmvu-main.tmvu-league-layout .tmvu-league-sidebar .tmvu-match-row:nth-child(even),
+            .tmvu-main.tmvu-league-layout .tmvu-league-sidebar .tsa-skill-row:nth-child(even) {
+                background: var(--tmu-league-sidebar-stripe, rgba(255,255,255,.035));
+            }
+
+            .tmvu-main.tmvu-league-layout .tmvu-league-sidebar .tmvu-match-row:nth-child(odd),
+            .tmvu-main.tmvu-league-layout .tmvu-league-sidebar .tsa-skill-row:nth-child(odd) {
+                background: var(--tmu-league-sidebar-stripe-alt, transparent);
+            }
+
+            .tmvu-main.tmvu-league-layout .tsa-skill-row:hover {
+                background: var(--tmu-league-table-row-hover, var(--tmu-surface-tab-hover));
             }
            
             /* \u2500\u2500 History mode banner \u2500\u2500 */
@@ -29605,8 +30022,8 @@ order:initial
     const SKILL_NAMES_FIELD = TmConst.SKILL_DEFS_OUT.map((d) => d.label || d.key);
     const SKILL_NAMES_GK2 = TmConst.SKILL_DEFS_GK.map((d) => d.label || d.key);
     const { REC_THRESHOLDS: REC_THRESHOLDS2, R5_THRESHOLDS: R5_THRESHOLDS4, AGE_THRESHOLDS: AGE_THRESHOLDS2 } = TmConst;
-    const htmlOf6 = (node) => (node == null ? void 0 : node.outerHTML) || "";
-    const inputHtml4 = (opts) => htmlOf6(TmUI.input({ tone: "overlay", density: "regular", ...opts }));
+    const htmlOf7 = (node) => (node == null ? void 0 : node.outerHTML) || "";
+    const inputHtml4 = (opts) => htmlOf7(TmUI.input({ tone: "overlay", density: "regular", ...opts }));
     const appendHtml = (parent, html2) => {
       if (!parent) return null;
       const template = document.createElement("template");
@@ -29628,7 +30045,7 @@ order:initial
     const squadCache2 = /* @__PURE__ */ new Map();
     const fetchSquad2 = (clubId2, name = "") => {
       if (!squadCache2.has(clubId2)) {
-        squadCache2.set(clubId2, fetchRawPlayers(clubId2).then((players) => {
+        squadCache2.set(clubId2, TmClubModel.fetchSquadRaw(clubId2).then((players) => {
           const result = { id: String(clubId2), name, squad: players || [] };
           if (!result.squad.length) squadCache2.delete(clubId2);
           return result;
@@ -29639,22 +30056,47 @@ order:initial
       }
       return squadCache2.get(clubId2);
     };
+    const resolveMatchPosition2 = (player2, matchPos) => {
+      var _a2, _b;
+      const rawPos = String(matchPos || "").toLowerCase();
+      const mappedKey = { dcl: "dc", dcr: "dc", dmcl: "dmc", dmcr: "dmc", mcl: "mc", mcr: "mc", omcl: "omc", omcr: "omc", fcl: "fc", fcr: "fc" }[rawPos] || rawPos;
+      const direct = (_a2 = player2.positions) == null ? void 0 : _a2.find((p) => String(p.key || "").toLowerCase() === mappedKey);
+      if (direct) return { lookupPos: mappedKey, selectedPosition: direct };
+      const targetPos = POSITION_MAP[rawPos] || POSITION_MAP[mappedKey] || null;
+      if (!targetPos) return { lookupPos: mappedKey, selectedPosition: null };
+      const fallback = ((_b = player2.positions) == null ? void 0 : _b.find((p) => (p == null ? void 0 : p.main) && Number(p.id) === Number(targetPos.id))) || null;
+      return { lookupPos: mappedKey, selectedPosition: fallback };
+    };
+    const resolvePlayerRatings = (player2, matchPos) => {
+      var _a2, _b, _c, _d;
+      const { lookupPos, selectedPosition } = resolveMatchPosition2(player2, matchPos);
+      const r5 = Number((_b = (_a2 = selectedPosition == null ? void 0 : selectedPosition.r5) != null ? _a2 : player2 == null ? void 0 : player2.r5) != null ? _b : 0);
+      const rec = Number((_d = (_c = selectedPosition == null ? void 0 : selectedPosition.rec) != null ? _c : player2 == null ? void 0 : player2.rec) != null ? _d : 0);
+      return {
+        lookupPos,
+        selectedPosition,
+        r5: Number.isFinite(r5) ? r5 : 0,
+        rec: Number.isFinite(rec) ? rec : 0
+      };
+    };
     const getPlayerDataFromSquad2 = async (pid, squadData, matchPos) => {
-      var _a2;
-      let player2 = await TmPlayerModel.fetchTooltipCached(pid).catch(() => null);
+      let player2 = (squadData.squad || []).find((p) => String(p.id) === String(pid)) || null;
+      let fromSquad = !!player2;
       if (!player2) {
-        player2 = (squadData.squad || []).find((p) => String(p.id) === String(pid)) || null;
+        player2 = await TmPlayerModel.fetchTooltipCached(pid).catch(() => null);
+        fromSquad = false;
       }
       if (!player2) return { Age: 0, R5: 0, REC: 0, isGK: false, skills: [], routine: 0 };
-      const posData = (_a2 = player2.positions) == null ? void 0 : _a2.find((p) => {
-        var _a3;
-        return ((_a3 = p.key) == null ? void 0 : _a3.toLowerCase()) === matchPos;
-      });
-      const posR5 = posData ? Number(posData.r5) : NaN;
-      const posRec = posData ? Number(posData.rec) : NaN;
-      const r5 = Number.isFinite(posR5) ? posR5 : Number.isFinite(Number(player2.r5)) ? Number(player2.r5) : 0;
-      const rec = Number.isFinite(posRec) ? posRec : Number.isFinite(Number(player2.rec)) ? Number(player2.rec) : 0;
+      let { lookupPos, r5, rec } = resolvePlayerRatings(player2, matchPos);
+      if (fromSquad && player2.isGK && r5 <= 0) {
+        const tooltipPlayer = await TmPlayerModel.fetchTooltipCached(pid).catch(() => null);
+        if (tooltipPlayer) {
+          player2 = tooltipPlayer;
+          ({ lookupPos, r5, rec } = resolvePlayerRatings(player2, matchPos));
+        }
+      }
       const age = Number.isFinite(player2.ageMonths) ? player2.ageMonths : 0;
+      console.log(`[League R5] ${player2.name || pid} | pos=${lookupPos} | r5=${r5}`);
       return { Age: age, R5: r5, REC: rec, isGK: player2.isGK, skills: player2.skills, routine: player2.routine };
     };
     const computeTeamStats2 = async (playerIds, lineup, squadData) => {
@@ -30121,7 +30563,7 @@ order:initial
       }
       renderLeagueFeed();
     };
-    const injectStyles47 = () => TmLeagueStyles.inject();
+    const injectStyles48 = () => TmLeagueStyles.inject();
     const cleanupPage = () => {
       if (leaguePollInterval) {
         clearInterval(leaguePollInterval);
@@ -30163,7 +30605,7 @@ order:initial
       }
       if (leagueBootstrapped || !hasLeagueRoots()) return;
       ({ leagueCountry, leagueDivision, leagueGroup } = getLeagueRouteParams(path));
-      injectStyles47();
+      injectStyles48();
       primeLeaguePanelContext();
       prepareLeagueLayout();
       initLeagueFeed();
@@ -30242,8 +30684,8 @@ order:initial
     s6.textContent = `
         .mp-head {
             flex-shrink: 0; padding: 12px 48px 8px; position: relative;
-            background: linear-gradient(180deg, var(--tmu-surface-card-soft) 0%, var(--tmu-surface-panel) 100%);
-            border-bottom: 1px solid var(--tmu-border-soft);
+            background: var(--tmu-match-header-bg, linear-gradient(180deg, var(--tmu-surface-card-soft) 0%, var(--tmu-surface-panel) 100%));
+            border-bottom: 1px solid var(--tmu-match-panel-border, var(--tmu-border-soft));
         }
         .mp-head-row {
             display: flex; align-items: center; justify-content: center; gap: 16px;
@@ -30286,7 +30728,7 @@ order:initial
         /* \u2500\u2500 Tactic strip \u2500\u2500 removed \u2014 chips now inside .mp-team-chips */
         .mp-progress {
             flex: 1; max-width: 400px; height: 4px;
-            background: var(--tmu-accent-fill); border-radius: 2px; overflow: hidden;
+            background: var(--tmu-match-panel-accent, var(--tmu-accent-fill)); border-radius: 2px; overflow: hidden;
         }
         .mp-progress-fill {
             height: 100%; width: 0; border-radius: 2px;
@@ -35858,13 +36300,30 @@ order:initial
             z-index: 10000; display: flex; align-items: flex-start; justify-content: center;
         }
         .mp-dialog {
-            background: var(--tmu-surface-panel);
+            background: var(--tmu-match-shell-bg, var(--tmu-surface-panel));
             width: 100vw; height: 100vh;
             display: flex; flex-direction: column; overflow: hidden;
         }
-        .mp-body { flex: 1; display: flex; flex-direction: row; overflow: hidden; min-height: 0; padding: 8px; gap: 8px; }
+        .mp-body { flex: 1; display: flex; flex-direction: row; overflow: hidden; min-height: 0; padding: 8px; gap: 8px; background: var(--tmu-match-content-bg, transparent); }
         .mp-center { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; padding: 0 16px; }
         .mp-tab-content { flex: 1; overflow-y: auto; min-height: 0; }
+        .mp-tabs.tmu-tabs,
+        .mp-tabs.tmu-card-body-flush > .tmu-tabs:first-child {
+            background: #0d110d;
+            box-shadow: inset 0 -1px 0 rgba(255,255,255,.06);
+        }
+        .mp-tabs .tmu-tab {
+            color: rgba(244,247,238,.84);
+        }
+        .mp-tabs .tmu-tab:hover:not(:disabled) {
+            background: rgba(255,255,255,.05);
+            color: #f8f9ef;
+        }
+        .mp-tabs .tmu-tab.active {
+            background: rgba(255,255,255,.07);
+            color: #f8f9ef;
+            box-shadow: inset 0 -2px 0 var(--tmu-color-primary);
+        }
     `;
     document.head.appendChild(s6);
   };
@@ -36185,6 +36644,7 @@ order:initial
       ],
       active: "details",
       stretch: true,
+      cls: "mp-tabs",
       onChange: (key) => {
         activeTab3 = key;
         if (key === "details") {
@@ -36268,6 +36728,32 @@ order:initial
     });
   }
 
+  // src/services/cup.js
+  var TmCupService = {
+    /**
+     * Fetch cup fixtures for a given country and cup ID.
+     * @param {string} country — country code (e.g. 'cs')
+     * @param {string|number} cupId — cup/round identifier (var2)
+     * @returns {Promise<object|null>}
+     */
+    fetchCupFixtures(country, cupId = "") {
+      return _post("/ajax/fixtures.ajax.php", { type: "cup", var1: country, var2: cupId, var3: "" });
+    }
+  };
+
+  // src/models/cup.js
+  var TmCupModel = {
+    /**
+     * Fetch cup fixtures for a given country and cup ID.
+     * @param {string} country — country code (e.g. 'cs')
+     * @param {string|number} cupId — cup/round identifier (var2)
+     * @returns {Promise<object|null>}
+     */
+    fetchCupFixtures(country, cupId = "") {
+      return TmCupService.fetchCupFixtures(country, cupId);
+    }
+  };
+
   // src/components/shared/tm-tournament-page.js
   var TmTournamentPage = {
     mount(main2, {
@@ -36317,7 +36803,7 @@ order:initial
     style.textContent = `
         .tmvu-cup-note {
             padding: var(--tmu-space-md) var(--tmu-space-md);
-            background: var(--tmu-surface-tab-active);
+            background: var(--tmu-card-bg, var(--tmu-fixture-panel-bg, var(--tmu-surface-tab-active)));
             border: 1px solid var(--tmu-border-input-overlay);
             border-radius: var(--tmu-space-sm);
             color: var(--tmu-text-main);
@@ -36358,7 +36844,7 @@ order:initial
 
         .tmvu-cup-round-group {
             padding: var(--tmu-space-md);
-            background: var(--tmu-surface-tab-active);
+            background: var(--tmu-card-bg, var(--tmu-fixture-panel-bg, var(--tmu-surface-tab-active)));
             border: 1px solid var(--tmu-border-input-overlay);
             border-radius: var(--tmu-space-sm);
         }
@@ -36379,7 +36865,7 @@ order:initial
             align-items: center;
             gap: var(--tmu-space-md);
             padding: var(--tmu-space-md);
-            background: var(--tmu-surface-tab-active);
+            background: var(--tmu-card-bg, var(--tmu-surface-tab-active));
             border: 1px solid var(--tmu-border-input-overlay);
             border-radius: var(--tmu-space-sm);
         }
@@ -36549,287 +37035,296 @@ order:initial
     renderHistoryCard: renderHistoryCard2
   };
 
-  // src/pages/cup.js
-  function initCupPage(main2) {
+  // src/components/shared/tm-cup-page.js
+  var STYLE_ID55 = "tmvu-cup-style";
+  function injectStyles39() {
+    if (document.getElementById(STYLE_ID55)) return;
+    injectTmPageLayoutStyles();
+    const style = document.createElement("style");
+    style.id = STYLE_ID55;
+    style.textContent = `
+        .tmvu-cup-page {
+            --tmu-page-main-track: minmax(0, 0.88fr);
+            --tmu-page-rail-width: 360px;
+        }
+
+        .tmvu-cup-side {
+            align-self: start;
+        }
+
+        .tmvu-cup-club {
+            color: var(--tmu-text-strong);
+            font-size: var(--tmu-font-xl);
+            font-weight: 800;
+            line-height: 1.05;
+            text-decoration: none;
+        }
+
+        .tmvu-cup-club:hover {
+            color: var(--tmu-text-strong);
+            text-decoration: underline;
+        }
+
+        .tmvu-cup-subcopy {
+             margin-top: var(--tmu-space-sm);
+            color: var(--tmu-text-muted);
+            font-size: var(--tmu-font-sm);
+            line-height: 1.45;
+        }
+
+        .tmvu-cup-subcopy a {
+            color: var(--tmu-text-main);
+            text-decoration: none;
+        }
+
+        .tmvu-cup-subcopy a:hover {
+            text-decoration: underline;
+        }
+
+        .tmvu-cup-sponsor {
+            padding: var(--tmu-space-md);
+            background: var(--tmu-card-bg, var(--tmu-surface-tab-active));
+            border: 1px solid var(--tmu-border-input-overlay);
+            border-radius: var(--tmu-space-sm);
+            color: var(--tmu-text-main);
+            font-size: var(--tmu-font-sm);
+            line-height: 1.55;
+            text-align: right;
+        }
+
+        .tmvu-cup-sponsor p {
+            margin: 0;
+        }
+
+        .tmvu-cup-sponsor a {
+            color: var(--tmu-text-strong);
+            text-decoration: none;
+        }
+    `;
+    document.head.appendChild(style);
+  }
+  function cleanText17(value) {
+    return String(value || "").replace(/\s+/g, " ").trim();
+  }
+  function htmlOf6(node) {
+    return node ? node.outerHTML : "";
+  }
+  function matchFromApi(m, roundLabel = "") {
+    var _a2, _b, _c, _d;
+    return {
+      roundLabel,
+      matchId: String(m.id || ""),
+      scoreText: m.result ? String(m.result) : "x-x",
+      scoreHref: `/matches/${m.id}/`,
+      scoreHtml: m.match_link || "",
+      isPlayed: m.result != null && /\d/.test(String(m.result)),
+      isHighlight: false,
+      home: {
+        id: String(m.hometeam || ""),
+        name: cleanText17(m.hometeam_name || ""),
+        href: ((_b = (_a2 = m.home_link) == null ? void 0 : _a2.match(/href="([^"]+)"/)) == null ? void 0 : _b[1]) || `/club/${m.hometeam}/`
+      },
+      away: {
+        id: String(m.awayteam || ""),
+        name: cleanText17(m.awayteam_name || ""),
+        href: ((_d = (_c = m.away_link) == null ? void 0 : _c.match(/href="([^"]+)"/)) == null ? void 0 : _d[1]) || `/club/${m.awayteam}/`
+      }
+    };
+  }
+  function parseMenu10(sourceRoot3) {
+    return Array.from(sourceRoot3.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
+      if (node.tagName === "HR") return [{ type: "separator" }];
+      if (node.tagName !== "A") return [];
+      return [{
+        type: "link",
+        href: node.getAttribute("href") || "#",
+        label: cleanText17(node.textContent),
+        icon: /cup/i.test(node.textContent) ? "\u{1F3C6}" : /fixture/i.test(node.textContent) ? "\u{1F4C5}" : /stat/i.test(node.textContent) ? "\u{1F4CA}" : /history/i.test(node.textContent) ? "\u{1F4DC}" : "\u{1F4CB}"
+      }];
+    });
+  }
+  function findMainBox(sourceRoot3, n = 0) {
+    return sourceRoot3.querySelectorAll(".column2_a .box, .column2 .box")[n] || null;
+  }
+  function findSideBox(sourceRoot3) {
+    return sourceRoot3.querySelector(".column3_a .box, .column3 .box");
+  }
+  function parseOverview4(sourceRoot3) {
+    var _a2, _b, _c;
+    const box = findMainBox(sourceRoot3, 0);
+    if (!box) {
+      return {
+        clubName: "Cup",
+        clubHref: "#",
+        changeHtml: "",
+        competitionHtml: "",
+        emblemSrc: "",
+        currentRoundHref: "",
+        currentRoundLabel: "",
+        roundText: "",
+        sponsorHtml: ""
+      };
+    }
+    const clubLink = box.querySelector(".box_sub_header .large a[club_link]");
+    const competitionWrap = box.querySelector(".box_sub_header .large");
+    const changeLink = box.querySelector(".box_sub_header a.float_right");
+    const emblem = box.querySelector(".align_center img");
+    const roundLink = box.querySelector('.align_center a[href*="/fixtures/cup/"]');
+    const roundText = cleanText17(((_a2 = box.querySelector(".align_center")) == null ? void 0 : _a2.textContent) || "");
+    const progressHeading = Array.from(box.querySelectorAll("h3")).find((node) => /progress/i.test(node.textContent || ""));
+    const progressStd = progressHeading == null ? void 0 : progressHeading.nextElementSibling;
+    const sponsorP = (_b = progressStd == null ? void 0 : progressStd.querySelector("p")) == null ? void 0 : _b.cloneNode(true);
+    if (sponsorP) {
+      const countryLink = sponsorP.querySelector('a[href*="/national-teams/"]');
+      if (countryLink && ((_c = countryLink.nextSibling) == null ? void 0 : _c.nodeName) !== "BR") {
+        countryLink.insertAdjacentHTML("afterend", "<br>");
+      }
+    }
+    const sponsorHtml = (sponsorP == null ? void 0 : sponsorP.outerHTML) || "";
+    let competitionHtml = "";
+    if (competitionWrap) {
+      const clone = competitionWrap.cloneNode(true);
+      clone.querySelectorAll("a[club_link]").forEach((node) => node.remove());
+      clone.querySelectorAll("br").forEach((br) => br.replaceWith(document.createTextNode(" ")));
+      competitionHtml = clone.innerHTML.trim();
+    }
+    return {
+      clubName: cleanText17((clubLink == null ? void 0 : clubLink.textContent) || "Cup"),
+      clubHref: (clubLink == null ? void 0 : clubLink.getAttribute("href")) || "#",
+      changeHtml: htmlOf6(changeLink),
+      competitionHtml,
+      emblemSrc: (emblem == null ? void 0 : emblem.getAttribute("src")) || "",
+      currentRoundHref: (roundLink == null ? void 0 : roundLink.getAttribute("href")) || "",
+      currentRoundLabel: cleanText17((roundLink == null ? void 0 : roundLink.textContent) || ""),
+      roundText,
+      sponsorHtml
+    };
+  }
+  function extractCupParams(sourceRoot3) {
+    var _a2, _b;
+    for (const link of sourceRoot3.querySelectorAll('a[href*="/fixtures/cup/"]')) {
+      const match = (_a2 = link.getAttribute("href")) == null ? void 0 : _a2.match(/\/fixtures\/cup\/([^/]+)\/(\d+)\//);
+      if (match) return { country: match[1], cupId: match[2] };
+    }
+    const countryLink = sourceRoot3.querySelector('a.country_link[href*="/national-teams/"]');
+    const countryMatch = (_b = countryLink == null ? void 0 : countryLink.getAttribute("href")) == null ? void 0 : _b.match(/\/national-teams\/([^/]+)\//);
+    return { country: (countryMatch == null ? void 0 : countryMatch[1]) || "", cupId: "" };
+  }
+  function buildRouteRows(data, clubId2) {
+    if (!data || !clubId2) return [];
+    const tagged = Object.values(data).flatMap(
+      (month) => (month.matches || []).map((m) => ({ m, label: month.date_name || month.month || "" }))
+    );
+    return tagged.filter(({ m }) => String(m.hometeam) === clubId2 || String(m.awayteam) === clubId2).sort((a, b) => String(a.m.date || "").localeCompare(String(b.m.date || ""))).map(({ m, label }) => matchFromApi(m, label));
+  }
+  function buildDrawSections(data) {
+    if (!data) return [];
+    return Object.entries(data).sort(([a], [b]) => a.localeCompare(b)).map(([, month]) => ({
+      title: month.date_name || month.month || "Matches",
+      rows: (month.matches || []).map((m) => matchFromApi(m))
+    })).filter((section) => section.rows.length > 0);
+  }
+  function buildFixtureGroups(data) {
+    if (!data) return [];
+    return Object.entries(data).sort(([a], [b]) => a.localeCompare(b)).map(([, month]) => ({
+      label: month.date_name || month.month || "Matches",
+      matches: (month.matches || []).map((m) => matchFromApi(m))
+    })).filter((group) => group.matches.length > 0);
+  }
+  function parseHistoryPanel(sourceRoot3) {
+    const box = findSideBox(sourceRoot3);
+    if (!box) return null;
+    const historyItems = Array.from(box.querySelectorAll('.align_center[style*="display: inline-block"]')).map((node) => {
+      var _a2;
+      const clubAnchor = node.querySelector("a[club_link]");
+      const clone = node.cloneNode(true);
+      clone.querySelectorAll("img, a[club_link]").forEach((el2) => el2.remove());
+      return {
+        imageSrc: ((_a2 = node.querySelector("img")) == null ? void 0 : _a2.getAttribute("src")) || "",
+        clubHtml: (clubAnchor == null ? void 0 : clubAnchor.outerHTML) || "",
+        leagueText: cleanText17(clone.textContent || "")
+      };
+    });
+    const paragraphs = Array.from(box.querySelectorAll(".std p")).map((node) => node.outerHTML);
+    return { historyItems, paragraphs };
+  }
+  function renderOverviewCard2(overview) {
+    const wrap = document.createElement("section");
+    TmPageHero.mount(wrap, {
+      slots: {
+        kicker: "Cup",
+        title: `<a class="tmvu-cup-club" href="${overview.clubHref}">${overview.clubName}</a>`,
+        main: `<div class="tmvu-cup-subcopy">${overview.competitionHtml}</div>`,
+        side: overview.sponsorHtml ? `<div class="tmvu-cup-sponsor">${overview.sponsorHtml}</div>` : ""
+      }
+    });
+    return wrap.firstElementChild || wrap;
+  }
+  function mountCupPage(main2, { mode = "overview" } = {}) {
     if (!main2 || !main2.isConnected) return;
     const sourceRoot3 = document.querySelector(".main_center") || main2;
-    const STYLE_ID63 = "tmvu-cup-style";
-    const CURRENT_SEASON2 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
-    const injectStyles47 = () => {
-      if (document.getElementById(STYLE_ID63)) return;
-      injectTmPageLayoutStyles();
-      const style = document.createElement("style");
-      style.id = STYLE_ID63;
-      style.textContent = `
-            .tmvu-cup-page {
-                --tmu-page-main-track: minmax(0, 0.88fr);
-                --tmu-page-rail-width: 360px;
-            }
-
-            .tmvu-cup-side {
-                align-self: start;
-            }
-
-            .tmvu-cup-club {
-                color: var(--tmu-text-strong);
-                font-size: var(--tmu-font-xl);
-                font-weight: 800;
-                line-height: 1.05;
-                text-decoration: none;
-            }
-
-            .tmvu-cup-club:hover {
-                color: var(--tmu-text-strong);
-                text-decoration: underline;
-            }
-
-            .tmvu-cup-subcopy {
-                 margin-top: var(--tmu-space-sm);
-                color: var(--tmu-text-muted);
-                font-size: var(--tmu-font-sm);
-                line-height: 1.45;
-            }
-
-            .tmvu-cup-subcopy a {
-                color: var(--tmu-text-main);
-                text-decoration: none;
-            }
-
-            .tmvu-cup-subcopy a:hover {
-                text-decoration: underline;
-            }
-
-            .tmvu-cup-sponsor {
-                padding: var(--tmu-space-md);
-                background: var(--tmu-surface-tab-active);
-                border: 1px solid var(--tmu-border-input-overlay);
-                border-radius: var(--tmu-space-sm);
-                color: var(--tmu-text-main);
-                font-size: var(--tmu-font-sm);
-                line-height: 1.55;
-                text-align: right;
-            }
-
-            .tmvu-cup-sponsor p {
-                margin: 0;
-            }
-
-            .tmvu-cup-sponsor a {
-                color: var(--tmu-text-strong);
-                text-decoration: none;
-            }
-
-            @media (max-width: 1320px) {
-                .tmvu-cup-page {
-                    --tmu-page-main-track: minmax(0, 0.94fr);
-                    --tmu-page-rail-width: 320px;
-                }
-            }
-        `;
-      document.head.appendChild(style);
-    };
-    const cleanText27 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-    const htmlOf6 = (node) => node ? node.outerHTML : "";
-    const extractClubId4 = (node) => {
-      if (!node) return "";
-      const explicit = node.getAttribute("club_link");
-      if (explicit) return String(explicit);
-      const href = node.getAttribute("href") || "";
-      const match = href.match(/\/club\/(\d+)\//);
-      return match ? match[1] : "";
-    };
-    const extractMatchId = (node) => {
-      if (!node) return "";
-      const explicit = node.getAttribute("match_link");
-      if (explicit) return String(explicit);
-      const href = node.getAttribute("href") || "";
-      const match = href.match(/\/matches\/(\d+)\//);
-      return match ? match[1] : "";
-    };
-    const parseMatchRow = (row, roundLabel = "") => {
-      const cells = Array.from(row.querySelectorAll("td"));
-      if (cells.length < 3) return null;
-      const progressMode = cells.length >= 4;
-      const roundCell = progressMode ? cells[0] : null;
-      const homeCell = progressMode ? cells[1] : cells[0];
-      const scoreCell = progressMode ? cells[2] : cells[1];
-      const awayCell = progressMode ? cells[3] : cells[2];
-      const homeAnchor = homeCell == null ? void 0 : homeCell.querySelector('a[club_link], a[href*="/club/"]');
-      const awayAnchor = awayCell == null ? void 0 : awayCell.querySelector('a[club_link], a[href*="/club/"]');
-      if (!homeAnchor || !awayAnchor) return null;
-      const scoreAnchor = scoreCell == null ? void 0 : scoreCell.querySelector('a[match_link], [match_link], a[href*="/matches/"]');
-      const scoreText = cleanText27((scoreCell == null ? void 0 : scoreCell.textContent) || "");
-      const matchId = extractMatchId(scoreAnchor);
-      const scoreHref = matchId ? `/matches/${matchId}/` : "";
-      return {
-        roundLabel: cleanText27((roundCell == null ? void 0 : roundCell.textContent) || roundLabel),
-        matchId,
-        scoreText: scoreText || "\u2014",
-        scoreHref,
-        scoreHtml: (scoreCell == null ? void 0 : scoreCell.innerHTML) || "",
-        isPlayed: /\d+\s*-\s*\d+/.test(scoreText),
-        isHighlight: row.classList.contains("highlighted_row_done") || !!row.querySelector(".highlight_td"),
-        home: {
-          id: extractClubId4(homeAnchor),
-          name: cleanText27(homeAnchor.textContent) || cleanText27((homeCell == null ? void 0 : homeCell.textContent) || ""),
-          href: homeAnchor.getAttribute("href") || "#"
-        },
-        away: {
-          id: extractClubId4(awayAnchor),
-          name: cleanText27(awayAnchor.textContent) || cleanText27((awayCell == null ? void 0 : awayCell.textContent) || ""),
-          href: awayAnchor.getAttribute("href") || "#"
-        }
-      };
-    };
-    const parseMenu10 = () => {
-      return Array.from(sourceRoot3.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
-        if (node.tagName === "HR") return [{ type: "separator" }];
-        if (node.tagName !== "A") return [];
-        return [{
-          type: "link",
-          href: node.getAttribute("href") || "#",
-          label: cleanText27(node.textContent),
-          icon: /cup/i.test(node.textContent) ? "\u{1F3C6}" : /fixture/i.test(node.textContent) ? "\u{1F4C5}" : /stat/i.test(node.textContent) ? "\u{1F4CA}" : /history/i.test(node.textContent) ? "\u{1F4DC}" : "\u{1F4CB}"
-        }];
-      });
-    };
-    const parseOverview4 = () => {
-      var _a2, _b, _c;
-      const box = sourceRoot3.querySelector(".column2_a > .box");
-      if (!box) return null;
-      const clubLink = box.querySelector(".box_sub_header .large a[club_link]");
-      const competitionWrap = box.querySelector(".box_sub_header .large");
-      const changeLink = box.querySelector(".box_sub_header a.float_right");
-      const emblem = box.querySelector(".align_center img");
-      const roundLink = box.querySelector('.align_center a[href*="/fixtures/cup/"]');
-      const roundText = cleanText27(((_a2 = box.querySelector(".align_center")) == null ? void 0 : _a2.textContent) || "");
-      const progressHeading = Array.from(box.querySelectorAll("h3")).find((node) => /progress/i.test(node.textContent || ""));
-      const progressStd = progressHeading == null ? void 0 : progressHeading.nextElementSibling;
-      const progressRows = Array.from((progressStd == null ? void 0 : progressStd.querySelectorAll("table tr")) || []).map((row) => {
-        var _a3;
-        const cells = row.querySelectorAll("td");
-        return {
-          round: cleanText27(((_a3 = cells[0]) == null ? void 0 : _a3.textContent) || ""),
-          homeHtml: cells[1] ? cells[1].innerHTML : "",
-          scoreHtml: cells[2] ? cells[2].innerHTML : "",
-          awayHtml: cells[3] ? cells[3].innerHTML : "",
-          isHighlight: row.classList.contains("highlighted_row_done") || row.querySelector(".highlight_td")
-        };
-      });
-      const sponsorP = (_b = progressStd == null ? void 0 : progressStd.querySelector("p")) == null ? void 0 : _b.cloneNode(true);
-      if (sponsorP) {
-        const countryLink = sponsorP.querySelector('a[href*="/national-teams/"]');
-        if (countryLink && ((_c = countryLink.nextSibling) == null ? void 0 : _c.nodeName) !== "BR") {
-          countryLink.insertAdjacentHTML("afterend", "<br>");
-        }
-      }
-      const sponsorHtml = (sponsorP == null ? void 0 : sponsorP.outerHTML) || "";
-      let competitionHtml = "";
-      if (competitionWrap) {
-        const clone = competitionWrap.cloneNode(true);
-        clone.querySelectorAll("a[club_link]").forEach((node) => node.remove());
-        clone.querySelectorAll("br").forEach((br) => br.replaceWith(document.createTextNode(" ")));
-        competitionHtml = clone.innerHTML.trim();
-      }
-      return {
-        clubName: cleanText27((clubLink == null ? void 0 : clubLink.textContent) || "Cup"),
-        clubHref: (clubLink == null ? void 0 : clubLink.getAttribute("href")) || "#",
-        changeHtml: htmlOf6(changeLink),
-        competitionHtml,
-        emblemSrc: (emblem == null ? void 0 : emblem.getAttribute("src")) || "",
-        currentRoundHref: (roundLink == null ? void 0 : roundLink.getAttribute("href")) || "",
-        currentRoundLabel: cleanText27((roundLink == null ? void 0 : roundLink.textContent) || ""),
-        roundText,
-        progressRows,
-        sponsorHtml
-      };
-    };
-    const parseDrawSections = () => {
-      var _a2;
-      const secondBox = sourceRoot3.querySelectorAll(".column2_a > .box")[1];
-      if (!secondBox) return [];
-      const sections = [];
-      let currentTitle = "";
-      Array.from(((_a2 = secondBox.querySelector(".box_body")) == null ? void 0 : _a2.children) || []).forEach((node) => {
-        if (node.tagName === "H3") {
-          currentTitle = cleanText27(node.textContent);
-          return;
-        }
-        if (!currentTitle || !node.classList.contains("std")) return;
-        const rows = Array.from(node.querySelectorAll("table tr")).map((row) => parseMatchRow(row, currentTitle)).filter(Boolean);
-        sections.push({ title: currentTitle, rows });
-      });
-      return sections;
-    };
-    const parseRouteRows = () => {
-      const box = sourceRoot3.querySelector(".column2_a > .box");
-      if (!box) return [];
-      const heading = Array.from(box.querySelectorAll("h3")).find((node) => /progress/i.test(node.textContent || ""));
-      const progressStd = heading == null ? void 0 : heading.nextElementSibling;
-      return Array.from((progressStd == null ? void 0 : progressStd.querySelectorAll("table tr")) || []).map((row) => parseMatchRow(row)).filter(Boolean);
-    };
-    const parseHistoryPanel = () => {
-      const box = sourceRoot3.querySelector(".column3_a .box");
-      if (!box) return null;
-      const historyItems = Array.from(box.querySelectorAll('.align_center[style*="display: inline-block"]')).map((node) => {
-        var _a2;
-        const clubAnchor = node.querySelector("a[club_link]");
-        const clone = node.cloneNode(true);
-        clone.querySelectorAll("img, a[club_link]").forEach((el2) => el2.remove());
-        return {
-          imageSrc: ((_a2 = node.querySelector("img")) == null ? void 0 : _a2.getAttribute("src")) || "",
-          clubHtml: (clubAnchor == null ? void 0 : clubAnchor.outerHTML) || "",
-          leagueText: cleanText27(clone.textContent || "")
-        };
-      });
-      const paragraphs = Array.from(box.querySelectorAll(".std p")).map((node) => node.outerHTML);
-      return { historyItems, paragraphs };
-    };
-    const renderOverviewCard2 = (overview) => {
-      const wrap = document.createElement("section");
-      TmPageHero.mount(wrap, {
-        slots: {
-          kicker: "Cup",
-          title: `<a class="tmvu-cup-club" href="${overview.clubHref}">${overview.clubName}</a>`,
-          main: `<div class="tmvu-cup-subcopy">${overview.competitionHtml}</div>`,
-          side: overview.sponsorHtml ? `<div class="tmvu-cup-sponsor">${overview.sponsorHtml}</div>` : ""
-        }
-      });
-      return wrap.firstElementChild || wrap;
-    };
-    const renderRouteCard2 = (routeRows, overview) => TmTournamentCards.renderRouteCard(routeRows, { ...overview, sponsorHtml: "" }, { season: CURRENT_SEASON2 });
-    const renderDrawCard2 = (section) => TmTournamentCards.renderDrawCard(section, { season: CURRENT_SEASON2 });
+    const currentPath = window.location.pathname;
+    const isFixturesPage = mode === "fixtures";
+    const currentSeason4 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
+    const renderRouteCard2 = (routeRows, overview) => TmTournamentCards.renderRouteCard(routeRows, { ...overview, sponsorHtml: "" }, { season: currentSeason4 });
+    const renderDrawCard2 = (section) => TmTournamentCards.renderDrawCard(section, { season: currentSeason4 });
     const renderHistoryCard3 = (history) => TmTournamentCards.renderHistoryCard(history);
-    const render16 = () => {
-      injectStyles47();
-      TmTournamentCards.injectStyles();
-      TmMatchHoverCard.injectStyles();
-      const menuItems = parseMenu10();
-      const overview = parseOverview4();
-      const routeRows = parseRouteRows();
-      const drawSections = parseDrawSections();
-      const history = parseHistoryPanel();
-      if (!overview) return;
-      TmTournamentPage.mount(main2, {
-        pageClass: "tmvu-cup-page tmu-page-layout-3rail tmu-page-density-regular",
-        navId: "tmvu-cup-nav",
-        navClass: "tmvu-cup-nav tmu-page-sidebar-stack",
-        menuItems,
-        currentHref: "/cup/",
-        mainClass: "tmvu-cup-main tmu-page-section-stack",
-        sideClass: "tmvu-cup-side tmu-page-rail-stack",
-        mainNodes: [renderOverviewCard2(overview), ...drawSections.map(renderDrawCard2)],
-        sideNodes: [routeRows.length ? renderRouteCard2(routeRows, overview) : null, history ? renderHistoryCard3(history) : null],
-        season: CURRENT_SEASON2
-      });
+    const render16 = async () => {
+      var _a2, _b;
+      try {
+        injectStyles39();
+        TmTournamentCards.injectStyles();
+        TmMatchHoverCard.injectStyles();
+        const menuItems = parseMenu10(sourceRoot3);
+        const overview = parseOverview4(sourceRoot3);
+        if (!overview) return;
+        const { country, cupId } = extractCupParams(sourceRoot3);
+        const fixturesData = country ? await TmCupModel.fetchCupFixtures(country, cupId) : null;
+        const clubId2 = ((_b = (_a2 = overview.clubHref) == null ? void 0 : _a2.match(/\/club\/(\d+)\//)) == null ? void 0 : _b[1]) || "";
+        const routeRows = buildRouteRows(fixturesData, clubId2);
+        const drawSections = buildDrawSections(fixturesData);
+        const fixtureGroups = buildFixtureGroups(fixturesData);
+        const history = parseHistoryPanel(sourceRoot3);
+        const fixtureCard = isFixturesPage && fixtureGroups.length ? TmTournamentCards.renderGroupedFixturesCard({
+          title: overview.currentRoundLabel || overview.roundText || "Fixtures",
+          groups: fixtureGroups
+        }, {
+          season: currentSeason4,
+          icon: "\u{1F4C5}"
+        }) : null;
+        TmTournamentPage.mount(main2, {
+          pageClass: "tmvu-cup-page tmu-page-layout-3rail tmu-page-density-regular",
+          navId: "tmvu-cup-nav",
+          navClass: "tmvu-cup-nav tmu-page-sidebar-stack",
+          menuItems,
+          currentHref: currentPath,
+          mainClass: "tmvu-cup-main tmu-page-section-stack",
+          sideClass: "tmvu-cup-side tmu-page-rail-stack",
+          mainNodes: isFixturesPage ? [renderOverviewCard2(overview), fixtureCard] : [renderOverviewCard2(overview), ...drawSections.map(renderDrawCard2)],
+          sideNodes: [routeRows.length ? renderRouteCard2(routeRows, overview) : null, history ? renderHistoryCard3(history) : null],
+          season: currentSeason4
+        });
+      } catch (err) {
+        console.error("[cup] render error", err);
+      }
     };
     render16();
+  }
+
+  // src/pages/cup.js
+  function initCupPage(main2) {
+    mountCupPage(main2, { mode: "overview" });
+  }
+
+  // src/pages/cup-fixtures.js
+  function initCupFixturesPage(main2) {
+    mountCupPage(main2, { mode: "fixtures" });
   }
 
   // src/pages/home.js
   function initHomePage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID63 = "tmvu-home-style";
+    const STYLE_ID64 = "tmvu-home-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const escapeHtml34 = (v) => String(v != null ? v : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const findColumnBoxByTitle = (root2, title) => {
@@ -36840,7 +37335,7 @@ order:initial
         return heading === wanted;
       }) || null;
     };
-    const injectStyles47 = () => {
+    const injectStyles48 = () => {
       injectTmPageLayoutStyles();
       const rules = [
         ".tmvu-home-page{--tmu-page-gap:var(--tmu-space-xxl);display:grid!important;grid-template-columns:minmax(0,1fr) 320px;gap:var(--tmu-page-gap);align-items:start;max-width:1240px;margin:0 auto;padding:var(--tmu-space-sm) var(--tmu-space-md) var(--tmu-space-xl)}",
@@ -36969,8 +37464,8 @@ order:initial
         ".tmvu-home-thread-copy{min-width:0}",
         ".tmvu-home-thread-date{font-size:var(--tmu-font-xs);font-weight:800;color:var(--tmu-text-muted);white-space:nowrap;padding:0;background:transparent;border:none;border-radius:0;text-align:left;min-height:0}"
       ];
-      const style = document.getElementById(STYLE_ID63) || document.createElement("style");
-      style.id = STYLE_ID63;
+      const style = document.getElementById(STYLE_ID64) || document.createElement("style");
+      style.id = STYLE_ID64;
       style.textContent = rules.join("");
       if (!style.parentNode) document.head.appendChild(style);
     };
@@ -37520,7 +38015,7 @@ order:initial
       const col1 = nativeMain.querySelector(":scope > .column1") || nativeMain.querySelector(".column1");
       const col2 = nativeMain.querySelector(":scope > .column2_a") || nativeMain.querySelector(".column2_a");
       if (!col1 || !col2) return;
-      injectStyles47();
+      injectStyles48();
       const origTabs = parseOrigTabs(col1);
       const tabsContent = col1.querySelector(".tabs_content");
       const activeKey = ((_a2 = origTabs.find((t) => t.isActive)) == null ? void 0 : _a2.targetId) || ((_b = origTabs[0]) == null ? void 0 : _b.targetId) || "";
@@ -37798,21 +38293,21 @@ order:initial
     if (!main2) main2 = document.querySelector(".tmvu-main");
     if (!main2) return;
     const sourceRoot3 = document.querySelector(".main_center") || main2;
-    const STYLE_ID63 = "tmvu-international-cup-overview-style";
+    const STYLE_ID64 = "tmvu-international-cup-overview-style";
     const CURRENT_SEASON2 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
-    const cleanText27 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const cleanText28 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml34 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-    const htmlOf6 = (node) => node ? node.outerHTML : "";
+    const htmlOf7 = (node) => node ? node.outerHTML : "";
     const stripShadow = (root2) => {
       if (!root2) return null;
       const clone = root2.cloneNode(true);
       clone.querySelectorAll(".box_shadow").forEach((node) => node.remove());
       return clone;
     };
-    const injectStyles47 = () => {
-      if (document.getElementById(STYLE_ID63)) return;
+    const injectStyles48 = () => {
+      if (document.getElementById(STYLE_ID64)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID63;
+      style.id = STYLE_ID64;
       style.textContent = `
             .tmvu-main.tmvu-icup-page {
                 display: grid !important;
@@ -37991,7 +38486,7 @@ order:initial
 
             .tmvu-icup-node-card {
                 padding: var(--tmu-space-md);
-                background: var(--tmu-surface-tab-active);
+                background: var(--tmu-card-bg, var(--tmu-surface-tab-active));
                 border: 1px solid var(--tmu-border-input-overlay);
                 border-radius: var(--tmu-space-sm);
             }
@@ -38008,10 +38503,10 @@ order:initial
         `;
       document.head.appendChild(style);
     };
-    const parseMenu10 = () => Array.from(sourceRoot3.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
+    const parseMenu11 = () => Array.from(sourceRoot3.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
       if (node.tagName === "HR") return [{ type: "separator" }];
       if (node.tagName !== "A") return [];
-      const label = cleanText27(node.textContent);
+      const label = cleanText28(node.textContent);
       const href = node.getAttribute("href") || "#";
       let icon = "\u{1F3C6}";
       if (/coeff/i.test(label)) icon = "\u2211";
@@ -38022,11 +38517,11 @@ order:initial
       var _a2, _b, _c;
       const options = Array.from(sourceRoot3.querySelectorAll("#change_league option")).map((option) => ({
         id: String(option.value || ""),
-        label: cleanText27(option.textContent)
+        label: cleanText28(option.textContent)
       })).filter((option) => option.id && option.label);
       const selectedId = ((_a2 = window.location.pathname.match(/^\/international-cup\/(\d+)\/?$/i)) == null ? void 0 : _a2[1]) || ((_b = options.find((option) => {
         var _a3;
-        return option.label === cleanText27((_a3 = sourceRoot3.querySelector(".box_sub_header .large")) == null ? void 0 : _a3.textContent);
+        return option.label === cleanText28((_a3 = sourceRoot3.querySelector(".box_sub_header .large")) == null ? void 0 : _a3.textContent);
       })) == null ? void 0 : _b.id) || ((_c = options[0]) == null ? void 0 : _c.id) || "";
       return { options, selectedId };
     };
@@ -38034,7 +38529,7 @@ order:initial
       var _a2;
       const box = sourceRoot3.querySelector(".column2_a > .box");
       const subHeader = box == null ? void 0 : box.querySelector(".box_sub_header");
-      const tournamentName = cleanText27(((_a2 = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _a2.textContent) || "International Cup");
+      const tournamentName = cleanText28(((_a2 = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _a2.textContent) || "International Cup");
       return { box, tournamentName };
     };
     const parseContentSections = (box) => {
@@ -38045,7 +38540,7 @@ order:initial
       Array.from(body.children).forEach((node) => {
         if (node.classList.contains("box_shadow") || node.classList.contains("box_sub_header") || node.id === "change_league") return;
         if (node.tagName === "H3") {
-          current = { title: cleanText27(node.textContent), nodes: [] };
+          current = { title: cleanText28(node.textContent), nodes: [] };
           sections2.push(current);
           return;
         }
@@ -38082,10 +38577,10 @@ order:initial
       if (!homeAnchor || !awayAnchor) return null;
       const matchDateNode = item.querySelector(".match_date");
       const scoreAnchor = item.querySelector('.match_result a[match_link], .match_result a[href*="/matches/"]');
-      const scoreText = cleanText27(((_a2 = item.querySelector(".match_result")) == null ? void 0 : _a2.textContent) || "\u2014");
+      const scoreText = cleanText28(((_a2 = item.querySelector(".match_result")) == null ? void 0 : _a2.textContent) || "\u2014");
       const matchId = extractMatchId(scoreAnchor);
       const scoreHref = matchId ? `/matches/${matchId}/` : "";
-      const dateLabel = cleanText27(
+      const dateLabel = cleanText28(
         (matchDateNode == null ? void 0 : matchDateNode.getAttribute("tooltip")) || (matchDateNode == null ? void 0 : matchDateNode.getAttribute("title")) || (matchDateNode == null ? void 0 : matchDateNode.textContent) || ""
       );
       return {
@@ -38098,13 +38593,13 @@ order:initial
         isHighlight: false,
         home: {
           id: extractClubId4(homeAnchor),
-          name: cleanText27(homeAnchor.textContent),
+          name: cleanText28(homeAnchor.textContent),
           href: homeAnchor.getAttribute("href") || "#",
           flagHtml: extractCountryFlagHtml(item.querySelector(".hometeam"))
         },
         away: {
           id: extractClubId4(awayAnchor),
-          name: cleanText27(awayAnchor.textContent),
+          name: cleanText28(awayAnchor.textContent),
           href: awayAnchor.getAttribute("href") || "#",
           flagHtml: extractCountryFlagHtml(item.querySelector(".awayteam"))
         }
@@ -38114,7 +38609,7 @@ order:initial
       var _a2;
       const box = sourceRoot3.querySelector(".column3_a .box");
       if (!box) return null;
-      const title = cleanText27(((_a2 = box.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "Tournament Notes");
+      const title = cleanText28(((_a2 = box.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "Tournament Notes");
       const body = stripShadow(box.querySelector(".box_body"));
       const winners = Array.from((body == null ? void 0 : body.querySelectorAll('.align_center[style*="display: inline-block"]')) || []).map((node) => {
         var _a3;
@@ -38124,7 +38619,7 @@ order:initial
         return {
           imageSrc: ((_a3 = node.querySelector("img")) == null ? void 0 : _a3.getAttribute("src")) || "",
           clubHtml: (clubAnchor == null ? void 0 : clubAnchor.outerHTML) || "",
-          leagueText: cleanText27(clone.textContent || "")
+          leagueText: cleanText28(clone.textContent || "")
         };
       });
       body == null ? void 0 : body.querySelectorAll('.align_center[style*="display: inline-block"]').forEach((node) => node.remove());
@@ -38232,16 +38727,16 @@ order:initial
             return TmTournamentCards.buildGroupedFixtureList(matchGroups, { season: CURRENT_SEASON2 });
           }
           const matches = Array.from(node.querySelectorAll("li")).map(parseMatchListItem2).filter(Boolean);
-          return matches.length ? TmTournamentCards.buildFixtureList(matches, { season: CURRENT_SEASON2 }) : htmlOf6(node);
+          return matches.length ? TmTournamentCards.buildFixtureList(matches, { season: CURRENT_SEASON2 }) : htmlOf7(node);
         }
         if (node.tagName === "TABLE") {
-          return renderStandingsTable(node) || htmlOf6(node);
+          return renderStandingsTable(node) || htmlOf7(node);
         }
         const table = (_a2 = node.querySelector) == null ? void 0 : _a2.call(node, "table");
         if (table && node.children.length === 1) {
-          return renderStandingsTable(table) || htmlOf6(node);
+          return renderStandingsTable(table) || htmlOf7(node);
         }
-        const raw = htmlOf6(node);
+        const raw = htmlOf7(node);
         return isGroupStage ? `<section class="tmvu-icup-node-card">${raw}</section>` : raw;
       }).join("");
       if (/group.?stage/i.test(section.title)) {
@@ -38266,7 +38761,7 @@ order:initial
       title: panel.title,
       icon: "\u{1F3C1}"
     });
-    injectStyles47();
+    injectStyles48();
     TmStandingsTable.injectStyles();
     TmTournamentCards.injectStyles();
     TmMatchHoverCard.injectStyles();
@@ -38283,7 +38778,7 @@ order:initial
       pageClass: "tmvu-icup-page",
       navId: "tmvu-icup-nav",
       navClass: "tmvu-icup-nav",
-      menuItems: parseMenu10(),
+      menuItems: parseMenu11(),
       currentHref: window.location.pathname,
       mainClass: "tmvu-icup-main",
       sideClass: "tmvu-icup-side",
@@ -39097,10 +39592,10 @@ order:initial
   // src/pages/teamsters.js
   function initTeamstersPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID63 = "tmvu-teamsters-style";
+    const STYLE_ID64 = "tmvu-teamsters-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles47 = () => {
-      if (document.getElementById(STYLE_ID63)) return;
+    const injectStyles48 = () => {
+      if (document.getElementById(STYLE_ID64)) return;
       injectTmPageLayoutStyles();
       const rules = [
         // page-shell overrides
@@ -39146,7 +39641,7 @@ order:initial
         ".tmvu-apply-intro a{color:var(--tmu-accent)}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID63;
+      style.id = STYLE_ID64;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -39205,7 +39700,7 @@ order:initial
       const navItems = snap1 ? parseNav(snap1) : [];
       const articleHtml = parseArticle(snap2);
       const tabDefs = snap3 ? parseTabs2(snap3) : [];
-      injectStyles47();
+      injectStyles48();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-teamsters-hero",
@@ -39394,7 +39889,7 @@ order:initial
       const isApply = /^\/teamsters\/apply\//i.test(window.location.pathname);
       const check = () => isApply ? document.querySelector("#teamster_apply") : document.querySelector(".column2_a .box_head");
       const run = () => {
-        injectStyles47();
+        injectStyles48();
         if (isApply) {
           const liveForm = document.querySelector("#teamster_apply");
           const nativeCol1 = document.querySelector(".main_center .column1");
@@ -39422,10 +39917,10 @@ order:initial
   // src/pages/about-tm.js
   function initAboutTmPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID63 = "tmvu-abouttm-style";
+    const STYLE_ID64 = "tmvu-abouttm-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles47 = () => {
-      if (document.getElementById(STYLE_ID63)) return;
+    const injectStyles48 = () => {
+      if (document.getElementById(STYLE_ID64)) return;
       injectTmPageLayoutStyles();
       const rules = [
         // page wrapper: single centered column
@@ -39448,7 +39943,7 @@ order:initial
         '.tmvu-abouttm-clearfix::after{content:"";display:table;clear:both}'
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID63;
+      style.id = STYLE_ID64;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -39468,7 +39963,7 @@ order:initial
         ((_a2 = snap.querySelector(".box_head h1.std, .box_head h2.std")) == null ? void 0 : _a2.textContent) || "About TM"
       );
       const articleHtml = transformArticle(snap.querySelector(".box_body .std"));
-      injectStyles47();
+      injectStyles48();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-abouttm-hero",
@@ -39507,10 +40002,10 @@ order:initial
   // src/pages/about-pro.js
   function initAboutProPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID63 = "tmvu-aboutpro-style";
+    const STYLE_ID64 = "tmvu-aboutpro-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles47 = () => {
-      if (document.getElementById(STYLE_ID63)) return;
+    const injectStyles48 = () => {
+      if (document.getElementById(STYLE_ID64)) return;
       injectTmPageLayoutStyles();
       const rules = [
         // hero: single column (no side slot)
@@ -39532,7 +40027,7 @@ order:initial
         ".tmvu-aboutpro-quote-attr{font-size:var(--tmu-font-xs);color:var(--tmu-text-faint);margin-top:var(--tmu-space-xs);text-align:right}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID63;
+      style.id = STYLE_ID64;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -39601,7 +40096,7 @@ order:initial
       const col2 = nativeMain.querySelector(".column2_a");
       const col3 = nativeMain.querySelector(".column3_a");
       if (!col2) return;
-      injectStyles47();
+      injectStyles48();
       const navItems = parseNav(col1);
       const sections = buildSections2(col2);
       const quotes = buildQuotes(col3);
@@ -39727,7 +40222,7 @@ order:initial
   // src/pages/buy-pro.js
   function initBuyProPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID63 = "tmvu-buypro-style";
+    const STYLE_ID64 = "tmvu-buypro-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const PRO_NAV = [
       { href: "/buy-pro", label: "Buy Pro" },
@@ -39735,8 +40230,8 @@ order:initial
       { href: "/donations", label: "Donations" },
       { href: "/support-pro", label: "Support" }
     ];
-    const injectStyles47 = () => {
-      if (document.getElementById(STYLE_ID63)) return;
+    const injectStyles48 = () => {
+      if (document.getElementById(STYLE_ID64)) return;
       injectTmPageLayoutStyles();
       const rules = [
         // hero: single column
@@ -39761,7 +40256,7 @@ order:initial
         ".tmvu-buypro-notice strong{color:var(--tmu-text-strong)}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID63;
+      style.id = STYLE_ID64;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -39821,7 +40316,7 @@ order:initial
       const col3 = nativeMain.querySelector(".column3_a");
       const liveForm = document.getElementById("order_submit");
       if (!liveForm) return;
-      injectStyles47();
+      injectStyles48();
       liveForm.style.display = "none";
       const liveCountry = document.getElementById("payment_country-button");
       if (liveCountry) liveCountry.style.display = "none";
@@ -39899,7 +40394,7 @@ order:initial
   // src/pages/free-pro.js
   function initFreeProPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID63 = "tmvu-freepro-style";
+    const STYLE_ID64 = "tmvu-freepro-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const PRO_NAV = [
       { href: "/buy-pro", label: "Buy Pro" },
@@ -39907,8 +40402,8 @@ order:initial
       { href: "/donations", label: "Donations" },
       { href: "/support-pro", label: "Support" }
     ];
-    const injectStyles47 = () => {
-      if (document.getElementById(STYLE_ID63)) return;
+    const injectStyles48 = () => {
+      if (document.getElementById(STYLE_ID64)) return;
       injectTmPageLayoutStyles();
       const rules = [
         ".tmvu-freepro-hero{grid-template-columns:minmax(0,1fr)!important}",
@@ -39919,7 +40414,7 @@ order:initial
         ".tmvu-freepro-body a:hover{text-decoration:underline}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID63;
+      style.id = STYLE_ID64;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -39930,7 +40425,7 @@ order:initial
       const snap = col2.cloneNode(true);
       const title = "Free Pro";
       const std = snap.querySelector(".box_body .std");
-      injectStyles47();
+      injectStyles48();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-freepro-hero",
@@ -39978,10 +40473,10 @@ order:initial
   // src/pages/donations.js
   function initDonationsPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID63 = "tmvu-donations-style";
+    const STYLE_ID64 = "tmvu-donations-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles47 = () => {
-      if (document.getElementById(STYLE_ID63)) return;
+    const injectStyles48 = () => {
+      if (document.getElementById(STYLE_ID64)) return;
       injectTmPageLayoutStyles();
       const rules = [
         ".tmvu-donations-hero{grid-template-columns:minmax(0,1fr)!important}",
@@ -40010,7 +40505,7 @@ order:initial
         ".tmvu-donations-legendary .tmvu-donations-club{background:var(--tmu-border-contrast);border-radius:var(--tmu-space-xs)}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID63;
+      style.id = STYLE_ID64;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -40104,7 +40599,7 @@ order:initial
       const title = "Legendary Clubs";
       const std = snap.querySelector(".box_body .std");
       const navItems = col1 ? parseNav(col1.cloneNode(true)) : [];
-      injectStyles47();
+      injectStyles48();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-donations-hero",
@@ -40139,7 +40634,7 @@ order:initial
       const title = "Donations";
       const std = snap.querySelector(".box_body .std");
       const navItems = col1 ? parseNav(col1.cloneNode(true)) : [];
-      injectStyles47();
+      injectStyles48();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-donations-hero",
@@ -40196,10 +40691,10 @@ order:initial
   // src/pages/user-guide.js
   function initUserGuidePage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID63 = "tmvu-ug-style";
+    const STYLE_ID64 = "tmvu-ug-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles47 = () => {
-      if (document.getElementById(STYLE_ID63)) return;
+    const injectStyles48 = () => {
+      if (document.getElementById(STYLE_ID64)) return;
       injectTmPageLayoutStyles();
       const rules = [
         // hero: single column (no side slot used)
@@ -40228,7 +40723,7 @@ order:initial
         ".tmvu-ug-article .text_orange{color:var(--tmu-warning-soft);font-weight:600}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID63;
+      style.id = STYLE_ID64;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -40293,7 +40788,7 @@ order:initial
         if (s6.label) menuItems.push({ type: "subtitle", label: s6.label });
         s6.links.forEach((l) => menuItems.push({ href: l.href, label: l.label }));
       });
-      injectStyles47();
+      injectStyles48();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-ug-hero-card",
@@ -40340,12 +40835,12 @@ order:initial
     if (!main2) main2 = document.querySelector(".tmvu-main, .main_center");
     if (!main2) return;
     const sourceRoot3 = (document.querySelector(".main_center") || main2).cloneNode(true);
-    const STYLE_ID63 = "tmvu-international-cup-coefficients-style";
+    const STYLE_ID64 = "tmvu-international-cup-coefficients-style";
     const CURRENT_SEASON2 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const coefficientTierBreakIndexes = [];
     let activeCoefficientGroup = null;
-    const cleanText27 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-    const htmlOf6 = (node) => node ? node.outerHTML : "";
+    const cleanText28 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const htmlOf7 = (node) => node ? node.outerHTML : "";
     const COEFFICIENT_GROUPS = [
       { slug: "fita", label: "FITA (Global)", overviewIds: ["1", "2", "3", "4", "5", "6"], matchIds: [], aliases: ["fita", "global", "world", "globalno"], hasQualificationTiers: false },
       { slug: "ueta", label: "UETA", overviewIds: ["1", "2"], matchIds: ["1", "2"], aliases: ["ueta"], hasQualificationTiers: true },
@@ -40353,7 +40848,7 @@ order:initial
       { slug: "fata", label: "FATA", overviewIds: ["5", "6"], matchIds: ["5", "6"], aliases: ["fata", "liberty", "americana"], hasQualificationTiers: true }
     ];
     const findCoefficientGroup = (value) => {
-      const normalized = cleanText27(value).toLowerCase();
+      const normalized = cleanText28(value).toLowerCase();
       if (!normalized) return null;
       return COEFFICIENT_GROUPS.find((group) => normalized === group.slug || group.matchIds.includes(normalized) || normalized.includes(group.slug) || normalized.includes(group.label.toLowerCase()) || group.aliases.some((alias) => normalized.includes(alias)));
     };
@@ -40389,10 +40884,10 @@ order:initial
       clone.querySelectorAll(".box_shadow").forEach((node) => node.remove());
       return clone;
     };
-    const injectStyles47 = () => {
-      if (document.getElementById(STYLE_ID63)) return;
+    const injectStyles48 = () => {
+      if (document.getElementById(STYLE_ID64)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID63;
+      style.id = STYLE_ID64;
       style.textContent = `
             .tmvu-main.tmvu-icup-page.tmvu-icup-page-coefficients {
                 display: grid !important;
@@ -40454,7 +40949,7 @@ order:initial
             .tmvu-icup-table-shell {
                 overflow-x: auto;
                 border-radius: var(--tmu-space-md);
-                border: 1px solid var(--tmu-border-contrast);
+                border: 1px solid var(--tmu-border-input-overlay);
             }
 
             .tmvu-icup-coeff table:not(.tsa-table) {
@@ -40468,15 +40963,23 @@ order:initial
                 padding: var(--tmu-space-sm) var(--tmu-space-xs);
                 font-size: var(--tmu-font-xs);
                 white-space: nowrap;
-                border-bottom: 1px solid var(--tmu-border-contrast);
+                border-bottom: 1px solid transparent;
             }
 
             .tmvu-icup-coeff table:not(.tsa-table) thead th {
-                border-bottom: 1px solid var(--tmu-border-input-overlay);
+                border-bottom: 1px solid rgba(132,191,31,.32);
+            }
+
+            .tmvu-icup-coeff table:not(.tsa-table) tbody tr {
+                box-shadow: inset 0 -1px 0 rgba(132,191,31,.18);
             }
 
             .tmvu-icup-coeff table:not(.tsa-table) tbody tr:last-child td {
                 border-bottom: none;
+            }
+
+            .tmvu-icup-coeff table:not(.tsa-table) tbody tr:last-child {
+                box-shadow: none;
             }
 
             .tmvu-icup-coeff table:not(.tsa-table) th:first-child,
@@ -40564,19 +41067,27 @@ order:initial
 
             .tmvu-icup-coeff .tmu-tbl thead th {
                 color: var(--tmu-text-strong);
-                border-bottom-color: var(--tmu-border-input-overlay);
+                border-bottom-color: rgba(132,191,31,.32);
                 text-transform: none;
                 letter-spacing: 0;
             }
 
+            .tmvu-icup-coeff .tmu-tbl tbody tr {
+                box-shadow: inset 0 -1px 0 rgba(132,191,31,.18);
+            }
+
             .tmvu-icup-coeff .tmu-tbl tbody td {
-                border-bottom-color: var(--tmu-border-contrast);
+                border-bottom-color: transparent;
+            }
+
+            .tmvu-icup-coeff .tmu-tbl tbody tr:last-child {
+                box-shadow: none;
             }
 
             .tmvu-icup-coeff .tmu-tbl thead .tmu-grp-row th {
                 color: var(--tmu-text-strong);
-                border-bottom-color: var(--tmu-border-input-overlay);
-                border-right-color: var(--tmu-border-contrast);
+                border-bottom-color: rgba(132,191,31,.32);
+                border-right-color: rgba(132,191,31,.18);
                 background: var(--tmu-surface-overlay);
             }
 
@@ -40603,10 +41114,10 @@ order:initial
         `;
       document.head.appendChild(style);
     };
-    const parseMenu10 = (tournamentState2) => Array.from(sourceRoot3.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
+    const parseMenu11 = (tournamentState2) => Array.from(sourceRoot3.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
       if (node.tagName === "HR") return [{ type: "separator" }];
       if (node.tagName !== "A") return [];
-      const label = cleanText27(node.textContent);
+      const label = cleanText28(node.textContent);
       const href = node.getAttribute("href") || "#";
       const resolvedHref = /coeff/i.test(label) ? `/international-cup/coefficients/${tournamentState2.selectedId}/` : href;
       let icon = "\u{1F3C6}";
@@ -40634,7 +41145,7 @@ order:initial
       var _a2;
       const box = sourceRoot3.querySelector(".column2_a > .box");
       const subHeader = box == null ? void 0 : box.querySelector(".box_sub_header");
-      const tournamentName = cleanText27(((_a2 = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _a2.textContent) || "International Cup");
+      const tournamentName = cleanText28(((_a2 = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _a2.textContent) || "International Cup");
       return { box, tournamentName };
     };
     const normalizeCoefficientTable = (table, label) => {
@@ -40659,7 +41170,7 @@ order:initial
           const countryAnchor = countryCell == null ? void 0 : countryCell.querySelector('a.country_link[href*="/national-teams/"]');
           const href = (countryAnchor == null ? void 0 : countryAnchor.getAttribute("href")) || "";
           const code = ((_a2 = href.match(/\/national-teams\/([^/]+)\//)) == null ? void 0 : _a2[1]) || "";
-          const qualifies = cleanText27(((_b = cells[2]) == null ? void 0 : _b.textContent) || "");
+          const qualifies = cleanText28(((_b = cells[2]) == null ? void 0 : _b.textContent) || "");
           if (shouldApplyQualificationTiers && index > 0 && qualifies && previousQualifies && qualifies !== previousQualifies) {
             coefficientTierBreakIndexes.push(index);
           }
@@ -40680,7 +41191,7 @@ order:initial
     const parseCoefficientTabs = (box) => {
       const labels = /* @__PURE__ */ new Map();
       box == null ? void 0 : box.querySelectorAll(".tabs [set_active]").forEach((tab) => {
-        labels.set(tab.getAttribute("set_active"), cleanText27(tab.textContent) || "Tab");
+        labels.set(tab.getAttribute("set_active"), cleanText28(tab.textContent) || "Tab");
       });
       return Array.from((box == null ? void 0 : box.querySelectorAll(".tab_container > div[id]")) || []).map((panel, index) => {
         const label = labels.get(panel.id) || `Tab ${index + 1}`;
@@ -40752,7 +41263,7 @@ order:initial
         hostClass: "tmvu-icup-host",
         bodyClass: "tmvu-icup-stage tmvu-icup-coeff",
         bodyHtml: `
-                ${htmlOf6(tabsNode)}
+                ${htmlOf7(tabsNode)}
                 <div class="tmvu-icup-tab-panels">
                     ${panels.map((panel, index) => `
                         <section class="tmvu-icup-tab-panel" data-tab-panel="${escapeHtml34(panel.id)}"${index === 0 ? "" : " hidden"}>
@@ -40783,7 +41294,7 @@ order:initial
       return host;
     };
     const parseCellSortValue = (cell) => {
-      const text = cleanText27((cell == null ? void 0 : cell.textContent) || "");
+      const text = cleanText28((cell == null ? void 0 : cell.textContent) || "");
       if (!text || text === "\u2014") return { type: "empty", value: "" };
       const normalizedNumber = text.replace(/,/g, "");
       if (/^-?\d+(?:\.\d+)?$/.test(normalizedNumber)) {
@@ -40848,7 +41359,7 @@ order:initial
             flushPendingBlankCells();
           }
           cells.push({
-            label: cleanText27(entry.cell.textContent),
+            label: cleanText28(entry.cell.textContent),
             colspan: entry.colspan,
             rowspan: entry.rowspan
           });
@@ -40862,7 +41373,7 @@ order:initial
     const buildSortableTableFromNative = (table) => {
       var _a2, _b, _c;
       if (!table) return null;
-      const tableLabel = cleanText27(table.dataset.tmvuTableLabel || "");
+      const tableLabel = cleanText28(table.dataset.tmvuTableLabel || "");
       const headerRows = Array.from(table.querySelectorAll("tr")).filter((row) => row.querySelectorAll("th").length);
       if (!headerRows.length) return null;
       const { matrix, totalColumns } = buildHeaderMatrix(headerRows);
@@ -40874,7 +41385,7 @@ order:initial
           if (!entry) continue;
           const { cell } = entry;
           return {
-            label: cleanText27(cell.textContent),
+            label: cleanText28(cell.textContent),
             align: getCellAlign(cell)
           };
         }
@@ -40916,12 +41427,12 @@ order:initial
             const value = Number(item[`col${index}`]);
             return Number.isFinite(value) ? value : 0;
           });
-          if (currentWindowIndex >= 0 && !cleanText27(item.__html[currentWindowIndex] || "")) {
+          if (currentWindowIndex >= 0 && !cleanText28(item.__html[currentWindowIndex] || "")) {
             const currentWindowValue = yearValues.slice(0, -1).reduce((sum, value) => sum + value, 0);
             item[`col${currentWindowIndex}`] = currentWindowValue;
             item.__html[currentWindowIndex] = formatTableNumber(currentWindowValue);
           }
-          if (rollingWindowIndex >= 0 && !cleanText27(item.__html[rollingWindowIndex] || "")) {
+          if (rollingWindowIndex >= 0 && !cleanText28(item.__html[rollingWindowIndex] || "")) {
             const rollingWindowValue = yearValues.slice(1).reduce((sum, value) => sum + value, 0);
             item[`col${rollingWindowIndex}`] = rollingWindowValue;
             item.__html[rollingWindowIndex] = formatTableNumber(rollingWindowValue);
@@ -40971,7 +41482,7 @@ order:initial
     };
     const formatCoefficientValue = (value) => Number.isFinite(value) ? value.toFixed(3) : "0.000";
     const findCoefficientPanel = (root2, labelPattern) => {
-      const tab = Array.from(root2.querySelectorAll("[data-tab-target]")).find((node) => labelPattern.test(cleanText27(node.textContent)));
+      const tab = Array.from(root2.querySelectorAll("[data-tab-target]")).find((node) => labelPattern.test(cleanText28(node.textContent)));
       const panelId = (tab == null ? void 0 : tab.getAttribute("data-tab-target")) || "";
       return panelId ? root2.querySelector(`[data-tab-panel="${panelId}"]`) : null;
     };
@@ -40980,14 +41491,14 @@ order:initial
       const perYearTable = perYearPanel == null ? void 0 : perYearPanel.querySelector("table");
       if (!perYearTable) return;
       const allRows = Array.from(perYearTable.querySelectorAll("tr"));
-      const seasonGroupHeader = Array.from(perYearTable.querySelectorAll("th")).find((node) => /season/i.test(cleanText27(node.textContent)));
-      const numericHeaderRow = allRows.find((row) => Array.from(row.querySelectorAll("th")).some((node) => /^\d+$/.test(cleanText27(node.textContent))));
-      const seasonHeaders = Array.from((numericHeaderRow == null ? void 0 : numericHeaderRow.querySelectorAll("th")) || []).filter((node) => /^\d+$/.test(cleanText27(node.textContent)));
-      const totalHeader = Array.from(perYearTable.querySelectorAll("th")).find((node) => /total|\d+\s*-\s*\d+/i.test(cleanText27(node.textContent)));
-      const nextSeason = CURRENT_SEASON2 ? String(CURRENT_SEASON2) : seasonHeaders.length ? String(Math.max(...seasonHeaders.map((node) => Number(cleanText27(node.textContent)) || 0)) + 1) : "Current";
-      const currentStart = seasonHeaders[0] ? cleanText27(seasonHeaders[0].textContent) : "";
-      const currentEnd = seasonHeaders.length ? cleanText27(seasonHeaders[seasonHeaders.length - 1].textContent) : "";
-      const rollingStart = seasonHeaders[1] ? cleanText27(seasonHeaders[1].textContent) : "";
+      const seasonGroupHeader = Array.from(perYearTable.querySelectorAll("th")).find((node) => /season/i.test(cleanText28(node.textContent)));
+      const numericHeaderRow = allRows.find((row) => Array.from(row.querySelectorAll("th")).some((node) => /^\d+$/.test(cleanText28(node.textContent))));
+      const seasonHeaders = Array.from((numericHeaderRow == null ? void 0 : numericHeaderRow.querySelectorAll("th")) || []).filter((node) => /^\d+$/.test(cleanText28(node.textContent)));
+      const totalHeader = Array.from(perYearTable.querySelectorAll("th")).find((node) => /total|\d+\s*-\s*\d+/i.test(cleanText28(node.textContent)));
+      const nextSeason = CURRENT_SEASON2 ? String(CURRENT_SEASON2) : seasonHeaders.length ? String(Math.max(...seasonHeaders.map((node) => Number(cleanText28(node.textContent)) || 0)) + 1) : "Current";
+      const currentStart = seasonHeaders[0] ? cleanText28(seasonHeaders[0].textContent) : "";
+      const currentEnd = seasonHeaders.length ? cleanText28(seasonHeaders[seasonHeaders.length - 1].textContent) : "";
+      const rollingStart = seasonHeaders[1] ? cleanText28(seasonHeaders[1].textContent) : "";
       const currentLabel = currentStart && currentEnd ? `${currentStart}-${currentEnd}` : "Current";
       const rollingLabel = rollingStart && /^\d+$/.test(nextSeason) ? `${rollingStart}-${nextSeason}` : "Recent 5";
       if (seasonGroupHeader && !seasonGroupHeader.dataset.tmvuCurrentSeasonGroup) {
@@ -41023,7 +41534,7 @@ order:initial
         const countryCell = cells[1];
         const totalCell = cells[cells.length - 1];
         const seasonCells = cells.slice(2, -1);
-        const seasonValues = seasonCells.map((cell) => parseFloat(cleanText27(cell.textContent)) || 0);
+        const seasonValues = seasonCells.map((cell) => parseFloat(cleanText28(cell.textContent)) || 0);
         const countryKey = getCountryKeyFromNode(countryCell);
         const currentValue = (_a2 = countryPoints[countryKey]) == null ? void 0 : _a2.average;
         const currentCell = document.createElement("td");
@@ -41059,7 +41570,7 @@ order:initial
       var _a2;
       const box = sourceRoot3.querySelector(".column3_a .box");
       if (!box) return null;
-      const title = cleanText27(((_a2 = box.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "Tournament Notes");
+      const title = cleanText28(((_a2 = box.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "Tournament Notes");
       const body = stripShadow(box.querySelector(".box_body"));
       return {
         title,
@@ -41074,7 +41585,7 @@ order:initial
       title: panel.title,
       icon: "\u{1F3C1}"
     });
-    injectStyles47();
+    injectStyles48();
     TmTournamentCards.injectStyles();
     const header = parseHeader();
     if (!header.box) return;
@@ -41089,7 +41600,7 @@ order:initial
       pageClass: "tmvu-icup-page tmvu-icup-page-coefficients",
       navId: "tmvu-icup-nav",
       navClass: "tmvu-icup-nav",
-      menuItems: parseMenu10(tournamentState),
+      menuItems: parseMenu11(tournamentState),
       currentHref: `/international-cup/coefficients/${tournamentState.selectedId}/`,
       mainClass: "tmvu-icup-main",
       sideClass: "tmvu-icup-side",
@@ -41112,9 +41623,9 @@ order:initial
     { label: "Coefficients", href: "/international-cup/coefficients/1/" },
     { label: "Statistics", href: "/statistics/international-cup/1/", active: true }
   ];
-  var cleanText17 = (v) => String(v != null ? v : "").replace(/\s+/g, " ").trim();
-  var cleanOpts = (sel) => sel ? Array.from(sel.options).map((o) => ({ value: o.value, label: cleanText17(o.textContent), selected: o.selected })).filter((o) => o.value) : [];
-  var readMenuLabels = (menu) => menu ? Array.from(menu.querySelectorAll(".ui-menu-item-wrapper")).map((el2) => cleanText17(el2.textContent)).filter(Boolean) : [];
+  var cleanText18 = (v) => String(v != null ? v : "").replace(/\s+/g, " ").trim();
+  var cleanOpts = (sel) => sel ? Array.from(sel.options).map((o) => ({ value: o.value, label: cleanText18(o.textContent), selected: o.selected })).filter((o) => o.value) : [];
+  var readMenuLabels = (menu) => menu ? Array.from(menu.querySelectorAll(".ui-menu-item-wrapper")).map((el2) => cleanText18(el2.textContent)).filter(Boolean) : [];
   var readTourneyOpts = (root2) => {
     const selectOpts = cleanOpts(root2.querySelector("#tourney_number"));
     const menuLabels = readMenuLabels(document.querySelector("#tourney_number-menu"));
@@ -41349,11 +41860,12 @@ order:initial
     ...TmTrainingService,
     ...TmMessagesService,
     ...TmNationalTeamsService,
-    ...TmYouthService
+    ...TmYouthService,
+    ...TmCupService
   };
 
   // src/components/national-teams/tm-national-teams-nt-save.js
-  var STYLE_ID55 = "tmvu-nt-save-style";
+  var STYLE_ID56 = "tmvu-nt-save-style";
   var SCAN_SEASON_COUNT = 13;
   var RESULT_COLUMNS = [
     { key: "name", label: "Player" },
@@ -41365,11 +41877,11 @@ order:initial
     { key: "reasons", label: "Reasons" },
     { key: "sources", label: "Sources" }
   ];
-  var cleanText18 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-  var lowerText = (value) => cleanText18(value).toLowerCase();
+  var cleanText19 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var lowerText = (value) => cleanText19(value).toLowerCase();
   var escapeHtml26 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   function normalizeCountryCode(value) {
-    const raw = cleanText18(value);
+    const raw = cleanText19(value);
     if (!raw) return "";
     const bracketMatch = raw.match(/^\[([a-z]{2,3})\]$/i);
     if (bracketMatch) return lowerText(bracketMatch[1]);
@@ -41388,10 +41900,10 @@ order:initial
     return resolvePlayerCountryCode(player2) === normalizeCountryCode(targetCountryCode);
   }
   var buttonHtml11 = (opts) => TmUI.button(opts).outerHTML;
-  function injectStyles39() {
-    if (document.getElementById(STYLE_ID55)) return;
+  function injectStyles40() {
+    if (document.getElementById(STYLE_ID56)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID55;
+    style.id = STYLE_ID56;
     style.textContent = `
         .tmvu-nt-save-panel {
             display: flex;
@@ -41809,17 +42321,17 @@ order:initial
   function extractClubId3(anchor) {
     var _a2;
     if (!anchor) return "";
-    const attrId = cleanText18(anchor.getAttribute("club_link"));
+    const attrId = cleanText19(anchor.getAttribute("club_link"));
     if (attrId) return attrId;
-    const href = cleanText18(anchor.getAttribute("href"));
+    const href = cleanText19(anchor.getAttribute("href"));
     return ((_a2 = href.match(/\/club\/(\d+)\//)) == null ? void 0 : _a2[1]) || "";
   }
   function extractPlayerId2(anchor) {
     var _a2;
     if (!anchor) return "";
-    const attrId = cleanText18(anchor.getAttribute("player_link"));
+    const attrId = cleanText19(anchor.getAttribute("player_link"));
     if (attrId) return attrId;
-    const href = cleanText18(anchor.getAttribute("href"));
+    const href = cleanText19(anchor.getAttribute("href"));
     return ((_a2 = href.match(/\/players\/(\d+)\//)) == null ? void 0 : _a2[1]) || "";
   }
   function extractCountryCodeFromNode(node) {
@@ -41827,7 +42339,7 @@ order:initial
     if (!node) return "";
     const anchor = ((_a2 = node.matches) == null ? void 0 : _a2.call(node, 'a.country_link[href*="/national-teams/"], a[href*="/national-teams/"]')) ? node : (_b = node.querySelector) == null ? void 0 : _b.call(node, 'a.country_link[href*="/national-teams/"], a[href*="/national-teams/"]');
     if (anchor) {
-      const href = cleanText18(anchor.getAttribute("href"));
+      const href = cleanText19(anchor.getAttribute("href"));
       const hrefCode = normalizeCountryCode(href);
       if (hrefCode) return hrefCode;
       const classCode = normalizeCountryCode(anchor.innerHTML);
@@ -41864,9 +42376,9 @@ order:initial
   }
   function normalizeDivisionGroups(divisions = []) {
     return divisions.flatMap((item) => {
-      const division = cleanText18(item == null ? void 0 : item.division);
+      const division = cleanText19(item == null ? void 0 : item.division);
       const groups = Math.max(1, Number(item == null ? void 0 : item.groups) || 1);
-      const name = cleanText18(item == null ? void 0 : item.name) || `Division ${division}`;
+      const name = cleanText19(item == null ? void 0 : item.name) || `Division ${division}`;
       if (!division) return [];
       return Array.from({ length: groups }, (_, index) => ({
         division,
@@ -41983,7 +42495,7 @@ order:initial
       if (!hasBanned && !hasInactive) return;
       const existing = map.get(clubId2) || {
         clubId: clubId2,
-        clubName: cleanText18(clubAnchor.textContent) || `Club ${clubId2}`,
+        clubName: cleanText19(clubAnchor.textContent) || `Club ${clubId2}`,
         division: groupCtx.division,
         group: groupCtx.group,
         statuses: /* @__PURE__ */ new Set()
@@ -42024,7 +42536,7 @@ order:initial
         if (!passesRecommendation) return;
         console.log("[NT Save][Transfer History Pass]", {
           playerId,
-          playerName: cleanText18(playerAnchor.textContent),
+          playerName: cleanText19(playerAnchor.textContent),
           country: playerCountryCode,
           seasonScanned: season,
           transferType: type,
@@ -42037,9 +42549,9 @@ order:initial
         });
         items.push({
           playerId,
-          playerName: cleanText18(playerAnchor.textContent),
+          playerName: cleanText19(playerAnchor.textContent),
           clubId: clubId2,
-          clubName: cleanText18(clubAnchor.textContent),
+          clubName: cleanText19(clubAnchor.textContent),
           transferType: type,
           division: groupCtx.division,
           group: groupCtx.group,
@@ -42112,16 +42624,16 @@ order:initial
   }
   function buildCandidateRecord(player2, club, clubId2 = "", clubName2 = "") {
     return {
-      playerId: cleanText18(player2 == null ? void 0 : player2.id),
-      name: cleanText18(player2 == null ? void 0 : player2.name) || "Unknown player",
+      playerId: cleanText19(player2 == null ? void 0 : player2.id),
+      name: cleanText19(player2 == null ? void 0 : player2.name) || "Unknown player",
       country: resolvePlayerCountryCode(player2),
       age: Number(player2 == null ? void 0 : player2.age) || 0,
       months: Number(player2 == null ? void 0 : player2.month) || 0,
       asi: TmUtils.parseNum(player2 == null ? void 0 : player2.asi),
       r5: computeCandidateR5(player2),
       position: Array.isArray(player2 == null ? void 0 : player2.positions) && player2.positions.some((p) => p.preferred) ? player2.positions.filter((p) => p.preferred).map((p) => p.key).join(",") : "",
-      clubId: cleanText18(clubId2 || (player2 == null ? void 0 : player2.club_id) || (club == null ? void 0 : club.id)),
-      clubName: cleanText18(clubName2 || (player2 == null ? void 0 : player2.club_name) || (club == null ? void 0 : club.name)) || "Unknown club",
+      clubId: cleanText19(clubId2 || (player2 == null ? void 0 : player2.club_id) || (club == null ? void 0 : club.id)),
+      clubName: cleanText19(clubName2 || (player2 == null ? void 0 : player2.club_name) || (club == null ? void 0 : club.name)) || "Unknown club",
       clubCreated: lowerText(club == null ? void 0 : club.created),
       sources: [],
       reasons: []
@@ -42387,7 +42899,7 @@ order:initial
   }
   function setStatus(state5, html2) {
     if (state5.statusEl) state5.statusEl.innerHTML = html2;
-    if (state5.miniStatusEl) state5.miniStatusEl.textContent = cleanText18(html2.replace(/<[^>]+>/g, " "));
+    if (state5.miniStatusEl) state5.miniStatusEl.textContent = cleanText19(html2.replace(/<[^>]+>/g, " "));
   }
   function setProgress(state5, { phase = "", current = 0, total = 0, note = "", unitLabel = "" } = {}) {
     var _a2, _b;
@@ -42533,7 +43045,7 @@ order:initial
     return state5.tooltipCache.get(playerId);
   }
   async function getTooltipCandidateBatch(state5, playerIds = [], batchSize = 10) {
-    const uniqueIds = [...new Set(playerIds.map((id) => cleanText18(id)).filter(Boolean))];
+    const uniqueIds = [...new Set(playerIds.map((id) => cleanText19(id)).filter(Boolean))];
     const results = /* @__PURE__ */ new Map();
     for (let index = 0; index < uniqueIds.length; index += batchSize) {
       const batchIds = uniqueIds.slice(index, index + batchSize);
@@ -42555,7 +43067,7 @@ order:initial
     return state5.clubPageCache.get(clubId2);
   }
   async function getClubPageBatch(state5, clubIds = [], batchSize = 10) {
-    const uniqueIds = [...new Set(clubIds.map((id) => cleanText18(id)).filter(Boolean))];
+    const uniqueIds = [...new Set(clubIds.map((id) => cleanText19(id)).filter(Boolean))];
     const results = /* @__PURE__ */ new Map();
     for (let index = 0; index < uniqueIds.length; index += batchSize) {
       const batchIds = uniqueIds.slice(index, index + batchSize);
@@ -42684,7 +43196,7 @@ order:initial
         const club = tooltipData == null ? void 0 : tooltipData.club;
         if (!player2 || !matchesTargetCountry(player2, state5.countryCode)) return "";
         if (lowerText(club == null ? void 0 : club.created) === "inactive") return "";
-        return cleanText18((club == null ? void 0 : club.id) || (player2 == null ? void 0 : player2.club_id));
+        return cleanText19((club == null ? void 0 : club.id) || (player2 == null ? void 0 : player2.club_id));
       }).filter(Boolean);
       setStatus(state5, `<strong>Inspecting players</strong> ${batchStart + 1}-${Math.min(batchStart + batch.length, transferCandidates.length)}/${transferCandidates.length} \xB7 fetching club batch`);
       const clubPageMap = await getClubPageBatch(state5, clubIdsToCheck, 10);
@@ -42741,7 +43253,7 @@ order:initial
           continue;
         }
         const clubId2 = record.clubId;
-        const clubHtml = clubPageMap.get(cleanText18(clubId2)) || null;
+        const clubHtml = clubPageMap.get(cleanText19(clubId2)) || null;
         if (hasClubBannedBadge(clubHtml)) {
           record.reasons.push("club banned");
           const { changed } = upsertCandidate(state5.results, record);
@@ -42784,7 +43296,7 @@ order:initial
       const squadPlayers = await TmClubModel.fetchSquadRaw(flaggedClub.clubId) || [];
       const squadPlayersMissingCountry = squadPlayers.filter((squadPlayer) => {
         const countryCode = resolvePlayerCountryCode(squadPlayer);
-        return !countryCode && cleanText18(squadPlayer.id);
+        return !countryCode && cleanText19(squadPlayer.id);
       });
       const squadTooltipMap = await getTooltipCandidateBatch(
         state5,
@@ -42795,7 +43307,7 @@ order:initial
         let countryCode = resolvePlayerCountryCode(squadPlayer);
         let tooltipData = null;
         if (!countryCode) {
-          tooltipData = squadTooltipMap.get(cleanText18(squadPlayer.id)) || null;
+          tooltipData = squadTooltipMap.get(cleanText19(squadPlayer.id)) || null;
           countryCode = resolvePlayerCountryCode(tooltipData);
         }
         if (countryCode !== normalizeCountryCode(state5.countryCode)) continue;
@@ -42880,7 +43392,7 @@ order:initial
     mount({ navEl, countryCode = "", currentSeason: currentSeason4 = null } = {}) {
       var _a2, _b;
       if (!navEl || !countryCode) return null;
-      injectStyles39();
+      injectStyles40();
       const existingAction = navEl.querySelector(".tmvu-nt-save-action");
       if (existingAction) return existingAction;
       const existingPanel = navEl.querySelector(".tmvu-nt-save-panel");
@@ -42964,7 +43476,7 @@ order:initial
   };
 
   // src/components/national-teams/tm-national-teams-side-menu.js
-  var cleanText19 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var cleanText20 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var normalizePath = (value) => {
     const text = String(value || "").trim();
     if (!text) return "";
@@ -42988,7 +43500,7 @@ order:initial
       if (node.tagName === "HR") return [{ type: "separator" }];
       if (node.tagName !== "A") return [];
       const href = node.getAttribute("href") || "#";
-      const label = cleanText19(node.textContent);
+      const label = cleanText20(node.textContent);
       if (!label) return [];
       return [{
         type: "link",
@@ -43010,7 +43522,7 @@ order:initial
   };
   var hasElectionItem = (items = []) => items.some((item) => (item == null ? void 0 : item.type) === "link" && /election/i.test(item.label || ""));
   var getCanonicalNationalTeamsPath = (countryCode) => {
-    const code = cleanText19(countryCode).toLowerCase();
+    const code = cleanText20(countryCode).toLowerCase();
     return code ? `/national-teams/${code}/` : "";
   };
   var areMenusEquivalent = (leftItems = [], rightItems = []) => {
@@ -43096,14 +43608,14 @@ order:initial
   function initNationalTeamsRankingsPage(main2) {
     if (!main2 || !main2.isConnected) return;
     const sourceRoot3 = (document.querySelector(".main_center") || main2).cloneNode(true);
-    const STYLE_ID63 = "tmvu-national-teams-rankings-style";
-    const cleanText27 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const STYLE_ID64 = "tmvu-national-teams-rankings-style";
+    const cleanText28 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml34 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-    const injectStyles47 = () => {
-      if (document.getElementById(STYLE_ID63)) return;
+    const injectStyles48 = () => {
+      if (document.getElementById(STYLE_ID64)) return;
       injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID63;
+      style.id = STYLE_ID64;
       style.textContent = `
             .tmvu-nt-rankings-tabs {
                 margin-bottom: var(--tmu-space-sm);
@@ -43170,7 +43682,7 @@ order:initial
       box.querySelectorAll(".tabs [set_active]").forEach((tab) => {
         const id = tab.getAttribute("set_active") || "";
         if (!id) return;
-        labelById.set(id, cleanText27(tab.textContent) || "Tab");
+        labelById.set(id, cleanText28(tab.textContent) || "Tab");
       });
       return Array.from(box.querySelectorAll(".tab_container > div[id]")).map((panel, index) => {
         const table = panel.querySelector("table");
@@ -43182,13 +43694,13 @@ order:initial
         };
       }).filter(Boolean);
     };
-    const parseOverview4 = () => {
+    const parseOverview5 = () => {
       var _a2, _b;
       const box = sourceRoot3.querySelector(".column2_a > .box");
       if (!box) return null;
-      const title = cleanText27(((_a2 = box.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "National Team Rankings");
+      const title = cleanText28(((_a2 = box.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "National Team Rankings");
       const subHeader = box.querySelector(".box_sub_header");
-      const region = cleanText27(((_b = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _b.textContent) || "Region");
+      const region = cleanText28(((_b = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _b.textContent) || "Region");
       const changeNode = subHeader == null ? void 0 : subHeader.querySelector(".faux_link");
       const panels = parsePanels(box);
       return {
@@ -43246,8 +43758,8 @@ order:initial
       return wrap.firstElementChild || wrap;
     };
     const render16 = () => {
-      injectStyles47();
-      const overview = parseOverview4();
+      injectStyles48();
+      const overview = parseOverview5();
       if (!overview || !overview.panels.length) return;
       main2.classList.add("tmvu-nt-rankings-page", "tmu-page-layout-2col", "tmu-page-density-regular");
       main2.innerHTML = "";
@@ -43292,8 +43804,8 @@ order:initial
   };
 
   // src/pages/national-teams-fixtures.js
-  var STYLE_ID56 = "tmvu-national-teams-fixtures-style";
-  var cleanText20 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var STYLE_ID57 = "tmvu-national-teams-fixtures-style";
+  var cleanText21 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml27 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var normalizeFlagHtml2 = (value) => {
     var _a2;
@@ -43305,23 +43817,23 @@ order:initial
   };
   var parseFixturesResponse = (payload) => Object.entries(payload || {}).sort(([leftKey], [rightKey]) => leftKey.localeCompare(rightKey)).map(([monthKey, month]) => {
     const matches = Array.from((month == null ? void 0 : month.matches) || []).map((match) => ({
-      date: cleanText20((match == null ? void 0 : match.date) || ""),
+      date: cleanText21((match == null ? void 0 : match.date) || ""),
       matchId: String((match == null ? void 0 : match.id) || ""),
-      homeId: cleanText20((match == null ? void 0 : match.hometeam) || ""),
-      homeName: cleanText20((match == null ? void 0 : match.hometeamname) || ""),
+      homeId: cleanText21((match == null ? void 0 : match.hometeam) || ""),
+      homeName: cleanText21((match == null ? void 0 : match.hometeamname) || ""),
       homeHref: extractHrefFromHtml2(match == null ? void 0 : match.home_link),
       homeFlagHtml: normalizeFlagHtml2(match == null ? void 0 : match.home_flag),
-      awayId: cleanText20((match == null ? void 0 : match.awayteam) || ""),
-      awayName: cleanText20((match == null ? void 0 : match.awayteamname) || ""),
+      awayId: cleanText21((match == null ? void 0 : match.awayteam) || ""),
+      awayName: cleanText21((match == null ? void 0 : match.awayteamname) || ""),
       awayHref: extractHrefFromHtml2(match == null ? void 0 : match.away_link),
       awayFlagHtml: normalizeFlagHtml2(match == null ? void 0 : match.away_flag),
-      result: cleanText20((match == null ? void 0 : match.result) || wrapperText2(match == null ? void 0 : match.match_link) || "x-x"),
-      matchtype_name: cleanText20((match == null ? void 0 : match.matchtype_name) || (match == null ? void 0 : match.matchtype_sort) || "")
+      result: cleanText21((match == null ? void 0 : match.result) || wrapperText2(match == null ? void 0 : match.match_link) || "x-x"),
+      matchtype_name: cleanText21((match == null ? void 0 : match.matchtype_name) || (match == null ? void 0 : match.matchtype_sort) || "")
     })).filter((match) => match.matchId && match.homeName && match.awayName);
     if (!matches.length) return null;
     return {
       key: monthKey,
-      label: cleanText20((month == null ? void 0 : month.date_name) || `${(month == null ? void 0 : month.month) || "Month"} ${monthKey.slice(0, 4)}`),
+      label: cleanText21((month == null ? void 0 : month.date_name) || `${(month == null ? void 0 : month.month) || "Month"} ${monthKey.slice(0, 4)}`),
       active: Boolean(month == null ? void 0 : month.current_month),
       groups: TmFixturesList.fromMatches(matches)
     };
@@ -43331,7 +43843,7 @@ order:initial
     if (!html2) return "";
     const wrapper = document.createElement("div");
     wrapper.innerHTML = html2;
-    return cleanText20(wrapper.textContent || "");
+    return cleanText21(wrapper.textContent || "");
   };
   var extractHrefFromHtml2 = (value) => {
     var _a2;
@@ -43341,10 +43853,10 @@ order:initial
     wrapper.innerHTML = html2;
     return ((_a2 = wrapper.querySelector("a[href]")) == null ? void 0 : _a2.getAttribute("href")) || "#";
   };
-  var injectStyles40 = () => {
-    if (document.getElementById(STYLE_ID56)) return;
+  var injectStyles41 = () => {
+    if (document.getElementById(STYLE_ID57)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID56;
+    style.id = STYLE_ID57;
     style.textContent = `
         .tmvu-nt-fixtures-page {
             --tmu-page-sidebar-width: 200px;
@@ -43373,8 +43885,8 @@ order:initial
     const contentBox = sourceRoot3.querySelector(".column2_a > .box");
     if (!contentBox) return;
     injectTmPageLayoutStyles();
-    injectStyles40();
-    const title = cleanText20(((_a2 = contentBox.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "Fixtures");
+    injectStyles41();
+    const title = cleanText21(((_a2 = contentBox.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "Fixtures");
     main2.innerHTML = "";
     main2.classList.add("tmvu-nt-fixtures-page", "tmu-page-layout-2col", "tmu-page-density-regular");
     mountNationalTeamsSideMenu(main2, {
@@ -43443,7 +43955,7 @@ order:initial
   }
 
   // src/pages/national-teams-history.js
-  var STYLE_ID57 = "tmvu-national-teams-history-style";
+  var STYLE_ID58 = "tmvu-national-teams-history-style";
   var MONTH_INDEX = {
     january: 1,
     february: 2,
@@ -43458,7 +43970,7 @@ order:initial
     november: 11,
     december: 12
   };
-  var cleanText21 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var cleanText22 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml28 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var extractDay = (item) => {
     var _a2;
@@ -43467,7 +43979,7 @@ order:initial
     return match ? Number(match[1]) : null;
   };
   var extractMonthMeta = (label) => {
-    const match = cleanText21(label).match(/^([A-Za-z]+)\s+(\d{4})$/);
+    const match = cleanText22(label).match(/^([A-Za-z]+)\s+(\d{4})$/);
     if (!match) return null;
     const month = MONTH_INDEX[match[1].toLowerCase()];
     const year = Number(match[2]);
@@ -43507,15 +44019,15 @@ order:initial
       matchId: ((_b = (_a2 = resultLink == null ? void 0 : resultLink.getAttribute("href")) == null ? void 0 : _a2.match(/\/matches\/(?:nt\/)?(\d+)\//i)) == null ? void 0 : _b[1]) || "",
       matchHref: (resultLink == null ? void 0 : resultLink.getAttribute("href")) || "",
       homeId: ((_d = (_c = homeNameLink == null ? void 0 : homeNameLink.getAttribute("href")) == null ? void 0 : _c.match(/\/national-teams\/([a-z]{2,3})\//i)) == null ? void 0 : _d[1]) || "",
-      homeName: cleanText21((homeNameLink == null ? void 0 : homeNameLink.textContent) || (homeTeam == null ? void 0 : homeTeam.textContent) || ""),
+      homeName: cleanText22((homeNameLink == null ? void 0 : homeNameLink.textContent) || (homeTeam == null ? void 0 : homeTeam.textContent) || ""),
       homeHref: (homeNameLink == null ? void 0 : homeNameLink.getAttribute("href")) || "",
       homeFlagHtml: (homeFlagLink == null ? void 0 : homeFlagLink.innerHTML) || "",
       awayId: ((_f = (_e = awayNameLink == null ? void 0 : awayNameLink.getAttribute("href")) == null ? void 0 : _e.match(/\/national-teams\/([a-z]{2,3})\//i)) == null ? void 0 : _f[1]) || "",
-      awayName: cleanText21((awayNameLink == null ? void 0 : awayNameLink.textContent) || (awayTeam == null ? void 0 : awayTeam.textContent) || ""),
+      awayName: cleanText22((awayNameLink == null ? void 0 : awayNameLink.textContent) || (awayTeam == null ? void 0 : awayTeam.textContent) || ""),
       awayHref: (awayNameLink == null ? void 0 : awayNameLink.getAttribute("href")) || "",
       awayFlagHtml: (awayFlagLink == null ? void 0 : awayFlagLink.innerHTML) || "",
-      result: cleanText21((resultLink == null ? void 0 : resultLink.textContent) || ""),
-      matchtype_name: cleanText21(((_g = item.querySelector(".matchtype")) == null ? void 0 : _g.textContent) || "")
+      result: cleanText22((resultLink == null ? void 0 : resultLink.textContent) || ""),
+      matchtype_name: cleanText22(((_g = item.querySelector(".matchtype")) == null ? void 0 : _g.textContent) || "")
     };
   }).filter((match) => match.matchId && match.homeName && match.awayName && match.date);
   var parseHistoryMonths = (contentBox) => {
@@ -43523,7 +44035,7 @@ order:initial
     const lists = Array.from(contentBox.querySelectorAll(".box_body ul.match_list"));
     lists.forEach((listEl) => {
       const header = findMonthHeader(listEl);
-      const label = cleanText21((header == null ? void 0 : header.textContent) || "");
+      const label = cleanText22((header == null ? void 0 : header.textContent) || "");
       const monthMeta = extractMonthMeta(label);
       if (!monthMeta) return;
       const matches = parseMonthMatches(listEl, monthMeta);
@@ -43537,10 +44049,10 @@ order:initial
     });
     return months.sort((left, right) => (right.sortValue || 0) - (left.sortValue || 0));
   };
-  var injectStyles41 = () => {
-    if (document.getElementById(STYLE_ID57)) return;
+  var injectStyles42 = () => {
+    if (document.getElementById(STYLE_ID58)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID57;
+    style.id = STYLE_ID58;
     style.textContent = `
         .tmvu-nt-history-page {
             --tmu-page-sidebar-width: 200px;
@@ -43591,8 +44103,8 @@ order:initial
     const contentBox = sourceRoot3.querySelector(".column2_a > .box");
     if (!contentBox) return;
     injectTmPageLayoutStyles();
-    injectStyles41();
-    const title = cleanText21(((_a2 = contentBox.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "History");
+    injectStyles42();
+    const title = cleanText22(((_a2 = contentBox.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "History");
     const months = parseHistoryMonths(contentBox);
     main2.innerHTML = "";
     main2.classList.add("tmvu-nt-history-page", "tmu-page-layout-2col", "tmu-page-density-regular");
@@ -43636,8 +44148,8 @@ order:initial
   }
 
   // src/pages/national-teams-statistics.js
-  var STYLE_ID58 = "tmvu-national-teams-statistics-style";
-  var cleanText22 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var STYLE_ID59 = "tmvu-national-teams-statistics-style";
+  var cleanText23 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml29 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var fetchDocument = async (path) => {
     const response = await window.fetch(path, { credentials: "same-origin" });
@@ -43655,7 +44167,7 @@ order:initial
     const headerCells = Array.from((headerRow == null ? void 0 : headerRow.querySelectorAll("th, td")) || []);
     if (!headerCells.length) return null;
     const headers = headerCells.map((cell, index) => {
-      const label = cleanText22(cell.textContent) || (index === 0 ? "Name" : `Col ${index + 1}`);
+      const label = cleanText23(cell.textContent) || (index === 0 ? "Name" : `Col ${index + 1}`);
       const key = index === 0 ? "player" : `col${index}`;
       const align = index === 0 ? "l" : "r";
       return {
@@ -43672,15 +44184,15 @@ order:initial
       const cells = Array.from(row.querySelectorAll("td"));
       const playerCell = cells[0];
       const playerLink = playerCell == null ? void 0 : playerCell.querySelector('a[href*="/players/"]');
-      const playerHtml = playerLink ? `<a href="${playerLink.getAttribute("href") || "#"}" target="_blank" style="color:inherit;text-decoration:none">${escapeHtml29(cleanText22(playerLink.textContent))}</a>` : escapeHtml29(cleanText22((playerCell == null ? void 0 : playerCell.textContent) || ""));
+      const playerHtml = playerLink ? `<a href="${playerLink.getAttribute("href") || "#"}" target="_blank" style="color:inherit;text-decoration:none">${escapeHtml29(cleanText23(playerLink.textContent))}</a>` : escapeHtml29(cleanText23((playerCell == null ? void 0 : playerCell.textContent) || ""));
       const item = {
-        player: cleanText22((playerCell == null ? void 0 : playerCell.textContent) || ""),
-        playerSort: cleanText22((playerCell == null ? void 0 : playerCell.textContent) || ""),
+        player: cleanText23((playerCell == null ? void 0 : playerCell.textContent) || ""),
+        playerSort: cleanText23((playerCell == null ? void 0 : playerCell.textContent) || ""),
         playerHtml,
         _rowClass: /highlighted_row/.test(row.className || "") ? "tmu-psb-me" : ""
       };
       cells.forEach((cell, index) => {
-        const text = cleanText22(cell.textContent);
+        const text = cleanText23(cell.textContent);
         if (index === 0) return;
         item[`col${index}`] = text;
         item[`sort${index}`] = isNumericLike(text) ? Number(text.replace(",", ".")) : rowIndex;
@@ -43689,10 +44201,10 @@ order:initial
     });
     return { headers, items };
   };
-  var injectStyles42 = () => {
-    if (document.getElementById(STYLE_ID58)) return;
+  var injectStyles43 = () => {
+    if (document.getElementById(STYLE_ID59)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID58;
+    style.id = STYLE_ID59;
     style.textContent = `
         .tmvu-nt-statistics-page {
             --tmu-page-sidebar-width: 200px;
@@ -43723,7 +44235,7 @@ order:initial
     const init2 = async () => {
       var _a2, _b, _c, _d, _e;
       injectTmPageLayoutStyles();
-      injectStyles42();
+      injectStyles43();
       main2.innerHTML = TmUI.loading("Loading national team statistics...");
       const sourceRoot3 = document.querySelector(".main_center");
       let dataRoot = sourceRoot3;
@@ -43737,7 +44249,7 @@ order:initial
         main2.innerHTML = TmUI.error("Failed to load national team statistics.");
         return;
       }
-      const title = cleanText22(((_a2 = contentBox.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "Statistics");
+      const title = cleanText23(((_a2 = contentBox.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "Statistics");
       const tableData = parseStatisticsTable(contentBox);
       main2.innerHTML = "";
       main2.classList.add("tmvu-nt-statistics-page", "tmu-page-layout-2col", "tmu-page-density-regular");
@@ -43787,8 +44299,8 @@ order:initial
   }
 
   // src/pages/national-teams-election.js
-  var STYLE_ID59 = "tmvu-national-teams-election-style";
-  var cleanText23 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var STYLE_ID60 = "tmvu-national-teams-election-style";
+  var cleanText24 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var toNumber2 = (value) => Number.parseInt(String(value || ""), 10);
   var escapeHtml30 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var extractCountryCode = (root2) => {
@@ -43811,21 +44323,21 @@ order:initial
         const [id, label, countrySuffix] = rawValue;
         return {
           id: toNumber2(id),
-          label: cleanText23(label || id),
-          countrySuffix: cleanText23(countrySuffix || "")
+          label: cleanText24(label || id),
+          countrySuffix: cleanText24(countrySuffix || "")
         };
       }
       if (typeof rawValue === "object") {
         const id = toNumber2((_c = (_b = (_a2 = rawValue.value) != null ? _a2 : rawValue.id) != null ? _b : rawValue.club_id) != null ? _c : rawLabel);
         return {
           id,
-          label: cleanText23((_g = (_f = (_e = (_d = rawValue.label) != null ? _d : rawValue.name) != null ? _e : rawValue.club_name) != null ? _f : rawLabel) != null ? _g : id),
-          countrySuffix: cleanText23((_j = (_i = (_h = rawValue.country_suffix) != null ? _h : rawValue.country) != null ? _i : rawValue.flag) != null ? _j : "")
+          label: cleanText24((_g = (_f = (_e = (_d = rawValue.label) != null ? _d : rawValue.name) != null ? _e : rawValue.club_name) != null ? _f : rawLabel) != null ? _g : id),
+          countrySuffix: cleanText24((_j = (_i = (_h = rawValue.country_suffix) != null ? _h : rawValue.country) != null ? _i : rawValue.flag) != null ? _j : "")
         };
       }
       return {
         id: toNumber2(rawValue),
-        label: cleanText23(rawLabel != null ? rawLabel : rawValue),
+        label: cleanText24(rawLabel != null ? rawLabel : rawValue),
         countrySuffix: ""
       };
     };
@@ -43939,12 +44451,12 @@ order:initial
     for (const node of Array.from(clone.childNodes)) {
       if (node.nodeType === Node.ELEMENT_NODE && ["UL", "H3"].includes(node.nodeName)) break;
       if (node.nodeType === Node.TEXT_NODE || node.nodeType === Node.ELEMENT_NODE) {
-        const text = cleanText23(node.textContent || "");
+        const text = cleanText24(node.textContent || "");
         if (text) leadParts.push(text);
       }
     }
-    const leadText = cleanText23(leadParts.join(" "));
-    const leadList = Array.from(clone.querySelectorAll(":scope > ul:first-of-type > li")).map((li) => cleanText23(li.textContent)).filter(Boolean);
+    const leadText = cleanText24(leadParts.join(" "));
+    const leadList = Array.from(clone.querySelectorAll(":scope > ul:first-of-type > li")).map((li) => cleanText24(li.textContent)).filter(Boolean);
     if (leadText || leadList.length) {
       sections.push({
         title: "",
@@ -43954,9 +44466,9 @@ order:initial
     }
     Array.from(clone.querySelectorAll(":scope > h3")).forEach((heading) => {
       const list = heading.nextElementSibling;
-      const items = (list == null ? void 0 : list.tagName) === "UL" ? Array.from(list.querySelectorAll("li")).map((li) => cleanText23(li.textContent)).filter(Boolean) : [];
+      const items = (list == null ? void 0 : list.tagName) === "UL" ? Array.from(list.querySelectorAll("li")).map((li) => cleanText24(li.textContent)).filter(Boolean) : [];
       sections.push({
-        title: cleanText23(heading.textContent),
+        title: cleanText24(heading.textContent),
         lead: "",
         items
       });
@@ -43979,12 +44491,12 @@ order:initial
         rows: []
       };
     }
-    const formTitle = cleanText23(((_a2 = body.querySelector("h3")) == null ? void 0 : _a2.textContent) || "Submit Nomination");
+    const formTitle = cleanText24(((_a2 = body.querySelector("h3")) == null ? void 0 : _a2.textContent) || "Submit Nomination");
     const introNode = body.querySelector("p");
     const form = body.querySelector("form");
-    const label = cleanText23(((_b = form == null ? void 0 : form.querySelector("label")) == null ? void 0 : _b.textContent) || "Nominate club");
+    const label = cleanText24(((_b = form == null ? void 0 : form.querySelector("label")) == null ? void 0 : _b.textContent) || "Nominate club");
     const input = (form == null ? void 0 : form.querySelector("input")) || null;
-    const tableTitle = cleanText23(((_c = Array.from(body.querySelectorAll("h3"))[1]) == null ? void 0 : _c.textContent) || "Nominated clubs");
+    const tableTitle = cleanText24(((_c = Array.from(body.querySelectorAll("h3"))[1]) == null ? void 0 : _c.textContent) || "Nominated clubs");
     const tableRows = Array.from(body.querySelectorAll("table tbody tr")).slice(1).map((tr) => {
       const cells = Array.from(tr.querySelectorAll("td"));
       if (cells.length < 3) return null;
@@ -43992,13 +44504,13 @@ order:initial
       const clubFlag = cells[0].querySelector(".country_link");
       const nominatorLink = cells[1].querySelector('a[href*="/club/"]');
       const responseDot = cells[2].querySelector(".response");
-      const responseText = cleanText23(cells[2].textContent);
+      const responseText = cleanText24(cells[2].textContent);
       const responseState = (responseDot == null ? void 0 : responseDot.classList.contains("accepted")) ? "accepted" : (responseDot == null ? void 0 : responseDot.classList.contains("rejected")) ? "rejected" : "pending";
       return {
-        clubName: cleanText23((clubLink == null ? void 0 : clubLink.textContent) || cells[0].textContent),
+        clubName: cleanText24((clubLink == null ? void 0 : clubLink.textContent) || cells[0].textContent),
         clubHref: (clubLink == null ? void 0 : clubLink.getAttribute("href")) || "",
         clubFlagHtml: (clubFlag == null ? void 0 : clubFlag.outerHTML) || "",
-        nominatedBy: cleanText23((nominatorLink == null ? void 0 : nominatorLink.textContent) || cells[1].textContent),
+        nominatedBy: cleanText24((nominatorLink == null ? void 0 : nominatorLink.textContent) || cells[1].textContent),
         nominatedByHref: (nominatorLink == null ? void 0 : nominatorLink.getAttribute("href")) || "",
         responseText,
         responseState,
@@ -44008,7 +44520,7 @@ order:initial
           if (nomination) {
             return {
               kind: "nomination-response",
-              label: cleanText23(actionEl.textContent) || (nomination.response === 1 ? "Accept" : "Reject"),
+              label: cleanText24(actionEl.textContent) || (nomination.response === 1 ? "Accept" : "Reject"),
               country: nomination.country,
               response: nomination.response
             };
@@ -44017,7 +44529,7 @@ order:initial
           if (vote) {
             return {
               kind: "vote",
-              label: cleanText23(actionEl.textContent) || "Vote",
+              label: cleanText24(actionEl.textContent) || "Vote",
               clubId: vote.clubId
             };
           }
@@ -44073,10 +44585,10 @@ order:initial
     </div>
 `;
   var nominatorCellHtml = (row) => row.nominatedByHref ? `<a class="tmvu-nt-election-link" href="${escapeHtml30(row.nominatedByHref)}">${escapeHtml30(row.nominatedBy)}</a>` : escapeHtml30(row.nominatedBy);
-  var injectStyles43 = () => {
-    if (document.getElementById(STYLE_ID59)) return;
+  var injectStyles44 = () => {
+    if (document.getElementById(STYLE_ID60)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID59;
+    style.id = STYLE_ID60;
     style.textContent = `
         .tmvu-nt-election-page {
             --tmu-page-rail-width: 320px;
@@ -44247,12 +44759,12 @@ order:initial
     const contentBox = sourceRoot3.querySelector(".column2_a > .box");
     if (!contentBox) return;
     injectTmPageLayoutStyles();
-    injectStyles43();
-    const countryCode = extractCountryCode(sourceRoot3) || cleanText23(((_a2 = window.SESSION) == null ? void 0 : _a2.country) || "").toLowerCase();
-    const title = cleanText23(((_b = contentBox.querySelector(".box_head h2")) == null ? void 0 : _b.textContent) || "National coach election");
+    injectStyles44();
+    const countryCode = extractCountryCode(sourceRoot3) || cleanText24(((_a2 = window.SESSION) == null ? void 0 : _a2.country) || "").toLowerCase();
+    const title = cleanText24(((_b = contentBox.querySelector(".box_head h2")) == null ? void 0 : _b.textContent) || "National coach election");
     const overview = parseElectionOverview(contentBox);
     const sideBox = sourceRoot3.querySelector(".column3_a > .box");
-    const sideTitle = cleanText23(((_c = sideBox == null ? void 0 : sideBox.querySelector(".box_head h2")) == null ? void 0 : _c.textContent) || "Info");
+    const sideTitle = cleanText24(((_c = sideBox == null ? void 0 : sideBox.querySelector(".box_head h2")) == null ? void 0 : _c.textContent) || "Info");
     const ruleSections = parseRulesSections(sideBox == null ? void 0 : sideBox.querySelector(".box_body"));
     main2.innerHTML = "";
     main2.classList.add("tmvu-nt-election-page", "tmu-page-layout-3rail", "tmu-page-density-regular");
@@ -44312,7 +44824,7 @@ order:initial
       });
       const input = autocomplete.inputEl;
       input.addEventListener("input", () => {
-        const query = cleanText23(input.value);
+        const query = cleanText24(input.value);
         window.clearTimeout(suggestTimer);
         if (!query) {
           autocomplete.setItems([]);
@@ -44426,7 +44938,7 @@ order:initial
   }
 
   // src/pages/national-teams-region.js
-  var STYLE_ID60 = "tmvu-national-teams-region-style";
+  var STYLE_ID61 = "tmvu-national-teams-region-style";
   var NT_FIXTURES_CACHE = /* @__PURE__ */ new Map();
   var REGION_OPTIONS = [
     { value: "af", label: "Africa" },
@@ -44434,12 +44946,12 @@ order:initial
     { value: "ao", label: "Asia and Oceania" },
     { value: "eu", label: "Europe" }
   ];
-  var cleanText24 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var cleanText25 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml31 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  var injectStyles44 = () => {
-    if (document.getElementById(STYLE_ID60)) return;
+  var injectStyles45 = () => {
+    if (document.getElementById(STYLE_ID61)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID60;
+    style.id = STYLE_ID61;
     style.textContent = `
         .tsa-panel-league-name {
             font-size: var(--tmu-font-sm);
@@ -44501,7 +45013,7 @@ order:initial
     return ((_b = (_a2 = href.match(/\/national-teams\/([a-z]{2,3})\//i)) == null ? void 0 : _a2[1]) == null ? void 0 : _b.toLowerCase()) || "";
   };
   var parseScore2 = (value) => {
-    const match = cleanText24(value).match(/^(\d+)\s*[-:]\s*(\d+)$/);
+    const match = cleanText25(value).match(/^(\d+)\s*[-:]\s*(\d+)$/);
     if (!match) return null;
     return { home: Number(match[1]), away: Number(match[2]) };
   };
@@ -44510,11 +45022,11 @@ order:initial
     if (!html2) return "";
     const wrapper = document.createElement("div");
     wrapper.innerHTML = html2;
-    return cleanText24(wrapper.textContent || "");
+    return cleanText25(wrapper.textContent || "");
   };
-  var isEuropeWorldCupQualifiers = (title) => cleanText24(title).toLowerCase() === "europe wc qualifiers";
-  var isGroupStageTab = (tab) => cleanText24(tab == null ? void 0 : tab.label).toLowerCase() === "group stage" || cleanText24(tab == null ? void 0 : tab.key).toLowerCase() === "group_stage";
-  var isNtqMatchType = (value) => cleanText24(value).toUpperCase() === "NTQ";
+  var isEuropeWorldCupQualifiers = (title) => cleanText25(title).toLowerCase() === "europe wc qualifiers";
+  var isGroupStageTab = (tab) => cleanText25(tab == null ? void 0 : tab.label).toLowerCase() === "group stage" || cleanText25(tab == null ? void 0 : tab.key).toLowerCase() === "group_stage";
+  var isNtqMatchType = (value) => cleanText25(value).toUpperCase() === "NTQ";
   var buildEuropeWcLegendHtml = () => `
     <div class="tmvu-nt-region-legend">
         <div class="tmvu-nt-region-legend-item"><span class="tmvu-nt-region-legend-swatch" style="background:var(--tmu-success-fill-hover);border:1px solid var(--tmu-success);"></span>Group winners qualify directly</div>
@@ -44536,20 +45048,20 @@ order:initial
   var flattenFixturesPayload = (payload) => Object.values(payload || {}).flatMap((month) => Array.from((month == null ? void 0 : month.matches) || []));
   var parseNtqFixturesPayload = (payload) => flattenFixturesPayload(payload).map((match) => ({
     matchId: String((match == null ? void 0 : match.id) || ""),
-    homeId: extractCountryCode2(String((match == null ? void 0 : match.home_link) || "")) || cleanText24((match == null ? void 0 : match.hometeam) || "").toLowerCase(),
-    awayId: extractCountryCode2(String((match == null ? void 0 : match.away_link) || "")) || cleanText24((match == null ? void 0 : match.awayteam) || "").toLowerCase(),
-    homeName: cleanText24((match == null ? void 0 : match.hometeamname) || ""),
-    awayName: cleanText24((match == null ? void 0 : match.awayteamname) || ""),
-    result: cleanText24((match == null ? void 0 : match.result) || wrapperText3(match == null ? void 0 : match.match_link) || ""),
-    matchType: cleanText24((match == null ? void 0 : match.matchtype_sort) || (match == null ? void 0 : match.matchtype_name) || "")
+    homeId: extractCountryCode2(String((match == null ? void 0 : match.home_link) || "")) || cleanText25((match == null ? void 0 : match.hometeam) || "").toLowerCase(),
+    awayId: extractCountryCode2(String((match == null ? void 0 : match.away_link) || "")) || cleanText25((match == null ? void 0 : match.awayteam) || "").toLowerCase(),
+    homeName: cleanText25((match == null ? void 0 : match.hometeamname) || ""),
+    awayName: cleanText25((match == null ? void 0 : match.awayteamname) || ""),
+    result: cleanText25((match == null ? void 0 : match.result) || wrapperText3(match == null ? void 0 : match.match_link) || ""),
+    matchType: cleanText25((match == null ? void 0 : match.matchtype_sort) || (match == null ? void 0 : match.matchtype_name) || "")
   })).filter((match) => match.homeId && match.awayId && match.result && isNtqMatchType(match.matchType));
   var getFixtureDedupKey = (match) => {
     if (match.matchId) return `mid:${match.matchId}`;
     const teams = [match.homeId, match.awayId].sort().join(":");
-    return `pair:${teams}|${match.result}|${cleanText24(match.matchType).toUpperCase()}`;
+    return `pair:${teams}|${match.result}|${cleanText25(match.matchType).toUpperCase()}`;
   };
   var fetchTeamNtqFixtures = (countryCode) => {
-    const code = cleanText24(countryCode).toLowerCase();
+    const code = cleanText25(countryCode).toLowerCase();
     if (!code) return Promise.resolve([]);
     if (!NT_FIXTURES_CACHE.has(code)) {
       NT_FIXTURES_CACHE.set(code, TmNationalTeamsModel.fetchFixtures(code).then(parseNtqFixturesPayload).catch(() => []));
@@ -44637,7 +45149,7 @@ order:initial
         const table = (_a3 = heading.nextElementSibling) == null ? void 0 : _a3.querySelector("table.group_table");
         if (!table) return null;
         return {
-          title: cleanText24(heading.textContent),
+          title: cleanText25(heading.textContent),
           rows: Array.from(table.querySelectorAll("tbody tr")).slice(1).map((tr) => {
             const cells = tr.querySelectorAll("td");
             if (cells.length < 10) return null;
@@ -44645,17 +45157,17 @@ order:initial
             const flagLink = cells[2].querySelector('a[href*="/national-teams/"]');
             const flagEl = cells[2].querySelector('ib[class*="flag-img-"], img[class*="flag-img-"]');
             return {
-              rank: cleanText24(cells[0].textContent),
-              clubName: cleanText24((teamLink == null ? void 0 : teamLink.textContent) || cells[1].textContent),
+              rank: cleanText25(cells[0].textContent),
+              clubName: cleanText25((teamLink == null ? void 0 : teamLink.textContent) || cells[1].textContent),
               countryCode: extractCountryCode2((teamLink == null ? void 0 : teamLink.getAttribute("href")) || (flagLink == null ? void 0 : flagLink.getAttribute("href")) || ""),
-              nameHtml: `<span style="display:inline-flex;align-items:center;gap:var(--tmu-space-xs)">${(flagLink == null ? void 0 : flagLink.innerHTML) || (flagEl == null ? void 0 : flagEl.outerHTML) || ""}<a class="tsa-club-link" href="${(teamLink == null ? void 0 : teamLink.getAttribute("href")) || "#"}">${escapeHtml31(cleanText24((teamLink == null ? void 0 : teamLink.textContent) || cells[1].textContent))}</a></span>`,
-              gp: cleanText24(cells[3].textContent),
-              w: cleanText24(cells[4].textContent),
-              d: cleanText24(cells[5].textContent),
-              l: cleanText24(cells[6].textContent),
-              gf: cleanText24(cells[7].textContent),
-              ga: cleanText24(cells[8].textContent),
-              pts: cleanText24(cells[9].textContent),
+              nameHtml: `<span style="display:inline-flex;align-items:center;gap:var(--tmu-space-xs)">${(flagLink == null ? void 0 : flagLink.innerHTML) || (flagEl == null ? void 0 : flagEl.outerHTML) || ""}<a class="tsa-club-link" href="${(teamLink == null ? void 0 : teamLink.getAttribute("href")) || "#"}">${escapeHtml31(cleanText25((teamLink == null ? void 0 : teamLink.textContent) || cells[1].textContent))}</a></span>`,
+              gp: cleanText25(cells[3].textContent),
+              w: cleanText25(cells[4].textContent),
+              d: cleanText25(cells[5].textContent),
+              l: cleanText25(cells[6].textContent),
+              gf: cleanText25(cells[7].textContent),
+              ga: cleanText25(cells[8].textContent),
+              pts: cleanText25(cells[9].textContent),
               isMe: /highlighted_row/.test(tr.className || "")
             };
           }).filter(Boolean)
@@ -44666,7 +45178,7 @@ order:initial
       });
       return {
         key,
-        label: cleanText24(tab.textContent) || key,
+        label: cleanText25(tab.textContent) || key,
         active: tab.classList.contains("active_tab") || tab.hasAttribute("selected"),
         noteHtml,
         groups,
@@ -44707,14 +45219,14 @@ order:initial
     const contentBox = sourceRoot3.querySelector(".column2_a > .box");
     if (!contentBox) return;
     injectTmPageLayoutStyles();
-    injectStyles44();
+    injectStyles45();
     TmStandingsTable.injectStyles();
     const countryCode = ((_c = (_b = (_a2 = sourceRoot3.querySelector('.content_menu a[href^="/national-teams/"]')) == null ? void 0 : _a2.getAttribute("href")) == null ? void 0 : _b.match(/\/national-teams\/([a-z]{2,3})\//i)) == null ? void 0 : _c[1]) || "";
     const subHeader = contentBox.querySelector(".box_sub_header");
-    const title = cleanText24(((_d = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _d.textContent) || ((_e = contentBox.querySelector(".box_head h2")) == null ? void 0 : _e.textContent) || "Tournaments");
+    const title = cleanText25(((_d = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _d.textContent) || ((_e = contentBox.querySelector(".box_head h2")) == null ? void 0 : _e.textContent) || "Tournaments");
     const tabs = parseTabs(contentBox);
     const sideBox = sourceRoot3.querySelector(".column3_a > .box");
-    const sideTitle = cleanText24(((_f = sideBox == null ? void 0 : sideBox.querySelector(".box_head h2")) == null ? void 0 : _f.textContent) || "Info");
+    const sideTitle = cleanText25(((_f = sideBox == null ? void 0 : sideBox.querySelector(".box_head h2")) == null ? void 0 : _f.textContent) || "Info");
     const sideBody = (_g = sideBox == null ? void 0 : sideBox.querySelector(".box_body")) == null ? void 0 : _g.cloneNode(true);
     (_h = sideBody == null ? void 0 : sideBody.querySelector(".box_shadow")) == null ? void 0 : _h.remove();
     main2.innerHTML = "";
@@ -44801,13 +45313,13 @@ order:initial
   }
 
   // src/pages/national-teams-squad.js
-  var STYLE_ID61 = "tmvu-national-teams-squad-style";
-  var cleanText25 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var STYLE_ID62 = "tmvu-national-teams-squad-style";
+  var cleanText26 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var escapeHtml32 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  var injectStyles45 = () => {
-    if (document.getElementById(STYLE_ID61)) return;
+  var injectStyles46 = () => {
+    if (document.getElementById(STYLE_ID62)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID61;
+    style.id = STYLE_ID62;
     style.textContent = `
         .tmvu-nt-squad-page {
             --tmu-page-sidebar-width: 200px;
@@ -44840,8 +45352,8 @@ order:initial
     if (!playerId || cells.length < 2) return null;
     return {
       playerId,
-      number: cleanText25(((_a2 = cells[0]) == null ? void 0 : _a2.textContent) || ""),
-      name: cleanText25((playerAnchor == null ? void 0 : playerAnchor.textContent) || ""),
+      number: cleanText26(((_a2 = cells[0]) == null ? void 0 : _a2.textContent) || ""),
+      name: cleanText26((playerAnchor == null ? void 0 : playerAnchor.textContent) || ""),
       href: (playerAnchor == null ? void 0 : playerAnchor.getAttribute("href")) || `/players/${playerId}/`
     };
   }).filter(Boolean);
@@ -44849,7 +45361,7 @@ order:initial
     const boxes = Array.from(root2.querySelectorAll(".column2_a > .box, .column2 > .box, .column3_a > .box, .column3 > .box"));
     const candidates = boxes.map((box) => {
       var _a2, _b;
-      const title = cleanText25(((_a2 = box.querySelector(".box_head h2, .box_sub_header .large")) == null ? void 0 : _a2.textContent) || "Squad");
+      const title = cleanText26(((_a2 = box.querySelector(".box_head h2, .box_sub_header .large")) == null ? void 0 : _a2.textContent) || "Squad");
       const bestTable = Array.from(box.querySelectorAll("table")).map((table) => ({ rows: parseTableRows(table) })).sort((left, right) => right.rows.length - left.rows.length)[0];
       return {
         title,
@@ -44893,7 +45405,7 @@ order:initial
     const sourceRoot3 = document.querySelector(".main_center") || main2;
     const squadSource = findSquadSource(sourceRoot3);
     injectTmPageLayoutStyles();
-    injectStyles45();
+    injectStyles46();
     TmPlayersTable.injectCSS();
     main2.innerHTML = "";
     main2.classList.add("tmvu-nt-squad-page", "tmu-page-layout-2col", "tmu-page-density-regular");
@@ -44956,10 +45468,10 @@ order:initial
     const routeMatch = window.location.pathname.match(/^\/national-teams\/(?:([a-z]{2,3})\/?)?$/i);
     if (!routeMatch) return;
     const sourceRoot3 = (document.querySelector(".main_center") || main2).cloneNode(true);
-    const STYLE_ID63 = "tmvu-national-teams-style";
+    const STYLE_ID64 = "tmvu-national-teams-style";
     const { R5_THRESHOLDS: R5_THRESHOLDS4 } = TmConst;
     const CURRENT_SEASON2 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
-    const cleanText27 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const cleanText28 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml34 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml7 = (opts) => TmUI.metric(opts);
     const decodeHtmlEntities = (value) => {
@@ -44969,11 +45481,11 @@ order:initial
       textarea.innerHTML = text;
       return textarea.value;
     };
-    const injectStyles47 = () => {
-      if (document.getElementById(STYLE_ID63)) return;
+    const injectStyles48 = () => {
+      if (document.getElementById(STYLE_ID64)) return;
       injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID63;
+      style.id = STYLE_ID64;
       style.textContent = `
             .tmvu-nt-page {
                 --tmu-page-main-track: minmax(0, 0.9fr);
@@ -45218,7 +45730,7 @@ order:initial
     };
     const parseFactTable = (table) => Array.from((table == null ? void 0 : table.querySelectorAll("tr")) || []).map((row) => {
       var _a2, _b;
-      const label = cleanText27(((_a2 = row.querySelector("th")) == null ? void 0 : _a2.textContent) || "");
+      const label = cleanText28(((_a2 = row.querySelector("th")) == null ? void 0 : _a2.textContent) || "");
       const valueCell = row.querySelector("td:last-child");
       const valueHtml = ((_b = valueCell == null ? void 0 : valueCell.innerHTML) == null ? void 0 : _b.trim()) || "";
       if (!label || !valueHtml) return null;
@@ -45233,7 +45745,7 @@ order:initial
       });
       return clone.outerHTML;
     };
-    const parseOverview4 = () => {
+    const parseOverview5 = () => {
       var _a2;
       const box = sourceRoot3.querySelector(".column2_a > .box");
       if (!box) return null;
@@ -45244,7 +45756,7 @@ order:initial
       const logoSrc = ((_a2 = overviewTable == null ? void 0 : overviewTable.querySelector('img[src*="/pics/nt_logos/"]')) == null ? void 0 : _a2.getAttribute("src")) || "";
       const facts = parseFactTable(overviewTable);
       const sections = Array.from(box.querySelectorAll("h3")).map((heading) => {
-        const title = cleanText27(heading.textContent);
+        const title = cleanText28(heading.textContent);
         const body = heading.nextElementSibling;
         if (!body || !body.classList.contains("std")) return null;
         const factTable = body.querySelector("table.zebra:not(.group_table):not(.fixtures_table)");
@@ -45264,8 +45776,8 @@ order:initial
       const countryInfoSection = sections.find((section) => section.type === "facts");
       const uetaChampionsCup = (countryInfoSection == null ? void 0 : countryInfoSection.items.find((item) => /ueta champions cup spots/i.test(item.label))) || null;
       return {
-        countryName: cleanText27((countryNode == null ? void 0 : countryNode.textContent) || "National Team"),
-        countryHtml: (countryNode == null ? void 0 : countryNode.innerHTML) || escapeHtml34(cleanText27((countryNode == null ? void 0 : countryNode.textContent) || "National Team")),
+        countryName: cleanText28((countryNode == null ? void 0 : countryNode.textContent) || "National Team"),
+        countryHtml: (countryNode == null ? void 0 : countryNode.innerHTML) || escapeHtml34(cleanText28((countryNode == null ? void 0 : countryNode.textContent) || "National Team")),
         changeHtml: (changeLink == null ? void 0 : changeLink.outerHTML) || "",
         logoSrc,
         facts,
@@ -45280,7 +45792,7 @@ order:initial
         const flagHtml = flagEl ? flagEl.outerHTML : "";
         return {
           id: "",
-          name: cleanText27((teamAnchor == null ? void 0 : teamAnchor.textContent) || cell.textContent || ""),
+          name: cleanText28((teamAnchor == null ? void 0 : teamAnchor.textContent) || cell.textContent || ""),
           href: (teamAnchor == null ? void 0 : teamAnchor.getAttribute("href")) || "#",
           flagHtml
         };
@@ -45295,7 +45807,7 @@ order:initial
         const matchHref = ((_a2 = resultCell.querySelector("a")) == null ? void 0 : _a2.getAttribute("href")) || "";
         const ntM = matchHref.match(/\/matches\/(?:(nt)\/)?(\d+)\//);
         const matchId = ntM ? (ntM[1] || "") + ntM[2] : "";
-        const scoreText = cleanText27(resultCell.textContent || "vs") || "vs";
+        const scoreText = cleanText28(resultCell.textContent || "vs") || "vs";
         const scoreHref = ntM ? `/matches/${ntM[1] ? ntM[1] + "/" + ntM[2] : ntM[2]}/` : "";
         return {
           matchId,
@@ -45318,7 +45830,7 @@ order:initial
         const icon = row.children[0];
         const content = row.children[1];
         const subtle = content == null ? void 0 : content.querySelector(".subtle");
-        const season = cleanText27((subtle == null ? void 0 : subtle.textContent) || "");
+        const season = cleanText28((subtle == null ? void 0 : subtle.textContent) || "");
         if (subtle) subtle.remove();
         return {
           iconStyle: (icon == null ? void 0 : icon.getAttribute("style")) || "",
@@ -45339,8 +45851,8 @@ order:initial
         const playerId = playerAnchor.getAttribute("player_link") || ((_b = (_a3 = playerAnchor.getAttribute("href")) == null ? void 0 : _a3.match(/\/players\/(\d+)\//)) == null ? void 0 : _b[1]) || "";
         return {
           playerId: String(playerId),
-          number: cleanText27(cells[0].textContent),
-          name: decodeHtmlEntities(cleanText27(playerAnchor.textContent)),
+          number: cleanText28(cells[0].textContent),
+          name: decodeHtmlEntities(cleanText28(playerAnchor.textContent)),
           href: playerAnchor.getAttribute("href") || "#"
         };
       }).filter((row) => row && row.playerId);
@@ -45408,7 +45920,7 @@ order:initial
         host.innerHTML = TmUI.error(`Failed to load squad: ${error.message}`, true);
       }
     };
-    const renderOverviewCard2 = (overview) => {
+    const renderOverviewCard3 = (overview) => {
       const wrap = document.createElement("section");
       const quickFacts = overview.facts.slice(0, 6);
       if (overview.uetaChampionsCup && !quickFacts.some((item) => /ueta champions cup spots/i.test(item.label))) {
@@ -45494,9 +46006,9 @@ order:initial
     };
     const render16 = () => {
       var _a2;
-      injectStyles47();
+      injectStyles48();
       TmMatchHoverCard.injectStyles();
-      const overview = parseOverview4();
+      const overview = parseOverview5();
       if (!overview) return;
       const trophies = parseTrophies2();
       const squad = parseSquad();
@@ -45506,12 +46018,12 @@ order:initial
         root: sourceRoot3,
         id: "tmvu-national-teams-nav",
         className: "tmvu-national-teams-nav tmu-page-sidebar-stack",
-        countryCode: routeMatch[1] || cleanText27(((_a2 = window.SESSION) == null ? void 0 : _a2.country) || ""),
+        countryCode: routeMatch[1] || cleanText28(((_a2 = window.SESSION) == null ? void 0 : _a2.country) || ""),
         currentSeason: CURRENT_SEASON2
       });
       const mainColumn5 = document.createElement("section");
       mainColumn5.className = "tmvu-nt-main tmu-page-section-stack";
-      mainColumn5.appendChild(renderOverviewCard2(overview));
+      mainColumn5.appendChild(renderOverviewCard3(overview));
       overview.sections.forEach((section) => {
         if (section.type === "standings" && section.html) {
           mainColumn5.appendChild(renderStandingsCard(section.title, section.html));
@@ -45537,10 +46049,10 @@ order:initial
   // src/pages/support-pro.js
   function initSupportProPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID63 = "tmvu-spro-style";
+    const STYLE_ID64 = "tmvu-spro-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles47 = () => {
-      if (document.getElementById(STYLE_ID63)) return;
+    const injectStyles48 = () => {
+      if (document.getElementById(STYLE_ID64)) return;
       injectTmPageLayoutStyles();
       const rules = [
         // hero: single column
@@ -45563,7 +46075,7 @@ order:initial
         ".tmvu-spro-faq-a{color:var(--tmu-text-main);padding-left:var(--tmu-space-md);border-left:2px solid var(--tmu-border-success);font-size:var(--tmu-font-sm);line-height:1.7}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID63;
+      style.id = STYLE_ID64;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -45632,7 +46144,7 @@ order:initial
       const title = "Support";
       const boxBody = snap2.querySelector(".box_body");
       const navItems = col1 ? parseNav(col1.cloneNode(true)) : [];
-      injectStyles47();
+      injectStyles48();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-spro-hero",
@@ -46638,7 +47150,7 @@ order:initial
         disabled: key === "nt" ? !player.stats.nationalTeam : !(player.stats[key] || []).length
       })),
       active: activeTab2,
-      color: "primary",
+      color: "secondary",
       cls: "tmph-tabs",
       stretch: true,
       onChange: (key) => {
@@ -46786,7 +47298,7 @@ order:initial
   };
   var render15 = ({ player: player2 } = {}) => {
     var _a2;
-    const { getColor: getColor5 } = TmUtils;
+    const { getColor: getColor4 } = TmUtils;
     const { R5_THRESHOLDS: R5_THRESHOLDS4, REC_THRESHOLDS: REC_THRESHOLDS2, TI_THRESHOLDS: TI_THRESHOLDS2, RTN_THRESHOLDS: RTN_THRESHOLDS3 } = TmConst;
     const badgeHtml3 = (opts, tone = "muted") => TmUI.badge({ size: "md", shape: "rounded", weight: "heavy", ...opts }, tone);
     const infoTable = document.querySelector("table.info_table.zebra");
@@ -46805,11 +47317,11 @@ order:initial
                     <span class="tmpc-pos-name" style="color:${position.color}">${position.position}</span>
                     <span class="tmpc-pos-stat">
                         <span class="tmpc-pos-stat-lbl tmu-kicker">R5</span>
-                        <span class="tmpc-pos-stat-val tmu-tabular" style="color:${getColor5(position.r5, R5_THRESHOLDS4)}">${position.r5}</span>
+                        <span class="tmpc-pos-stat-val tmu-tabular" style="color:${getColor4(position.r5, R5_THRESHOLDS4)}">${position.r5}</span>
                     </span>
                     <span class="tmpc-pos-stat">
                         <span class="tmpc-pos-stat-lbl tmu-kicker">REC</span>
-                        <span class="tmpc-pos-stat-val tmu-tabular" style="color:${getColor5(position.rec, REC_THRESHOLDS2)}">${position.rec}</span>
+                        <span class="tmpc-pos-stat-val tmu-tabular" style="color:${getColor4(position.rec, REC_THRESHOLDS2)}">${position.rec}</span>
                     </span>
                 </div>`;
     let positionRatings = "";
@@ -46842,7 +47354,7 @@ order:initial
                         <div class="tmpc-name">${player2.name} ${CountryFlag.render(player2.country)}</div>
                         ${badgeHtml3({ slot: `<span class="tmu-badge-label">ASI</span><span class="tmu-badge-value tmpc-badge-value-strong">${player2.asi.toLocaleString()}</span>` })}
                         <div class="tmpc-pos-row">${posChips}${ntBadge}</div>
-                        ${badgeHtml3({ slot: `<span class="tmu-badge-label">TI</span><span class="tmu-badge-value" style="color:${getColor5(player2.ti, TI_THRESHOLDS2)}">${player2.ti}</span>` })}
+                        ${badgeHtml3({ slot: `<span class="tmu-badge-label">TI</span><span class="tmu-badge-value" style="color:${getColor4(player2.ti, TI_THRESHOLDS2)}">${player2.ti}</span>` })}
                     </div>
                     <div class="tmpc-details">
                         <tm-row data-justify="space-between">
@@ -46869,7 +47381,7 @@ order:initial
                         </tm-row>
                         <tm-row data-justify="space-between">
                             <span class="tmu-stat-lbl">Routine</span>
-                            <span class="tmpc-val tmu-tabular" style="color:${getColor5(player2.routine, RTN_THRESHOLDS3)}">${Number(player2.routine).toFixed(1)}</span>
+                            <span class="tmpc-val tmu-tabular" style="color:${getColor4(player2.routine, RTN_THRESHOLDS3)}">${Number(player2.routine).toFixed(1)}</span>
                         </tm-row>
                     </div> 
                 </div>
@@ -46898,7 +47410,7 @@ order:initial
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 .tmps-note {
-    background: linear-gradient(180deg, var(--tmu-surface-dark-strong), var(--tmu-surface-dark-mid)); border: 1px solid var(--tmu-border-soft-alpha);
+    background: var(--tmu-card-bg); border: 1px solid var(--tmu-border-soft-alpha);
     line-height: 1.4;
 }
 .tmps-award-list {
@@ -47568,8 +48080,8 @@ order:initial
 .tmps-star { line-height: 1; }
 .tmps-star-suffix { font-size: var(--tmu-font-xs); opacity: .8; margin-left: 0; vertical-align: top; }
 .tmps-grid { border-radius: var(--tmu-space-md); }
-.tmps-hidden { background: linear-gradient(180deg, var(--tmu-surface-dark-strong), var(--tmu-surface-dark-soft)); }
-.tmps-unlock { background: linear-gradient(180deg, var(--tmu-surface-dark-mid), var(--tmu-surface-item-dark)); }
+.tmps-hidden { background: var(--tmu-card-bg); }
+.tmps-unlock { background: var(--tmu-card-bg); }
 .tmps-unlock .tmu-btn img { height: 12px; vertical-align: middle; }
 .tmps-wrap .tmu-stat-row + .tmu-stat-row { border-top-color: var(--tmu-border-soft-alpha); }
 .tmps-wrap .tmu-stat-lbl { color: var(--tmu-text-muted); }
@@ -47720,13 +48232,13 @@ order:initial
     border: 1px solid var(--tmu-border-soft); border-top: none;
     border-radius: 0 0 var(--tmu-space-md) var(--tmu-space-md);
     padding: 0; min-height: 120px;
-    background: var(--tmu-surface-card);
+    background: var(--tmu-card-bg);
     box-shadow: 0 14px 30px var(--tmu-shadow-elev);
 }
 .tmpe-panel {
     animation: tmpe-fadeIn 0.25s ease-out;
     padding: var(--tmu-space-xl) var(--tmu-space-xl) var(--tmu-space-xl);
-    background: var(--tmu-surface-dark-soft);
+    background: var(--tmu-card-bg);
 }
 @keyframes tmpe-fadeIn {
     from { opacity: 0; transform: translateY(4px); }
@@ -47968,11 +48480,11 @@ order:initial
   }
 
   // src/pages/players-styles.js
-  var STYLE_ID62 = "tmvu-players-page-style";
+  var STYLE_ID63 = "tmvu-players-page-style";
   var injectPlayersPageStyles = () => {
-    if (document.getElementById(STYLE_ID62)) return;
+    if (document.getElementById(STYLE_ID63)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID62;
+    style.id = STYLE_ID63;
     style.textContent = `
         .tmvu-players-shell {
             display: flex;
@@ -48715,7 +49227,7 @@ order:initial
     /* attachTooltip(canvas, tipEl, getSeriesFn, chartInfoGetter) */
     attachTooltip(canvas, tipEl, getSeriesFn, chartInfoGetter) {
       const { R5_THRESHOLDS: R5_THRESHOLDS4 } = TmConst;
-      const { getColor: getColor5 } = TmUtils;
+      const { getColor: getColor4 } = TmUtils;
       canvas.addEventListener("mousemove", (e) => {
         const info = chartInfoGetter();
         if (!info) return;
@@ -48738,7 +49250,7 @@ order:initial
           const { s: s6, i } = best;
           const age = s6.ages[i], val = s6.values[i];
           const ay = Math.floor(age), am = Math.round((age - ay) * 12);
-          tipEl.innerHTML = `<span style="color:${s6.color}">\u25CF</span> <b>${s6.name}</b> <span style="color:${themeColor2("--tmu-text-faint", "#6a9a58")}">(${s6.posLabel})</span><br><b>R5:</b> <span style="color:${getColor5(val, R5_THRESHOLDS4)}">${Number(val).toFixed(2)}</span> &nbsp; <b>Age:</b> ${ay}y ${am}m`;
+          tipEl.innerHTML = `<span style="color:${s6.color}">\u25CF</span> <b>${s6.name}</b> <span style="color:${themeColor2("--tmu-text-faint", "#6a9a58")}">(${s6.posLabel})</span><br><b>R5:</b> <span style="color:${getColor4(val, R5_THRESHOLDS4)}">${Number(val).toFixed(2)}</span> &nbsp; <b>Age:</b> ${ay}y ${am}m`;
           tipEl.style.display = "block";
           const px = info.xS(age), py = info.yS(val);
           let tx = px - tipEl.offsetWidth / 2;
@@ -48985,12 +49497,12 @@ order:initial
       "#aed581",
       "#ffb74d"
     ];
-    const getColor5 = TmUtils.getColor;
-    const htmlOf6 = (node) => (node == null ? void 0 : node.outerHTML) || "";
-    const buttonHtml12 = (opts) => htmlOf6(TmUI.button(opts));
-    const checkboxHtml2 = (opts) => htmlOf6(TmUI.checkbox(opts));
-    const checkboxFieldHtml = (opts) => htmlOf6(TmUI.checkboxField(opts));
-    const inputHtml4 = (opts) => htmlOf6(TmUI.input({ size: "full", density: "compact", tone: "overlay", grow: true, ...opts }));
+    const getColor4 = TmUtils.getColor;
+    const htmlOf7 = (node) => (node == null ? void 0 : node.outerHTML) || "";
+    const buttonHtml12 = (opts) => htmlOf7(TmUI.button(opts));
+    const checkboxHtml2 = (opts) => htmlOf7(TmUI.checkbox(opts));
+    const checkboxFieldHtml = (opts) => htmlOf7(TmUI.checkboxField(opts));
+    const inputHtml4 = (opts) => htmlOf7(TmUI.input({ size: "full", density: "compact", tone: "overlay", grow: true, ...opts }));
     const getPositionIndex2 = TmLib.getPositionIndex;
     const posGroupColor = (posIdx) => TmPosition.groupColor(posIdx);
     const posLabel2 = (posIdx) => TmPosition.groupLabel(posIdx);
@@ -49321,7 +49833,7 @@ order:initial
                 <a class="tmrc-legend-name" href="https://trophymanager.com/players/${s6.pid}/" target="_blank" title="${s6.name}">${s6.name}</a>
                 <div class="tmrc-legend-pos" style="color:${posGroupColor(s6.posIdx)}">${s6.posLabel}</div>
                 <div class="tmrc-legend-age">${ageY}.${ageM}</div>
-                <div class="tmrc-legend-r5" style="color:${getColor5(lastR5, R5_THRESHOLDS4)}">${TmUtils.formatR5(lastR5)}</div>
+                <div class="tmrc-legend-r5" style="color:${getColor4(lastR5, R5_THRESHOLDS4)}">${TmUtils.formatR5(lastR5)}</div>
             </div>`;
       });
       container.innerHTML = h;
@@ -49409,9 +49921,9 @@ order:initial
       container.innerHTML = `
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Players:</span> <span class="tmrc-stat-val">${visibleSeries.length}</span></div>
             <div class="tmrc-stat"><span class="tmrc-stat-lbl">Total records:</span> <span class="tmrc-stat-val">${totalWeeks}</span></div>
-            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Avg R5:</span> <span class="tmrc-stat-val" style="color:${getColor5(avg, R5_THRESHOLDS4)}">${avg.toFixed(2)}</span></div>
-            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Best:</span> <span class="tmrc-stat-val" style="color:${getColor5(max, R5_THRESHOLDS4)}">${max.toFixed(2)}</span> <span style="color:var(--tmu-text-faint);font-size:var(--tmu-font-xs)">(${(best == null ? void 0 : best.name) || "?"})</span></div>
-            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Min:</span> <span class="tmrc-stat-val" style="color:${getColor5(min, R5_THRESHOLDS4)}">${min.toFixed(2)}</span></div>
+            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Avg R5:</span> <span class="tmrc-stat-val" style="color:${getColor4(avg, R5_THRESHOLDS4)}">${avg.toFixed(2)}</span></div>
+            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Best:</span> <span class="tmrc-stat-val" style="color:${getColor4(max, R5_THRESHOLDS4)}">${max.toFixed(2)}</span> <span style="color:var(--tmu-text-faint);font-size:var(--tmu-font-xs)">(${(best == null ? void 0 : best.name) || "?"})</span></div>
+            <div class="tmrc-stat"><span class="tmrc-stat-lbl">Min:</span> <span class="tmrc-stat-val" style="color:${getColor4(min, R5_THRESHOLDS4)}">${min.toFixed(2)}</span></div>
         `;
     };
     const redrawChart = () => {
@@ -50878,7 +51390,7 @@ order:initial
 
   // src/layouts/app-shell.js
   var IMPORT_PATH = "/import/";
-  function cleanText26(value) {
+  function cleanText27(value) {
     return String(value || "").replace(/\s+/g, " ").trim();
   }
   function normalizeHref(href) {
@@ -50909,7 +51421,7 @@ order:initial
     var _a2, _b;
     const session = window.SESSION || {};
     const clubId2 = String(session.main_id || session.club_id || "").trim();
-    const clubName2 = cleanText26(
+    const clubName2 = cleanText27(
       session.main_name || session.clubname || session.club_name || ((_a2 = document.querySelector('a[href*="/club/"]')) == null ? void 0 : _a2.textContent) || "TrophyManager"
     );
     return {
@@ -50938,7 +51450,7 @@ order:initial
     if (topMenu) topMenu.style.display = "none";
     if (topMenuSub) topMenuSub.style.display = "none";
   }
-  function injectStyles46() {
+  function injectStyles47() {
     ensureTmTheme();
     if (document.getElementById("tmvu-shell-styles")) return;
     const style = document.createElement("style");
@@ -50965,8 +51477,8 @@ order:initial
             margin: 0 !important;
             padding-top: var(--tmvu-header-height) !important;
             background-image: none !important;
-            background-color: var(--tmu-surface-panel) !important;
-            background: var(--tmu-surface-panel) !important;
+            background-color: var(--tmu-shell-body-bg, var(--tmu-surface-panel)) !important;
+            background: var(--tmu-shell-body-bg, var(--tmu-surface-panel)) !important;
             color: var(--tmvu-text) !important;
             font-family: var(--tmvu-font) !important;
             font-size: var(--tmu-font-sm) !important;
@@ -51006,7 +51518,7 @@ order:initial
             top: 0;
             left: 0;
             right: 0;
-            background: var(--tmu-color-accent);
+            background: var(--tmu-shell-header-bg, var(--tmu-surface-header));
             color: var(--tmvu-text-inverse);
             border-bottom: 1px solid var(--tmu-border-header);
             box-shadow: inset 0 -1px 0 var(--tmu-shadow-ring);
@@ -51469,6 +51981,9 @@ order:initial
     if (/^\/matches\/(?:nt\/)?\d+/.test(currentPath)) {
       initMatchPage(main2);
     }
+    if (/^\/fixtures\/cup\/[a-z]{2,3}\/\d+\/?$/i.test(currentPath)) {
+      initCupFixturesPage(main2);
+    }
     if (/^\/cup\/?$/i.test(currentPath)) {
       initCupPage(main2);
     }
@@ -51567,7 +52082,7 @@ order:initial
     const currentPath = normalizeHref(window.location.pathname) || "/home/";
     const groups = collectNavGroups();
     replaceMainCenterClass();
-    injectStyles46();
+    injectStyles47();
     const clubInfo = getClubInfo();
     const openGroupId = getInitialOpenGroup();
     const headerFab = getHeaderFab(currentPath);

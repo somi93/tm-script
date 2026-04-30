@@ -11,6 +11,7 @@ import { TmTrainingService } from './training.js';
 import { TmMessagesService } from './messages.js';
 import { TmNationalTeamsService } from './national-teams.js';
 import { TmYouthService } from './youth.js';
+import { TmCupService } from './cup.js';
 
 export const TmApi = {
     ...TmClubService,
@@ -26,4 +27,5 @@ export const TmApi = {
     ...TmMessagesService,
     ...TmNationalTeamsService,
     ...TmYouthService,
+    ...TmCupService,
 };

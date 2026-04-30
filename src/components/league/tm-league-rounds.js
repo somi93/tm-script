@@ -120,11 +120,13 @@ const processRoundMatchData = (matchId, data) => {
     const awayId = String(data.away.club.id);
     const homeLineupMap = Object.fromEntries(data.home.lineup.map(p => [String(p.id), p]));
     const awayLineupMap = Object.fromEntries(data.away.lineup.map(p => [String(p.id), p]));
-    const emptySquad = { squad: [] };
     Promise.all([
-        s.computeTeamStats(Object.keys(homeLineupMap), homeLineupMap, emptySquad),
-        s.computeTeamStats(Object.keys(awayLineupMap), awayLineupMap, emptySquad),
-    ]).then(([homeResult, awayResult]) => {
+        s.fetchSquad(homeId, data.home.club?.name || ''),
+        s.fetchSquad(awayId, data.away.club?.name || ''),
+    ]).then(([homeSquad, awaySquad]) => Promise.all([
+        s.computeTeamStats(Object.keys(homeLineupMap), homeLineupMap, homeSquad),
+        s.computeTeamStats(Object.keys(awayLineupMap), awayLineupMap, awaySquad),
+    ])).then(([homeResult, awayResult]) => {
         const homeR5 = Number((homeResult.totals.R5 / 11).toFixed(2));
         const awayR5 = Number((awayResult.totals.R5 / 11).toFixed(2));
         roundMatchCache.set(String(matchId), { homeR5, awayR5, data });
@@ -161,12 +163,13 @@ const processMatchData = (matchId, data) => {
     if (!homeStarters.length || !awayStarters.length) {
         console.warn(`[League] match=${matchId} lineup problem — home=${homeLineupArr.length} starters=${homeStarters.length}, away=${awayLineupArr.length} starters=${awayStarters.length}`);
     }
-    // empty squadData stubs — getPlayerDataFromSquad now uses tooltip directly
-    const emptySquad = { squad: [] };
     Promise.all([
-        s.computeTeamStats(Object.keys(homeLineupMap), homeLineupMap, emptySquad),
-        s.computeTeamStats(Object.keys(awayLineupMap), awayLineupMap, emptySquad),
-    ]).then(([homeResult, awayResult]) => {
+        s.fetchSquad(homeId, data.home.club?.name || ''),
+        s.fetchSquad(awayId, data.away.club?.name || ''),
+    ]).then(([homeSquad, awaySquad]) => Promise.all([
+        s.computeTeamStats(Object.keys(homeLineupMap), homeLineupMap, homeSquad),
+        s.computeTeamStats(Object.keys(awayLineupMap), awayLineupMap, awaySquad),
+    ])).then(([homeResult, awayResult]) => {
         if (!s.clubDatas.has(homeId)) s.clubDatas.set(homeId, []);
         if (!s.clubDatas.has(awayId)) s.clubDatas.set(awayId, []);
         s.clubDatas.get(homeId).push(homeResult.totals);
