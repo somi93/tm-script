@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TM Scripts
 // @namespace    https://trophymanager.com
-// @version      2.0.3043
+// @version      2.0.3046
 // @description  TrophyManager enhancement suite
 // @match        https://trophymanager.com/*
 // @grant        none
