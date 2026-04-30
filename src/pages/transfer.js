@@ -140,7 +140,10 @@ export function initTransferPage(main) {
             }
         });
         container.addEventListener('mouseout', e => {
-            if (e.target.closest('tr[data-pid]')) TmPlayerTooltip.hide();
+            const row = e.target.closest('tr[data-pid]');
+            if (!row) return;
+            // only hide when mouse actually leaves the row (not into a child element)
+            if (!row.contains(e.relatedTarget)) TmPlayerTooltip.hide();
         });
     }
 

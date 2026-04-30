@@ -1,5 +1,11 @@
 import { TmNativeFeed } from '../shared/tm-native-feed.js';
 import { TmTable } from '../shared/tm-table.js';
+import { TmButton } from '../shared/tm-button.js';
+import { TmAlert } from '../shared/tm-alert.js';
+import { TmModal } from '../shared/tm-modal.js';
+import { TmInput } from '../shared/tm-input.js';
+import { TmClubModel } from '../../models/club-buddy.js';
+import { TmMessagesModel } from '../../models/messages.js';
 
 const STYLE_ID = 'tmvu-club-overview-style';
 
@@ -444,8 +450,15 @@ function parseOverview(mainColumn, secondaryColumn) {
     const infoBlock = extractInfoBlock(overviewBox);
     const trophies = parseTrophies(trophyBox);
 
+    const clubHref = clubNameLink?.getAttribute('href') || '#';
+    const clubId = window.location.pathname.match(/\/club\/(\d+)/)?.[1] || null;
+
+    const showToolbox = secondaryColumn && Array.from(secondaryColumn.querySelectorAll('.box')).some(b => b.querySelector('.box_head h2')?.textContent.trim().toLowerCase() === 'toolbox');
+
     return {
-        clubHref: clubNameLink?.getAttribute('href') || '#',
+        clubHref,
+        clubId,
+        showToolbox,
         clubName: cleanText(clubNameLink?.textContent || 'Club'),
         statusHtml: topMeta?.querySelector('.large')?.innerHTML || '',
         competitionHtml: competitionLine?.innerHTML || '',
@@ -564,6 +577,178 @@ function mountTrophiesBox(container, data) {
     container.appendChild(section);
 }
 
+function mountToolboxBox(container, data) {
+    if (!data.showToolbox || !data.clubId) return;
+
+    const section = document.createElement('section');
+    section.className = 'tmco-box';
+    section.innerHTML = `
+        <div class="tmco-box-head">
+            <div class="tmco-box-title">Toolbox</div>
+        </div>
+        <div class="tmco-box-body" style="padding: var(--tmu-space-lg);">
+            <div class="tmco-toolbox" style="display: flex; flex-direction: column; gap: var(--tmu-space-sm);">
+                <div id="tmco-msg-btn-wrap"></div>
+                <div id="tmco-buddy-btn-wrap"></div>
+                <div id="tmco-report-btn-wrap"></div>
+            </div>
+        </div>
+    `;
+
+    const svgMessage = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`;
+    const svgReport = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>`;
+    const svgBuddyLoading = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
+    const svgBuddyAdd = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>`;
+    const svgBuddyRemove = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="23" y1="11" x2="17" y2="11"></line></svg>`;
+
+    const btnHtml = (svgContent, text) => `<div style="display: flex; align-items: center; justify-content: center; gap: var(--tmu-space-sm);">
+        ${svgContent}
+        <span>${escapeHtml(text)}</span>
+    </div>`;
+
+    const openComposer = () => {
+        const wrap = document.createElement('div');
+        wrap.style.display = 'flex';
+        wrap.style.flexDirection = 'column';
+        wrap.style.gap = 'var(--tmu-space-md)';
+        wrap.style.padding = '0 var(--tmu-space-lg) var(--tmu-space-lg)';
+
+        const subjectField = TmInput.field({
+            label: 'Subject',
+            input: TmInput.input({
+                size: 'full',
+                density: 'comfy',
+                tone: 'overlay',
+                placeholder: 'Type subject...',
+            })
+        });
+
+        const taField = document.createElement('div');
+        taField.className = 'tmu-field';
+        taField.style.flexDirection = 'column';
+        taField.style.alignItems = 'stretch';
+        
+        const taLabel = document.createElement('span');
+        taLabel.className = 'tmu-field-label';
+        taLabel.textContent = 'Message';
+        taField.appendChild(taLabel);
+
+        const ta = document.createElement('textarea');
+        ta.className = 'tmu-input tmu-input-tone-overlay tmu-input-density-comfy text-sm tmu-input-full';
+        ta.style.resize = 'vertical';
+        ta.style.minHeight = '120px';
+        ta.placeholder = 'Write your message...';
+        taField.appendChild(ta);
+
+        wrap.appendChild(subjectField);
+        wrap.appendChild(taField);
+
+        const actions = document.createElement('div');
+        actions.style.display = 'flex';
+        actions.style.justifyContent = 'flex-end';
+        actions.style.gap = 'var(--tmu-space-sm)';
+        actions.style.marginTop = 'var(--tmu-space-sm)';
+
+        const cancelBtn = TmButton.button({ label: 'Cancel', color: 'secondary' });
+        const sendBtn = TmButton.button({ label: 'Send Message', color: 'primary' });
+        actions.appendChild(cancelBtn);
+        actions.appendChild(sendBtn);
+        wrap.appendChild(actions);
+
+        const modal = TmModal.open({ title: `Send a message to ${data.clubName}`, contentEl: wrap, maxWidth: '500px' });
+
+        cancelBtn.addEventListener('click', () => modal.destroy());
+
+        sendBtn.addEventListener('click', async () => {
+            const subject = subjectField.querySelector('input').value.trim() || '(No subject)';
+            const message = ta.value.trim();
+            if (!message) {
+                ta.focus();
+                return;
+            }
+
+            const origHtml = sendBtn.innerHTML;
+            sendBtn.innerHTML = 'Sending...';
+            sendBtn.style.opacity = '0.7';
+            sendBtn.style.pointerEvents = 'none';
+
+            try {
+                await TmMessagesModel.sendPmMessage({
+                    recipient: data.clubId,
+                    subject,
+                    message,
+                    clubId: window.SESSION?.id || '',
+                });
+                TmAlert.show({ message: 'Message sent successfully!', tone: 'success' });
+                modal.destroy();
+            } catch (e) {
+                TmAlert.show({ message: 'Failed to send message', tone: 'error' });
+                sendBtn.innerHTML = origHtml;
+                sendBtn.style.opacity = '';
+                sendBtn.style.pointerEvents = '';
+            }
+        });
+    };
+
+    const msgBtn = TmButton.button({ slot: btnHtml(svgMessage, 'Send a message'), variant: 'secondary', block: true });
+    msgBtn.addEventListener('click', openComposer);
+
+    section.querySelector('#tmco-msg-btn-wrap').appendChild(msgBtn);
+
+    section.querySelector('#tmco-report-btn-wrap').appendChild(
+        TmButton.button({ slot: btnHtml(svgReport, 'Report club'), variant: 'danger', block: true, attrs: { onclick: `pop_report_club(${data.clubId}); return false;` } })
+    );
+
+    const buddyWrap = section.querySelector('#tmco-buddy-btn-wrap');
+    
+    // Initial skeleton/loader button
+    let currentBuddyBtn = TmButton.button({ slot: btnHtml(svgBuddyLoading, 'Loading...'), variant: 'secondary', block: true, attrs: { disabled: 'disabled' }, cls: 'tmco-buddy-btn-loading' });
+    currentBuddyBtn.style.opacity = '0.5';
+    currentBuddyBtn.style.pointerEvents = 'none';
+    buddyWrap.appendChild(currentBuddyBtn);
+
+    TmClubModel.fetchBuddies().then(response => {
+        const buddies = response?.list || [];
+        let isBuddy = buddies.some(b => String(b.buddy_id) === String(data.clubId));
+
+        const renderBuddyState = () => {
+            buddyWrap.innerHTML = '';
+            currentBuddyBtn = TmButton.button({ slot: btnHtml(isBuddy ? svgBuddyRemove : svgBuddyAdd, isBuddy ? 'Remove buddy' : 'Add to buddies'), variant: 'secondary', block: true });
+            
+            currentBuddyBtn.addEventListener('click', async () => {
+                const isCurrentlyBuddy = isBuddy;
+                currentBuddyBtn.innerHTML = btnHtml(svgBuddyLoading, isCurrentlyBuddy ? 'Removing...' : 'Adding...');
+                currentBuddyBtn.style.opacity = '0.7';
+                currentBuddyBtn.style.pointerEvents = 'none';
+
+                try {
+                    if (isCurrentlyBuddy) {
+                        await TmClubModel.removeBuddy(data.clubId);
+                        TmAlert.show({ message: 'Buddy removed successfully!', tone: 'success' });
+                    } else {
+                        await TmClubModel.addBuddy(data.clubId);
+                        TmAlert.show({ message: 'Added to buddies successfully!', tone: 'success' });
+                    }
+                    isBuddy = !isCurrentlyBuddy;
+                } catch (e) {
+                    TmAlert.show({ message: 'Action failed', tone: 'error' });
+                } finally {
+                    renderBuddyState();
+                }
+            });
+
+            buddyWrap.appendChild(currentBuddyBtn);
+        };
+
+        renderBuddyState();
+    }).catch(e => {
+        buddyWrap.innerHTML = '';
+        buddyWrap.appendChild(TmButton.button({ slot: btnHtml(svgBuddyLoading, 'Add to buddies (Error)'), variant: 'secondary', block: true, attrs: { disabled: 'disabled' } }));
+    });
+
+    container.appendChild(section);
+}
+
 export const TmClubOverview = {
     mount({ mainColumn, secondaryColumn }) {
         if (!mainColumn) return;
@@ -588,6 +773,7 @@ export const TmClubOverview = {
         if (secondaryColumn) {
             secondaryColumn.classList.add('tmco-side');
             secondaryColumn.innerHTML = '';
+            mountToolboxBox(secondaryColumn, data);
             mountTrophiesBox(secondaryColumn, data.trophies);
         }
     },

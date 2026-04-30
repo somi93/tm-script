@@ -3937,6 +3937,12 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         conversation_id: conversationId
       });
     },
+    async setPmMessageStatus({ status, messageId } = {}) {
+      return _post("/ajax/pm_set_message_status.ajax.php", {
+        status,
+        message_id: messageId
+      });
+    },
     async sendPmMessage({ recipient, subject, message, conversationId = "0", clubId: clubId2 = "" } = {}) {
       return _post("/ajax/pm_send_message.ajax.php", {
         recipient,
@@ -3970,6 +3976,9 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     },
     fetchPmMessageText(id, conversationId) {
       return TmMessagesService.fetchPmMessageText(id, conversationId);
+    },
+    setPmMessageStatus({ status, messageId }) {
+      return TmMessagesService.setPmMessageStatus({ status, messageId });
     },
     sendPmMessage(opts) {
       return TmMessagesService.sendPmMessage(opts);
@@ -5033,7 +5042,8 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       const item = {
         id: cleanText(button.getAttribute("data-pm-id")),
         conversationId: cleanText(button.getAttribute("data-pm-conversation-id")) || "0",
-        subject: ((_a3 = button.querySelector(".tmvu-pm-dialog-row-subject")) == null ? void 0 : _a3.textContent) || ""
+        subject: ((_a3 = button.querySelector(".tmvu-pm-dialog-row-subject")) == null ? void 0 : _a3.textContent) || "",
+        unread: button.classList.contains("is-unread")
       };
       loadPmDialogDetail(pmState, item);
     });
@@ -5051,13 +5061,30 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     return dialog;
   }
   async function loadPmDialogDetail(pmState, item) {
-    var _a2;
+    var _a2, _b;
     const dialog = ensurePmDialog(pmState);
     if (!dialog || !(item == null ? void 0 : item.id)) return;
     dialog.selectedItem = item;
     highlightPmDialogSelection(pmState, item);
     setPmDialogTitle(pmState, item.subject || "Conversation");
     setPmDialogDetailHtml(pmState, TmUI.loading("Loading conversation..."));
+    if (item.unread) {
+      item.unread = false;
+      ["inbox", "trash"].forEach((place) => {
+        const list = dialog.listCache.get(place) || [];
+        list.forEach((entry) => {
+          if (entry.id === item.id) entry.unread = false;
+        });
+      });
+      if (dialog.activePlace && dialog.listCache.has(dialog.activePlace)) {
+        setPmDialogListHtml(pmState, renderPmDialogListItems(dialog.listCache.get(dialog.activePlace)));
+        highlightPmDialogSelection(pmState, item);
+      }
+      const newCount = Math.max(0, pmState.count - 1);
+      (_a2 = pmState.setPmCount) == null ? void 0 : _a2.call(pmState, newCount);
+      TmMessagesModel.setPmMessageStatus({ status: "read", messageId: item.id }).catch(() => {
+      });
+    }
     const cacheKey = getPmThreadCacheKey(item);
     if (dialog.detailCache.has(cacheKey)) {
       const cached = dialog.detailCache.get(cacheKey);
@@ -5077,7 +5104,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     dialog.detailCache.set(cacheKey, thread);
     dialog.replyMeta = getPmReplyMeta(thread, item, pmState.clubId || "");
     syncPmMainHost(dialog, item, thread);
-    setPmDialogTitle(pmState, ((_a2 = thread[0]) == null ? void 0 : _a2.subject) || item.subject || "Conversation");
+    setPmDialogTitle(pmState, ((_b = thread[0]) == null ? void 0 : _b.subject) || item.subject || "Conversation");
     setPmDialogDetailHtml(pmState, renderPmThreadPanelHtml(thread, pmState.clubId || "", dialog.replyMeta));
   }
   async function loadPmDialogFolder(pmState, place = "inbox", selected = null) {
@@ -5319,9 +5346,17 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     const setPmCount = (count) => {
       const safeCount = Math.max(0, Number(count) || 0);
       pmState.count = safeCount;
-      if (pmState.pmCountEl) pmState.pmCountEl.textContent = String(safeCount);
+      if (pmState.pmCountEl) pmState.pmCountEl.textContent = safeCount > 8 ? "9+" : String(safeCount);
       if (pmState.pmSummaryEl) pmState.pmSummaryEl.textContent = `${safeCount} new`;
+      if (pmState.pmRootEl) pmState.pmRootEl.classList.toggle("new", safeCount > 0);
+      const tabNotification = document.querySelector("#tabprivate_messages_main div .tab_notification");
+      if (tabNotification) {
+        tabNotification.textContent = String(safeCount);
+        tabNotification.style.display = safeCount > 0 ? "" : "none";
+      }
+      if (window.SESSION) window.SESSION.new_pm = safeCount;
     };
+    pmState.setPmCount = setPmCount;
     const setFeedCount = (count) => {
       const safeCount = Math.max(0, Number(count) || 0);
       feedState.count = safeCount;
@@ -11212,6 +11247,21 @@ order:initial
 
   // src/services/club.js
   var TmClubService = {
+    fetchBuddies() {
+      return _post("/ajax/buddy_list2.ajax.php", { type: "list" }).then((res) => {
+        try {
+          return typeof res === "string" ? JSON.parse(res) : res;
+        } catch (e) {
+          return { list: [] };
+        }
+      });
+    },
+    addBuddy(clubId2) {
+      return _post("/ajax/buddy_act.ajax.php", { type: "add", buddy_id: clubId2 });
+    },
+    removeBuddy(clubId2) {
+      return _post("/ajax/buddy_act.ajax.php", { type: "remove", buddy_id: clubId2 });
+    },
     /**
      * Fetch club fixtures (all matches for a given club this season).
      * @param {string|number} clubId
@@ -23584,6 +23634,19 @@ order:initial
     mountStandaloneFeed
   };
 
+  // src/models/club-buddy.js
+  var TmClubModel2 = {
+    fetchBuddies() {
+      return TmClubService.fetchBuddies();
+    },
+    addBuddy(clubId2) {
+      return TmClubService.addBuddy(clubId2);
+    },
+    removeBuddy(clubId2) {
+      return TmClubService.removeBuddy(clubId2);
+    }
+  };
+
   // src/components/club/tm-club-overview.js
   var STYLE_ID41 = "tmvu-club-overview-style";
   function injectStyles29() {
@@ -23996,7 +24059,7 @@ order:initial
     };
   }
   function parseOverview3(mainColumn5, secondaryColumn) {
-    var _a2, _b, _c;
+    var _a2, _b, _c, _d;
     const boxes = Array.from(mainColumn5.querySelectorAll(":scope > .box"));
     const overviewBox = boxes.find((box) => !box.querySelector("#feed")) || boxes[0] || null;
     const feedRoot = mainColumn5.querySelector("#feed") || null;
@@ -24010,10 +24073,18 @@ order:initial
     const players = parsePlayers(overviewBox == null ? void 0 : overviewBox.querySelector("table.zebra"));
     const infoBlock = extractInfoBlock(overviewBox);
     const trophies = parseTrophies(trophyBox);
+    const clubHref = (clubNameLink == null ? void 0 : clubNameLink.getAttribute("href")) || "#";
+    const clubId2 = ((_c = window.location.pathname.match(/\/club\/(\d+)/)) == null ? void 0 : _c[1]) || null;
+    const showToolbox = secondaryColumn && Array.from(secondaryColumn.querySelectorAll(".box")).some((b) => {
+      var _a3;
+      return ((_a3 = b.querySelector(".box_head h2")) == null ? void 0 : _a3.textContent.trim().toLowerCase()) === "toolbox";
+    });
     return {
-      clubHref: (clubNameLink == null ? void 0 : clubNameLink.getAttribute("href")) || "#",
+      clubHref,
+      clubId: clubId2,
+      showToolbox,
       clubName: cleanText15((clubNameLink == null ? void 0 : clubNameLink.textContent) || "Club"),
-      statusHtml: ((_c = topMeta == null ? void 0 : topMeta.querySelector(".large")) == null ? void 0 : _c.innerHTML) || "",
+      statusHtml: ((_d = topMeta == null ? void 0 : topMeta.querySelector(".large")) == null ? void 0 : _d.innerHTML) || "",
       competitionHtml: (competitionLine == null ? void 0 : competitionLine.innerHTML) || "",
       changeClubHref,
       founded,
@@ -24119,6 +24190,149 @@ order:initial
     };
     container.appendChild(section);
   }
+  function mountToolboxBox(container, data) {
+    if (!data.showToolbox || !data.clubId) return;
+    const section = document.createElement("section");
+    section.className = "tmco-box";
+    section.innerHTML = `
+        <div class="tmco-box-head">
+            <div class="tmco-box-title">Toolbox</div>
+        </div>
+        <div class="tmco-box-body" style="padding: var(--tmu-space-lg);">
+            <div class="tmco-toolbox" style="display: flex; flex-direction: column; gap: var(--tmu-space-sm);">
+                <div id="tmco-msg-btn-wrap"></div>
+                <div id="tmco-buddy-btn-wrap"></div>
+                <div id="tmco-report-btn-wrap"></div>
+            </div>
+        </div>
+    `;
+    const svgMessage = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`;
+    const svgReport = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>`;
+    const svgBuddyLoading = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
+    const svgBuddyAdd = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>`;
+    const svgBuddyRemove = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="23" y1="11" x2="17" y2="11"></line></svg>`;
+    const btnHtml2 = (svgContent, text) => `<div style="display: flex; align-items: center; justify-content: center; gap: var(--tmu-space-sm);">
+        ${svgContent}
+        <span>${escapeHtml20(text)}</span>
+    </div>`;
+    const openComposer = () => {
+      const wrap = document.createElement("div");
+      wrap.style.display = "flex";
+      wrap.style.flexDirection = "column";
+      wrap.style.gap = "var(--tmu-space-md)";
+      wrap.style.padding = "0 var(--tmu-space-lg) var(--tmu-space-lg)";
+      const subjectField = TmInput.field({
+        label: "Subject",
+        input: TmInput.input({
+          size: "full",
+          density: "comfy",
+          tone: "overlay",
+          placeholder: "Type subject..."
+        })
+      });
+      const taField = document.createElement("div");
+      taField.className = "tmu-field";
+      taField.style.flexDirection = "column";
+      taField.style.alignItems = "stretch";
+      const taLabel = document.createElement("span");
+      taLabel.className = "tmu-field-label";
+      taLabel.textContent = "Message";
+      taField.appendChild(taLabel);
+      const ta = document.createElement("textarea");
+      ta.className = "tmu-input tmu-input-tone-overlay tmu-input-density-comfy text-sm tmu-input-full";
+      ta.style.resize = "vertical";
+      ta.style.minHeight = "120px";
+      ta.placeholder = "Write your message...";
+      taField.appendChild(ta);
+      wrap.appendChild(subjectField);
+      wrap.appendChild(taField);
+      const actions = document.createElement("div");
+      actions.style.display = "flex";
+      actions.style.justifyContent = "flex-end";
+      actions.style.gap = "var(--tmu-space-sm)";
+      actions.style.marginTop = "var(--tmu-space-sm)";
+      const cancelBtn = TmButton.button({ label: "Cancel", color: "secondary" });
+      const sendBtn = TmButton.button({ label: "Send Message", color: "primary" });
+      actions.appendChild(cancelBtn);
+      actions.appendChild(sendBtn);
+      wrap.appendChild(actions);
+      const modal = TmModal.open({ title: `Send a message to ${data.clubName}`, contentEl: wrap, maxWidth: "500px" });
+      cancelBtn.addEventListener("click", () => modal.destroy());
+      sendBtn.addEventListener("click", async () => {
+        var _a2;
+        const subject = subjectField.querySelector("input").value.trim() || "(No subject)";
+        const message = ta.value.trim();
+        if (!message) {
+          ta.focus();
+          return;
+        }
+        const origHtml = sendBtn.innerHTML;
+        sendBtn.innerHTML = "Sending...";
+        sendBtn.style.opacity = "0.7";
+        sendBtn.style.pointerEvents = "none";
+        try {
+          await TmMessagesModel.sendPmMessage({
+            recipient: data.clubId,
+            subject,
+            message,
+            clubId: ((_a2 = window.SESSION) == null ? void 0 : _a2.id) || ""
+          });
+          TmAlert.show({ message: "Message sent successfully!", tone: "success" });
+          modal.destroy();
+        } catch (e) {
+          TmAlert.show({ message: "Failed to send message", tone: "error" });
+          sendBtn.innerHTML = origHtml;
+          sendBtn.style.opacity = "";
+          sendBtn.style.pointerEvents = "";
+        }
+      });
+    };
+    const msgBtn = TmButton.button({ slot: btnHtml2(svgMessage, "Send a message"), variant: "secondary", block: true });
+    msgBtn.addEventListener("click", openComposer);
+    section.querySelector("#tmco-msg-btn-wrap").appendChild(msgBtn);
+    section.querySelector("#tmco-report-btn-wrap").appendChild(
+      TmButton.button({ slot: btnHtml2(svgReport, "Report club"), variant: "danger", block: true, attrs: { onclick: `pop_report_club(${data.clubId}); return false;` } })
+    );
+    const buddyWrap = section.querySelector("#tmco-buddy-btn-wrap");
+    let currentBuddyBtn = TmButton.button({ slot: btnHtml2(svgBuddyLoading, "Loading..."), variant: "secondary", block: true, attrs: { disabled: "disabled" }, cls: "tmco-buddy-btn-loading" });
+    currentBuddyBtn.style.opacity = "0.5";
+    currentBuddyBtn.style.pointerEvents = "none";
+    buddyWrap.appendChild(currentBuddyBtn);
+    TmClubModel2.fetchBuddies().then((response) => {
+      const buddies = (response == null ? void 0 : response.list) || [];
+      let isBuddy = buddies.some((b) => String(b.buddy_id) === String(data.clubId));
+      const renderBuddyState = () => {
+        buddyWrap.innerHTML = "";
+        currentBuddyBtn = TmButton.button({ slot: btnHtml2(isBuddy ? svgBuddyRemove : svgBuddyAdd, isBuddy ? "Remove buddy" : "Add to buddies"), variant: "secondary", block: true });
+        currentBuddyBtn.addEventListener("click", async () => {
+          const isCurrentlyBuddy = isBuddy;
+          currentBuddyBtn.innerHTML = btnHtml2(svgBuddyLoading, isCurrentlyBuddy ? "Removing..." : "Adding...");
+          currentBuddyBtn.style.opacity = "0.7";
+          currentBuddyBtn.style.pointerEvents = "none";
+          try {
+            if (isCurrentlyBuddy) {
+              await TmClubModel2.removeBuddy(data.clubId);
+              TmAlert.show({ message: "Buddy removed successfully!", tone: "success" });
+            } else {
+              await TmClubModel2.addBuddy(data.clubId);
+              TmAlert.show({ message: "Added to buddies successfully!", tone: "success" });
+            }
+            isBuddy = !isCurrentlyBuddy;
+          } catch (e) {
+            TmAlert.show({ message: "Action failed", tone: "error" });
+          } finally {
+            renderBuddyState();
+          }
+        });
+        buddyWrap.appendChild(currentBuddyBtn);
+      };
+      renderBuddyState();
+    }).catch((e) => {
+      buddyWrap.innerHTML = "";
+      buddyWrap.appendChild(TmButton.button({ slot: btnHtml2(svgBuddyLoading, "Add to buddies (Error)"), variant: "secondary", block: true, attrs: { disabled: "disabled" } }));
+    });
+    container.appendChild(section);
+  }
   var TmClubOverview = {
     mount({ mainColumn: mainColumn5, secondaryColumn }) {
       if (!mainColumn5) return;
@@ -24139,6 +24353,7 @@ order:initial
       if (secondaryColumn) {
         secondaryColumn.classList.add("tmco-side");
         secondaryColumn.innerHTML = "";
+        mountToolboxBox(secondaryColumn, data);
         mountTrophiesBox(secondaryColumn, data.trophies);
       }
     }
@@ -26975,7 +27190,9 @@ order:initial
         }
       });
       container.addEventListener("mouseout", (e) => {
-        if (e.target.closest("tr[data-pid]")) TmPlayerTooltip.hide();
+        const row = e.target.closest("tr[data-pid]");
+        if (!row) return;
+        if (!row.contains(e.relatedTarget)) TmPlayerTooltip.hide();
       });
     }
     function updateTooltipCells(p) {

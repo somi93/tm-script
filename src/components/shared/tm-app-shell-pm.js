@@ -1155,6 +1155,7 @@ function ensurePmDialog(pmState) {
             id: cleanText(button.getAttribute('data-pm-id')),
             conversationId: cleanText(button.getAttribute('data-pm-conversation-id')) || '0',
             subject: button.querySelector('.tmvu-pm-dialog-row-subject')?.textContent || '',
+            unread: button.classList.contains('is-unread'),
         };
         loadPmDialogDetail(pmState, item);
     });
@@ -1182,6 +1183,30 @@ async function loadPmDialogDetail(pmState, item) {
     highlightPmDialogSelection(pmState, item);
     setPmDialogTitle(pmState, item.subject || 'Conversation');
     setPmDialogDetailHtml(pmState, TmUI.loading('Loading conversation...'));
+
+    if (item.unread) {
+        item.unread = false;
+        
+        // Optimistically update caches
+        ['inbox', 'trash'].forEach(place => {
+            const list = dialog.listCache.get(place) || [];
+            list.forEach(entry => {
+                if (entry.id === item.id) entry.unread = false;
+            });
+        });
+        
+        // Re-render list if we're looking at it
+        if (dialog.activePlace && dialog.listCache.has(dialog.activePlace)) {
+            setPmDialogListHtml(pmState, renderPmDialogListItems(dialog.listCache.get(dialog.activePlace)));
+            highlightPmDialogSelection(pmState, item);
+        }
+        
+        // Update top bar UNREAD count
+        const newCount = Math.max(0, pmState.count - 1);
+        pmState.setPmCount?.(newCount);
+
+        TmMessagesModel.setPmMessageStatus({ status: 'read', messageId: item.id }).catch(() => {});
+    }
 
     const cacheKey = getPmThreadCacheKey(item);
     if (dialog.detailCache.has(cacheKey)) {
@@ -1478,9 +1503,19 @@ export function createAppShellPmController({ clubId = '', initialCount = 0, init
     const setPmCount = (count) => {
         const safeCount = Math.max(0, Number(count) || 0);
         pmState.count = safeCount;
-        if (pmState.pmCountEl) pmState.pmCountEl.textContent = String(safeCount);
+        if (pmState.pmCountEl) pmState.pmCountEl.textContent = safeCount > 8 ? '9+' : String(safeCount);
         if (pmState.pmSummaryEl) pmState.pmSummaryEl.textContent = `${safeCount} new`;
+        if (pmState.pmRootEl) pmState.pmRootEl.classList.toggle('new', safeCount > 0);
+        
+        const tabNotification = document.querySelector('#tabprivate_messages_main div .tab_notification');
+        if (tabNotification) {
+            tabNotification.textContent = String(safeCount);
+            tabNotification.style.display = safeCount > 0 ? '' : 'none';
+        }
+        
+        if (window.SESSION) window.SESSION.new_pm = safeCount;
     };
+    pmState.setPmCount = setPmCount;
 
     const setFeedCount = (count) => {
         const safeCount = Math.max(0, Number(count) || 0);

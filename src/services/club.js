@@ -2,6 +2,19 @@ import { _post, _getHtml, _dedup } from './engine.js';
 
 export const TmClubService = {
 
+    fetchBuddies() {
+        return _post('/ajax/buddy_list2.ajax.php', { type: 'list' }).then(res => {
+            try { return typeof res === 'string' ? JSON.parse(res) : res; } catch { return { list: [] }; }
+        });
+    },
+
+    addBuddy(clubId) {
+        return _post('/ajax/buddy_act.ajax.php', { type: 'add', buddy_id: clubId });
+    },
+
+    removeBuddy(clubId) {
+        return _post('/ajax/buddy_act.ajax.php', { type: 'remove', buddy_id: clubId });
+    },
 
     /**
      * Fetch club fixtures (all matches for a given club this season).

@@ -60,6 +60,13 @@ export const TmMessagesService = {
         });
     },
 
+    async setPmMessageStatus({ status, messageId } = {}) {
+        return _post('/ajax/pm_set_message_status.ajax.php', {
+            status,
+            message_id: messageId,
+        });
+    },
+
     async sendPmMessage({ recipient, subject, message, conversationId = '0', clubId = '' } = {}) {
         return _post('/ajax/pm_send_message.ajax.php', {
             recipient,

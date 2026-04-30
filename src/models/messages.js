@@ -29,6 +29,10 @@ export const TmMessagesModel = {
         return TmMessagesService.fetchPmMessageText(id, conversationId);
     },
 
+    setPmMessageStatus({ status, messageId }) {
+        return TmMessagesService.setPmMessageStatus({ status, messageId });
+    },
+
     sendPmMessage(opts) {
         return TmMessagesService.sendPmMessage(opts);
     },
