@@ -14,10 +14,16 @@ import { runSyncPipeline } from '../workflows/player-history/sync-pipeline.js';
 import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
 
 export function initPlayerPage(main) {
-    if (!main || !main.isConnected) return;
+    if (!main || !main.isConnected) {
+        console.warn('[TMU Player] initPlayerPage aborted: "main" container is missing or disconnected.');
+        return;
+    }
 
     const urlMatch = location.pathname.match(/\/players\/(\d+)/);
-    if (!urlMatch) return;
+    if (!urlMatch) {
+        console.warn('[TMU Player] initPlayerPage aborted: URL does not contain an ID.', location.pathname);
+        return;
+    }
     const PLAYER_ID = urlMatch[1];
     let nativeSidebarSnapshot = null;
 
@@ -55,7 +61,14 @@ export function initPlayerPage(main) {
     const ensurePlayerLayout = () => {
         const main = document.querySelector('.tmvu-main');
         const tmMain = document.querySelector('.main_center');
-        if (!main || !tmMain) return null;
+        if (!main) {
+            console.error('[TMU Debug] ensurePlayerLayout failed: .tmvu-main is missing!');
+            return null;
+        }
+        if (!tmMain) {
+            console.error('[TMU Debug] ensurePlayerLayout failed: .main_center is missing! TM is too slow or replaced the DOM.');
+            return null;
+        }
 
         main.classList.add('tmvu-player-page');
 

@@ -574,13 +574,19 @@ function injectStyles() {
 
 function initCurrentPage() {
     const main = document.querySelector('.tmvu-main');
-    if (!main) return;
-
-    const currentPath = normalizeHref(window.location.pathname) || '/home/';
-    if (/^\/bids\/?$/i.test(currentPath)) {
-        initBidsPage(main);
+    if (!main) {
+        console.error('[TMU Router] Fatal: Cannot find .tmvu-main container!');
         return;
     }
+
+    const currentPath = normalizeHref(window.location.pathname) || '/home/';
+    console.log('[TMU Router] Matching path:', currentPath);
+    
+    try {
+        if (/^\/bids\/?$/i.test(currentPath)) {
+            initBidsPage(main);
+            return;
+        }
     if (/^\/quickmatch(?:\/(?:complete-standings(?:\/[^/]+)?|latest-matches))?\/?$/i.test(currentPath)) {
         initQuickmatchPage(main);
         return;
@@ -732,6 +738,11 @@ function initCurrentPage() {
     }
     if (/^\/players\/\d+/i.test(currentPath)) {
         initPlayerPage(main);
+        return;
+    }
+    console.warn('[TMU Router] No page matched for path:', currentPath);
+    } catch (err) {
+        console.error('[TMU Router] CRITICAL ERROR while initializing page:', err);
     }
 }
 

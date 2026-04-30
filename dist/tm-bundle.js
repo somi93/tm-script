@@ -48559,9 +48559,15 @@ order:initial
 
   // src/pages/player.js
   function initPlayerPage(main2) {
-    if (!main2 || !main2.isConnected) return;
+    if (!main2 || !main2.isConnected) {
+      console.warn('[TMU Player] initPlayerPage aborted: "main" container is missing or disconnected.');
+      return;
+    }
     const urlMatch = location.pathname.match(/\/players\/(\d+)/);
-    if (!urlMatch) return;
+    if (!urlMatch) {
+      console.warn("[TMU Player] initPlayerPage aborted: URL does not contain an ID.", location.pathname);
+      return;
+    }
     const PLAYER_ID = urlMatch[1];
     let nativeSidebarSnapshot = null;
     let player2 = null;
@@ -48586,7 +48592,14 @@ order:initial
     const ensurePlayerLayout = () => {
       const main3 = document.querySelector(".tmvu-main");
       const tmMain = document.querySelector(".main_center");
-      if (!main3 || !tmMain) return null;
+      if (!main3) {
+        console.error("[TMU Debug] ensurePlayerLayout failed: .tmvu-main is missing!");
+        return null;
+      }
+      if (!tmMain) {
+        console.error("[TMU Debug] ensurePlayerLayout failed: .main_center is missing! TM is too slow or replaced the DOM.");
+        return null;
+      }
       main3.classList.add("tmvu-player-page");
       let layout = main3.querySelector(":scope > #tmvp-layout");
       if (layout) {
@@ -52112,163 +52125,173 @@ order:initial
   }
   function initCurrentPage() {
     const main2 = document.querySelector(".tmvu-main");
-    if (!main2) return;
+    if (!main2) {
+      console.error("[TMU Router] Fatal: Cannot find .tmvu-main container!");
+      return;
+    }
     const currentPath = normalizeHref(window.location.pathname) || "/home/";
-    if (/^\/bids\/?$/i.test(currentPath)) {
-      initBidsPage(main2);
-      return;
-    }
-    if (/^\/quickmatch(?:\/(?:complete-standings(?:\/[^/]+)?|latest-matches))?\/?$/i.test(currentPath)) {
-      initQuickmatchPage(main2);
-      return;
-    }
-    if (/^\/finances\/maintenance\/?$/i.test(currentPath)) {
-      initFinancesMaintenancePage(main2);
-      return;
-    }
-    if (/^\/finances\/wages\/?$/i.test(currentPath)) {
-      initFinancesWagesPage(main2);
-      return;
-    }
-    if (/^\/finances\/?$/i.test(currentPath)) {
-      initFinancesPage(main2);
-      return;
-    }
-    if (/^(?:\/friendly-league(?:\/\d+)?|\/fixtures\/friendly-league\/\d+|\/statistics\/friendly-league\/\d+(?:\/[^/]+)?|\/history\/friendly-league\/(?:standings|matches)(?:\/.+)?)\/?$/i.test(currentPath)) {
-      initFriendlyLeaguePage(main2);
-      return;
-    }
-    if (/^\/sponsors\/?$/i.test(currentPath)) {
-      initSponsorsPage(main2);
-      return;
-    }
-    if (/^\/scouts\/?$/i.test(currentPath)) {
-      initScoutsPage(main2);
-      return;
-    }
-    if (/^\/scouts\/hire\/?$/i.test(currentPath)) {
-      initScoutsHirePage(main2);
-      return;
-    }
-    if (/^\/training\/?$/i.test(currentPath)) {
-      initTrainingPage(main2);
-      return;
-    }
-    if (/^\/tactics(?:\/reserves)?\/?$/i.test(currentPath)) {
-      initTacticsPage(main2);
-      return;
-    }
-    if (/^\/youth-development(?:\/.*)?$/i.test(currentPath)) {
-      initYouthDevelopmentPage(main2);
-    }
-    if (/^\/club\/\d+\/squad\/?$/i.test(currentPath)) {
-      initSquadPage(main2);
-      return;
-    }
-    if (/^\/shortlist\/?$/i.test(currentPath)) {
-      initShortlistPage(main2);
-    }
-    if (/^\/history\/club\//i.test(currentPath)) {
-      initHistoryPage(main2);
-    }
-    if (/^\/club(?:\/\d+(?:\/(?:overview\/)?)?)?\/?$/i.test(currentPath)) {
-      initClubPage(main2);
-    }
-    if (/^\/fixtures\/club\/\d+\/?$/i.test(currentPath)) {
-      initFixturesPage(main2);
-    }
-    if (/^\/fixtures\/national-teams\/[a-z]{2,3}\/?$/i.test(currentPath)) {
-      initNationalTeamsFixturesPage(main2);
-    }
-    if (/^\/history\/national-teams\/[a-z]{2,3}\/?$/i.test(currentPath)) {
-      initNationalTeamsHistoryPage(main2);
-    }
-    if (/^\/statistics\/club\/\d+\/?$/i.test(currentPath)) {
-      initStatsPage(main2);
-    }
-    if (/^\/statistics\/national-teams\/[a-z]{2,3}(?:\/players\/[^/]+)?\/?$/i.test(currentPath)) {
-      initNationalTeamsStatisticsPage(main2);
-    }
-    if (/^\/transfer\/?$/i.test(currentPath)) {
-      initTransferPage(main2);
-    }
-    if (/^\/league\//.test(currentPath)) {
-      initLeaguePage(main2);
-    }
-    if (/^\/matches\/(?:nt\/)?\d+/.test(currentPath)) {
-      initMatchPage(main2);
-    }
-    if (/^\/fixtures\/cup\/[a-z]{2,3}\/\d+\/?$/i.test(currentPath)) {
-      initCupFixturesPage(main2);
-    }
-    if (/^\/cup\/?$/i.test(currentPath)) {
-      initCupPage(main2);
-    }
-    if (/^\/home\/?$/i.test(currentPath)) {
-      initHomePage(main2);
-    }
-    if (/^\/international-cup(?:\/\d+)?\/?$/i.test(currentPath)) {
-      initInternationalCupPage(main2);
-    }
-    if (/^\/forum\//i.test(currentPath)) {
-      initForumPage(main2);
-    }
-    if (/^\/import\/?$/i.test(currentPath)) {
-      initImportPage(main2);
-    }
-    if (/^\/teamsters\//i.test(currentPath)) {
-      initTeamstersPage(main2);
-    }
-    if (/^\/about-tm\//i.test(currentPath)) {
-      initAboutTmPage(main2);
-    }
-    if (/^\/about-pro\/?$/i.test(currentPath)) {
-      initAboutProPage(main2);
-    }
-    if (/^\/buy-pro\/?$/i.test(currentPath)) {
-      initBuyProPage(main2);
-    }
-    if (/^\/free-pro\/?$/i.test(currentPath)) {
-      initFreeProPage(main2);
-    }
-    if (/^\/donations(\/legendary)?\/?$/i.test(currentPath)) {
-      initDonationsPage(main2);
-    }
-    if (/^\/user-guide\//i.test(currentPath)) {
-      initUserGuidePage(main2);
-    }
-    if (/^\/international-cup\/coefficients/i.test(currentPath)) {
-      initInternationalCupCoefficientsPage(main2);
-    }
-    if (/^\/statistics\/international-cup\//i.test(currentPath)) {
-      initInternationalCupStatisticsPage(main2);
-    }
-    if (/^\/national-teams\/rankings\//i.test(currentPath)) {
-      initNationalTeamsRankingsPage(main2);
-    }
-    if (/^\/national-teams\/election\/?$/i.test(currentPath)) {
-      initNationalTeamsElectionPage(main2);
-    }
-    if (/^\/national-teams\/region\//i.test(currentPath)) {
-      initNationalTeamsRegionPage(main2);
-    }
-    if (/^\/national-teams\/[a-z]{2,3}\/squad\/?$/i.test(currentPath)) {
-      initNationalTeamsSquadPage(main2);
-      return;
-    }
-    if (/^\/national-teams\//i.test(currentPath)) {
-      initNationalTeamsPage(main2);
-    }
-    if (/^\/support-pro\/?$/i.test(currentPath)) {
-      initSupportProPage(main2);
-    }
-    if (/^\/players\/?$/i.test(currentPath)) {
-      initPlayersPage(main2);
-      initR5HistoryPage();
-      return;
-    }
-    if (/^\/players\/\d+/i.test(currentPath)) {
-      initPlayerPage(main2);
+    console.log("[TMU Router] Matching path:", currentPath);
+    try {
+      if (/^\/bids\/?$/i.test(currentPath)) {
+        initBidsPage(main2);
+        return;
+      }
+      if (/^\/quickmatch(?:\/(?:complete-standings(?:\/[^/]+)?|latest-matches))?\/?$/i.test(currentPath)) {
+        initQuickmatchPage(main2);
+        return;
+      }
+      if (/^\/finances\/maintenance\/?$/i.test(currentPath)) {
+        initFinancesMaintenancePage(main2);
+        return;
+      }
+      if (/^\/finances\/wages\/?$/i.test(currentPath)) {
+        initFinancesWagesPage(main2);
+        return;
+      }
+      if (/^\/finances\/?$/i.test(currentPath)) {
+        initFinancesPage(main2);
+        return;
+      }
+      if (/^(?:\/friendly-league(?:\/\d+)?|\/fixtures\/friendly-league\/\d+|\/statistics\/friendly-league\/\d+(?:\/[^/]+)?|\/history\/friendly-league\/(?:standings|matches)(?:\/.+)?)\/?$/i.test(currentPath)) {
+        initFriendlyLeaguePage(main2);
+        return;
+      }
+      if (/^\/sponsors\/?$/i.test(currentPath)) {
+        initSponsorsPage(main2);
+        return;
+      }
+      if (/^\/scouts\/?$/i.test(currentPath)) {
+        initScoutsPage(main2);
+        return;
+      }
+      if (/^\/scouts\/hire\/?$/i.test(currentPath)) {
+        initScoutsHirePage(main2);
+        return;
+      }
+      if (/^\/training\/?$/i.test(currentPath)) {
+        initTrainingPage(main2);
+        return;
+      }
+      if (/^\/tactics(?:\/reserves)?\/?$/i.test(currentPath)) {
+        initTacticsPage(main2);
+        return;
+      }
+      if (/^\/youth-development(?:\/.*)?$/i.test(currentPath)) {
+        initYouthDevelopmentPage(main2);
+      }
+      if (/^\/club\/\d+\/squad\/?$/i.test(currentPath)) {
+        initSquadPage(main2);
+        return;
+      }
+      if (/^\/shortlist\/?$/i.test(currentPath)) {
+        initShortlistPage(main2);
+      }
+      if (/^\/history\/club\//i.test(currentPath)) {
+        initHistoryPage(main2);
+      }
+      if (/^\/club(?:\/\d+(?:\/(?:overview\/)?)?)?\/?$/i.test(currentPath)) {
+        initClubPage(main2);
+      }
+      if (/^\/fixtures\/club\/\d+\/?$/i.test(currentPath)) {
+        initFixturesPage(main2);
+      }
+      if (/^\/fixtures\/national-teams\/[a-z]{2,3}\/?$/i.test(currentPath)) {
+        initNationalTeamsFixturesPage(main2);
+      }
+      if (/^\/history\/national-teams\/[a-z]{2,3}\/?$/i.test(currentPath)) {
+        initNationalTeamsHistoryPage(main2);
+      }
+      if (/^\/statistics\/club\/\d+\/?$/i.test(currentPath)) {
+        initStatsPage(main2);
+      }
+      if (/^\/statistics\/national-teams\/[a-z]{2,3}(?:\/players\/[^/]+)?\/?$/i.test(currentPath)) {
+        initNationalTeamsStatisticsPage(main2);
+      }
+      if (/^\/transfer\/?$/i.test(currentPath)) {
+        initTransferPage(main2);
+      }
+      if (/^\/league\//.test(currentPath)) {
+        initLeaguePage(main2);
+      }
+      if (/^\/matches\/(?:nt\/)?\d+/.test(currentPath)) {
+        initMatchPage(main2);
+      }
+      if (/^\/fixtures\/cup\/[a-z]{2,3}\/\d+\/?$/i.test(currentPath)) {
+        initCupFixturesPage(main2);
+      }
+      if (/^\/cup\/?$/i.test(currentPath)) {
+        initCupPage(main2);
+      }
+      if (/^\/home\/?$/i.test(currentPath)) {
+        initHomePage(main2);
+      }
+      if (/^\/international-cup(?:\/\d+)?\/?$/i.test(currentPath)) {
+        initInternationalCupPage(main2);
+      }
+      if (/^\/forum\//i.test(currentPath)) {
+        initForumPage(main2);
+      }
+      if (/^\/import\/?$/i.test(currentPath)) {
+        initImportPage(main2);
+      }
+      if (/^\/teamsters\//i.test(currentPath)) {
+        initTeamstersPage(main2);
+      }
+      if (/^\/about-tm\//i.test(currentPath)) {
+        initAboutTmPage(main2);
+      }
+      if (/^\/about-pro\/?$/i.test(currentPath)) {
+        initAboutProPage(main2);
+      }
+      if (/^\/buy-pro\/?$/i.test(currentPath)) {
+        initBuyProPage(main2);
+      }
+      if (/^\/free-pro\/?$/i.test(currentPath)) {
+        initFreeProPage(main2);
+      }
+      if (/^\/donations(\/legendary)?\/?$/i.test(currentPath)) {
+        initDonationsPage(main2);
+      }
+      if (/^\/user-guide\//i.test(currentPath)) {
+        initUserGuidePage(main2);
+      }
+      if (/^\/international-cup\/coefficients/i.test(currentPath)) {
+        initInternationalCupCoefficientsPage(main2);
+      }
+      if (/^\/statistics\/international-cup\//i.test(currentPath)) {
+        initInternationalCupStatisticsPage(main2);
+      }
+      if (/^\/national-teams\/rankings\//i.test(currentPath)) {
+        initNationalTeamsRankingsPage(main2);
+      }
+      if (/^\/national-teams\/election\/?$/i.test(currentPath)) {
+        initNationalTeamsElectionPage(main2);
+      }
+      if (/^\/national-teams\/region\//i.test(currentPath)) {
+        initNationalTeamsRegionPage(main2);
+      }
+      if (/^\/national-teams\/[a-z]{2,3}\/squad\/?$/i.test(currentPath)) {
+        initNationalTeamsSquadPage(main2);
+        return;
+      }
+      if (/^\/national-teams\//i.test(currentPath)) {
+        initNationalTeamsPage(main2);
+      }
+      if (/^\/support-pro\/?$/i.test(currentPath)) {
+        initSupportProPage(main2);
+      }
+      if (/^\/players\/?$/i.test(currentPath)) {
+        initPlayersPage(main2);
+        initR5HistoryPage();
+        return;
+      }
+      if (/^\/players\/\d+/i.test(currentPath)) {
+        initPlayerPage(main2);
+        return;
+      }
+      console.warn("[TMU Router] No page matched for path:", currentPath);
+    } catch (err) {
+      console.error("[TMU Router] CRITICAL ERROR while initializing page:", err);
     }
   }
   function syncLayoutState() {
