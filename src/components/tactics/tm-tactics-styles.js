@@ -270,6 +270,15 @@ export function injectTacticsStyles() {
             vertical-align: middle;
             flex-shrink: 0;
         }
+        .tmtc-slot-events {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            font-size: 10px;
+            line-height: 1;
+            min-height: 12px;
+        }
         .tmtc-slot-pos {
             font-key: var(--tmu-font-2xs);
         }

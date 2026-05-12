@@ -3118,7 +3118,8 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
 --tmu-match-row-hover:var(--tmu-surface-tab-hover);
 --tmu-match-score-bg:rgba(255,255,255,.03);
 --tmu-match-score-hover-bg:var(--tmu-border-contrast);
---tmu-match-score-border:rgba(255,255,255,.05)
+--tmu-match-score-border:rgba(255,255,255,.05);
+--tmu-card-bg:#0a1614
 }
 `;
   var TMU_THEME_SHADOW_CSS = TMU_THEME_CSS.replace(":root{", ":host{");
@@ -3169,7 +3170,8 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
 --tmu-live-fill:#1a0008;
 --tmu-accent-fill-soft:rgba(0,30,40,.7);
 --tmu-tabs-primary-active-border:#ff0046;
---tmu-tabs-secondary-active-border:#ff0046
+--tmu-tabs-secondary-active-border:#ff0046;
+--tmu-card-bg:#001e28
 }
 `;
   var TMU_THEME_DIFF_PITCH = `
@@ -3241,7 +3243,8 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
 --tmu-compare-home-grad-start:#12311d;
 --tmu-compare-home-grad-end:#8ecf47;
 --tmu-tabs-primary-active-border:#8ecf47;
---tmu-tabs-secondary-active-border:#8ecf47
+--tmu-tabs-secondary-active-border:#8ecf47;
+--tmu-card-bg:#0e2018
 }
 `;
   var TMU_THEME_DIFF_CLASSIC = `
@@ -3951,6 +3954,9 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         conversation_id: conversationId,
         club_id: clubId2
       });
+    },
+    async suggestClubs(q2, limit = 10) {
+      return _post("/ajax/suggest_clubs.ajax.php", { q_string: q2, limit, settings: "{}" });
     }
   };
 
@@ -3982,11 +3988,23 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     },
     sendPmMessage(opts) {
       return TmMessagesService.sendPmMessage(opts);
+    },
+    suggestClubs(q2, limit) {
+      return TmMessagesService.suggestClubs(q2, limit);
     }
   };
 
-  // src/components/shared/tm-app-shell-pm.js
-  var STYLE_ID8 = "tmvu-shell-pm-styles";
+  // src/components/shared/country-flag.js
+  var normalizeCountry = (country) => String(country || "").trim().toLowerCase();
+  var CountryFlag = {
+    render(country, cls = "") {
+      const code = normalizeCountry(country);
+      return code ? `<ib alt="flag of ${code}" class="flag-img-${code}${cls ? " " + cls : ""}"></ib>` : "";
+    }
+  };
+
+  // src/components/shared/tm-pm-dialog.js
+  var STYLE_ID8 = "tmvu-pm-dialog-styles";
   function cleanText(value) {
     return String(value || "").replace(/\s+/g, " ").trim();
   }
@@ -3994,220 +4012,11 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     return String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
   var buttonHtml3 = (opts) => TmUI.button(opts).outerHTML;
-  function injectStyles2() {
+  function injectDialogStyles() {
     if (document.getElementById(STYLE_ID8)) return;
     const style = document.createElement("style");
     style.id = STYLE_ID8;
     style.textContent = `
-        .tmvu-pm-wrap,
-        .tmvu-feed-wrap {
-            position: relative;
-        }
-
-        .tmvu-metric-button {
-            cursor: pointer;
-            position: relative;
-        }
-
-        .tmvu-metric-button:hover,
-        .tmvu-pm-wrap.is-open .tmvu-metric-button,
-        .tmvu-feed-wrap.is-open .tmvu-metric-button {
-            background: var(--tmu-success-fill-soft);
-            border-color: var(--tmu-border-embedded);
-        }
-
-        .tmvu-pm-menu[hidden] {
-            display: none !important;
-        }
-
-        .tmvu-pm-menu {
-            position: absolute;
-            top: calc(100% + 10px);
-            right: 0;
-            width: min(360px, calc(100vw - 24px));
-            max-height: 420px;
-            display: flex;
-            flex-direction: column;
-            border: 1px solid var(--tmu-border-input);
-            background: linear-gradient(180deg, var(--tmu-surface-panel), var(--tmu-surface-dark-muted));
-            box-shadow: 0 16px 32px var(--tmu-shadow-elev);
-            z-index: 10020;
-        }
-
-        .tmvu-pm-menu-head {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: var(--tmu-space-md);
-            padding: var(--tmu-space-md) var(--tmu-space-md) var(--tmu-space-md);
-            border-bottom: 1px solid var(--tmu-border-soft-alpha-strong);
-        }
-
-        .tmvu-pm-menu-head strong {
-            display: block;
-            font-size: var(--tmu-font-sm);
-            color: var(--tmu-text-inverse);
-        }
-
-        .tmvu-pm-menu-head span {
-            display: block;
-            margin-top: var(--tmu-space-xs);
-            font-size: var(--tmu-font-xs);
-            color: var(--tmu-text-muted);
-        }
-
-        .tmvu-pm-compose {
-            white-space: nowrap;
-        }
-
-        .tmvu-pm-list {
-            overflow-y: auto;
-            padding: var(--tmu-space-sm);
-        }
-
-        .tmvu-pm-menu-foot {
-            display: grid;
-            gap: var(--tmu-space-md);
-            padding: 0 var(--tmu-space-md) var(--tmu-space-md);
-            border-top: 1px solid var(--tmu-border-soft-alpha);
-        }
-
-        .tmvu-pm-view-all {
-            width: 100%;
-            justify-content: center;
-        }
-
-        .tmvu-pm-placeholder {
-            padding: var(--tmu-space-lg) var(--tmu-space-md);
-            color: var(--tmu-text-muted);
-            font-size: var(--tmu-font-sm);
-        }
-
-        .tmvu-pm-item {
-            width: 100%;
-            display: block;
-            text-align: left;
-            padding: var(--tmu-space-md);
-            border: 1px solid transparent;
-            border-bottom-color: var(--tmu-border-soft-alpha);
-            background: var(--tmu-surface-item-dark);
-            cursor: pointer;
-        }
-
-        .tmvu-pm-item + .tmvu-pm-item {
-            margin-top: var(--tmu-space-sm);
-        }
-
-        .tmvu-pm-item:hover {
-            border-color: var(--tmu-border-soft-alpha-mid);
-            background: var(--tmu-success-fill-faint);
-        }
-
-        .tmvu-pm-item.is-unread {
-            border-color: var(--tmu-border-soft-alpha-mid);
-            background: var(--tmu-success-fill-faint);
-        }
-
-        .tmvu-pm-item-head {
-            display: flex;
-            align-items: baseline;
-            justify-content: space-between;
-            gap: var(--tmu-space-sm);
-        }
-
-        .tmvu-pm-item-sender {
-            font-size: var(--tmu-font-sm);
-            color: var(--tmu-text-inverse);
-        }
-
-        .tmvu-pm-item-time {
-            font-size: var(--tmu-font-xs);
-            color: var(--tmu-text-muted);
-            white-space: nowrap;
-        }
-
-        .tmvu-pm-item-subject {
-            margin-top: var(--tmu-space-xs);
-            font-size: var(--tmu-font-sm);
-            color: var(--tmu-text-strong);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .tmvu-feed-item {
-            width: 100%;
-            display: block;
-            text-align: left;
-            padding: var(--tmu-space-md);
-            border: 1px solid transparent;
-            border-bottom-color: var(--tmu-border-soft-alpha);
-            background: var(--tmu-surface-item-dark);
-            cursor: pointer;
-        }
-
-        .tmvu-feed-item + .tmvu-feed-item {
-            margin-top: var(--tmu-space-sm);
-        }
-
-        .tmvu-feed-item:hover {
-            border-color: var(--tmu-border-soft-alpha-mid);
-            background: var(--tmu-success-fill-faint);
-        }
-
-        .tmvu-feed-item.is-unread {
-            border-color: var(--tmu-border-soft-alpha-strong);
-            background: var(--tmu-success-fill-faint);
-        }
-
-        .tmvu-feed-item-text {
-            color: var(--tmu-text-main);
-            font-size: var(--tmu-font-sm);
-            line-height: 1.45;
-            word-break: break-word;
-        }
-
-        .tmvu-feed-item-text a {
-            color: var(--tmu-text-inverse);
-            text-decoration: none;
-        }
-
-        .tmvu-feed-item-text a:hover {
-            text-decoration: underline;
-        }
-
-        .tmvu-feed-flag {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 20px;
-            height: 16px;
-            margin-right: var(--tmu-space-xs);
-            padding: 0 var(--tmu-space-xs);
-            border-radius: 999px;
-            background: var(--tmu-border-contrast);
-            color: var(--tmu-text-main);
-            font-size: var(--tmu-font-2xs);
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            vertical-align: baseline;
-        }
-
-        .tmvu-feed-item-meta {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: var(--tmu-space-sm);
-            margin-top: var(--tmu-space-sm);
-            color: var(--tmu-text-muted);
-            font-size: var(--tmu-font-xs);
-        }
-
-        .tmvu-feed-item-comments {
-            color: var(--tmu-text-muted);
-        }
-
         body.tmvu-pm-dialog-open {
             overflow: hidden;
         }
@@ -4222,6 +4031,10 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
             padding: var(--tmu-space-xl);
             background: var(--tmu-surface-overlay-strong);
             backdrop-filter: blur(4px);
+        }
+
+        .tmvu-pm-dialog-overlay[hidden] {
+            display: none !important;
         }
 
         .tmvu-pm-dialog {
@@ -4279,6 +4092,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
             flex: 1 1 auto;
             display: grid;
             grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+            grid-template-rows: minmax(0, 1fr);
             gap: 0;
             border-top: 1px solid var(--tmu-border-soft-alpha-strong);
         }
@@ -4293,6 +4107,19 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         .tmvu-pm-dialog-list {
             border-right: 1px solid var(--tmu-border-soft-alpha-mid);
             background: var(--tmu-surface-dark-mid);
+            grid-row: 1;
+            grid-column: 1;
+        }
+
+        .tmvu-pm-dialog-detail,
+        [data-pm-compose-panel] {
+            grid-row: 1;
+            grid-column: 2;
+        }
+
+        [data-pm-compose-panel] {
+            overflow-y: auto;
+            padding: var(--tmu-space-lg);
         }
 
         .tmvu-pm-dialog-row {
@@ -4424,17 +4251,9 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
             font-size: var(--tmu-font-xs);
         }
 
-        .tmvu-pm-reply-status.is-error {
-            color: var(--tmu-danger);
-        }
-
-        .tmvu-pm-reply-status.is-success {
-            color: var(--tmu-success);
-        }
-
-        .tmvu-pm-reply-status.is-muted {
-            color: var(--tmu-text-muted);
-        }
+        .tmvu-pm-reply-status.is-error { color: var(--tmu-danger); }
+        .tmvu-pm-reply-status.is-success { color: var(--tmu-success); }
+        .tmvu-pm-reply-status.is-muted { color: var(--tmu-text-muted); }
 
         .tmvu-pm-thread-item + .tmvu-pm-thread-item {
             margin-top: var(--tmu-space-md);
@@ -4470,24 +4289,144 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
             word-break: break-word;
         }
 
-        .tmvu-pm-thread-body a {
-            color: var(--tmu-text-main);
+        .tmvu-pm-thread-body a { color: var(--tmu-text-main); }
+        .tmvu-pm-thread-body img { vertical-align: middle; }
+
+        .tmvu-pm-compose-panel {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            min-height: 0;
         }
 
-        .tmvu-pm-thread-body img {
-            vertical-align: middle;
+        .tmvu-pm-compose-panel.is-active {
+            display: flex;
         }
+
+        .tmvu-pm-compose-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--tmu-space-md);
+            padding-bottom: var(--tmu-space-md);
+            margin-bottom: var(--tmu-space-md);
+            border-bottom: 1px solid var(--tmu-border-soft-alpha-mid);
+        }
+
+        .tmvu-pm-compose-title {
+            font-size: var(--tmu-font-sm);
+            font-weight: 700;
+            color: var(--tmu-text-strong);
+        }
+
+        .tmvu-pm-compose-body {
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+            gap: var(--tmu-space-md);
+            overflow-y: auto;
+        }
+
+        .tmvu-pm-compose-field {
+            display: flex;
+            flex-direction: column;
+            gap: var(--tmu-space-xs);
+            position: relative;
+        }
+
+        .tmvu-pm-compose-label {
+            font-size: var(--tmu-font-xs);
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--tmu-text-panel-label);
+        }
+
+        .tmvu-pm-compose-input,
+        .tmvu-pm-compose-textarea {
+            width: 100%;
+            padding: var(--tmu-space-md);
+            border: 1px solid var(--tmu-border-soft-alpha-strong);
+            background: var(--tmu-surface-input-dark);
+            color: var(--tmu-text-main);
+            font: inherit;
+            font-size: var(--tmu-font-sm);
+            line-height: 1.5;
+            box-sizing: border-box;
+        }
+
+        .tmvu-pm-compose-input:focus,
+        .tmvu-pm-compose-textarea:focus {
+            outline: none;
+            border-color: var(--tmu-border-input-overlay);
+            box-shadow: 0 0 0 1px var(--tmu-border-soft-alpha-mid);
+        }
+
+        .tmvu-pm-compose-textarea {
+            min-height: 160px;
+            resize: vertical;
+            flex: 1 1 auto;
+        }
+
+        .tmvu-pm-compose-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 10070;
+            background: var(--tmu-surface-panel);
+            border: 1px solid var(--tmu-border-soft-alpha-strong);
+            box-shadow: 0 8px 24px var(--tmu-shadow-panel);
+            max-height: 220px;
+            overflow-y: auto;
+        }
+
+        .tmvu-pm-compose-suggestion {
+            padding: var(--tmu-space-md) var(--tmu-space-lg);
+            cursor: pointer;
+            font-size: var(--tmu-font-sm);
+            color: var(--tmu-text-main);
+            display: flex;
+            align-items: center;
+            gap: var(--tmu-space-sm);
+        }
+
+        .tmvu-pm-compose-suggestion:hover,
+        .tmvu-pm-compose-suggestion.is-active {
+            background: var(--tmu-success-fill-soft);
+            color: var(--tmu-text-strong);
+        }
+
+        .tmvu-pm-compose-suggestion-name {
+            font-weight: 700;
+            color: var(--tmu-text-strong);
+        }
+
+        .tmvu-pm-compose-suggestion-meta {
+            font-size: var(--tmu-font-xs);
+            color: var(--tmu-text-muted);
+        }
+
+        .tmvu-pm-compose-foot {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--tmu-space-md);
+            margin-top: var(--tmu-space-md);
+            padding-top: var(--tmu-space-md);
+            border-top: 1px solid var(--tmu-border-soft-alpha-mid);
+        }
+
+        .tmvu-pm-compose-status {
+            min-height: 18px;
+            font-size: var(--tmu-font-xs);
+            color: var(--tmu-text-muted);
+        }
+
+        .tmvu-pm-compose-status.is-error { color: var(--tmu-danger); }
+        .tmvu-pm-compose-status.is-success { color: var(--tmu-success); }
     `;
     document.head.appendChild(style);
-  }
-  function getTopUserInfoPmCount(topUserInfo, fallback = 0) {
-    const count = Number(topUserInfo == null ? void 0 : topUserInfo.new_pms);
-    return Number.isFinite(count) && count >= 0 ? count : fallback;
-  }
-  function getTopUserInfoFeedCount(topUserInfo, fallback = 0) {
-    const count = Number(topUserInfo == null ? void 0 : topUserInfo.new_feed);
-    if (Number.isFinite(count) && count >= 0) return count;
-    return fallback;
   }
   function getConversationKey(message) {
     const conversationId = cleanText(message == null ? void 0 : message.conversation_id);
@@ -4499,141 +4438,6 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     const messageStatus = cleanText(message == null ? void 0 : message.m_status);
     if (status) return status !== "read";
     return messageStatus === "0";
-  }
-  function normalizePmConversationItems(payload) {
-    const messages = Array.isArray(payload == null ? void 0 : payload.messages) ? payload.messages : [];
-    const seen = /* @__PURE__ */ new Set();
-    const items = [];
-    for (const message of messages) {
-      const key = getConversationKey(message);
-      if (!key || seen.has(key)) continue;
-      seen.add(key);
-      items.push({
-        id: cleanText(message == null ? void 0 : message.id),
-        conversationId: key,
-        senderName: cleanText(message == null ? void 0 : message.sender_name) || "Unknown sender",
-        subject: cleanText(message == null ? void 0 : message.subject) || "(No subject)",
-        time: cleanText(message == null ? void 0 : message.time),
-        longTime: cleanText((message == null ? void 0 : message.long_time) || (message == null ? void 0 : message.time)),
-        unread: isUnreadMessage(message)
-      });
-      if (items.length >= 5) break;
-    }
-    return items;
-  }
-  function extractFeedPlayerIds(text) {
-    return Array.from(String(text || "").matchAll(/\[player=(\d+)\]/g), (match) => cleanText(match[1])).filter(Boolean);
-  }
-  function extractFeedClubIds(item) {
-    var _a2;
-    const textIds = Array.from(String((item == null ? void 0 : item.text) || "").matchAll(/@(\d+)/g), (match) => cleanText(match[1]));
-    const attributeIds = Array.isArray((_a2 = item == null ? void 0 : item.attributes) == null ? void 0 : _a2.club_ids) ? item.attributes.club_ids.map(cleanText) : [];
-    return [...textIds, ...attributeIds].filter(Boolean);
-  }
-  function normalizeFeedNames(payload) {
-    const players = Array.isArray(payload == null ? void 0 : payload.players) ? payload.players : [];
-    const clubs = Array.isArray(payload == null ? void 0 : payload.clubs) ? payload.clubs : [];
-    const playerMap = /* @__PURE__ */ new Map();
-    const clubMap = /* @__PURE__ */ new Map();
-    players.forEach((player2) => {
-      const id = cleanText(player2 == null ? void 0 : player2.id);
-      if (!id) return;
-      playerMap.set(id, cleanText(player2 == null ? void 0 : player2.name) || `#${id}`);
-    });
-    clubs.forEach((club) => {
-      const id = cleanText((club == null ? void 0 : club.id) || (club == null ? void 0 : club.club_id));
-      const name = cleanText((club == null ? void 0 : club.name) || (club == null ? void 0 : club.club_name));
-      if (!id || !name) return;
-      clubMap.set(id, name);
-    });
-    return { playerMap, clubMap };
-  }
-  function resolveFeedLinkTarget(target) {
-    const raw = cleanText(target);
-    if (!raw) return "";
-    if (raw.startsWith("/")) return raw;
-    if (/^league;/i.test(raw)) return "/league/";
-    return "";
-  }
-  function buildFeedLinkHtml(target, label) {
-    const safeLabel = escapeHtml4(cleanText(label) || target);
-    const href = resolveFeedLinkTarget(target);
-    if (!href) return safeLabel;
-    return `<a href="${escapeHtml4(href)}">${safeLabel}</a>`;
-  }
-  function formatFeedMoney(value) {
-    const amount = Number(value);
-    if (!Number.isFinite(amount)) return escapeHtml4(String(value || ""));
-    return escapeHtml4(amount.toLocaleString("en-US"));
-  }
-  function renderFeedTextHtml(text, { playerMap = /* @__PURE__ */ new Map(), clubMap = /* @__PURE__ */ new Map() } = {}) {
-    const replacements = [];
-    let content = String(text || "");
-    const storeReplacement = (html3) => {
-      const token = `__TM_FEED_TOKEN_${replacements.length}__`;
-      replacements.push({ token, html: html3 });
-      return token;
-    };
-    content = content.replace(/\[link=([^\]]+)\]([\s\S]*?)\[\/link\]/g, (_, target, label) => storeReplacement(buildFeedLinkHtml(target, label)));
-    content = content.replace(/\[player=(\d+)\]/g, (_, playerId) => {
-      const id = cleanText(playerId);
-      const label = playerMap.get(id) || `#${id}`;
-      return storeReplacement(`<a href="/players/${escapeHtml4(id)}/">${escapeHtml4(label)}</a>`);
-    });
-    content = content.replace(/\[flag=([a-z]{2})\]/ig, (_, country) => storeReplacement(`<span class="tmvu-feed-flag">${escapeHtml4(country.toUpperCase())}</span>`));
-    content = content.replace(/\[money=(\d+)\]/g, (_, amount) => storeReplacement(formatFeedMoney(amount)));
-    content = content.replace(/@(\d+)/g, (_, clubId2) => {
-      const id = cleanText(clubId2);
-      const label = clubMap.get(id) || `#${id}`;
-      return storeReplacement(`<a href="/club/${escapeHtml4(id)}/">${escapeHtml4(label)}</a>`);
-    });
-    let html2 = escapeHtml4(content).replace(/\n/g, "<br>");
-    replacements.forEach((entry) => {
-      html2 = html2.replaceAll(entry.token, entry.html);
-    });
-    return html2;
-  }
-  function getFeedPrimaryHref(item) {
-    const feedId = cleanText(item == null ? void 0 : item.id);
-    if (feedId) return `/home/#/feed/${feedId}/`;
-    return "/home/";
-  }
-  function navigateToFeedHref(href) {
-    const target = cleanText(href) || "/home/";
-    try {
-      const url = new URL(target, window.location.origin);
-      const nextHref = `${url.pathname}${url.hash}`;
-      const currentPath = cleanText(window.location.pathname).toLowerCase();
-      const targetPath = cleanText(url.pathname).toLowerCase();
-      if (currentPath === targetPath) {
-        window.location.href = nextHref;
-        window.setTimeout(() => window.location.reload(), 0);
-        return;
-      }
-      window.location.assign(nextHref);
-    } catch (e) {
-      window.location.assign(target);
-    }
-  }
-  async function normalizeFeedItems(payload) {
-    const items = Array.isArray(payload == null ? void 0 : payload.buddy_feed) ? payload.buddy_feed.slice(0, 5) : [];
-    if (!items.length) return [];
-    const playerIds = [...new Set(items.flatMap((item) => extractFeedPlayerIds(item == null ? void 0 : item.text)))];
-    const clubIds = [...new Set(items.flatMap((item) => extractFeedClubIds(item)))];
-    const namesPayload = playerIds.length || clubIds.length ? await TmMessagesModel.fetchFeedNames({ playerIds, clubIds }) : null;
-    const nameMaps = normalizeFeedNames(namesPayload);
-    return items.map((item) => {
-      const comments = Array.isArray(item == null ? void 0 : item.comments) ? item.comments : [];
-      return {
-        id: cleanText(item == null ? void 0 : item.id),
-        href: getFeedPrimaryHref(item),
-        html: renderFeedTextHtml(item == null ? void 0 : item.text, nameMaps),
-        time: cleanText(item == null ? void 0 : item.time),
-        longTime: cleanText((item == null ? void 0 : item.full_time) || (item == null ? void 0 : item.time)),
-        commentCount: comments.length,
-        unread: (item == null ? void 0 : item.is_read) === false || (item == null ? void 0 : item.is_read) === "false" || (item == null ? void 0 : item.is_read) === 0
-      };
-    });
   }
   function normalizePmFolderItems(payload, place = "inbox") {
     const messages = Array.isArray(payload == null ? void 0 : payload.messages) ? payload.messages : [];
@@ -4792,35 +4596,6 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
         `).join("")}
     `;
   }
-  function setPmListPlaceholder(pmState, copy) {
-    if (!(pmState == null ? void 0 : pmState.pmListEl)) return;
-    pmState.pmListEl.innerHTML = TmAppShellHeader.renderPmPlaceholder(copy);
-  }
-  function setFeedListPlaceholder(feedState, copy) {
-    if (!(feedState == null ? void 0 : feedState.listEl)) return;
-    feedState.listEl.innerHTML = TmAppShellHeader.renderPmPlaceholder(copy);
-  }
-  function renderFeedItems(items = []) {
-    if (!Array.isArray(items) || !items.length) {
-      return TmAppShellHeader.renderPmPlaceholder("No recent feed items found.");
-    }
-    return items.map((item) => buttonHtml3({
-      slot: `
-            <div class="tmvu-feed-item-text">${item.html || ""}</div>
-            <div class="tmvu-feed-item-meta">
-                <span class="tmvu-feed-item-time" title="${escapeHtml4(item.longTime || item.time || "")}">${escapeHtml4(item.time || "")}</span>
-                <span class="tmvu-feed-item-comments">${item.commentCount ? `${item.commentCount} comments` : "No comments"}</span>
-            </div>
-        `,
-      color: "secondary",
-      size: "sm",
-      cls: `tmvu-feed-item${item.unread ? " is-unread" : ""}`,
-      attrs: {
-        "data-feed-item": true,
-        "data-feed-href": escapeHtml4(item.href || "/home/")
-      }
-    })).join("");
-  }
   function setPmDialogListHtml(pmState, html2) {
     var _a2;
     if (!((_a2 = pmState == null ? void 0 : pmState.dialog) == null ? void 0 : _a2.listEl)) return;
@@ -4863,22 +4638,6 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     const dialog = pmState == null ? void 0 : pmState.dialog;
     if (!dialog) return;
     places.forEach((place) => dialog.listCache.delete(place));
-  }
-  function openPmMenu(pmState) {
-    var _a2;
-    if (!(pmState == null ? void 0 : pmState.pmMenuEl) || !(pmState == null ? void 0 : pmState.pmTriggerEl)) return;
-    pmState.isPmOpen = true;
-    (_a2 = pmState.pmRootEl) == null ? void 0 : _a2.classList.add("is-open");
-    pmState.pmMenuEl.hidden = false;
-    pmState.pmTriggerEl.setAttribute("aria-expanded", "true");
-  }
-  function closePmMenu(pmState) {
-    var _a2;
-    if (!(pmState == null ? void 0 : pmState.pmMenuEl) || !(pmState == null ? void 0 : pmState.pmTriggerEl)) return;
-    pmState.isPmOpen = false;
-    (_a2 = pmState.pmRootEl) == null ? void 0 : _a2.classList.remove("is-open");
-    pmState.pmMenuEl.hidden = true;
-    pmState.pmTriggerEl.setAttribute("aria-expanded", "false");
   }
   function executePmThreadAction(pmState, action) {
     var _a2;
@@ -4958,10 +4717,165 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       setPmReplyStatus(pmState, "Message sent.", "success");
     }
   }
+  function openPmCompose(pmState, { recipientId = "", recipientName = "" } = {}) {
+    var _a2;
+    const dialog = ensurePmDialog(pmState);
+    if (!dialog) return;
+    dialog.overlayEl.hidden = false;
+    document.body.classList.add("tmvu-pm-dialog-open");
+    (_a2 = pmState.closeMenu) == null ? void 0 : _a2.call(pmState);
+    const panel = dialog.composePanelEl;
+    if (!panel) return;
+    panel.classList.add("is-active");
+    dialog.detailEl.style.display = "none";
+    panel.innerHTML = `
+        <div class="tmvu-pm-compose-head">
+            <span class="tmvu-pm-compose-title">New Message</span>
+        </div>
+        <div class="tmvu-pm-compose-body">
+            <div class="tmvu-pm-compose-field">
+                <label class="tmvu-pm-compose-label">To (club name)</label>
+                <input type="text" class="tmvu-pm-compose-input" data-compose-to placeholder="Search for club\u2026" autocomplete="off" value="${escapeHtml4(recipientName)}">
+                <div class="tmvu-pm-compose-suggestions" data-compose-suggest hidden></div>
+                <input type="hidden" data-compose-recipient-id value="${escapeHtml4(recipientId)}">
+            </div>
+            <div class="tmvu-pm-compose-field">
+                <label class="tmvu-pm-compose-label">Subject</label>
+                <input type="text" class="tmvu-pm-compose-input" data-compose-subject placeholder="Subject\u2026">
+            </div>
+            <div class="tmvu-pm-compose-field" style="flex:1 1 auto">
+                <label class="tmvu-pm-compose-label">Message</label>
+                <textarea class="tmvu-pm-compose-textarea" data-compose-message placeholder="Write your message\u2026"></textarea>
+            </div>
+        </div>
+        <div class="tmvu-pm-compose-foot">
+            <span class="tmvu-pm-compose-status" data-compose-status></span>
+        </div>
+    `;
+    const head = panel.querySelector(".tmvu-pm-compose-head");
+    const foot = panel.querySelector(".tmvu-pm-compose-foot");
+    const cancelBtn = TmUI.button({ label: "Cancel", color: "secondary", size: "sm" });
+    const sendBtn = TmUI.button({ label: "Send", color: "primary", size: "sm" });
+    head.appendChild(cancelBtn);
+    foot.appendChild(sendBtn);
+    const toInput = panel.querySelector("[data-compose-to]");
+    const suggestBox = panel.querySelector("[data-compose-suggest]");
+    const recipientIdInput = panel.querySelector("[data-compose-recipient-id]");
+    const subjectInput = panel.querySelector("[data-compose-subject]");
+    const msgTextarea = panel.querySelector("[data-compose-message]");
+    const statusEl = panel.querySelector("[data-compose-status]");
+    let suggestTimer = null;
+    let activeSuggestionIndex = -1;
+    let suggestions = [];
+    const setStatus2 = (text, tone = "") => {
+      statusEl.className = `tmvu-pm-compose-status${tone ? ` is-${tone}` : ""}`;
+      statusEl.textContent = text;
+    };
+    const clearSuggest = () => {
+      suggestBox.hidden = true;
+      suggestBox.innerHTML = "";
+      suggestions = [];
+      activeSuggestionIndex = -1;
+    };
+    const selectSuggestion = (club) => {
+      toInput.value = (club.clubname || "") + (club.clubnick ? ` (${club.clubnick})` : "");
+      recipientIdInput.value = String(club.id || "");
+      clearSuggest();
+    };
+    const highlightSuggestion = (idx) => {
+      suggestBox.querySelectorAll(".tmvu-pm-compose-suggestion").forEach((el2, i) => el2.classList.toggle("is-active", i === idx));
+      activeSuggestionIndex = idx;
+    };
+    toInput.addEventListener("input", () => {
+      recipientIdInput.value = "";
+      clearTimeout(suggestTimer);
+      const q2 = toInput.value.trim();
+      if (!q2) {
+        clearSuggest();
+        return;
+      }
+      suggestTimer = setTimeout(async () => {
+        const data = await TmMessagesModel.suggestClubs(q2, 8);
+        if (!Array.isArray(data) || !data.length) {
+          clearSuggest();
+          return;
+        }
+        suggestions = data;
+        activeSuggestionIndex = -1;
+        suggestBox.innerHTML = data.map((club, i) => {
+          const nick = club.clubnick ? ` (${escapeHtml4(club.clubnick)})` : "";
+          const div = club.division ? escapeHtml4(String(club.division)) + (club.group ? `.${escapeHtml4(String(club.group))}` : "") : "";
+          const flag = CountryFlag.render(club.country);
+          return `<div class="tmvu-pm-compose-suggestion" data-idx="${i}">${flag}<span class="tmvu-pm-compose-suggestion-name">${escapeHtml4(club.clubname || "")}${nick}</span><span class="tmvu-pm-compose-suggestion-meta">${div}</span></div>`;
+        }).join("");
+        suggestBox.hidden = false;
+      }, 220);
+    });
+    toInput.addEventListener("keydown", (e) => {
+      if (suggestBox.hidden) return;
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        highlightSuggestion(Math.min(activeSuggestionIndex + 1, suggestions.length - 1));
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        highlightSuggestion(Math.max(activeSuggestionIndex - 1, 0));
+      } else if (e.key === "Enter" && activeSuggestionIndex >= 0) {
+        e.preventDefault();
+        selectSuggestion(suggestions[activeSuggestionIndex]);
+      } else if (e.key === "Escape") {
+        clearSuggest();
+      }
+    });
+    toInput.addEventListener("blur", () => setTimeout(clearSuggest, 150));
+    suggestBox.addEventListener("mousedown", (e) => {
+      const item = e.target.closest("[data-idx]");
+      if (!item) return;
+      e.preventDefault();
+      selectSuggestion(suggestions[Number(item.dataset.idx)]);
+    });
+    cancelBtn.addEventListener("click", () => closePmCompose(pmState));
+    sendBtn.addEventListener("click", async () => {
+      var _a3;
+      const recipient = recipientIdInput.value.trim();
+      const subject = subjectInput.value.trim();
+      const message = msgTextarea.value.trim();
+      setStatus2("");
+      if (!recipient || !subject || !message) {
+        setStatus2(!recipient ? "Please select a recipient." : !subject ? "Subject is required." : "Message is required.", "error");
+        return;
+      }
+      sendBtn.disabled = true;
+      sendBtn.textContent = "Sending\u2026";
+      const clubId2 = cleanText(((_a3 = window.SESSION) == null ? void 0 : _a3.id) || pmState.clubId || "");
+      const response = await TmMessagesModel.sendPmMessage({ recipient, subject, message, conversationId: "0", clubId: clubId2 });
+      sendBtn.disabled = false;
+      sendBtn.textContent = "Send";
+      if (!response) {
+        setStatus2("Failed to send message. Please try again.", "error");
+        return;
+      }
+      if (Number(response.banned) > 0) {
+        setStatus2("You are not allowed to send messages to this club.", "error");
+        return;
+      }
+      setStatus2("Message sent!", "success");
+      invalidatePmDialogCaches(pmState, ["sent"]);
+      setTimeout(() => closePmCompose(pmState), 1200);
+    });
+    toInput.focus();
+  }
+  function closePmCompose(pmState) {
+    const dialog = pmState == null ? void 0 : pmState.dialog;
+    if (!(dialog == null ? void 0 : dialog.composePanelEl)) return;
+    dialog.composePanelEl.classList.remove("is-active");
+    dialog.composePanelEl.innerHTML = "";
+    dialog.detailEl.style.display = "";
+  }
   function ensurePmDialog(pmState) {
     var _a2;
     if (!pmState) return null;
     if ((_a2 = pmState.dialog) == null ? void 0 : _a2.overlayEl) return pmState.dialog;
+    injectDialogStyles();
     const overlayEl = document.createElement("div");
     overlayEl.className = "tmvu-pm-dialog-overlay";
     overlayEl.hidden = true;
@@ -4978,6 +4892,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
             <div class="tmvu-pm-dialog-body">
                 <aside class="tmvu-pm-dialog-list" data-pm-dialog-list>${TmUI.loading("Loading messages...")}</aside>
                 <section class="tmvu-pm-dialog-detail" data-pm-dialog-detail>${TmUI.empty("Select a conversation to read.")}</section>
+                <section class="tmvu-pm-compose-panel" data-pm-compose-panel></section>
             </div>
             <div id="pm_main" class="tmvu-pm-native-host" hidden></div>
         </div>
@@ -4994,6 +4909,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       tabsHostEl: overlayEl.querySelector("[data-pm-dialog-tabs]"),
       listEl: overlayEl.querySelector("[data-pm-dialog-list]"),
       detailEl: overlayEl.querySelector("[data-pm-dialog-detail]"),
+      composePanelEl: overlayEl.querySelector("[data-pm-compose-panel]"),
       pmMainEl: overlayEl.querySelector("#pm_main"),
       composeBtn,
       closeBtn,
@@ -5018,11 +4934,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     });
     dialog.tabsHostEl.appendChild(tabsEl);
     composeBtn.addEventListener("click", () => {
-      if (typeof window.pm_new === "function") {
-        window.pm_new("", "new");
-        return;
-      }
-      window.location.assign("/pm/");
+      openPmCompose(pmState);
     });
     const closeDialog = () => {
       closePmDialog(pmState);
@@ -5130,33 +5042,258 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     await loadPmDialogDetail(pmState, nextItem);
   }
   async function openPmDialog(pmState, { place = "inbox", item = null } = {}) {
+    var _a2;
     const dialog = ensurePmDialog(pmState);
     if (!dialog) return;
     dialog.overlayEl.hidden = false;
     document.body.classList.add("tmvu-pm-dialog-open");
-    closePmMenu(pmState);
+    (_a2 = pmState.closeMenu) == null ? void 0 : _a2.call(pmState);
     await loadPmDialogFolder(pmState, place, item);
   }
-  async function loadPmConversations(pmState) {
-    var _a2, _b;
-    if (!pmState || pmState.isLoading) return;
-    pmState.isLoading = true;
-    (_a2 = pmState.pmRootEl) == null ? void 0 : _a2.classList.add("is-loading");
-    setPmListPlaceholder(pmState, "Loading latest conversations...");
+
+  // src/components/shared/tm-feed-menu.js
+  var STYLE_ID9 = "tmvu-feed-menu-styles";
+  function cleanText2(value) {
+    return String(value || "").replace(/\s+/g, " ").trim();
+  }
+  function escapeHtml5(value) {
+    return String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+  var buttonHtml4 = (opts) => TmUI.button(opts).outerHTML;
+  function injectFeedStyles() {
+    if (document.getElementById(STYLE_ID9)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_ID9;
+    style.textContent = `
+        .tmvu-feed-item {
+            width: 100%;
+            display: block;
+            text-align: left;
+            padding: var(--tmu-space-md);
+            border: 1px solid transparent;
+            border-bottom-color: var(--tmu-border-soft-alpha);
+            background: var(--tmu-surface-item-dark);
+            cursor: pointer;
+        }
+
+        .tmvu-feed-item + .tmvu-feed-item {
+            margin-top: var(--tmu-space-sm);
+        }
+
+        .tmvu-feed-item:hover {
+            border-color: var(--tmu-border-soft-alpha-mid);
+            background: var(--tmu-success-fill-faint);
+        }
+
+        .tmvu-feed-item.is-unread {
+            border-color: var(--tmu-border-soft-alpha-strong);
+            background: var(--tmu-success-fill-faint);
+        }
+
+        .tmvu-feed-item-text {
+            color: var(--tmu-text-main);
+            font-size: var(--tmu-font-sm);
+            line-height: 1.45;
+            word-break: break-word;
+        }
+
+        .tmvu-feed-item-text a {
+            color: var(--tmu-text-inverse);
+            text-decoration: none;
+        }
+
+        .tmvu-feed-item-text a:hover {
+            text-decoration: underline;
+        }
+
+        .tmvu-feed-flag {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 16px;
+            margin-right: var(--tmu-space-xs);
+            padding: 0 var(--tmu-space-xs);
+            border-radius: 999px;
+            background: var(--tmu-border-contrast);
+            color: var(--tmu-text-main);
+            font-size: var(--tmu-font-2xs);
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            vertical-align: baseline;
+        }
+
+        .tmvu-feed-item-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--tmu-space-sm);
+            margin-top: var(--tmu-space-sm);
+            color: var(--tmu-text-muted);
+            font-size: var(--tmu-font-xs);
+        }
+
+        .tmvu-feed-item-comments {
+            color: var(--tmu-text-muted);
+        }
+    `;
+    document.head.appendChild(style);
+  }
+  function extractFeedPlayerIds(text) {
+    return Array.from(String(text || "").matchAll(/\[player=(\d+)\]/g), (match) => cleanText2(match[1])).filter(Boolean);
+  }
+  function extractFeedClubIds(item) {
+    var _a2;
+    const textIds = Array.from(String((item == null ? void 0 : item.text) || "").matchAll(/@(\d+)/g), (match) => cleanText2(match[1]));
+    const attributeIds = Array.isArray((_a2 = item == null ? void 0 : item.attributes) == null ? void 0 : _a2.club_ids) ? item.attributes.club_ids.map(cleanText2) : [];
+    return [...textIds, ...attributeIds].filter(Boolean);
+  }
+  function normalizeFeedNames(payload) {
+    const players = Array.isArray(payload == null ? void 0 : payload.players) ? payload.players : [];
+    const clubs = Array.isArray(payload == null ? void 0 : payload.clubs) ? payload.clubs : [];
+    const playerMap = /* @__PURE__ */ new Map();
+    const clubMap = /* @__PURE__ */ new Map();
+    players.forEach((player2) => {
+      const id = cleanText2(player2 == null ? void 0 : player2.id);
+      if (!id) return;
+      playerMap.set(id, cleanText2(player2 == null ? void 0 : player2.name) || `#${id}`);
+    });
+    clubs.forEach((club) => {
+      const id = cleanText2((club == null ? void 0 : club.id) || (club == null ? void 0 : club.club_id));
+      const name = cleanText2((club == null ? void 0 : club.name) || (club == null ? void 0 : club.club_name));
+      if (!id || !name) return;
+      clubMap.set(id, name);
+    });
+    return { playerMap, clubMap };
+  }
+  function resolveFeedLinkTarget(target) {
+    const raw = cleanText2(target);
+    if (!raw) return "";
+    if (raw.startsWith("/")) return raw;
+    if (/^league;/i.test(raw)) return "/league/";
+    return "";
+  }
+  function buildFeedLinkHtml(target, label) {
+    const safeLabel = escapeHtml5(cleanText2(label) || target);
+    const href = resolveFeedLinkTarget(target);
+    if (!href) return safeLabel;
+    return `<a href="${escapeHtml5(href)}">${safeLabel}</a>`;
+  }
+  function formatFeedMoney(value) {
+    const amount = Number(value);
+    if (!Number.isFinite(amount)) return escapeHtml5(String(value || ""));
+    return escapeHtml5(amount.toLocaleString("en-US"));
+  }
+  function renderFeedTextHtml(text, { playerMap = /* @__PURE__ */ new Map(), clubMap = /* @__PURE__ */ new Map() } = {}) {
+    const replacements = [];
+    let content = String(text || "");
+    const storeReplacement = (html3) => {
+      const token = `__TM_FEED_TOKEN_${replacements.length}__`;
+      replacements.push({ token, html: html3 });
+      return token;
+    };
+    content = content.replace(/\[link=([^\]]+)\]([\s\S]*?)\[\/link\]/g, (_, target, label) => storeReplacement(buildFeedLinkHtml(target, label)));
+    content = content.replace(/\[player=(\d+)\]/g, (_, playerId) => {
+      const id = cleanText2(playerId);
+      const label = playerMap.get(id) || `#${id}`;
+      return storeReplacement(`<a href="/players/${escapeHtml5(id)}/">${escapeHtml5(label)}</a>`);
+    });
+    content = content.replace(/\[flag=([a-z]{2})\]/ig, (_, country) => storeReplacement(`<span class="tmvu-feed-flag">${escapeHtml5(country.toUpperCase())}</span>`));
+    content = content.replace(/\[money=(\d+)\]/g, (_, amount) => storeReplacement(formatFeedMoney(amount)));
+    content = content.replace(/@(\d+)/g, (_, clubId2) => {
+      const id = cleanText2(clubId2);
+      const label = clubMap.get(id) || `#${id}`;
+      return storeReplacement(`<a href="/club/${escapeHtml5(id)}/">${escapeHtml5(label)}</a>`);
+    });
+    let html2 = escapeHtml5(content).replace(/\n/g, "<br>");
+    replacements.forEach((entry) => {
+      html2 = html2.replaceAll(entry.token, entry.html);
+    });
+    return html2;
+  }
+  function getFeedPrimaryHref(item) {
+    const feedId = cleanText2(item == null ? void 0 : item.id);
+    if (feedId) return `/home/#/feed/${feedId}/`;
+    return "/home/";
+  }
+  function navigateToFeedHref(href) {
+    const target = cleanText2(href) || "/home/";
     try {
-      const pmResponse = await TmMessagesModel.fetchPmMessages("inbox");
-      const pmItems = normalizePmConversationItems(pmResponse);
-      if (pmItems.length) {
-        pmState.pmListEl.innerHTML = TmAppShellHeader.renderPmItems(pmItems);
-      } else if (pmResponse) {
-        setPmListPlaceholder(pmState, "No recent conversations found.");
-      } else {
-        setPmListPlaceholder(pmState, "Unable to load messages right now.");
+      const url = new URL(target, window.location.origin);
+      const nextHref = `${url.pathname}${url.hash}`;
+      const currentPath = cleanText2(window.location.pathname).toLowerCase();
+      const targetPath = cleanText2(url.pathname).toLowerCase();
+      if (currentPath === targetPath) {
+        window.location.href = nextHref;
+        window.setTimeout(() => window.location.reload(), 0);
+        return;
       }
-    } finally {
-      pmState.isLoading = false;
-      (_b = pmState.pmRootEl) == null ? void 0 : _b.classList.remove("is-loading");
+      window.location.assign(nextHref);
+    } catch (e) {
+      window.location.assign(target);
     }
+  }
+  async function normalizeFeedItems(payload) {
+    const items = Array.isArray(payload == null ? void 0 : payload.buddy_feed) ? payload.buddy_feed.slice(0, 5) : [];
+    if (!items.length) return [];
+    const playerIds = [...new Set(items.flatMap((item) => extractFeedPlayerIds(item == null ? void 0 : item.text)))];
+    const clubIds = [...new Set(items.flatMap((item) => extractFeedClubIds(item)))];
+    const namesPayload = playerIds.length || clubIds.length ? await TmMessagesModel.fetchFeedNames({ playerIds, clubIds }) : null;
+    const nameMaps = normalizeFeedNames(namesPayload);
+    return items.map((item) => {
+      const comments = Array.isArray(item == null ? void 0 : item.comments) ? item.comments : [];
+      return {
+        id: cleanText2(item == null ? void 0 : item.id),
+        href: getFeedPrimaryHref(item),
+        html: renderFeedTextHtml(item == null ? void 0 : item.text, nameMaps),
+        time: cleanText2(item == null ? void 0 : item.time),
+        longTime: cleanText2((item == null ? void 0 : item.full_time) || (item == null ? void 0 : item.time)),
+        commentCount: comments.length,
+        unread: (item == null ? void 0 : item.is_read) === false || (item == null ? void 0 : item.is_read) === "false" || (item == null ? void 0 : item.is_read) === 0
+      };
+    });
+  }
+  function setFeedListPlaceholder(feedState, copy) {
+    if (!(feedState == null ? void 0 : feedState.listEl)) return;
+    feedState.listEl.innerHTML = TmAppShellHeader.renderPmPlaceholder(copy);
+  }
+  function renderFeedItems(items = []) {
+    if (!Array.isArray(items) || !items.length) {
+      return TmAppShellHeader.renderPmPlaceholder("No recent feed items found.");
+    }
+    return items.map((item) => buttonHtml4({
+      slot: `
+            <div class="tmvu-feed-item-text">${item.html || ""}</div>
+            <div class="tmvu-feed-item-meta">
+                <span class="tmvu-feed-item-time" title="${escapeHtml5(item.longTime || item.time || "")}">${escapeHtml5(item.time || "")}</span>
+                <span class="tmvu-feed-item-comments">${item.commentCount ? `${item.commentCount} comments` : "No comments"}</span>
+            </div>
+        `,
+      color: "secondary",
+      size: "sm",
+      cls: `tmvu-feed-item${item.unread ? " is-unread" : ""}`,
+      attrs: {
+        "data-feed-item": true,
+        "data-feed-href": escapeHtml5(item.href || "/home/")
+      }
+    })).join("");
+  }
+  function openFeedMenu(feedState) {
+    var _a2;
+    if (!(feedState == null ? void 0 : feedState.menuEl) || !(feedState == null ? void 0 : feedState.triggerEl)) return;
+    feedState.isOpen = true;
+    (_a2 = feedState.rootEl) == null ? void 0 : _a2.classList.add("is-open");
+    feedState.menuEl.hidden = false;
+    feedState.triggerEl.setAttribute("aria-expanded", "true");
+  }
+  function closeFeedMenu(feedState) {
+    var _a2;
+    if (!(feedState == null ? void 0 : feedState.menuEl) || !(feedState == null ? void 0 : feedState.triggerEl)) return;
+    feedState.isOpen = false;
+    (_a2 = feedState.rootEl) == null ? void 0 : _a2.classList.remove("is-open");
+    feedState.menuEl.hidden = true;
+    feedState.triggerEl.setAttribute("aria-expanded", "false");
   }
   async function loadFeedNotifications(feedState) {
     var _a2, _b;
@@ -5178,6 +5315,287 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     } finally {
       feedState.isLoading = false;
       (_b = feedState.rootEl) == null ? void 0 : _b.classList.remove("is-loading");
+    }
+  }
+  function bindFeedMenu(feedState) {
+    var _a2, _b;
+    injectFeedStyles();
+    const rootEl = document.querySelector("[data-feed-root]");
+    if (!rootEl) return null;
+    Object.assign(feedState, {
+      rootEl,
+      triggerEl: rootEl.querySelector("[data-feed-trigger]"),
+      menuEl: rootEl.querySelector("[data-feed-menu]"),
+      listEl: rootEl.querySelector("[data-feed-list]"),
+      countEl: rootEl.querySelector("[data-feed-count]"),
+      summaryEl: rootEl.querySelector("[data-feed-summary]"),
+      isOpen: false
+    });
+    if (rootEl.dataset.tmvuFeedMenuBound === "1") {
+      return feedState;
+    }
+    rootEl.dataset.tmvuFeedMenuBound = "1";
+    (_a2 = feedState.triggerEl) == null ? void 0 : _a2.addEventListener("click", async (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (feedState.isOpen) {
+        closeFeedMenu(feedState);
+        return;
+      }
+      openFeedMenu(feedState);
+      await loadFeedNotifications(feedState);
+    });
+    if (!feedState.__documentBindingsAttached) {
+      document.addEventListener("click", (event) => {
+        if (!feedState.isOpen || !feedState.rootEl) return;
+        if (feedState.rootEl.contains(event.target)) return;
+        closeFeedMenu(feedState);
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape" || !feedState.isOpen) return;
+        closeFeedMenu(feedState);
+      });
+      feedState.__documentBindingsAttached = true;
+    }
+    (_b = feedState.listEl) == null ? void 0 : _b.addEventListener("click", (event) => {
+      const feedButton = event.target.closest("[data-feed-item]");
+      if (!feedButton) return;
+      event.preventDefault();
+      event.stopPropagation();
+      closeFeedMenu(feedState);
+      navigateToFeedHref(feedButton.getAttribute("data-feed-href") || "/home/");
+    });
+    return feedState;
+  }
+
+  // src/components/shared/tm-app-shell-pm.js
+  var STYLE_ID10 = "tmvu-shell-pm-menu-styles";
+  function cleanText3(value) {
+    return String(value || "").replace(/\s+/g, " ").trim();
+  }
+  function injectStyles2() {
+    if (document.getElementById(STYLE_ID10)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_ID10;
+    style.textContent = `
+        .tmvu-pm-wrap,
+        .tmvu-feed-wrap {
+            position: relative;
+        }
+
+        .tmvu-metric-button {
+            cursor: pointer;
+            position: relative;
+        }
+
+        .tmvu-metric-button:hover,
+        .tmvu-pm-wrap.is-open .tmvu-metric-button,
+        .tmvu-feed-wrap.is-open .tmvu-metric-button {
+            background: var(--tmu-success-fill-soft);
+            border-color: var(--tmu-border-embedded);
+        }
+
+        .tmvu-pm-menu[hidden] {
+            display: none !important;
+        }
+
+        .tmvu-pm-menu {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            width: min(360px, calc(100vw - 24px));
+            max-height: 420px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--tmu-border-input);
+            background: linear-gradient(180deg, var(--tmu-surface-panel), var(--tmu-surface-dark-muted));
+            box-shadow: 0 16px 32px var(--tmu-shadow-elev);
+            z-index: 10020;
+        }
+
+        .tmvu-pm-menu-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: var(--tmu-space-md);
+            padding: var(--tmu-space-md) var(--tmu-space-md) var(--tmu-space-md);
+            border-bottom: 1px solid var(--tmu-border-soft-alpha-strong);
+        }
+
+        .tmvu-pm-menu-head strong {
+            display: block;
+            font-size: var(--tmu-font-sm);
+            color: var(--tmu-text-inverse);
+        }
+
+        .tmvu-pm-menu-head span {
+            display: block;
+            margin-top: var(--tmu-space-xs);
+            font-size: var(--tmu-font-xs);
+            color: var(--tmu-text-muted);
+        }
+
+        .tmvu-pm-compose {
+            white-space: nowrap;
+        }
+
+        .tmvu-pm-list {
+            overflow-y: auto;
+            padding: var(--tmu-space-sm);
+        }
+
+        .tmvu-pm-menu-foot {
+            display: grid;
+            gap: var(--tmu-space-md);
+            padding: 0 var(--tmu-space-md) var(--tmu-space-md);
+            border-top: 1px solid var(--tmu-border-soft-alpha);
+        }
+
+        .tmvu-pm-view-all {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .tmvu-pm-placeholder {
+            padding: var(--tmu-space-lg) var(--tmu-space-md);
+            color: var(--tmu-text-muted);
+            font-size: var(--tmu-font-sm);
+        }
+
+        .tmvu-pm-item {
+            width: 100%;
+            display: block;
+            text-align: left;
+            padding: var(--tmu-space-md);
+            border: 1px solid transparent;
+            border-bottom-color: var(--tmu-border-soft-alpha);
+            background: var(--tmu-surface-item-dark);
+            cursor: pointer;
+        }
+
+        .tmvu-pm-item + .tmvu-pm-item {
+            margin-top: var(--tmu-space-sm);
+        }
+
+        .tmvu-pm-item:hover {
+            border-color: var(--tmu-border-soft-alpha-mid);
+            background: var(--tmu-success-fill-faint);
+        }
+
+        .tmvu-pm-item.is-unread {
+            border-color: var(--tmu-border-soft-alpha-mid);
+            background: var(--tmu-success-fill-faint);
+        }
+
+        .tmvu-pm-item-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: var(--tmu-space-sm);
+        }
+
+        .tmvu-pm-item-sender {
+            font-size: var(--tmu-font-sm);
+            color: var(--tmu-text-inverse);
+        }
+
+        .tmvu-pm-item-time {
+            font-size: var(--tmu-font-xs);
+            color: var(--tmu-text-muted);
+            white-space: nowrap;
+        }
+
+        .tmvu-pm-item-subject {
+            margin-top: var(--tmu-space-xs);
+            font-size: var(--tmu-font-sm);
+            color: var(--tmu-text-strong);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    `;
+    document.head.appendChild(style);
+  }
+  function getTopUserInfoPmCount(topUserInfo, fallback = 0) {
+    const count = Number(topUserInfo == null ? void 0 : topUserInfo.new_pms);
+    return Number.isFinite(count) && count >= 0 ? count : fallback;
+  }
+  function getTopUserInfoFeedCount(topUserInfo, fallback = 0) {
+    const count = Number(topUserInfo == null ? void 0 : topUserInfo.new_feed);
+    if (Number.isFinite(count) && count >= 0) return count;
+    return fallback;
+  }
+  function getConversationKey2(message) {
+    const conversationId = cleanText3(message == null ? void 0 : message.conversation_id);
+    if (conversationId && conversationId !== "0") return conversationId;
+    return cleanText3(message == null ? void 0 : message.id);
+  }
+  function isUnreadMessage2(message) {
+    const status = cleanText3(message == null ? void 0 : message.status).toLowerCase();
+    const messageStatus = cleanText3(message == null ? void 0 : message.m_status);
+    if (status) return status !== "read";
+    return messageStatus === "0";
+  }
+  function normalizePmConversationItems(payload) {
+    const messages = Array.isArray(payload == null ? void 0 : payload.messages) ? payload.messages : [];
+    const seen = /* @__PURE__ */ new Set();
+    const items = [];
+    for (const message of messages) {
+      const key = getConversationKey2(message);
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      items.push({
+        id: cleanText3(message == null ? void 0 : message.id),
+        conversationId: key,
+        senderName: cleanText3(message == null ? void 0 : message.sender_name) || "Unknown sender",
+        subject: cleanText3(message == null ? void 0 : message.subject) || "(No subject)",
+        time: cleanText3(message == null ? void 0 : message.time),
+        longTime: cleanText3((message == null ? void 0 : message.long_time) || (message == null ? void 0 : message.time)),
+        unread: isUnreadMessage2(message)
+      });
+      if (items.length >= 5) break;
+    }
+    return items;
+  }
+  function setPmListPlaceholder(pmState, copy) {
+    if (!(pmState == null ? void 0 : pmState.pmListEl)) return;
+    pmState.pmListEl.innerHTML = TmAppShellHeader.renderPmPlaceholder(copy);
+  }
+  function openPmMenu(pmState) {
+    var _a2;
+    if (!(pmState == null ? void 0 : pmState.pmMenuEl) || !(pmState == null ? void 0 : pmState.pmTriggerEl)) return;
+    pmState.isPmOpen = true;
+    (_a2 = pmState.pmRootEl) == null ? void 0 : _a2.classList.add("is-open");
+    pmState.pmMenuEl.hidden = false;
+    pmState.pmTriggerEl.setAttribute("aria-expanded", "true");
+  }
+  function closePmMenu(pmState) {
+    var _a2;
+    if (!(pmState == null ? void 0 : pmState.pmMenuEl) || !(pmState == null ? void 0 : pmState.pmTriggerEl)) return;
+    pmState.isPmOpen = false;
+    (_a2 = pmState.pmRootEl) == null ? void 0 : _a2.classList.remove("is-open");
+    pmState.pmMenuEl.hidden = true;
+    pmState.pmTriggerEl.setAttribute("aria-expanded", "false");
+  }
+  async function loadPmConversations(pmState) {
+    var _a2, _b;
+    if (!pmState || pmState.isLoading) return;
+    pmState.isLoading = true;
+    (_a2 = pmState.pmRootEl) == null ? void 0 : _a2.classList.add("is-loading");
+    setPmListPlaceholder(pmState, "Loading latest conversations...");
+    try {
+      const pmResponse = await TmMessagesModel.fetchPmMessages("inbox");
+      const pmItems = normalizePmConversationItems(pmResponse);
+      if (pmItems.length) {
+        pmState.pmListEl.innerHTML = TmAppShellHeader.renderPmItems(pmItems);
+      } else if (pmResponse) {
+        setPmListPlaceholder(pmState, "No recent conversations found.");
+      } else {
+        setPmListPlaceholder(pmState, "Unable to load messages right now.");
+      }
+    } finally {
+      pmState.isLoading = false;
+      (_b = pmState.pmRootEl) == null ? void 0 : _b.classList.remove("is-loading");
     }
   }
   function bindPmMenu(pmState) {
@@ -5242,78 +5660,13 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       event.preventDefault();
       event.stopPropagation();
       const item = {
-        id: cleanText(itemButton.getAttribute("data-pm-id")),
-        conversationId: cleanText(itemButton.getAttribute("data-pm-conversation-id")) || "0",
+        id: cleanText3(itemButton.getAttribute("data-pm-id")),
+        conversationId: cleanText3(itemButton.getAttribute("data-pm-conversation-id")) || "0",
         subject: ((_a3 = itemButton.querySelector(".tmvu-pm-item-subject")) == null ? void 0 : _a3.textContent) || ""
       };
       openPmDialog(pmState, { place: "inbox", item });
     });
     return pmState;
-  }
-  function bindFeedMenu(feedState) {
-    var _a2, _b;
-    const rootEl = document.querySelector("[data-feed-root]");
-    if (!rootEl) return null;
-    Object.assign(feedState, {
-      rootEl,
-      triggerEl: rootEl.querySelector("[data-feed-trigger]"),
-      menuEl: rootEl.querySelector("[data-feed-menu]"),
-      listEl: rootEl.querySelector("[data-feed-list]"),
-      countEl: rootEl.querySelector("[data-feed-count]"),
-      summaryEl: rootEl.querySelector("[data-feed-summary]"),
-      isOpen: false
-    });
-    if (rootEl.dataset.tmvuFeedMenuBound === "1") {
-      return feedState;
-    }
-    rootEl.dataset.tmvuFeedMenuBound = "1";
-    (_a2 = feedState.triggerEl) == null ? void 0 : _a2.addEventListener("click", async (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      if (feedState.isOpen) {
-        closeFeedMenu(feedState);
-        return;
-      }
-      openFeedMenu(feedState);
-      await loadFeedNotifications(feedState);
-    });
-    if (!feedState.__documentBindingsAttached) {
-      document.addEventListener("click", (event) => {
-        if (!feedState.isOpen || !feedState.rootEl) return;
-        if (feedState.rootEl.contains(event.target)) return;
-        closeFeedMenu(feedState);
-      });
-      document.addEventListener("keydown", (event) => {
-        if (event.key !== "Escape" || !feedState.isOpen) return;
-        closeFeedMenu(feedState);
-      });
-      feedState.__documentBindingsAttached = true;
-    }
-    (_b = feedState.listEl) == null ? void 0 : _b.addEventListener("click", (event) => {
-      const feedButton = event.target.closest("[data-feed-item]");
-      if (!feedButton) return;
-      event.preventDefault();
-      event.stopPropagation();
-      closeFeedMenu(feedState);
-      navigateToFeedHref(feedButton.getAttribute("data-feed-href") || "/home/");
-    });
-    return feedState;
-  }
-  function openFeedMenu(feedState) {
-    var _a2;
-    if (!(feedState == null ? void 0 : feedState.menuEl) || !(feedState == null ? void 0 : feedState.triggerEl)) return;
-    feedState.isOpen = true;
-    (_a2 = feedState.rootEl) == null ? void 0 : _a2.classList.add("is-open");
-    feedState.menuEl.hidden = false;
-    feedState.triggerEl.setAttribute("aria-expanded", "true");
-  }
-  function closeFeedMenu(feedState) {
-    var _a2;
-    if (!(feedState == null ? void 0 : feedState.menuEl) || !(feedState == null ? void 0 : feedState.triggerEl)) return;
-    feedState.isOpen = false;
-    (_a2 = feedState.rootEl) == null ? void 0 : _a2.classList.remove("is-open");
-    feedState.menuEl.hidden = true;
-    feedState.triggerEl.setAttribute("aria-expanded", "false");
   }
   function createAppShellPmController({ clubId: clubId2 = "", initialCount = 0, initialFeedCount = 0 } = {}) {
     var _a2, _b, _c;
@@ -5321,7 +5674,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       isLoading: false,
       count: 0,
       isPmOpen: false,
-      clubId: cleanText(clubId2 || ((_a2 = window.SESSION) == null ? void 0 : _a2.main_id) || ((_b = window.SESSION) == null ? void 0 : _b.club_id) || ((_c = window.SESSION) == null ? void 0 : _c.id)),
+      clubId: cleanText3(clubId2 || ((_a2 = window.SESSION) == null ? void 0 : _a2.main_id) || ((_b = window.SESSION) == null ? void 0 : _b.club_id) || ((_c = window.SESSION) == null ? void 0 : _c.id)),
       dialog: null,
       pmRootEl: null,
       pmTriggerEl: null,
@@ -5363,6 +5716,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       if (feedState.countEl) feedState.countEl.textContent = String(safeCount);
       if (feedState.summaryEl) feedState.summaryEl.textContent = `${safeCount} new`;
     };
+    pmState.closeMenu = () => closePmMenu(pmState);
     return {
       bind() {
         injectStyles2();
@@ -5374,6 +5728,9 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       },
       setCount: setPmCount,
       setFeedCount,
+      openDialog({ place = "inbox", item = null } = {}) {
+        openPmDialog(pmState, { place, item });
+      },
       async refreshCount() {
         const [topUserInfo, topUserFeed] = await Promise.all([
           TmMessagesModel.fetchTopUserInfo(),
@@ -5533,11 +5890,11 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   };
 
   // src/components/shared/tm-side-menu.js
-  var STYLE_ID9 = "tmvu-side-menu-style";
+  var STYLE_ID11 = "tmvu-side-menu-style";
   function injectStyles3() {
-    if (document.getElementById(STYLE_ID9)) return;
+    if (document.getElementById(STYLE_ID11)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID9;
+    style.id = STYLE_ID11;
     style.textContent = `
         .tmvu-side-menu {
             flex: 0 0 184px;
@@ -6519,14 +6876,14 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   };
 
   // src/components/player/card/tm-player-photo.js
-  var STYLE_ID10 = "tmvu-player-photo-style";
-  function escapeHtml5(value) {
+  var STYLE_ID12 = "tmvu-player-photo-style";
+  function escapeHtml6(value) {
     return String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
   function injectStyles4() {
-    if (document.getElementById(STYLE_ID10)) return;
+    if (document.getElementById(STYLE_ID12)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID10;
+    style.id = STYLE_ID12;
     style.textContent = `
         .tmvu-player-photo {
             width: var(--tmvu-player-photo-size, 112px);
@@ -6557,12 +6914,12 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   function html({ imageHtml = "", src = "", alt = "", size = 112, className = "" } = {}) {
     injectStyles4();
     const resolvedSrc = src || extractImageSrc(imageHtml);
-    return `<div class="tmvu-player-photo${className ? ` ${className}` : ""}" style="--tmvu-player-photo-size:${Number(size) || 112}px;">${resolvedSrc ? `<img src="${escapeHtml5(resolvedSrc)}" alt="${escapeHtml5(alt || "Player")}">` : ""}</div>`;
+    return `<div class="tmvu-player-photo${className ? ` ${className}` : ""}" style="--tmvu-player-photo-size:${Number(size) || 112}px;">${resolvedSrc ? `<img src="${escapeHtml6(resolvedSrc)}" alt="${escapeHtml6(alt || "Player")}">` : ""}</div>`;
   }
   var TmPlayerPhoto = { html, extractImageSrc };
 
   // src/services/shortlist.js
-  function cleanText2(value) {
+  function cleanText4(value) {
     return String(value || "").replace(/\s+/g, " ").trim();
   }
   function extractArrayLiteral(html2, varName) {
@@ -6601,7 +6958,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     return "";
   }
   function isExpiredTimeleftText(value) {
-    return cleanText2(value).toLowerCase() === "expired";
+    return cleanText4(value).toLowerCase() === "expired";
   }
   function parseTimeleft(str) {
     if (isExpiredTimeleftText(str)) return -1;
@@ -6726,25 +7083,25 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   };
 
   // src/components/bids/tm-bids-dialog.js
-  var STYLE_ID11 = "tmvu-bids-dialog-style";
+  var STYLE_ID13 = "tmvu-bids-dialog-style";
   var DIALOG_ID = "tmvu-bids-dialog-overlay";
   var CLOSE_ICON = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
   var activeBidDialog = null;
-  function cleanText3(value) {
+  function cleanText5(value) {
     return String(value || "").replace(/\s+/g, " ").trim();
   }
-  function escapeHtml6(value) {
+  function escapeHtml7(value) {
     return String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
   function renderFlag(countryCode) {
-    return countryCode ? `<ib class="tmvu-bids-flag flag-img-${escapeHtml6(countryCode)}"></ib>` : "";
+    return countryCode ? `<ib class="tmvu-bids-flag flag-img-${escapeHtml7(countryCode)}"></ib>` : "";
   }
   function getOwnClubId() {
     var _a2, _b, _c;
-    return cleanText3(((_a2 = window.SESSION) == null ? void 0 : _a2.main_id) || ((_b = window.SESSION) == null ? void 0 : _b.club_id) || ((_c = window.SESSION) == null ? void 0 : _c.id));
+    return cleanText5(((_a2 = window.SESSION) == null ? void 0 : _a2.main_id) || ((_b = window.SESSION) == null ? void 0 : _b.club_id) || ((_c = window.SESSION) == null ? void 0 : _c.id));
   }
   function formatBidValue(value) {
-    const text = cleanText3(value);
+    const text = cleanText5(value);
     if (!text) return "-";
     const digits = text.replace(/[^\d]/g, "");
     if (!digits) return text;
@@ -6763,34 +7120,34 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     return `${seconds}s`;
   }
   function isExpiredState(player2, deadline, transfer) {
-    if (cleanText3(transfer == null ? void 0 : transfer.expiry).toLowerCase() === "expired") return true;
-    if (cleanText3(player2 == null ? void 0 : player2.timeleft_string).toLowerCase() === "expired") return true;
-    return Number(deadline) <= 0 && cleanText3(player2 == null ? void 0 : player2.timeleft_string).length > 0;
+    if (cleanText5(transfer == null ? void 0 : transfer.expiry).toLowerCase() === "expired") return true;
+    if (cleanText5(player2 == null ? void 0 : player2.timeleft_string).toLowerCase() === "expired") return true;
+    return Number(deadline) <= 0 && cleanText5(player2 == null ? void 0 : player2.timeleft_string).length > 0;
   }
   function buildOwnListingSnapshot(player2, transfer, minimumBid, currentBid, isExpired) {
     const transferBid = formatBidValue((transfer == null ? void 0 : transfer.current_bid) || player2.bid);
     const nextBid = formatBidValue((transfer == null ? void 0 : transfer.next_bid) || minimumBid);
-    const buyerId = cleanText3(transfer == null ? void 0 : transfer.buyer_id);
-    const buyerName = cleanText3(transfer == null ? void 0 : transfer.buyer_name);
+    const buyerId = cleanText5(transfer == null ? void 0 : transfer.buyer_id);
+    const buyerName = cleanText5(transfer == null ? void 0 : transfer.buyer_name);
     const hasBuyer = buyerId && buyerId !== "0" && buyerName;
     const numericBid = Number(String((transfer == null ? void 0 : transfer.current_bid) || player2.bid || "").replace(/[^\d]/g, "")) || 0;
     let markup = `
-        <tm-stat data-label="Current Bid" data-value="${escapeHtml6(currentBid)}"></tm-stat>
-        <tm-stat data-label="Next Bid" data-value="${escapeHtml6(nextBid)}"></tm-stat>
-        <tm-stat data-label="Expiry" data-value="${isExpired ? "Expired" : escapeHtml6(cleanText3(player2.timeleft_string) || "-")}" data-variant="${isExpired ? "red" : "yellow"}"></tm-stat>
+        <tm-stat data-label="Current Bid" data-value="${escapeHtml7(currentBid)}"></tm-stat>
+        <tm-stat data-label="Next Bid" data-value="${escapeHtml7(nextBid)}"></tm-stat>
+        <tm-stat data-label="Expiry" data-value="${isExpired ? "Expired" : escapeHtml7(cleanText5(player2.timeleft_string) || "-")}" data-variant="${isExpired ? "red" : "yellow"}"></tm-stat>
     `;
     if (!isExpired) return markup;
     if (hasBuyer) {
       markup += `
-            <tm-stat data-label="Sold To" class="green"><a href="/club/${escapeHtml6(buyerId)}">${escapeHtml6(buyerName)}</a></tm-stat>
-            <tm-stat data-label="Price" data-value="${escapeHtml6(transferBid)}" data-variant="green"></tm-stat>
+            <tm-stat data-label="Sold To" class="green"><a href="/club/${escapeHtml7(buyerId)}">${escapeHtml7(buyerName)}</a></tm-stat>
+            <tm-stat data-label="Price" data-value="${escapeHtml7(transferBid)}" data-variant="green"></tm-stat>
         `;
       return markup;
     }
     if (numericBid > 0) {
       markup += `
             <tm-stat data-label="Result" data-value="Sold to Agent" data-variant="purple"></tm-stat>
-            <tm-stat data-label="Price" data-value="${escapeHtml6(transferBid)}" data-variant="green"></tm-stat>
+            <tm-stat data-label="Price" data-value="${escapeHtml7(transferBid)}" data-variant="green"></tm-stat>
         `;
       return markup;
     }
@@ -6798,9 +7155,9 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     return markup;
   }
   function injectStyles5() {
-    if (document.getElementById(STYLE_ID11)) return;
+    if (document.getElementById(STYLE_ID13)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID11;
+    style.id = STYLE_ID13;
     style.textContent = `
         body.tmvu-bids-dialog-open { overflow: hidden; }
         .tmvu-bids-overlay { position: fixed; inset: 0; z-index: 200100; display: flex; align-items: center; justify-content: center; padding: 24px; background: rgba(2,7,10,.82); backdrop-filter: blur(4px); }
@@ -6823,19 +7180,19 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   }
   function renderBidHistory(history = []) {
     const real = (history || []).filter((e) => {
-      const n = cleanText3(e.club_name || "").toUpperCase();
+      const n = cleanText5(e.club_name || "").toUpperCase();
       return n && n !== "NO BIDS" && n !== "NO BID";
     });
     if (!real.length) return '<p class="tmu-note" style="margin:0;">No bids placed yet.</p>';
     return `<ul class="tmvu-bids-dialog-history" id="tlpop_history">
-        ${real.map((e) => `<li><tm-stat data-label="${escapeHtml6(cleanText3(e.club_name))}" data-value="${e.bid}"></tm-stat></li>`).join("")}
+        ${real.map((e) => `<li><tm-stat data-label="${escapeHtml7(cleanText5(e.club_name))}" data-value="${e.bid}"></tm-stat></li>`).join("")}
     </ul>`;
   }
   function createBidDialogMarkup({ deadline, shortlist, bid_history, transfer }, player2) {
     const minimumBid = formatBidValue((transfer == null ? void 0 : transfer.next_bid) || player2.bid);
     const currentBid = formatBidValue(player2.bid);
     const isExpired = isExpiredState(player2, deadline, transfer);
-    const timeLeft = isExpired ? "Expired" : Number.isFinite(Number(deadline)) ? formatCountdown(Number(deadline)) : cleanText3(player2.timeleft_string);
+    const timeLeft = isExpired ? "Expired" : Number.isFinite(Number(deadline)) ? formatCountdown(Number(deadline)) : cleanText5(player2.timeleft_string);
     const preferredPositions = (player2.positions || []).filter((p) => p.preferred);
     const posChips = preferredPositions.length ? TmPosition.chip(preferredPositions) : "";
     const showBidForm = !player2.isOwnPlayer;
@@ -6847,7 +7204,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
                 ${TmPlayerPhoto.html({ src: player2.faceUrl || "", alt: player2.name, size: 88 })}
                 <div class="tmvu-bids-dialog-player-main">
                     <div class="tmvu-bids-dialog-name-row">
-                        <a href="${escapeHtml6(player2.href)}" target="_blank" rel="noopener noreferrer" class="tmu-text-strong" style="font-size:var(--tmu-font-lg);font-weight:800;color:inherit;text-decoration:none;">${escapeHtml6(player2.name)}</a>
+                        <a href="${escapeHtml7(player2.href)}" target="_blank" rel="noopener noreferrer" class="tmu-text-strong" style="font-size:var(--tmu-font-lg);font-weight:800;color:inherit;text-decoration:none;">${escapeHtml7(player2.name)}</a>
                         ${renderFlag(player2.country)}
                     </div>
                     <div style="display:flex;align-items:center;gap:var(--tmu-space-sm);flex-wrap:wrap;">
@@ -6855,13 +7212,13 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
                         ${TmPlayerAge.chip(player2)}
                     </div>
                     <div>
-                        <tm-button data-action="${shortlistAction}" data-variant="secondary" data-size="sm">${escapeHtml6(shortlistLabel)}</tm-button>
+                        <tm-button data-action="${shortlistAction}" data-variant="secondary" data-size="sm">${escapeHtml7(shortlistLabel)}</tm-button>
                     </div>
                 </div>
             </div>
             <div class="tmvu-bids-dialog-deadline">
                 <p class="tmu-kicker" style="margin:0 0 var(--tmu-space-xs);">${isExpired ? "Status" : "Deadline"}</p>
-                <div id="tl_pop_countdown" class="tmvu-bids-dialog-countdown">${escapeHtml6(timeLeft || "-")}</div>
+                <div id="tl_pop_countdown" class="tmvu-bids-dialog-countdown">${escapeHtml7(timeLeft || "-")}</div>
                 <p class="tmu-note" style="margin:0;">${isExpired ? "Listing closed" : "Time remaining"}</p>
             </div>
         </div>
@@ -6873,10 +7230,10 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
             <div id="tlpop_form">
                 ${showBidForm ? `
                     <form id="transfer_bid_form" class="tmvu-bids-dialog-form" onsubmit="return false;">
-                        <input type="hidden" value="${escapeHtml6(minimumBid)}" name="min_bid" id="min_bid">
-                        <input type="hidden" value="${escapeHtml6(player2.name)}" id="bid_player_name">
+                        <input type="hidden" value="${escapeHtml7(minimumBid)}" name="min_bid" id="min_bid">
+                        <input type="hidden" value="${escapeHtml7(player2.name)}" id="bid_player_name">
                         <div data-ref="bidInputMount"></div>
-                        <p id="min_bid_text" class="tmu-note" style="margin:var(--tmu-space-xs) 0 0;">Minimum bid is <strong id="minbid">${escapeHtml6(minimumBid)}</strong></p>
+                        <p id="min_bid_text" class="tmu-note" style="margin:var(--tmu-space-xs) 0 0;">Minimum bid is <strong id="minbid">${escapeHtml7(minimumBid)}</strong></p>
                         <div data-ref="agentMount"></div>
                         <div class="tmvu-bids-dialog-actions">
                             <div data-ref="primaryActionMount"></div>
@@ -6897,8 +7254,8 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
             <div id="tlpop_hischat">${renderBidHistory(bid_history || [])}</div>
         </div>
 
-        <div id="transfer_channel" style="display:none;">transfer_player_${escapeHtml6(player2.id)}</div>
-        <div id="this_player_id" style="display:none;">${escapeHtml6(player2.id)}</div>
+        <div id="transfer_channel" style="display:none;">transfer_player_${escapeHtml7(player2.id)}</div>
+        <div id="this_player_id" style="display:none;">${escapeHtml7(player2.id)}</div>
     `;
   }
   function mountFormControls(dialogBody, { is_pro, transfer }, player2) {
@@ -6994,11 +7351,11 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     card.className = "tmu-card tmvu-bids-card";
     card.setAttribute("role", "dialog");
     card.setAttribute("aria-modal", "true");
-    card.setAttribute("aria-label", `Transfer bid \u2014 ${cleanText3(player2.name)}`);
+    card.setAttribute("aria-label", `Transfer bid \u2014 ${cleanText5(player2.name)}`);
     const head = document.createElement("div");
     head.className = "tmu-card-head";
     const titleEl = document.createElement("span");
-    titleEl.textContent = cleanText3(player2.name);
+    titleEl.textContent = cleanText5(player2.name);
     head.appendChild(titleEl);
     const closeBtn = TmButton.button({
       variant: "icon",
@@ -7011,7 +7368,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     head.appendChild(closeBtn);
     const body = document.createElement("div");
     body.className = "tmu-card-body";
-    body.innerHTML = TmUI.loading(`Loading ${escapeHtml6(player2.name)}...`, true);
+    body.innerHTML = TmUI.loading(`Loading ${escapeHtml7(player2.name)}...`, true);
     card.appendChild(head);
     card.appendChild(body);
     overlay.appendChild(card);
@@ -7474,7 +7831,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
   var TmShortlistTable = { injectCSS, createTableElement, createIndexedTableElement };
 
   // src/components/shared/tm-page-layout.js
-  var STYLE_ID12 = "tmu-page-layout-style";
+  var STYLE_ID14 = "tmu-page-layout-style";
   var TMU_PAGE_LAYOUT_CSS = `
 .tmu-page-layout-2col,
 .tmu-page-layout-3rail{
@@ -7549,12 +7906,12 @@ order:initial
   function injectTmPageLayoutStyles(target = document.head) {
     if (!target) return;
     if (target === document.head) {
-      if (document.getElementById(STYLE_ID12)) return;
-    } else if (target.querySelector && target.querySelector(`#${STYLE_ID12}`)) {
+      if (document.getElementById(STYLE_ID14)) return;
+    } else if (target.querySelector && target.querySelector(`#${STYLE_ID14}`)) {
       return;
     }
     const style = document.createElement("style");
-    style.id = STYLE_ID12;
+    style.id = STYLE_ID14;
     style.textContent = TMU_PAGE_LAYOUT_CSS;
     target.appendChild(style);
   }
@@ -7840,13 +8197,13 @@ order:initial
   };
 
   // src/pages/bids.js
-  var STYLE_ID13 = "tmvu-bids-style";
+  var STYLE_ID15 = "tmvu-bids-style";
   var COLS = { asi: false, rtn: false, rec: false, nameWidth: "220px" };
   function injectStyles6() {
-    if (document.getElementById(STYLE_ID13)) return;
+    if (document.getElementById(STYLE_ID15)) return;
     injectTmPageLayoutStyles();
     const style = document.createElement("style");
-    style.id = STYLE_ID13;
+    style.id = STYLE_ID15;
     style.textContent = `.tmvu-bids-page { --tmu-page-sidebar-width: 240px; } .tmvu-bids-main { min-width: 0; } .tmvu-bids-main .tmu-card .tmpt-wrap { padding: var(--tmu-space-md) var(--tmu-space-lg); }`;
     document.head.appendChild(style);
   }
@@ -8047,11 +8404,11 @@ order:initial
   };
 
   // src/components/shared/tm-page-hero.js
-  var STYLE_ID14 = "tmu-page-hero-style";
+  var STYLE_ID16 = "tmu-page-hero-style";
   var injectStyles7 = () => {
-    if (document.getElementById(STYLE_ID14)) return;
+    if (document.getElementById(STYLE_ID16)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID14;
+    style.id = STYLE_ID16;
     style.textContent = `
         .tmu-page-hero {
             grid-template-columns: 1fr auto;
@@ -8090,11 +8447,11 @@ order:initial
   };
 
   // src/pages/finances-maintenance.js
-  var STYLE_ID15 = "tmvu-fin-maintenance-style";
-  var cleanText4 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-  var escapeHtml7 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var STYLE_ID17 = "tmvu-fin-maintenance-style";
+  var cleanText6 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var escapeHtml8 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var metricHtml = (opts) => TmUI.metric(opts);
-  var parseMoney = (value) => TmUtils.parseNum(cleanText4(value));
+  var parseMoney = (value) => TmUtils.parseNum(cleanText6(value));
   var formatMoney = (value) => Number(value || 0).toLocaleString("en-US");
   var FACILITY_MAX_LEVELS = {
     "fast food place": 10,
@@ -8124,10 +8481,10 @@ order:initial
     return "\u2022";
   };
   var injectStyles8 = () => {
-    if (document.getElementById(STYLE_ID15)) return;
+    if (document.getElementById(STYLE_ID17)) return;
     injectTmPageLayoutStyles();
     const style = document.createElement("style");
-    style.id = STYLE_ID15;
+    style.id = STYLE_ID17;
     style.textContent = `
             .tmvu-fin-maint-main,
             .tmvu-fin-maint-side {
@@ -8186,11 +8543,15 @@ order:initial
             }
 
             .tmvu-fin-maint-table tbody tr {
-                background: #2d4315;
+                background: transparent;
             }
 
             .tmvu-fin-maint-table tbody tr:nth-child(even) {
-                background: #35501a;
+                background: var(--tmu-border-contrast);
+            }
+
+            .tmvu-fin-maint-table tbody tr:hover {
+                background: var(--tmu-surface-dark-mid);
             }
 
             .tmvu-fin-maint-table td,
@@ -8219,7 +8580,7 @@ order:initial
             }
 
             .tmvu-fin-maint-table tr.tmvu-fin-maint-total {
-                background: #41631f;
+                background: var(--tmu-surface-dark-strong);
             }
 
             .tmvu-fin-maint-table tr.tmvu-fin-maint-total td,
@@ -8234,7 +8595,7 @@ order:initial
   var parseMenu = (sourceRoot3) => Array.from(sourceRoot3.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
     if (node.tagName === "HR") return [{ type: "separator" }];
     if (node.tagName !== "A") return [];
-    const label = cleanText4(node.textContent);
+    const label = cleanText6(node.textContent);
     return [{
       type: "link",
       href: node.getAttribute("href") || "#",
@@ -8249,7 +8610,7 @@ order:initial
     const match = String(value || "").match(/\d+/);
     return match ? Number(match[0]) : 0;
   };
-  var normalizeFacilityName = (value) => cleanText4(value).toLowerCase();
+  var normalizeFacilityName = (value) => cleanText6(value).toLowerCase();
   var getFacilityMaxLevel = (name) => FACILITY_MAX_LEVELS[normalizeFacilityName(name)] || 10;
   var parseRows = (table, type) => {
     if (!table) return [];
@@ -8260,8 +8621,8 @@ order:initial
       if (type === "stadium" && cells.length >= 4) {
         return {
           type,
-          name: cleanText4((_a2 = cells[0]) == null ? void 0 : _a2.textContent),
-          capacity: cleanText4((_b = cells[1]) == null ? void 0 : _b.textContent),
+          name: cleanText6((_a2 = cells[0]) == null ? void 0 : _a2.textContent),
+          capacity: cleanText6((_b = cells[1]) == null ? void 0 : _b.textContent),
           weekly: parseMoney(((_c = cells[2]) == null ? void 0 : _c.textContent) || "0"),
           season: parseMoney(((_d = cells[3]) == null ? void 0 : _d.textContent) || "0")
         };
@@ -8271,9 +8632,9 @@ order:initial
         const link = nameCell.querySelector("a[href]");
         return {
           type,
-          name: cleanText4(nameCell.textContent),
-          nameHtml: link ? link.outerHTML : escapeHtml7(cleanText4(nameCell.textContent)),
-          level: cleanText4((_e = cells[1]) == null ? void 0 : _e.textContent),
+          name: cleanText6(nameCell.textContent),
+          nameHtml: link ? link.outerHTML : escapeHtml8(cleanText6(nameCell.textContent)),
+          level: cleanText6((_e = cells[1]) == null ? void 0 : _e.textContent),
           weekly: parseMoney(((_f = cells[2]) == null ? void 0 : _f.textContent) || "0"),
           season: parseMoney(((_g = cells[3]) == null ? void 0 : _g.textContent) || "0")
         };
@@ -8281,7 +8642,7 @@ order:initial
       if (type === "totals" && cells.length >= 3) {
         return {
           type,
-          name: cleanText4((_h = cells[0]) == null ? void 0 : _h.textContent),
+          name: cleanText6((_h = cells[0]) == null ? void 0 : _h.textContent),
           weekly: parseMoney(((_i = cells[cells.length - 2]) == null ? void 0 : _i.textContent) || "0"),
           season: parseMoney(((_j = cells[cells.length - 1]) == null ? void 0 : _j.textContent) || "0")
         };
@@ -8294,7 +8655,7 @@ order:initial
     const boxes = Array.from(sourceRoot3.querySelectorAll("#tab0 > h3"));
     const sections = {};
     boxes.forEach((h3) => {
-      const title = cleanText4(h3.textContent).toLowerCase();
+      const title = cleanText6(h3.textContent).toLowerCase();
       let next = h3.nextElementSibling;
       while (next && next.tagName !== "DIV") next = next.nextElementSibling;
       const table = next == null ? void 0 : next.querySelector("table");
@@ -8304,7 +8665,7 @@ order:initial
       else if (title === "total") sections.totals = parseRows(table, "totals");
     });
     return {
-      title: cleanText4(((_a2 = sourceRoot3.querySelector(".column2_a .box_head h2")) == null ? void 0 : _a2.textContent) || "Finances"),
+      title: cleanText6(((_a2 = sourceRoot3.querySelector(".column2_a .box_head h2")) == null ? void 0 : _a2.textContent) || "Finances"),
       stadium: sections.stadium || [],
       maintenance: sections.maintenance || [],
       totals: sections.totals || []
@@ -8329,9 +8690,9 @@ order:initial
         title: "Maintenance",
         footer: `
                     <div class="tmvu-fin-maint-hero-metrics tmu-page-card-grid tmu-card-grid-density-compact">
-                        ${metricHtml({ label: `Stadium / ${periodLabel}`, value: escapeHtml7(formatMoney(getPeriodValue(summary.stadiumTotal, payPeriod))), tone: "overlay", size: "md" })}
-                        ${metricHtml({ label: `Facilities / ${periodLabel}`, value: escapeHtml7(formatMoney(getPeriodValue(summary.maintenanceTotal, payPeriod))), tone: "overlay", size: "md" })}
-                        ${metricHtml({ label: `Total / ${periodLabel}`, value: escapeHtml7(formatMoney(getPeriodValue(summary.totalRow, payPeriod))), tone: "overlay", size: "lg" })}
+                        ${metricHtml({ label: `Stadium / ${periodLabel}`, value: escapeHtml8(formatMoney(getPeriodValue(summary.stadiumTotal, payPeriod))), tone: "overlay", size: "md" })}
+                        ${metricHtml({ label: `Facilities / ${periodLabel}`, value: escapeHtml8(formatMoney(getPeriodValue(summary.maintenanceTotal, payPeriod))), tone: "overlay", size: "md" })}
+                        ${metricHtml({ label: `Total / ${periodLabel}`, value: escapeHtml8(formatMoney(getPeriodValue(summary.totalRow, payPeriod))), tone: "overlay", size: "lg" })}
                     </div>
                 `
       }
@@ -8343,22 +8704,22 @@ order:initial
     const totalRow = data.totals.find((row) => /^total$/i.test(row.name)) || null;
     const stadiumRowsHtml = data.stadium.map((row) => `
             <tr>
-                <td class="l">${escapeHtml7(row.name)}</td>
-                <td class="c">${escapeHtml7(row.capacity)}</td>
-                <td>${escapeHtml7(formatMoney(getPeriodValue(row, payPeriod)))}</td>
+                <td class="l">${escapeHtml8(row.name)}</td>
+                <td class="c">${escapeHtml8(row.capacity)}</td>
+                <td>${escapeHtml8(formatMoney(getPeriodValue(row, payPeriod)))}</td>
             </tr>
         `).join("");
     const maintRowsHtml = data.maintenance.map((row) => `
             <tr>
                 <td class="l">${row.nameHtml}</td>
-                <td class="c">${escapeHtml7(row.level)}</td>
-                <td>${escapeHtml7(formatMoney(getPeriodValue(row, payPeriod)))}</td>
+                <td class="c">${escapeHtml8(row.level)}</td>
+                <td>${escapeHtml8(formatMoney(getPeriodValue(row, payPeriod)))}</td>
             </tr>
         `).join("");
     const totalHtml = totalRow ? `
             <tr class="tmvu-fin-maint-total">
                 <th class="l" colspan="2">Total</th>
-                <td>${escapeHtml7(formatMoney(getPeriodValue(totalRow, payPeriod)))}</td>
+                <td>${escapeHtml8(formatMoney(getPeriodValue(totalRow, payPeriod)))}</td>
             </tr>
         ` : "";
     const wrap = document.createElement("div");
@@ -8369,7 +8730,7 @@ order:initial
                     <tr>
                         <th class="l">Name</th>
                         <th class="c">Capacity / Level</th>
-                        <th>Cost / ${escapeHtml7(periodLabel)}</th>
+                        <th>Cost / ${escapeHtml8(periodLabel)}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -8440,12 +8801,12 @@ order:initial
   }
 
   // src/pages/finances.js
-  var STYLE_ID16 = "tmvu-finances-style";
-  var cleanText5 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-  var escapeHtml8 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var STYLE_ID18 = "tmvu-finances-style";
+  var cleanText7 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var escapeHtml9 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var metricHtml2 = (opts) => TmUI.metric(opts);
   var parseMoney2 = (value) => {
-    const text = cleanText5(value);
+    const text = cleanText7(value);
     const sign = /^-/.test(text) ? -1 : 1;
     return sign * TmUtils.parseNum(text);
   };
@@ -8471,10 +8832,10 @@ order:initial
     return "\u2022";
   };
   var injectStyles9 = () => {
-    if (document.getElementById(STYLE_ID16)) return;
+    if (document.getElementById(STYLE_ID18)) return;
     injectTmPageLayoutStyles();
     const style = document.createElement("style");
-    style.id = STYLE_ID16;
+    style.id = STYLE_ID18;
     style.textContent = `
             .tmvu-fin-main,
             .tmvu-fin-side {
@@ -8589,7 +8950,7 @@ order:initial
   var parseMenu2 = (sourceRoot3) => Array.from(sourceRoot3.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
     if (node.tagName === "HR") return [{ type: "separator" }];
     if (node.tagName !== "A") return [];
-    const label = cleanText5(node.textContent);
+    const label = cleanText7(node.textContent);
     return [{
       type: "link",
       href: node.getAttribute("href") || "#",
@@ -8606,7 +8967,7 @@ order:initial
       const cells = row.querySelectorAll("th, td");
       if (cells.length < 3) return null;
       const labelCell = cells[0];
-      const label = cleanText5(labelCell.textContent);
+      const label = cleanText7(labelCell.textContent);
       const tooltip = ((_a3 = labelCell.querySelector("[tooltip]")) == null ? void 0 : _a3.getAttribute("tooltip")) || "";
       const current = parseMoney2(((_b2 = cells[1]) == null ? void 0 : _b2.textContent) || "0");
       const previous = parseMoney2(((_c2 = cells[2]) == null ? void 0 : _c2.textContent) || "0");
@@ -8622,9 +8983,9 @@ order:initial
     const headerCells = table.querySelectorAll("tr:first-child th");
     return {
       columns: [
-        cleanText5(((_a2 = headerCells[0]) == null ? void 0 : _a2.textContent) || ""),
-        cleanText5(((_b = headerCells[1]) == null ? void 0 : _b.textContent) || "Current"),
-        cleanText5(((_c = headerCells[2]) == null ? void 0 : _c.textContent) || "Previous")
+        cleanText7(((_a2 = headerCells[0]) == null ? void 0 : _a2.textContent) || ""),
+        cleanText7(((_b = headerCells[1]) == null ? void 0 : _b.textContent) || "Current"),
+        cleanText7(((_c = headerCells[2]) == null ? void 0 : _c.textContent) || "Previous")
       ],
       rows,
       total: rows.find((row) => row.isTotal) || null
@@ -8632,7 +8993,7 @@ order:initial
   };
   var parseOverview = (sourceRoot3) => {
     var _a2, _b, _c, _d;
-    const title = cleanText5(((_a2 = sourceRoot3.querySelector(".column2_a .box_head h2")) == null ? void 0 : _a2.textContent) || "Finances");
+    const title = cleanText7(((_a2 = sourceRoot3.querySelector(".column2_a .box_head h2")) == null ? void 0 : _a2.textContent) || "Finances");
     const balanceText = ((_b = sourceRoot3.querySelector(".column2_a .very_large .coin_big")) == null ? void 0 : _b.textContent) || "0";
     const pendingText = ((_d = (_c = Array.from(sourceRoot3.querySelectorAll(".column2_a .align_center")).find((node) => /pending transfers/i.test(node.textContent || ""))) == null ? void 0 : _c.querySelector(".coin")) == null ? void 0 : _d.textContent) || "";
     return {
@@ -8667,9 +9028,9 @@ order:initial
     const pending = (_e = overview.pending) != null ? _e : 0;
     return `
             <div class="tmvu-fin-stat-grid">
-                ${metricHtml2({ label: "Weekly Net", value: escapeHtml8(formatSignedMoney(weekTotal)), note: `Compared with ${escapeHtml8(formatMoney2((_g = (_f = week == null ? void 0 : week.total) == null ? void 0 : _f.previous) != null ? _g : 0))} last week.`, tone: "overlay", size: "md", valueCls: deltaClass(weekTotal) })}
-                ${metricHtml2({ label: "Season Net", value: escapeHtml8(formatSignedMoney(seasonTotal)), note: `Compared with ${escapeHtml8(formatSignedMoney((_i = (_h = season == null ? void 0 : season.total) == null ? void 0 : _h.previous) != null ? _i : 0))} last season.`, tone: "overlay", size: "md", valueCls: deltaClass(seasonTotal) })}
-                ${metricHtml2({ label: "Pending Transfers", value: escapeHtml8(formatSignedMoney(pending)), note: "Queued movements that have not hit the balance yet.", tone: "overlay", size: "md", valueCls: deltaClass(pending) })}
+                ${metricHtml2({ label: "Weekly Net", value: escapeHtml9(formatSignedMoney(weekTotal)), note: `Compared with ${escapeHtml9(formatMoney2((_g = (_f = week == null ? void 0 : week.total) == null ? void 0 : _f.previous) != null ? _g : 0))} last week.`, tone: "overlay", size: "md", valueCls: deltaClass(weekTotal) })}
+                ${metricHtml2({ label: "Season Net", value: escapeHtml9(formatSignedMoney(seasonTotal)), note: `Compared with ${escapeHtml9(formatSignedMoney((_i = (_h = season == null ? void 0 : season.total) == null ? void 0 : _h.previous) != null ? _i : 0))} last season.`, tone: "overlay", size: "md", valueCls: deltaClass(seasonTotal) })}
+                ${metricHtml2({ label: "Pending Transfers", value: escapeHtml9(formatSignedMoney(pending)), note: "Queued movements that have not hit the balance yet.", tone: "overlay", size: "md", valueCls: deltaClass(pending) })}
             </div>
         `;
   };
@@ -8678,8 +9039,8 @@ order:initial
     TmPageHero.mount(wrap, {
       slots: {
         kicker: "Finances",
-        title: escapeHtml8(overview.title),
-        side: `<div class="tmvu-fin-balance-hero">${metricHtml2({ label: "Current Balance", value: escapeHtml8(formatSignedMoney(overview.balance)), tone: "overlay", size: "lg", valueCls: deltaClass(overview.balance) })}</div>`,
+        title: escapeHtml9(overview.title),
+        side: `<div class="tmvu-fin-balance-hero">${metricHtml2({ label: "Current Balance", value: escapeHtml9(formatSignedMoney(overview.balance)), tone: "overlay", size: "lg", valueCls: deltaClass(overview.balance) })}</div>`,
         footer: buildStatCardsHtml(overview)
       }
     });
@@ -8697,9 +9058,9 @@ order:initial
           align: "l",
           sortable: false,
           render: (_value, row) => `
-                        <span class="tmvu-fin-label"${row.tooltip ? ` title="${escapeHtml8(row.tooltip)}"` : ""}>
+                        <span class="tmvu-fin-label"${row.tooltip ? ` title="${escapeHtml9(row.tooltip)}"` : ""}>
                             <span class="tmvu-fin-label-dot"></span>
-                            <span>${escapeHtml8(row.label)}</span>
+                            <span>${escapeHtml9(row.label)}</span>
                         </span>
                     `
         },
@@ -8708,34 +9069,34 @@ order:initial
           label: statement.columns[1] || "Current",
           align: "r",
           sortable: false,
-          render: (value) => escapeHtml8(formatSignedMoney(value))
+          render: (value) => escapeHtml9(formatSignedMoney(value))
         },
         {
           key: "previous",
           label: statement.columns[2] || "Previous",
           align: "r",
           sortable: false,
-          render: (value) => escapeHtml8(formatSignedMoney(value))
+          render: (value) => escapeHtml9(formatSignedMoney(value))
         },
         {
           key: "delta",
           label: "Delta",
           align: "r",
           sortable: false,
-          render: (value) => `<span class="tmvu-fin-delta ${deltaClass(value)}">${escapeHtml8(formatSignedMoney(value))}</span>`
+          render: (value) => `<span class="tmvu-fin-delta ${deltaClass(value)}">${escapeHtml9(formatSignedMoney(value))}</span>`
         }
       ],
       renderRowsHtml: (rows) => rows.map((row) => `
                 <tr class="${row.isTotal ? "tmvu-fin-total" : ""}">
                     <td class="l">
-                        <span class="tmvu-fin-label"${row.tooltip ? ` title="${escapeHtml8(row.tooltip)}"` : ""}>
+                        <span class="tmvu-fin-label"${row.tooltip ? ` title="${escapeHtml9(row.tooltip)}"` : ""}>
                             <span class="tmvu-fin-label-dot"></span>
-                            <span>${escapeHtml8(row.label)}</span>
+                            <span>${escapeHtml9(row.label)}</span>
                         </span>
                     </td>
-                    <td class="r">${escapeHtml8(formatSignedMoney(row.current))}</td>
-                    <td class="r">${escapeHtml8(formatSignedMoney(row.previous))}</td>
-                    <td class="r"><span class="tmvu-fin-delta ${deltaClass(row.delta)}">${escapeHtml8(formatSignedMoney(row.delta))}</span></td>
+                    <td class="r">${escapeHtml9(formatSignedMoney(row.current))}</td>
+                    <td class="r">${escapeHtml9(formatSignedMoney(row.previous))}</td>
+                    <td class="r"><span class="tmvu-fin-delta ${deltaClass(row.delta)}">${escapeHtml9(formatSignedMoney(row.delta))}</span></td>
                 </tr>
             `).join("")
     });
@@ -8768,11 +9129,11 @@ order:initial
     var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l;
     const wrap = document.createElement("section");
     TmUI.render(wrap, `
-            <tm-card data-title="${escapeHtml8(title)}" data-icon="\u{1F4C8}">
+            <tm-card data-title="${escapeHtml9(title)}" data-icon="\u{1F4C8}">
                 <div class="tmvu-fin-highlights tmu-stack tmu-stack-density-tight">
-                    ${metricHtml2({ label: "Net Result", value: escapeHtml8(formatSignedMoney((_b = (_a2 = summary == null ? void 0 : summary.total) == null ? void 0 : _a2.current) != null ? _b : 0)), note: `Reference ${escapeHtml8(previousLabel)}: ${escapeHtml8(formatSignedMoney((_d = (_c = summary == null ? void 0 : summary.total) == null ? void 0 : _c.previous) != null ? _d : 0))}`, tone: "overlay", size: "sm", valueCls: deltaClass((_f = (_e = summary == null ? void 0 : summary.total) == null ? void 0 : _e.current) != null ? _f : 0) })}
-                    ${metricHtml2({ label: "Largest Income", value: escapeHtml8(((_g = summary == null ? void 0 : summary.bestIncome) == null ? void 0 : _g.label) || "None"), note: escapeHtml8(formatSignedMoney((_i = (_h = summary == null ? void 0 : summary.bestIncome) == null ? void 0 : _h.current) != null ? _i : 0)), tone: "overlay", size: "sm" })}
-                    ${metricHtml2({ label: "Heaviest Cost", value: escapeHtml8(((_j = summary == null ? void 0 : summary.biggestCost) == null ? void 0 : _j.label) || "None"), note: escapeHtml8(formatSignedMoney((_l = (_k = summary == null ? void 0 : summary.biggestCost) == null ? void 0 : _k.current) != null ? _l : 0)), tone: "overlay", size: "sm" })}
+                    ${metricHtml2({ label: "Net Result", value: escapeHtml9(formatSignedMoney((_b = (_a2 = summary == null ? void 0 : summary.total) == null ? void 0 : _a2.current) != null ? _b : 0)), note: `Reference ${escapeHtml9(previousLabel)}: ${escapeHtml9(formatSignedMoney((_d = (_c = summary == null ? void 0 : summary.total) == null ? void 0 : _c.previous) != null ? _d : 0))}`, tone: "overlay", size: "sm", valueCls: deltaClass((_f = (_e = summary == null ? void 0 : summary.total) == null ? void 0 : _e.current) != null ? _f : 0) })}
+                    ${metricHtml2({ label: "Largest Income", value: escapeHtml9(((_g = summary == null ? void 0 : summary.bestIncome) == null ? void 0 : _g.label) || "None"), note: escapeHtml9(formatSignedMoney((_i = (_h = summary == null ? void 0 : summary.bestIncome) == null ? void 0 : _h.current) != null ? _i : 0)), tone: "overlay", size: "sm" })}
+                    ${metricHtml2({ label: "Heaviest Cost", value: escapeHtml9(((_j = summary == null ? void 0 : summary.biggestCost) == null ? void 0 : _j.label) || "None"), note: escapeHtml9(formatSignedMoney((_l = (_k = summary == null ? void 0 : summary.biggestCost) == null ? void 0 : _k.current) != null ? _l : 0)), tone: "overlay", size: "sm" })}
                 </div>
             </tm-card>
         `);
@@ -8812,11 +9173,11 @@ order:initial
   }
 
   // src/pages/finances-wages.js
-  var STYLE_ID17 = "tmvu-fin-wages-style";
-  var cleanText6 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-  var escapeHtml9 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var STYLE_ID19 = "tmvu-fin-wages-style";
+  var cleanText8 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var escapeHtml10 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var metricHtml3 = (opts) => TmUI.metric(opts);
-  var parseMoney3 = (value) => TmUtils.parseNum(cleanText6(value));
+  var parseMoney3 = (value) => TmUtils.parseNum(cleanText8(value));
   var formatMoney3 = (value) => Number(value || 0).toLocaleString("en-US");
   var iconForMenu3 = (label) => {
     if (/finance/i.test(label)) return "\u{1F4B0}";
@@ -8828,10 +9189,10 @@ order:initial
     return "\u2022";
   };
   var injectStyles10 = () => {
-    if (document.getElementById(STYLE_ID17)) return;
+    if (document.getElementById(STYLE_ID19)) return;
     injectTmPageLayoutStyles();
     const style = document.createElement("style");
-    style.id = STYLE_ID17;
+    style.id = STYLE_ID19;
     style.textContent = `
             .tmvu-fin-wages-main,
             .tmvu-fin-wages-side {
@@ -8883,11 +9244,15 @@ order:initial
             }
 
             .tmvu-fin-wages-table tbody tr {
-                background: #2d4315;
+                background: transparent;
             }
 
             .tmvu-fin-wages-table tbody tr:nth-child(even) {
-                background: #35501a;
+                background: var(--tmu-border-contrast);
+            }
+
+            .tmvu-fin-wages-table tbody tr:hover {
+                background: var(--tmu-surface-dark-mid);
             }
 
             .tmvu-fin-wages-table td,
@@ -8916,7 +9281,7 @@ order:initial
             }
 
             .tmvu-fin-wages-table tr.tmvu-fin-wages-total {
-                background: #41631f;
+                background: var(--tmu-surface-dark-strong);
             }
 
             .tmvu-fin-wages-table tr.tmvu-fin-wages-total td {
@@ -8946,7 +9311,7 @@ order:initial
   var parseMenu3 = (sourceRoot3) => Array.from(sourceRoot3.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
     if (node.tagName === "HR") return [{ type: "separator" }];
     if (node.tagName !== "A") return [];
-    const label = cleanText6(node.textContent);
+    const label = cleanText8(node.textContent);
     return [{
       type: "link",
       href: node.getAttribute("href") || "#",
@@ -8958,7 +9323,7 @@ order:initial
   var extractPlayerId = (anchor) => {
     var _a2;
     if (!anchor) return "";
-    return cleanText6(anchor.getAttribute("player_link")) || (((_a2 = cleanText6(anchor.getAttribute("href")).match(/\/players\/(\d+)\//)) == null ? void 0 : _a2[1]) || "");
+    return cleanText8(anchor.getAttribute("player_link")) || (((_a2 = cleanText8(anchor.getAttribute("href")).match(/\/players\/(\d+)\//)) == null ? void 0 : _a2[1]) || "");
   };
   var parseWageRows = (table, kind) => {
     if (!table) return [];
@@ -8982,11 +9347,11 @@ order:initial
         return {
           kind,
           isTotal: false,
-          order: cleanText6((_c = cells[0]) == null ? void 0 : _c.textContent),
-          name: cleanText6((playerAnchor == null ? void 0 : playerAnchor.textContent) || nameCell.textContent),
-          nameHtml: `${(playerAnchor == null ? void 0 : playerAnchor.outerHTML) || escapeHtml9(cleanText6(nameCell.textContent))}${countryAnchor ? ` ${countryAnchor.outerHTML}` : ""}`,
+          order: cleanText8((_c = cells[0]) == null ? void 0 : _c.textContent),
+          name: cleanText8((playerAnchor == null ? void 0 : playerAnchor.textContent) || nameCell.textContent),
+          nameHtml: `${(playerAnchor == null ? void 0 : playerAnchor.outerHTML) || escapeHtml10(cleanText8(nameCell.textContent))}${countryAnchor ? ` ${countryAnchor.outerHTML}` : ""}`,
           playerId: extractPlayerId(playerAnchor),
-          age: cleanText6((_d = cells[2]) == null ? void 0 : _d.textContent),
+          age: cleanText8((_d = cells[2]) == null ? void 0 : _d.textContent),
           weekly: parseMoney3(((_e = cells[3]) == null ? void 0 : _e.textContent) || "0"),
           season: parseMoney3(((_f = cells[4]) == null ? void 0 : _f.textContent) || "0")
         };
@@ -8995,9 +9360,9 @@ order:initial
         return {
           kind,
           isTotal: false,
-          role: cleanText6((_g = cells[0]) == null ? void 0 : _g.textContent),
-          name: cleanText6((_h = cells[1]) == null ? void 0 : _h.textContent),
-          age: cleanText6((_i = cells[2]) == null ? void 0 : _i.textContent),
+          role: cleanText8((_g = cells[0]) == null ? void 0 : _g.textContent),
+          name: cleanText8((_h = cells[1]) == null ? void 0 : _h.textContent),
+          age: cleanText8((_i = cells[2]) == null ? void 0 : _i.textContent),
           weekly: parseMoney3(((_j = cells[3]) == null ? void 0 : _j.textContent) || "0"),
           season: parseMoney3(((_k = cells[4]) == null ? void 0 : _k.textContent) || "0")
         };
@@ -9006,7 +9371,7 @@ order:initial
     }).filter(Boolean);
   };
   var parseTabData = (sourceRoot3) => {
-    const tabLabels = Array.from(sourceRoot3.querySelectorAll(".column2_a .tabs [set_active]")).map((node) => cleanText6(node.textContent));
+    const tabLabels = Array.from(sourceRoot3.querySelectorAll(".column2_a .tabs [set_active]")).map((node) => cleanText8(node.textContent));
     const playerTable = sourceRoot3.querySelector("#tab0 table");
     const staffTable = sourceRoot3.querySelector("#tab1 table");
     return {
@@ -9047,9 +9412,9 @@ order:initial
         title: "Wages",
         footer: `
                     <div class="tmvu-fin-wages-hero-metrics tmu-page-card-grid tmu-card-grid-density-compact">
-                        ${metricHtml3({ label: `Players / ${periodLabel}`, value: escapeHtml9(formatMoney3(playersValue)), tone: "overlay", size: "md" })}
-                        ${metricHtml3({ label: `Staff / ${periodLabel}`, value: escapeHtml9(formatMoney3(staffValue)), tone: "overlay", size: "md" })}
-                        ${metricHtml3({ label: `Total / ${periodLabel}`, value: escapeHtml9(formatMoney3(playersValue + staffValue)), tone: "overlay", size: "lg" })}
+                        ${metricHtml3({ label: `Players / ${periodLabel}`, value: escapeHtml10(formatMoney3(playersValue)), tone: "overlay", size: "md" })}
+                        ${metricHtml3({ label: `Staff / ${periodLabel}`, value: escapeHtml10(formatMoney3(staffValue)), tone: "overlay", size: "md" })}
+                        ${metricHtml3({ label: `Total / ${periodLabel}`, value: escapeHtml10(formatMoney3(playersValue + staffValue)), tone: "overlay", size: "lg" })}
                     </div>
                 `
       }
@@ -9065,31 +9430,31 @@ order:initial
       cls: " tmvu-fin-wages-table",
       items: bodyRows,
       headers: [
-        { key: "index", label: "#", align: "c", sortable: false, render: (_value, row) => escapeHtml9(kind === "players" ? row.order : row.role || "") },
+        { key: "index", label: "#", align: "c", sortable: false, render: (_value, row) => escapeHtml10(kind === "players" ? row.order : row.role || "") },
         {
           key: "name",
           label: kind === "players" ? "Name" : "Name / Role",
           align: "l",
           sortable: false,
-          render: (_value, row) => kind === "players" ? `<span class="tmvu-fin-wages-name">${row.nameHtml}</span>` : escapeHtml9(row.name)
+          render: (_value, row) => kind === "players" ? `<span class="tmvu-fin-wages-name">${row.nameHtml}</span>` : escapeHtml10(row.name)
         },
-        { key: "age", label: "Age", align: "c", sortable: false, render: (value) => escapeHtml9(value || "-") },
-        { key: "periodWage", label: `Wage / ${periodLabel}`, align: "r", sortable: false, render: (_value, row) => escapeHtml9(formatMoney3(getPeriodValue2(row, payPeriod))) }
+        { key: "age", label: "Age", align: "c", sortable: false, render: (value) => escapeHtml10(value || "-") },
+        { key: "periodWage", label: `Wage / ${periodLabel}`, align: "r", sortable: false, render: (_value, row) => escapeHtml10(formatMoney3(getPeriodValue2(row, payPeriod))) }
       ],
       renderRowsHtml: (renderItems) => {
         let html2 = renderItems.map((row) => `
                     <tr>
-                        <td class="c">${escapeHtml9(kind === "players" ? row.order : row.role || "")}</td>
-                        <td class="l">${kind === "players" ? `<span class="tmvu-fin-wages-name">${row.nameHtml}</span>` : escapeHtml9(row.name)}</td>
-                        <td class="c">${escapeHtml9(row.age || "-")}</td>
-                        <td>${escapeHtml9(formatMoney3(getPeriodValue2(row, payPeriod)))}</td>
+                        <td class="c">${escapeHtml10(kind === "players" ? row.order : row.role || "")}</td>
+                        <td class="l">${kind === "players" ? `<span class="tmvu-fin-wages-name">${row.nameHtml}</span>` : escapeHtml10(row.name)}</td>
+                        <td class="c">${escapeHtml10(row.age || "-")}</td>
+                        <td>${escapeHtml10(formatMoney3(getPeriodValue2(row, payPeriod)))}</td>
                     </tr>
                 `).join("");
         if (totalRow) {
           html2 += `
                         <tr class="tmvu-fin-wages-total">
                             <td class="l" colspan="3">Total</td>
-                            <td>${escapeHtml9(formatMoney3(getPeriodValue2(totalRow, payPeriod)))}</td>
+                            <td>${escapeHtml10(formatMoney3(getPeriodValue2(totalRow, payPeriod)))}</td>
                         </tr>
                     `;
         }
@@ -9909,6 +10274,8 @@ order:initial
     tactics: createTactics(),
     lineup: [],
     // Player.create() objects + match context fields
+    lineupOut: [],
+    // Players unavailable for this match (from lineup_out API field)
     // ── Derived (populated by deriveMatchData / generateTeamData) ──────
     goals: null,
     goalsAgainst: null,
@@ -10317,7 +10684,7 @@ order:initial
     return player2;
   };
   var normalizeRawMatch = (raw, playersById = /* @__PURE__ */ new Map(), matchId = null) => {
-    var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s2, _t, _u, _v, _w, _x, _y, _z, _A, _B;
+    var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s2, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C;
     const ntMatch = typeof matchId === "string" && matchId.startsWith("nt");
     const match = Match.create();
     const md = raw.match_data || {};
@@ -10406,6 +10773,11 @@ order:initial
         return applyMatchContext(player2, p, captainId);
       });
       match[side].playerIds = new Set(Object.keys(rawLineup));
+      const rawOut = ((_C = md.lineup_out) == null ? void 0 : _C[side]) || {};
+      match[side].lineupOut = Object.values(rawOut).map((p) => ({
+        id: String(p.id || ""),
+        name: p.name || p.nameLast || ""
+      }));
     }
     match.report = raw.report || {};
     TmMatchService.normalizeReport(match.report);
@@ -10888,7 +11260,7 @@ order:initial
   };
 
   // src/components/shared/tm-match-tooltip.js
-  var STYLE_ID18 = "tmvu-match-tooltip-style";
+  var STYLE_ID20 = "tmvu-match-tooltip-style";
   var formatKickoffDate = (kickoffReadable) => {
     const readable = String(kickoffReadable || "").trim();
     if (!readable) return "";
@@ -10901,13 +11273,14 @@ order:initial
     return parsed.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
   };
   var ensureStyles = () => {
-    if (document.getElementById(STYLE_ID18)) return;
+    if (document.getElementById(STYLE_ID20)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID18;
+    style.id = STYLE_ID20;
     style.textContent = `
         .rnd-h2h-tooltip {
             position: absolute; z-index: 100;
-            background: var(--tmu-card-bg); border: 1px solid var(--tmu-border-soft-alpha);
+            background: var(--tmu-card-bg); 
+            border: 1px solid var(--tmu-border-soft-alpha);
             border-radius: var(--tmu-space-md); padding: var(--tmu-space-xl) var(--tmu-space-xxl);
             min-width: 520px; max-width: 600px;
             max-height: 75vh; overflow-y: auto;
@@ -11491,12 +11864,12 @@ order:initial
   // src/components/shared/tm-match-row.js
   var { R5_THRESHOLDS: R5_THRESHOLDS2 } = TmConst;
   var getColor2 = TmUtils.getColor;
-  var STYLE_ID19 = "tmvu-match-row-style";
-  var escapeHtml10 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var STYLE_ID21 = "tmvu-match-row-style";
+  var escapeHtml11 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var injectStyles12 = () => {
-    if (document.getElementById(STYLE_ID19)) return;
+    if (document.getElementById(STYLE_ID21)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID19;
+    style.id = STYLE_ID21;
     style.textContent = `
         .tmvu-match-list {
             display: flex;
@@ -11647,7 +12020,7 @@ order:initial
     document.head.appendChild(style);
   };
   var renderTeam = (team, side, showLogos) => {
-    const safeName = escapeHtml10((team == null ? void 0 : team.name) || "Unknown");
+    const safeName = escapeHtml11((team == null ? void 0 : team.name) || "Unknown");
     const rating = `<span class="tmvu-match-rating tmvu-match-rating-${side}" data-role="${side}-rating">\u2014</span>`;
     const logo = showLogos && (team == null ? void 0 : team.id) ? `<img class="tmvu-match-logo" src="/pics/club_logos/${team.id}_25.png" onerror="this.style.visibility='hidden'" alt="">` : rating;
     const flag = (team == null ? void 0 : team.flagHtml) ? `<span class="tmvu-match-flag">${team.flagHtml}</span>` : "";
@@ -11670,7 +12043,7 @@ order:initial
   } = {}) => {
     injectStyles12();
     const scoreClass = isPlayed ? "tmvu-match-score" : "tmvu-match-score tmvu-match-score-upcoming";
-    const safeScore = escapeHtml10(scoreText || "\u2014");
+    const safeScore = escapeHtml11(scoreText || "\u2014");
     const scoreHtml = scoreHref ? `<a class="${scoreClass}" href="${scoreHref}">${safeScore}</a>` : `<span class="${scoreClass}">${safeScore}</span>`;
     return `
         <div class="tmvu-match-row tmvu-match-row-${index % 2 === 0 ? "odd" : "even"}${isHighlight ? " tmvu-match-highlight" : ""}"
@@ -11734,7 +12107,7 @@ order:initial
   };
 
   // src/components/shared/tm-fixture-round-cards.js
-  var STYLE_ID20 = "tmvu-round-navigator-style";
+  var STYLE_ID22 = "tmvu-round-navigator-style";
   var htmlOf3 = (node) => node ? node.outerHTML : "";
   var navButtonHtml = ({ action = "", title = "", disabled = false, path }) => {
     const button = TmUI.button({
@@ -11748,9 +12121,9 @@ order:initial
     return htmlOf3(button);
   };
   function injectStyles13() {
-    if (document.getElementById(STYLE_ID20)) return;
+    if (document.getElementById(STYLE_ID22)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID20;
+    style.id = STYLE_ID22;
     style.textContent = `
        
         .tmvu-round-panel {
@@ -11907,12 +12280,12 @@ order:initial
   var TmFixtureRoundCards = { mount: mount3 };
 
   // src/components/shared/tm-fixture-match-row.js
-  var STYLE_ID21 = "tmvu-fixture-match-row-style";
-  var escapeHtml11 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var STYLE_ID23 = "tmvu-fixture-match-row-style";
+  var escapeHtml12 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var injectStyles14 = () => {
-    if (document.getElementById(STYLE_ID21)) return;
+    if (document.getElementById(STYLE_ID23)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID21;
+    style.id = STYLE_ID23;
     style.textContent = `
         .tmvu-fixture-row {
             position: relative;
@@ -12006,9 +12379,9 @@ order:initial
     const parts = scoreText ? String(scoreText).trim().split("-") : [];
     let inner;
     if (winner && parts.length === 2) {
-      inner = `<span>${escapeHtml11(parts[0].trim())}</span>-<span>${escapeHtml11(parts[1].trim())}</span>`;
+      inner = `<span>${escapeHtml12(parts[0].trim())}</span>-<span>${escapeHtml12(parts[1].trim())}</span>`;
     } else if (scoreText) {
-      inner = escapeHtml11(scoreText);
+      inner = escapeHtml12(scoreText);
     } else {
       return `<span class="tmvu-fixture-score tmvu-fixture-score-upcoming">\u2014</span>`;
     }
@@ -12018,8 +12391,8 @@ order:initial
     return `<span class="tmvu-fixture-score${isUpcoming ? " tmvu-fixture-score-upcoming" : ""}">${inner}</span>`;
   };
   var renderTeamContent = (team, side) => {
-    const nameHtml = team.href ? `<a href="${team.href}" class="tmvu-fixture-team-name">${escapeHtml11(team.name)}</a>` : `<span class="tmvu-fixture-team-name">${escapeHtml11(team.name)}</span>`;
-    const badgeHtml3 = team.flagHtml ? `<span class="tmvu-fixture-flag">${team.flagHtml}</span>` : team.id ? `<img class="tmvu-fixture-logo" src="/pics/club_logos/${escapeHtml11(team.id)}_25.png" onerror="this.style.visibility='hidden'" alt="">` : "";
+    const nameHtml = team.href ? `<a href="${team.href}" class="tmvu-fixture-team-name">${escapeHtml12(team.name)}</a>` : `<span class="tmvu-fixture-team-name">${escapeHtml12(team.name)}</span>`;
+    const badgeHtml3 = team.flagHtml ? `<span class="tmvu-fixture-flag">${team.flagHtml}</span>` : team.id ? `<img class="tmvu-fixture-logo" src="/pics/club_logos/${escapeHtml12(team.id)}_25.png" onerror="this.style.visibility='hidden'" alt="">` : "";
     return side === "home" ? `${nameHtml}${badgeHtml3}` : `${badgeHtml3}${nameHtml}`;
   };
   var render5 = (match, {
@@ -12047,12 +12420,12 @@ order:initial
     const typeBadge = showType ? `<span class="tmvu-fixture-type-slot">${normalized.typeMeta ? `<span class="tmvu-fixture-type tmvu-fixture-type-${normalized.typeMeta.key}" title="${normalized.typeMeta.fullName}">${normalized.typeMeta.label}</span>` : ""}</span>` : "";
     const homeWinCls = winner === "home" ? " tmvu-fixture-team-winner" : winner === "away" ? " tmvu-fixture-team-loser" : "";
     const awayWinCls = winner === "away" ? " tmvu-fixture-team-winner" : winner === "home" ? " tmvu-fixture-team-loser" : "";
-    const dateBadge = dateText ? `<span class="tmvu-fixture-date">${escapeHtml11(String(dateText))}</span>` : "";
+    const dateBadge = dateText ? `<span class="tmvu-fixture-date">${escapeHtml12(String(dateText))}</span>` : "";
     const parityClass = index % 2 === 0 ? " tmvu-fixture-row-even" : " tmvu-fixture-row-odd";
     return `<div class="tmvu-fixture-row${parityClass}${extraClass ? ` ${extraClass}` : ""}"
-            data-mid="${escapeHtml11(matchId)}" data-season="${escapeHtml11(season)}"
-            data-href="${escapeHtml11(scoreHref)}"
-            data-home-id="${escapeHtml11(homeId)}" data-away-id="${escapeHtml11(awayId)}">
+            data-mid="${escapeHtml12(matchId)}" data-season="${escapeHtml12(season)}"
+            data-href="${escapeHtml12(scoreHref)}"
+            data-home-id="${escapeHtml12(homeId)}" data-away-id="${escapeHtml12(awayId)}">
             ${tvBadge}
             ${dateBadge}
             ${typeBadge}
@@ -12070,11 +12443,11 @@ order:initial
   };
 
   // src/components/shared/tm-fixtures-list.js
-  var STYLE_ID22 = "tmvu-fixtures-list-style";
+  var STYLE_ID24 = "tmvu-fixtures-list-style";
   var injectStyles15 = () => {
-    if (document.getElementById(STYLE_ID22)) return;
+    if (document.getElementById(STYLE_ID24)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID22;
+    style.id = STYLE_ID24;
     style.textContent = `
         .tmvu-fix-list { display: flex; flex-direction: column; background: var(--tmu-fixture-panel-bg, transparent); }
         .tmvu-fix-date-header {
@@ -12287,7 +12660,7 @@ order:initial
   };
 
   // src/components/shared/tm-standings-parser.js
-  var cleanText7 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   function getZone(className) {
     if (className.includes("promotion_playoff")) return "promo-po";
     if (className.includes("promotion")) return "promo";
@@ -12319,16 +12692,16 @@ order:initial
     const clubId2 = extractClubId(clubLink);
     const isHighlighted = cells.some((cell) => cell.classList.contains("highlight_td"));
     return {
-      rank: hasRankColumn ? Number.parseInt(cleanText7(((_a2 = cells[0]) == null ? void 0 : _a2.textContent) || ""), 10) || rankFallback : rankFallback,
+      rank: hasRankColumn ? Number.parseInt(cleanText9(((_a2 = cells[0]) == null ? void 0 : _a2.textContent) || ""), 10) || rankFallback : rankFallback,
       clubId: clubId2,
-      clubName: cleanText7(clubLink.textContent || ""),
-      gp: Number.parseInt(cleanText7(((_b = cells[1 + offset]) == null ? void 0 : _b.textContent) || ""), 10) || 0,
-      w: Number.parseInt(cleanText7(((_c = cells[2 + offset]) == null ? void 0 : _c.textContent) || ""), 10) || 0,
-      d: Number.parseInt(cleanText7(((_d = cells[3 + offset]) == null ? void 0 : _d.textContent) || ""), 10) || 0,
-      l: Number.parseInt(cleanText7(((_e = cells[4 + offset]) == null ? void 0 : _e.textContent) || ""), 10) || 0,
-      gf: Number.parseInt(cleanText7(((_f = cells[5 + offset]) == null ? void 0 : _f.textContent) || ""), 10) || 0,
-      ga: Number.parseInt(cleanText7(((_g = cells[6 + offset]) == null ? void 0 : _g.textContent) || ""), 10) || 0,
-      pts: Number.parseInt(cleanText7(((_h = cells[7 + offset]) == null ? void 0 : _h.textContent) || ""), 10) || 0,
+      clubName: cleanText9(clubLink.textContent || ""),
+      gp: Number.parseInt(cleanText9(((_b = cells[1 + offset]) == null ? void 0 : _b.textContent) || ""), 10) || 0,
+      w: Number.parseInt(cleanText9(((_c = cells[2 + offset]) == null ? void 0 : _c.textContent) || ""), 10) || 0,
+      d: Number.parseInt(cleanText9(((_d = cells[3 + offset]) == null ? void 0 : _d.textContent) || ""), 10) || 0,
+      l: Number.parseInt(cleanText9(((_e = cells[4 + offset]) == null ? void 0 : _e.textContent) || ""), 10) || 0,
+      gf: Number.parseInt(cleanText9(((_f = cells[5 + offset]) == null ? void 0 : _f.textContent) || ""), 10) || 0,
+      ga: Number.parseInt(cleanText9(((_g = cells[6 + offset]) == null ? void 0 : _g.textContent) || ""), 10) || 0,
+      pts: Number.parseInt(cleanText9(((_h = cells[7 + offset]) == null ? void 0 : _h.textContent) || ""), 10) || 0,
       zone: getZone(className),
       isMe: className.includes("highlighted_row_done") || isHighlighted || !!highlightedClubId && clubId2 === highlightedClubId
     };
@@ -12337,7 +12710,7 @@ order:initial
     var _a2;
     const headers = row.querySelectorAll("th");
     if (!headers.length) return false;
-    const firstLabel = cleanText7(((_a2 = headers[0]) == null ? void 0 : _a2.textContent) || "").toLowerCase();
+    const firstLabel = cleanText9(((_a2 = headers[0]) == null ? void 0 : _a2.textContent) || "").toLowerCase();
     if (!firstLabel) return false;
     return !["#", "club", "gp", "w", "d", "l", "gf", "ga", "pts", "p", "goals"].includes(firstLabel);
   }
@@ -12355,7 +12728,7 @@ order:initial
         var _a2;
         if (isGroupTitleRow(row)) {
           if (currentGroup == null ? void 0 : currentGroup.rows.length) groups.push(currentGroup);
-          currentGroup = { title: cleanText7(((_a2 = row.querySelector("th")) == null ? void 0 : _a2.textContent) || ""), rows: [] };
+          currentGroup = { title: cleanText9(((_a2 = row.querySelector("th")) == null ? void 0 : _a2.textContent) || ""), rows: [] };
           return;
         }
         if (row.querySelector("th")) return;
@@ -12373,13 +12746,13 @@ order:initial
   };
 
   // src/components/shared/tm-standings-table.js
-  var STYLE_ID23 = "tmvu-standings-table-style";
+  var STYLE_ID25 = "tmvu-standings-table-style";
   var htmlOf4 = (node) => node ? node.outerHTML : "";
-  var buttonHtml4 = (opts) => htmlOf4(TmButton.button(opts));
+  var buttonHtml5 = (opts) => htmlOf4(TmButton.button(opts));
   function injectStyles16() {
-    if (document.getElementById(STYLE_ID23)) return;
+    if (document.getElementById(STYLE_ID25)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID23;
+    style.id = STYLE_ID25;
     style.textContent = `
         .tmvu-standings-wrap {
             overflow: hidden;
@@ -12441,6 +12814,11 @@ order:initial
 
         .tmvu-standings-wrap a:hover {
             text-decoration: underline;
+        }
+
+        .tmvu-standings-wrap td.std-pts {
+            font-weight: 700;
+            color: var(--tmu-text-strong);
         }
 
         .tmvu-standings-group + .tmvu-standings-group {
@@ -12521,15 +12899,15 @@ order:initial
     if (zone === "rel") return "var(--tmu-danger-fill)";
     return "transparent";
   }
-  function escapeHtml12(value) {
+  function escapeHtml13(value) {
     return String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
   function buildHtml({ rows = [], liveZoneMap = {}, isFiltered = false, showForm = false, formHtml = () => "", canOlder = false, canNewer = false, promotionCount = 1, promoDirectCount = 0, promoPlayoffCount = 0, nameLabel = "Club" } = {}) {
     injectStyles16();
-    const headerForm = showForm ? `${buttonHtml4({ id: "std-form-older", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>', color: "secondary", size: "xs", disabled: !canOlder, attrs: { style: "margin-right:var(--tmu-space-xs)" } })}Form${buttonHtml4({ id: "std-form-newer", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>', color: "secondary", size: "xs", disabled: !canNewer, attrs: { style: "margin-left:var(--tmu-space-xs)" } })}` : "";
+    const headerForm = showForm ? `${buttonHtml5({ id: "std-form-older", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>', color: "secondary", size: "xs", disabled: !canOlder, attrs: { style: "margin-right:var(--tmu-space-xs)" } })}Form${buttonHtml5({ id: "std-form-newer", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>', color: "secondary", size: "xs", disabled: !canNewer, attrs: { style: "margin-left:var(--tmu-space-xs)" } })}` : "";
     const headCells = [
       `<th class="std-rank-cell" style="width:36px">#</th>`,
-      `<th class="std-left" style="min-width:320px">${escapeHtml12(nameLabel)}</th>`,
+      `<th class="std-left" style="min-width:320px">${escapeHtml13(nameLabel)}</th>`,
       `<th class="std-right" style="width:38px" title="Games played">Gp</th>`,
       `<th class="std-right" style="width:38px" title="Won">W</th>`,
       `<th class="std-right" style="width:38px" title="Drawn">D</th>`,
@@ -12557,14 +12935,14 @@ order:initial
       }
       const delta = row.rankDelta;
       const deltaHtml = delta ? `<span style="position:absolute;bottom:2px;right:2px;font-size:10px;line-height:1;font-weight:900;color:${delta > 0 ? "var(--tmu-success-strong)" : "var(--tmu-danger-strong)"}">${delta > 0 ? "\u25B2" : "\u25BC"}</span>` : "";
-      const rankCell = `<td class="std-rank-cell"><div class="std-rank-inner" style="background:${bg};color:${color};">${escapeHtml12(row.rank)}${deltaHtml}</div></td>`;
+      const rankCell = `<td class="std-rank-cell"><div class="std-rank-inner" style="background:${bg};color:${color};">${escapeHtml13(row.rank)}${deltaHtml}</div></td>`;
       let clubInner;
       if (row.nameHtml) {
         clubInner = row.nameHtml;
       } else {
         const clubHref = row.clubId ? `/club/${row.clubId}/` : "";
-        const clubLogo = row.clubId ? `<img class="std-club-logo" src="/pics/club_logos/${escapeHtml12(row.clubId)}_25.png" onerror="this.style.visibility='hidden'">` : "";
-        clubInner = `<span class="std-club-cell">${clubLogo}${clubHref ? `<a href="${clubHref}">${escapeHtml12(row.clubName)}</a>` : escapeHtml12(row.clubName)}</span>`;
+        const clubLogo = row.clubId ? `<img class="std-club-logo" src="/pics/club_logos/${escapeHtml13(row.clubId)}_25.png" onerror="this.style.visibility='hidden'">` : "";
+        clubInner = `<span class="std-club-cell">${clubLogo}${clubHref ? `<a href="${clubHref}">${escapeHtml13(row.clubName)}</a>` : escapeHtml13(row.clubName)}</span>`;
       }
       const clubCell = `<td class="std-left">${clubInner}</td>`;
       const nextRow = rows[index + 1];
@@ -12580,16 +12958,16 @@ order:initial
       }
       const rowCls = `${row.isMe ? "std-me" : ""}${sepClass}`.trim();
       const dataCells = [
-        `<td class="std-right">${escapeHtml12(row.gp)}</td>`,
-        `<td class="std-right">${escapeHtml12(row.w)}</td>`,
-        `<td class="std-right">${escapeHtml12(row.d)}</td>`,
-        `<td class="std-right">${escapeHtml12(row.l)}</td>`,
-        `<td class="std-right">${escapeHtml12(row.gf)}</td>`,
-        `<td class="std-right">${escapeHtml12(row.ga)}</td>`,
-        `<td class="std-right">${escapeHtml12(row.pts)}</td>`,
+        `<td class="std-right">${escapeHtml13(row.gp)}</td>`,
+        `<td class="std-right">${escapeHtml13(row.w)}</td>`,
+        `<td class="std-right">${escapeHtml13(row.d)}</td>`,
+        `<td class="std-right">${escapeHtml13(row.l)}</td>`,
+        `<td class="std-right">${escapeHtml13(row.gf)}</td>`,
+        `<td class="std-right">${escapeHtml13(row.ga)}</td>`,
+        `<td class="std-right std-pts">${escapeHtml13(row.pts)}</td>`,
         ...showForm ? [`<td class="std-right std-form-cell">${formHtml(row.form || [], row.playedCount || 0)}</td>`] : []
       ];
-      return `<tr${rowCls ? ` class="${rowCls}"` : ""} data-club="${escapeHtml12((_a2 = row.clubId) != null ? _a2 : "")}">${rankCell}${clubCell}${dataCells.join("")}</tr>`;
+      return `<tr${rowCls ? ` class="${rowCls}"` : ""} data-club="${escapeHtml13((_a2 = row.clubId) != null ? _a2 : "")}">${rankCell}${clubCell}${dataCells.join("")}</tr>`;
     });
     return `<div class="tmvu-standings-wrap"><table><thead><tr>${headCells.join("")}</tr></thead><tbody>${bodyRows.join("")}</tbody></table></div>`;
   }
@@ -12607,7 +12985,7 @@ order:initial
         <div class="tmvu-standings-wrap">
             ${validGroups.map((group) => `
                 <section class="tmvu-standings-group">
-                    ${group.title ? `<div class="tmvu-standings-group-title">${escapeHtml12(group.title)}</div>` : ""}
+                    ${group.title ? `<div class="tmvu-standings-group-title">${escapeHtml13(group.title)}</div>` : ""}
                     ${buildTableHtml({ rows: group.rows, promotionCount, ...opts })}
                 </section>
             `).join("")}
@@ -12617,11 +12995,11 @@ order:initial
   var TmStandingsTable = { injectStyles: injectStyles16, buildHtml, buildGroupedHtml };
 
   // src/components/shared/tm-standings-panel.js
-  var STYLE_ID24 = "tmu-standings-panel-style";
+  var STYLE_ID26 = "tmu-standings-panel-style";
   function injectStyles17() {
-    if (document.getElementById(STYLE_ID24)) return;
+    if (document.getElementById(STYLE_ID26)) return;
     const s6 = document.createElement("style");
-    s6.id = STYLE_ID24;
+    s6.id = STYLE_ID26;
     s6.textContent = `
         .tmu-standings-panel { overflow: hidden; background: var(--tmu-surface-dark-soft); }
         .tsa-std-controls {
@@ -13157,7 +13535,7 @@ order:initial
   var CURRENT_SEASON = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
   var main = null;
   var sourceRoot = null;
-  var STYLE_ID25 = "tmvu-friendly-league-style";
+  var STYLE_ID27 = "tmvu-friendly-league-style";
   var LEAGUE_ID = "";
   var ACTIVE_TAB = "overview";
   var LEAGUE_FIXTURES_PROMISE = null;
@@ -13169,14 +13547,14 @@ order:initial
   var FRIENDLY_HISTORY_META = null;
   var INITIAL_HISTORY_TYPE = "standings";
   var INITIAL_HISTORY_SEASON = "";
-  var cleanText8 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-  var escapeHtml13 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var cleanText10 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var escapeHtml14 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var wrapperText = (value) => {
     const html2 = String(value || "").trim();
     if (!html2) return "";
     const wrapper = document.createElement("div");
     wrapper.innerHTML = html2;
-    return cleanText8(wrapper.textContent || "");
+    return cleanText10(wrapper.textContent || "");
   };
   var extractHrefFromHtml = (value) => {
     var _a2;
@@ -13196,25 +13574,25 @@ order:initial
   };
   var parseFriendlyLeagueFixtures = (payload) => Object.entries(payload || {}).sort(([leftKey], [rightKey]) => leftKey.localeCompare(rightKey)).map(([monthKey, month]) => {
     const matches = Array.from((month == null ? void 0 : month.matches) || []).map((match) => ({
-      date: cleanText8((match == null ? void 0 : match.date) || ""),
+      date: cleanText10((match == null ? void 0 : match.date) || ""),
       matchId: String((match == null ? void 0 : match.id) || ""),
-      homeId: cleanText8((match == null ? void 0 : match.hometeam) || ""),
-      homeName: cleanText8((match == null ? void 0 : match.hometeam_name) || ""),
+      homeId: cleanText10((match == null ? void 0 : match.hometeam) || ""),
+      homeName: cleanText10((match == null ? void 0 : match.hometeam_name) || ""),
       homeHref: extractHrefFromHtml(match == null ? void 0 : match.home_link),
       homeFlagHtml: normalizeFlagHtml(match == null ? void 0 : match.home_flag),
-      awayId: cleanText8((match == null ? void 0 : match.awayteam) || ""),
-      awayName: cleanText8((match == null ? void 0 : match.awayteam_name) || ""),
+      awayId: cleanText10((match == null ? void 0 : match.awayteam) || ""),
+      awayName: cleanText10((match == null ? void 0 : match.awayteam_name) || ""),
       awayHref: extractHrefFromHtml(match == null ? void 0 : match.away_link),
       awayFlagHtml: normalizeFlagHtml(match == null ? void 0 : match.away_flag),
-      result: cleanText8((match == null ? void 0 : match.result) || wrapperText(match == null ? void 0 : match.match_link) || "x-x"),
+      result: cleanText10((match == null ? void 0 : match.result) || wrapperText(match == null ? void 0 : match.match_link) || "x-x"),
       matchHref: extractHrefFromHtml(match == null ? void 0 : match.match_link),
-      matchtype_name: cleanText8((match == null ? void 0 : match.matchtype_sort) || wrapperText(match == null ? void 0 : match.matchtype_name) || "Friendly League"),
-      matchtype_sort: cleanText8((match == null ? void 0 : match.matchtype_sort) || "Friendly League")
+      matchtype_name: cleanText10((match == null ? void 0 : match.matchtype_sort) || wrapperText(match == null ? void 0 : match.matchtype_name) || "Friendly League"),
+      matchtype_sort: cleanText10((match == null ? void 0 : match.matchtype_sort) || "Friendly League")
     })).filter((match) => match.matchId && match.homeName && match.awayName);
     if (!matches.length) return null;
     return {
       key: monthKey,
-      label: cleanText8((month == null ? void 0 : month.date_name) || `${(month == null ? void 0 : month.month) || "Month"} ${monthKey.slice(0, 4)}`),
+      label: cleanText10((month == null ? void 0 : month.date_name) || `${(month == null ? void 0 : month.month) || "Month"} ${monthKey.slice(0, 4)}`),
       active: Boolean(month == null ? void 0 : month.current_month),
       groups: TmFixturesList.fromMatches(matches)
     };
@@ -13238,13 +13616,13 @@ order:initial
     const root2 = typeof source === "string" ? new DOMParser().parseFromString(source, "text/html") : source;
     const contentBox = root2 == null ? void 0 : root2.querySelector(".column2_a > .box");
     const statSelect = contentBox == null ? void 0 : contentBox.querySelector("#stats_players");
-    const statDefs = Array.from((statSelect == null ? void 0 : statSelect.querySelectorAll("option")) || []).map((option) => [option.value, cleanText8(option.textContent)]).filter(([value, label]) => value && label);
-    const teamLabels = Array.from((contentBox == null ? void 0 : contentBox.querySelectorAll(".tabs [set_active]")) || []).map((tab) => cleanText8(tab.textContent)).filter(Boolean);
+    const statDefs = Array.from((statSelect == null ? void 0 : statSelect.querySelectorAll("option")) || []).map((option) => [option.value, cleanText10(option.textContent)]).filter(([value, label]) => value && label);
+    const teamLabels = Array.from((contentBox == null ? void 0 : contentBox.querySelectorAll(".tabs [set_active]")) || []).map((tab) => cleanText10(tab.textContent)).filter(Boolean);
     return {
-      title: cleanText8(((_a2 = contentBox == null ? void 0 : contentBox.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "Statistics"),
+      title: cleanText10(((_a2 = contentBox == null ? void 0 : contentBox.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "Statistics"),
       statDefs: statDefs.length ? statDefs : PLAYER_STAT_DEFS,
       teamLabels: teamLabels.length ? teamLabels : ["Main team", "Under 21"],
-      initialStat: cleanText8((statSelect == null ? void 0 : statSelect.value) || INITIAL_STATS_STAT || "goals") || "goals"
+      initialStat: cleanText10((statSelect == null ? void 0 : statSelect.value) || INITIAL_STATS_STAT || "goals") || "goals"
     };
   };
   var getFriendlyLeagueHistoryHtml = async (type = "standings", seasonValue = "") => {
@@ -13267,10 +13645,10 @@ order:initial
     const contentBox = root2 == null ? void 0 : root2.querySelector(".column2_a > .box");
     const typeSelect = contentBox == null ? void 0 : contentBox.querySelector("#stats_type");
     const seasonSelect = contentBox == null ? void 0 : contentBox.querySelector("#stats_season");
-    const typeDefs = Array.from((typeSelect == null ? void 0 : typeSelect.querySelectorAll("option")) || []).map((option) => ({ value: cleanText8(option.value), label: cleanText8(option.textContent) })).filter((option) => option.value && option.label);
-    const seasons2 = Array.from((seasonSelect == null ? void 0 : seasonSelect.querySelectorAll("option")) || []).map((option) => ({ id: cleanText8(option.value), label: cleanText8(option.textContent) })).filter((option) => option.id && option.label);
+    const typeDefs = Array.from((typeSelect == null ? void 0 : typeSelect.querySelectorAll("option")) || []).map((option) => ({ value: cleanText10(option.value), label: cleanText10(option.textContent) })).filter((option) => option.value && option.label);
+    const seasons2 = Array.from((seasonSelect == null ? void 0 : seasonSelect.querySelectorAll("option")) || []).map((option) => ({ id: cleanText10(option.value), label: cleanText10(option.textContent) })).filter((option) => option.id && option.label);
     return {
-      title: cleanText8(((_a2 = contentBox == null ? void 0 : contentBox.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "History"),
+      title: cleanText10(((_a2 = contentBox == null ? void 0 : contentBox.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "History"),
       typeDefs: typeDefs.length ? typeDefs : [
         { value: "standings", label: "Standings" },
         { value: "matches", label: "Matches" }
@@ -13290,19 +13668,19 @@ order:initial
       const cells = Array.from(tr.querySelectorAll("td"));
       const clubLink = tr.querySelector("a[club_link]");
       if (!clubLink || cells.length < 8) return null;
-      const goals = cleanText8(((_a2 = cells[6]) == null ? void 0 : _a2.textContent) || "0-0").split("-");
+      const goals = cleanText10(((_a2 = cells[6]) == null ? void 0 : _a2.textContent) || "0-0").split("-");
       return {
-        rank: Number.parseInt(cleanText8(((_b = cells[0]) == null ? void 0 : _b.textContent) || "0"), 10) || 0,
-        clubId: cleanText8(clubLink.getAttribute("club_link") || ""),
-        clubName: cleanText8(clubLink.textContent || ""),
-        gp: Number.parseInt(cleanText8(((_c = cells[2]) == null ? void 0 : _c.textContent) || "0"), 10) || 0,
-        w: Number.parseInt(cleanText8(((_d = cells[3]) == null ? void 0 : _d.textContent) || "0"), 10) || 0,
-        d: Number.parseInt(cleanText8(((_e = cells[4]) == null ? void 0 : _e.textContent) || "0"), 10) || 0,
-        l: Number.parseInt(cleanText8(((_f = cells[5]) == null ? void 0 : _f.textContent) || "0"), 10) || 0,
+        rank: Number.parseInt(cleanText10(((_b = cells[0]) == null ? void 0 : _b.textContent) || "0"), 10) || 0,
+        clubId: cleanText10(clubLink.getAttribute("club_link") || ""),
+        clubName: cleanText10(clubLink.textContent || ""),
+        gp: Number.parseInt(cleanText10(((_c = cells[2]) == null ? void 0 : _c.textContent) || "0"), 10) || 0,
+        w: Number.parseInt(cleanText10(((_d = cells[3]) == null ? void 0 : _d.textContent) || "0"), 10) || 0,
+        d: Number.parseInt(cleanText10(((_e = cells[4]) == null ? void 0 : _e.textContent) || "0"), 10) || 0,
+        l: Number.parseInt(cleanText10(((_f = cells[5]) == null ? void 0 : _f.textContent) || "0"), 10) || 0,
         gf: Number.parseInt(goals[0] || "0", 10) || 0,
         ga: Number.parseInt(goals[1] || "0", 10) || 0,
-        pts: Number.parseInt(cleanText8(((_g = cells[7]) == null ? void 0 : _g.textContent) || "0"), 10) || 0,
-        isMe: tr.classList.contains("highlighted_row_done") || myClubId && cleanText8(clubLink.getAttribute("club_link")) === myClubId
+        pts: Number.parseInt(cleanText10(((_g = cells[7]) == null ? void 0 : _g.textContent) || "0"), 10) || 0,
+        isMe: tr.classList.contains("highlighted_row_done") || myClubId && cleanText10(clubLink.getAttribute("club_link")) === myClubId
       };
     }).filter(Boolean);
   };
@@ -13329,15 +13707,15 @@ order:initial
           day: currentDay,
           matchId: ((_c = (_b = scoreLink.getAttribute("href")) == null ? void 0 : _b.match(/\/matches\/(\d+)\//)) == null ? void 0 : _c[1]) || "",
           matchHref: scoreLink.getAttribute("href") || "",
-          homeId: cleanText8(homeLink.getAttribute("club_link") || ""),
-          homeName: cleanText8(homeLink.textContent || ""),
-          awayId: cleanText8(awayLink.getAttribute("club_link") || ""),
-          awayName: cleanText8(awayLink.textContent || ""),
-          result: cleanText8(scoreLink.textContent || "")
+          homeId: cleanText10(homeLink.getAttribute("club_link") || ""),
+          homeName: cleanText10(homeLink.textContent || ""),
+          awayId: cleanText10(awayLink.getAttribute("club_link") || ""),
+          awayName: cleanText10(awayLink.textContent || ""),
+          result: cleanText10(scoreLink.textContent || "")
         });
       });
       if (!matches.length) return;
-      const shortMonth = cleanText8(heading.textContent).split(" ")[0].slice(0, 3);
+      const shortMonth = cleanText10(heading.textContent).split(" ")[0].slice(0, 3);
       const byDay = /* @__PURE__ */ new Map();
       matches.forEach((match) => {
         const key = String(match.day);
@@ -13345,7 +13723,7 @@ order:initial
         byDay.get(key).push(match);
       });
       groups.push({
-        label: cleanText8(heading.textContent),
+        label: cleanText10(heading.textContent),
         groups: Array.from(byDay.entries()).map(([day, dayMatches]) => ({
           label: `${day} ${shortMonth}`,
           matches: dayMatches
@@ -13355,10 +13733,10 @@ order:initial
     return groups;
   };
   var injectStyles18 = () => {
-    if (document.getElementById(STYLE_ID25)) return;
+    if (document.getElementById(STYLE_ID27)) return;
     injectTmPageLayoutStyles();
     const style = document.createElement("style");
-    style.id = STYLE_ID25;
+    style.id = STYLE_ID27;
     style.textContent = `
             .tmvu-fl-page {
                 display: grid !important;
@@ -13495,7 +13873,7 @@ order:initial
   var parseMenu4 = () => Array.from(sourceRoot.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
     if (node.tagName === "HR") return [{ type: "separator" }];
     if (node.tagName !== "A") return [];
-    const label = cleanText8(node.textContent);
+    const label = cleanText10(node.textContent);
     return [{
       type: "link",
       href: node.getAttribute("href") || "#",
@@ -13518,7 +13896,7 @@ order:initial
     const standingsRows = parseStandingsRows(standingsTable);
     const highlightedRow = standingsRows.find((row) => row.isMe);
     return {
-      title: cleanText8((nameNode == null ? void 0 : nameNode.textContent) || "Friendly League"),
+      title: cleanText10((nameNode == null ? void 0 : nameNode.textContent) || "Friendly League"),
       ownerHtml: (ownerNode == null ? void 0 : ownerNode.innerHTML) || "",
       rank: highlightedRow ? String(highlightedRow.rank) : "",
       goals: highlightedRow ? `${highlightedRow.gf}:${highlightedRow.ga}` : "",
@@ -13539,7 +13917,7 @@ order:initial
     TmPageHero.mount(wrap, {
       slots: {
         kicker: "Friendly League",
-        title: escapeHtml13(overview.title),
+        title: escapeHtml14(overview.title),
         main: `<div class="tmvu-fl-byline">${overview.ownerHtml}</div>`,
         side: '<div class="tmvu-fl-mark">\u{1F91D}</div>'
       }
@@ -13597,7 +13975,7 @@ order:initial
     historyCard.className = "tmu-card";
     historyCard.innerHTML = `
         <div class="tmu-card-head">
-            <span class="tmvu-fl-panel-title">${escapeHtml13((FRIENDLY_HISTORY_META == null ? void 0 : FRIENDLY_HISTORY_META.title) || "History")}</span>
+            <span class="tmvu-fl-panel-title">${escapeHtml14((FRIENDLY_HISTORY_META == null ? void 0 : FRIENDLY_HISTORY_META.title) || "History")}</span>
         </div>
         <div class="tmu-card-body tmvu-fl-history-panel">
             <div data-ref="controls" class="tmvu-fl-history-controls"></div>
@@ -13633,7 +14011,7 @@ order:initial
                     <div class="tmvu-fl-history-stack">
                         ${months.map((month) => `
                             <section class="tmvu-fl-history-month">
-                                <div class="tmvu-fl-history-month-title">${escapeHtml13(month.label)}</div>
+                                <div class="tmvu-fl-history-month-title">${escapeHtml14(month.label)}</div>
                                 ${TmFixturesList.render(month.groups, { myClubId, season: CURRENT_SEASON, linkUpcoming: true, showType: false })}
                             </section>
                         `).join("")}
@@ -13727,7 +14105,7 @@ order:initial
     statsCard.className = "tmu-card";
     statsCard.innerHTML = `
         <div class="tmu-card-head">
-            <span class="tmvu-fl-panel-title">${escapeHtml13((FRIENDLY_STATS_META == null ? void 0 : FRIENDLY_STATS_META.title) || "Statistics")}</span>
+            <span class="tmvu-fl-panel-title">${escapeHtml14((FRIENDLY_STATS_META == null ? void 0 : FRIENDLY_STATS_META.title) || "Statistics")}</span>
         </div>
         <div class="tmu-card-body">
             <div data-ref="stats-browser">${TmUI.loading("Loading statistics...", true)}</div>
@@ -13856,9 +14234,9 @@ order:initial
     currentRouteRoot = nativeMain;
     LEAGUE_ID = (routeMatch == null ? void 0 : routeMatch[1]) || extractFriendlyLeagueId(nativeMain) || ((_c = (_b = (_a2 = nativeMain.querySelector("#new_message_button")) == null ? void 0 : _a2.getAttribute("onclick")) == null ? void 0 : _b.match(/pop_create_chat\((\d+),/)) == null ? void 0 : _c[1]) || "";
     ACTIVE_TAB = /^\/fixtures\//i.test(currentPath) ? "fixtures" : /^\/statistics\//i.test(currentPath) ? "statistics" : /^\/history\//i.test(currentPath) ? "history" : "overview";
-    INITIAL_STATS_STAT = (routeMatch == null ? void 0 : routeMatch[2]) || cleanText8(((_d = nativeMain.querySelector("#stats_players")) == null ? void 0 : _d.value) || "goals") || "goals";
-    INITIAL_HISTORY_TYPE = cleanText8((historyMatch == null ? void 0 : historyMatch[1]) || ((_e = nativeMain.querySelector("#stats_type")) == null ? void 0 : _e.value) || "standings") || "standings";
-    INITIAL_HISTORY_SEASON = cleanText8((historyMatch == null ? void 0 : historyMatch[2]) || ((_f = nativeMain.querySelector("#stats_season")) == null ? void 0 : _f.value) || "");
+    INITIAL_STATS_STAT = (routeMatch == null ? void 0 : routeMatch[2]) || cleanText10(((_d = nativeMain.querySelector("#stats_players")) == null ? void 0 : _d.value) || "goals") || "goals";
+    INITIAL_HISTORY_TYPE = cleanText10((historyMatch == null ? void 0 : historyMatch[1]) || ((_e = nativeMain.querySelector("#stats_type")) == null ? void 0 : _e.value) || "standings") || "standings";
+    INITIAL_HISTORY_SEASON = cleanText10((historyMatch == null ? void 0 : historyMatch[2]) || ((_f = nativeMain.querySelector("#stats_season")) == null ? void 0 : _f.value) || "");
     LEAGUE_FIXTURES_PROMISE = null;
     FRIENDLY_STATS_DOC_CACHE = null;
     FRIENDLY_HISTORY_DOC_CACHE = null;
@@ -13937,12 +14315,12 @@ order:initial
   };
 
   // src/components/club/tm-club-fixtures-styles.js
-  var STYLE_ID26 = "tmvu-club-fixtures-style";
+  var STYLE_ID28 = "tmvu-club-fixtures-style";
   var TmClubFixturesStyles = {
     inject() {
-      if (document.getElementById(STYLE_ID26)) return;
+      if (document.getElementById(STYLE_ID28)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID26;
+      style.id = STYLE_ID28;
       style.textContent = `
             .tmcf-wrap {
                 display: flex;
@@ -14039,12 +14417,12 @@ order:initial
   };
 
   // src/components/shared/tm-countdown-block.js
-  var STYLE_ID27 = "tmu-countdown-block-style";
+  var STYLE_ID29 = "tmu-countdown-block-style";
   var esc = (v) => String(v || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var injectStyles19 = () => {
-    if (document.getElementById(STYLE_ID27)) return;
+    if (document.getElementById(STYLE_ID29)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID27;
+    style.id = STYLE_ID29;
     style.textContent = `
         .tmvu-cdb-wrap {
             position: relative;
@@ -14251,7 +14629,7 @@ order:initial
   var sourceRoot2 = null;
   var mountedMain = null;
   var mountedPath = "";
-  var STYLE_ID28 = "tmvu-quickmatch-style";
+  var STYLE_ID30 = "tmvu-quickmatch-style";
   var QUICKMATCH_HOME_RE = /^\/quickmatch\/?$/i;
   var QUICKMATCH_STANDINGS_RE = /^\/quickmatch\/complete-standings(?:\/[^/]+)?\/?$/i;
   var QUICKMATCH_LATEST_RE = /^\/quickmatch\/latest-matches\/?$/i;
@@ -14271,14 +14649,14 @@ order:initial
   var renderQueued = false;
   var queuePollTimer = null;
   var queueCountdown = null;
-  var cleanText9 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-  var escapeHtml14 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  var escapeAttr = (value) => escapeHtml14(value).replace(/`/g, "&#96;");
+  var cleanText11 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var escapeHtml15 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var escapeAttr = (value) => escapeHtml15(value).replace(/`/g, "&#96;");
   var metricHtml4 = (opts) => TmUI.metric(opts);
   var renderFlag2 = (country) => {
     if (typeof window.get_flag === "function" && country) return window.get_flag(country);
     if (!country) return "";
-    return `<span class="tmvu-qm-flag-fallback">${escapeHtml14(String(country).toUpperCase())}</span>`;
+    return `<span class="tmvu-qm-flag-fallback">${escapeHtml15(String(country).toUpperCase())}</span>`;
   };
   var currentHashTab = () => HASH_TO_TAB[window.location.hash] || "ranked";
   var setHash = (tab) => {
@@ -14295,7 +14673,7 @@ order:initial
   var parseMenu5 = () => Array.from(sourceRoot2.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
     if (node.tagName === "HR") return [{ type: "separator" }];
     if (node.tagName !== "A") return [];
-    const label = cleanText9(node.textContent);
+    const label = cleanText11(node.textContent);
     return [{
       type: "link",
       href: node.getAttribute("href") || "#",
@@ -14310,12 +14688,12 @@ order:initial
   };
   var parseCostCopy = () => {
     var _a2;
-    return cleanText9(((_a2 = sourceRoot2.querySelector("#select_match_type .very_large")) == null ? void 0 : _a2.textContent) || "Costs 2 TM Pro Days");
+    return cleanText11(((_a2 = sourceRoot2.querySelector("#select_match_type .very_large")) == null ? void 0 : _a2.textContent) || "Costs 2 TM Pro Days");
   };
   var parseShowmatchGroups = () => {
     const labels = {};
     sourceRoot2.querySelectorAll("#match_type_show .tabs [set_active]").forEach((tab) => {
-      labels[tab.getAttribute("set_active")] = cleanText9(tab.textContent) || SHOW_GROUP_LABELS[tab.getAttribute("set_active")] || "Showmatch";
+      labels[tab.getAttribute("set_active")] = cleanText11(tab.textContent) || SHOW_GROUP_LABELS[tab.getAttribute("set_active")] || "Showmatch";
     });
     return Array.from(sourceRoot2.querySelectorAll("#match_type_show .tab_container > div[id]")).map((panel) => {
       var _a2, _b, _c;
@@ -14325,7 +14703,7 @@ order:initial
         const hoverText = node.querySelector(".hover_text");
         return {
           id: rawVal,
-          labelHtml: (hoverText == null ? void 0 : hoverText.innerHTML) || escapeHtml14(cleanText9(node.textContent)),
+          labelHtml: (hoverText == null ? void 0 : hoverText.innerHTML) || escapeHtml15(cleanText11(node.textContent)),
           disabled: node.classList.contains("disabled"),
           selected: node.classList.contains("selected")
         };
@@ -14333,8 +14711,8 @@ order:initial
       return {
         key,
         label: labels[key] || SHOW_GROUP_LABELS[key] || "Showmatch",
-        heading: cleanText9(((_a2 = panel.querySelector(".align_center strong, .division_champs")) == null ? void 0 : _a2.textContent) || labels[key] || ""),
-        subcopy: cleanText9(((_b = panel.querySelector(".align_center em, .align_center.large + ul, .align_center + em")) == null ? void 0 : _b.previousElementSibling) ? "" : ((_c = panel.querySelector("em")) == null ? void 0 : _c.textContent) || ""),
+        heading: cleanText11(((_a2 = panel.querySelector(".align_center strong, .division_champs")) == null ? void 0 : _a2.textContent) || labels[key] || ""),
+        subcopy: cleanText11(((_b = panel.querySelector(".align_center em, .align_center.large + ul, .align_center + em")) == null ? void 0 : _b.previousElementSibling) ? "" : ((_c = panel.querySelector("em")) == null ? void 0 : _c.textContent) || ""),
         options
       };
     }).filter((group) => group.options.length);
@@ -14349,7 +14727,7 @@ order:initial
     return ((_b = (_a2 = raw.match(/flag-img-([a-z]{2,3})/i)) == null ? void 0 : _a2[1]) == null ? void 0 : _b.toLowerCase()) || "";
   };
   var buildLinkHtml = (href, label, className = "") => {
-    const safeLabel = escapeHtml14(label || "");
+    const safeLabel = escapeHtml15(label || "");
     if (!href) return safeLabel;
     return `<a${className ? ` class="${escapeAttr(className)}"` : ""} href="${escapeAttr(href)}">${safeLabel}</a>`;
   };
@@ -14358,13 +14736,13 @@ order:initial
     const onclick = (trigger == null ? void 0 : trigger.getAttribute("onclick")) || "";
     const match = onclick.match(/pop_region_select\(\s*'([^']*)'\s*,\s*'([^']+)'\s*\)/i);
     return {
-      label: cleanText9((trigger == null ? void 0 : trigger.textContent) || "Change"),
+      label: cleanText11((trigger == null ? void 0 : trigger.textContent) || "Change"),
       type: (match == null ? void 0 : match[1]) || "",
       pathTemplate: (match == null ? void 0 : match[2]) || "",
       canOpen: Boolean(match && typeof window.pop_region_select === "function")
     };
   };
-  var isStandingsHeaderText = (text) => /^(#|rank|rating|club|team|country|nation|league|division|statistics|stats?|pts?|points?)$/i.test(cleanText9(text));
+  var isStandingsHeaderText = (text) => /^(#|rank|rating|club|team|country|nation|league|division|statistics|stats?|pts?|points?)$/i.test(cleanText11(text));
   var findStandingsTableCandidate = (root2) => {
     const tables = Array.from((root2 == null ? void 0 : root2.querySelectorAll(".column2_a table, .column2 table, table")) || []);
     let best = null;
@@ -14374,7 +14752,7 @@ order:initial
       const clubLinks = table.querySelectorAll('a[href*="/club/"]').length;
       const statsLinks = table.querySelectorAll('a[href*="/statistics/club/"]').length;
       const headerRow = rows.find((row) => row.querySelectorAll("th").length) || rows[0] || null;
-      const headerTexts = Array.from((headerRow == null ? void 0 : headerRow.querySelectorAll("th, td")) || []).map((cell) => cleanText9(cell.textContent));
+      const headerTexts = Array.from((headerRow == null ? void 0 : headerRow.querySelectorAll("th, td")) || []).map((cell) => cleanText11(cell.textContent));
       const headerScore = headerTexts.filter(isStandingsHeaderText).length;
       const dataRows = rows.filter((row) => row.querySelectorAll("td").length >= 4 && row.querySelector('a[href*="/club/"]')).length;
       const score = clubLinks * 4 + statsLinks * 3 + headerScore * 2 + dataRows;
@@ -14389,7 +14767,7 @@ order:initial
     let best = null;
     boxes.forEach((box) => {
       var _a2;
-      const title = cleanText9(((_a2 = box.querySelector(".box_sub_header .large, .box_head h2, h2")) == null ? void 0 : _a2.textContent) || "");
+      const title = cleanText11(((_a2 = box.querySelector(".box_sub_header .large, .box_head h2, h2")) == null ? void 0 : _a2.textContent) || "");
       const table = findStandingsTableCandidate(box);
       const clubLinks = (table == null ? void 0 : table.querySelectorAll('a[href*="/club/"]').length) || 0;
       const score = (/standings/i.test(title) ? 10 : 0) + clubLinks;
@@ -14411,11 +14789,11 @@ order:initial
     if (!contentBox || !table) return null;
     const allRows = Array.from(table.querySelectorAll("tr"));
     const headerRow = table.querySelector("thead tr") || allRows.find((row) => row.querySelectorAll("th").length) || allRows.find((row) => {
-      const texts = Array.from(row.querySelectorAll("td")).map((cell) => cleanText9(cell.textContent));
+      const texts = Array.from(row.querySelectorAll("td")).map((cell) => cleanText11(cell.textContent));
       return texts.filter(isStandingsHeaderText).length >= 2;
     }) || allRows[0] || null;
     const headerCells = Array.from((headerRow == null ? void 0 : headerRow.querySelectorAll("th, td")) || []);
-    const headerLabels = headerCells.map((cell) => cleanText9(cell.textContent).toLowerCase());
+    const headerLabels = headerCells.map((cell) => cleanText11(cell.textContent).toLowerCase());
     const bodyRows = (table.tBodies.length ? Array.from(table.tBodies[0].rows) : Array.from(table.rows)).filter((row) => row !== headerRow && row.querySelectorAll("td").length >= 4 && row.querySelector('a[href*="/club/"]'));
     const findColumnIndex = (patterns, fallback) => {
       const foundIndex = headerLabels.findIndex((label) => patterns.some((pattern) => pattern.test(label)));
@@ -14431,12 +14809,12 @@ order:initial
       var _a3, _b, _c;
       const cells = Array.from(row.querySelectorAll("td"));
       if (cells.length < Math.max(headerCells.length || 0, 4)) return null;
-      const rank = cleanText9(((_a3 = cells[rankIndex]) == null ? void 0 : _a3.textContent) || String(rowIndex + 1));
-      const ratingText = cleanText9(((_b = cells[ratingIndex]) == null ? void 0 : _b.textContent) || "0");
+      const rank = cleanText11(((_a3 = cells[rankIndex]) == null ? void 0 : _a3.textContent) || String(rowIndex + 1));
+      const ratingText = cleanText11(((_b = cells[ratingIndex]) == null ? void 0 : _b.textContent) || "0");
       const rating = Number(String(ratingText).replace(/[^\d.-]/g, "")) || 0;
       const clubCell = cells[clubIndex];
       const clubLink = clubCell == null ? void 0 : clubCell.querySelector("a[href]");
-      const clubLabel = cleanText9((clubLink == null ? void 0 : clubLink.textContent) || (clubCell == null ? void 0 : clubCell.textContent) || "Club");
+      const clubLabel = cleanText11((clubLink == null ? void 0 : clubLink.textContent) || (clubCell == null ? void 0 : clubCell.textContent) || "Club");
       const clubHtml = buildLinkHtml((clubLink == null ? void 0 : clubLink.getAttribute("href")) || "", clubLabel, "tmvu-qm-standings-link");
       const statsCell = findCellByLinkPatterns(cells, [/\/statistics\/club\//i]) || cells[statsIndex] || null;
       const leagueCell = findCellByLinkPatterns(cells, [/\/league\//i, /\/league(?!-stats)/i]) || cells[leagueIndex] || null;
@@ -14447,19 +14825,19 @@ order:initial
         return hrefs.length === 0 || hrefs.some((href) => !/\/club\/|\/league\/|\/statistics\/club\//i.test(href));
       }) || cells[countryIndex] || null;
       const countryCode = extractFlagCode(countryCell);
-      const countryLabel = cleanText9((countryCell == null ? void 0 : countryCell.textContent) || "").replace(/^[-–]\s*/, "");
+      const countryLabel = cleanText11((countryCell == null ? void 0 : countryCell.textContent) || "").replace(/^[-–]\s*/, "");
       const countryLink = ((_c = countryCell == null ? void 0 : countryCell.querySelector("a[href]")) == null ? void 0 : _c.getAttribute("href")) || "";
       const countryInner = [
         countryCode ? renderFlag2(countryCode) : "",
-        countryLabel ? `<span>${escapeHtml14(countryLabel)}</span>` : ""
+        countryLabel ? `<span>${escapeHtml15(countryLabel)}</span>` : ""
       ].filter(Boolean).join(" ");
       const countryHtml = countryInner ? countryLink ? `<a class="tmvu-qm-standings-country" href="${escapeAttr(countryLink)}">${countryInner}</a>` : `<span class="tmvu-qm-standings-country">${countryInner}</span>` : "";
       const leagueLink = leagueCell == null ? void 0 : leagueCell.querySelector("a[href]");
-      const leagueLabel = cleanText9((leagueLink == null ? void 0 : leagueLink.textContent) || (leagueCell == null ? void 0 : leagueCell.textContent) || "");
+      const leagueLabel = cleanText11((leagueLink == null ? void 0 : leagueLink.textContent) || (leagueCell == null ? void 0 : leagueCell.textContent) || "");
       const leagueHtml = leagueLabel ? buildLinkHtml((leagueLink == null ? void 0 : leagueLink.getAttribute("href")) || "", leagueLabel, "tmvu-qm-standings-link") : "";
       const statsLink = statsCell == null ? void 0 : statsCell.querySelector("a[href]");
-      const statsLabel = cleanText9((statsLink == null ? void 0 : statsLink.textContent) || (statsCell == null ? void 0 : statsCell.textContent) || "Open");
-      const statsHtml = statsLink ? `<a class="tmvu-qm-standings-stats" href="${escapeAttr(statsLink.getAttribute("href") || "")}">${escapeHtml14(statsLabel || "Open")}</a>` : escapeHtml14(statsLabel);
+      const statsLabel = cleanText11((statsLink == null ? void 0 : statsLink.textContent) || (statsCell == null ? void 0 : statsCell.textContent) || "Open");
+      const statsHtml = statsLink ? `<a class="tmvu-qm-standings-stats" href="${escapeAttr(statsLink.getAttribute("href") || "")}">${escapeHtml15(statsLabel || "Open")}</a>` : escapeHtml15(statsLabel);
       return {
         rank: Number(String(rank).replace(/\D+/g, "")) || rowIndex + 1,
         rating,
@@ -14472,7 +14850,7 @@ order:initial
         _rowClass: /highlighted_row/i.test(row.className || "") ? "tmvu-qm-rank-me" : ""
       };
     }).filter(Boolean);
-    const title = cleanText9(((_a2 = contentBox.querySelector(".box_sub_header .large, .box_head h2, h2")) == null ? void 0 : _a2.textContent) || "Complete Standings");
+    const title = cleanText11(((_a2 = contentBox.querySelector(".box_sub_header .large, .box_head h2, h2")) == null ? void 0 : _a2.textContent) || "Complete Standings");
     const regionAction = parseRegionAction(contentBox);
     return {
       title,
@@ -14501,9 +14879,9 @@ order:initial
       const matchLink = (_c = cells[2]) == null ? void 0 : _c.querySelector("a.match_link");
       if (!matchLink || !homeAnchor || !awayAnchor) return null;
       const matchId = ((_d = (matchLink.getAttribute("href") || "").match(/\/matches\/(\d+)\//)) == null ? void 0 : _d[1]) || "";
-      const score = cleanText9(matchLink.textContent);
+      const score = cleanText11(matchLink.textContent);
       const isPlayed = /\d/.test(score);
-      const rawDate = cleanText9(cells[0].textContent);
+      const rawDate = cleanText11(cells[0].textContent);
       const parts = rawDate.match(/(\d+)\.\s*(\w+)/);
       const MONTHS = { January: 0, February: 1, March: 2, April: 3, May: 4, June: 5, July: 6, August: 7, September: 8, October: 9, November: 10, December: 11 };
       let isoDate = rawDate;
@@ -14516,9 +14894,9 @@ order:initial
         date: isoDate,
         result: isPlayed ? score : "",
         hometeam: homeAnchor.getAttribute("club_link") || "",
-        hometeam_name: cleanText9(homeAnchor.textContent),
+        hometeam_name: cleanText11(homeAnchor.textContent),
         awayteam: awayAnchor.getAttribute("club_link") || "",
-        awayteam_name: cleanText9(awayAnchor.textContent),
+        awayteam_name: cleanText11(awayAnchor.textContent),
         matchtype_key: "ranked"
       };
     }).filter(Boolean);
@@ -14539,10 +14917,10 @@ order:initial
     return byMonth;
   };
   var injectStyles20 = () => {
-    if (document.getElementById(STYLE_ID28)) return;
+    if (document.getElementById(STYLE_ID30)) return;
     injectTmPageLayoutStyles();
     const style = document.createElement("style");
-    style.id = STYLE_ID28;
+    style.id = STYLE_ID30;
     style.textContent = `
             .tmvu-qm-note-actions {
                 display: flex;
@@ -14844,7 +15222,7 @@ order:initial
         window.location.href = `/matches/${data.match_id}/`;
         return;
       }
-      if (data == null ? void 0 : data.text) state2.queue.text = cleanText9(data.text);
+      if (data == null ? void 0 : data.text) state2.queue.text = cleanText11(data.text);
       queueRender();
       queuePollTimer = window.setTimeout(poll, 1e4);
     };
@@ -14855,7 +15233,7 @@ order:initial
       const wasActive = state2.queue.active;
       state2.queue.active = true;
       state2.queue.type = fallbackType || state2.queue.type || "";
-      state2.queue.text = cleanText9((data == null ? void 0 : data.text) || "Searching for a match...");
+      state2.queue.text = cleanText11((data == null ? void 0 : data.text) || "Searching for a match...");
       if (!wasActive) state2.queue.startedAt = Date.now();
       queueRender();
       if (Number(data == null ? void 0 : data.match_id) > 0) {
@@ -14882,10 +15260,10 @@ order:initial
     state2.rankedRows = rankingRows.length ? rankingRows.filter((row) => row && (row.club_link || row.club_name || row.name)).map((row) => ({
       rank: row.rank,
       rating: Number(row.rating) || 0,
-      division: cleanText9(row.division),
+      division: cleanText11(row.division),
       clubId: String(row.club_id || ""),
-      clubLinkHtml: row.club_link || escapeHtml14(cleanText9(row.club_name || row.name || "Club")),
-      country: cleanText9(row.country),
+      clubLinkHtml: row.club_link || escapeHtml15(cleanText11(row.club_name || row.name || "Club")),
+      country: cleanText11(row.country),
       isUser: Number(row.is_user) === 1
     })) : [];
     state2.rankedLoading = false;
@@ -14952,7 +15330,7 @@ order:initial
         key: "division",
         label: "Div",
         sortable: false,
-        render: (_, row) => `${row.country && state2.rankedMode !== "national" ? `${renderFlag2(row.country)} ` : ""}${escapeHtml14(row.division)}`
+        render: (_, row) => `${row.country && state2.rankedMode !== "national" ? `${renderFlag2(row.country)} ` : ""}${escapeHtml15(row.division)}`
       },
       {
         key: "rating",
@@ -15012,7 +15390,7 @@ order:initial
       slots: {
         title: "Quick Match",
         side: state2.queue.active ? '<div data-ref="qm-finding"></div>' : `
-                    ${metricHtml4({ label: state2.activeTab === "ranked" ? "Play Ranked" : "Cost", value: escapeHtml14(state2.costCopy), layout: "card", tone: "panel", size: "lg" })}
+                    ${metricHtml4({ label: state2.activeTab === "ranked" ? "Play Ranked" : "Cost", value: escapeHtml15(state2.costCopy), layout: "card", tone: "panel", size: "lg" })}
                     ${state2.activeTab === "ranked" ? '<div class="tmvu-qm-note-actions" data-qm-hero-play></div>' : ""}
                 `,
         footer: state2.notice ? TmUI.notice(state2.notice, { tone: "warm" }) : ""
@@ -15427,7 +15805,7 @@ order:initial
   }
 
   // src/components/shared/tm-stars.js
-  var STYLE_ID29 = "tmu-stars-style";
+  var STYLE_ID31 = "tmu-stars-style";
   var STAR_CSS = `
 .tmu-stars{line-height:1}
 .tmu-star-full{color:var(--tmu-warning)}
@@ -15441,12 +15819,12 @@ order:initial
   function injectStyles21(target = document.head) {
     if (!target) return;
     if (target === document.head) {
-      if (document.getElementById(STYLE_ID29)) return;
-    } else if (target.querySelector && target.querySelector(`#${STYLE_ID29}`)) {
+      if (document.getElementById(STYLE_ID31)) return;
+    } else if (target.querySelector && target.querySelector(`#${STYLE_ID31}`)) {
       return;
     }
     const style = document.createElement("style");
-    style.id = STYLE_ID29;
+    style.id = STYLE_ID31;
     style.textContent = STAR_CSS;
     target.appendChild(style);
   }
@@ -15868,7 +16246,7 @@ order:initial
   var TmBestEstimate = { render: render8 };
 
   // src/components/shared/tm-scout-report-cards.js
-  var STYLE_ID30 = "tm-scout-report-cards-style";
+  var STYLE_ID32 = "tm-scout-report-cards-style";
   var SPECIALTIES2 = ["None", "Strength", "Stamina", "Pace", "Marking", "Tackling", "Workrate", "Positioning", "Passing", "Crossing", "Technique", "Heading", "Finishing", "Longshots", "Set Pieces"];
   var THEME_COLORS2 = {
     success: "var(--tmu-success)",
@@ -15881,9 +16259,9 @@ order:initial
     info: "var(--tmu-info-alt)"
   };
   function injectStyles22() {
-    if (document.getElementById(STYLE_ID30)) return;
+    if (document.getElementById(STYLE_ID32)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID30;
+    style.id = STYLE_ID32;
     style.textContent = `
         .tmsc-stars { font-size: var(--tmu-font-xl); letter-spacing: 2px; line-height: 1; }
         .tmsc-star-full { color: var(--tmu-warning); }
@@ -16377,19 +16755,19 @@ order:initial
   };
 
   // src/pages/scouts.js
-  var STYLE_ID31 = "tmvu-scouts-style";
+  var STYLE_ID33 = "tmvu-scouts-style";
   var mainColumn2 = null;
-  var cleanText10 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-  var escapeHtml15 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var cleanText12 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var parseCellNumber = (cell) => {
     if (!cell) return 0;
     const img = cell.querySelector("img[alt], img[title]");
-    return parseInt((img == null ? void 0 : img.getAttribute("alt")) || (img == null ? void 0 : img.getAttribute("title")) || cleanText10(cell.textContent), 10) || 0;
+    return parseInt((img == null ? void 0 : img.getAttribute("alt")) || (img == null ? void 0 : img.getAttribute("title")) || cleanText12(cell.textContent), 10) || 0;
   };
   var parseMenu6 = (sourceRoot3) => Array.from(sourceRoot3.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
     if (node.tagName === "HR") return [{ type: "separator" }];
     if (node.tagName !== "A") return [];
-    const label = cleanText10(node.textContent);
+    const label = cleanText12(node.textContent);
     const href = node.getAttribute("href") || "#";
     let icon = "\u{1F9ED}";
     if (/hire/i.test(label)) icon = "\u2795";
@@ -16401,9 +16779,9 @@ order:initial
     return rows.map((row) => {
       const cells = row.querySelectorAll("td");
       if (cells.length < 9) return null;
-      const nameCell = cleanText10(cells[0].textContent);
+      const nameCell = cleanText12(cells[0].textContent);
       const match = nameCell.match(/^(.*)\((\d+)\)$/);
-      const fullName = cleanText10((match == null ? void 0 : match[1]) || nameCell);
+      const fullName = cleanText12((match == null ? void 0 : match[1]) || nameCell);
       const age = parseInt((match == null ? void 0 : match[2]) || "0", 10) || 0;
       const fireLink = row.querySelector('a[href*="fire_scout_pop"]');
       const fireHref = (fireLink == null ? void 0 : fireLink.getAttribute("href")) || "";
@@ -16433,11 +16811,11 @@ order:initial
     const playerIdMatch = playerHref.match(/\/players\/(\d+)\//);
     const playerId = (playerIdMatch == null ? void 0 : playerIdMatch[1]) || "";
     if (!playerAnchor || !playerId) return null;
-    const displayTime = cleanText10(cells[0].textContent);
+    const displayTime = cleanText12(cells[0].textContent);
     return {
       id: playerId,
       playerId,
-      name: cleanText10(playerAnchor.textContent),
+      name: cleanText12(playerAnchor.textContent),
       playerHref,
       playerHtml: cells[1].innerHTML,
       displayTime,
@@ -16496,10 +16874,10 @@ order:initial
     return enriched;
   };
   var injectStyles23 = () => {
-    if (document.getElementById(STYLE_ID31)) return;
+    if (document.getElementById(STYLE_ID33)) return;
     injectTmPageLayoutStyles();
     const style = document.createElement("style");
-    style.id = STYLE_ID31;
+    style.id = STYLE_ID33;
     style.textContent = `
             .tmvu-scouts-hero {
                 display: block;
@@ -16672,7 +17050,7 @@ order:initial
   var buildScoutTable = (scouts) => TmTable.table({
     cls: "tmvu-scouts-table",
     headers: [
-      { key: "fullName", label: "Scout", render: (value, item) => `<div class="tmvu-scouts-inline-metric"><span class="tmvu-scouts-inline-main">${escapeHtml15(value)}</span><span class="tmvu-scouts-inline-sub">Age ${item.age}</span></div>` },
+      { key: "fullName", label: "Scout", render: (value, item) => `<div class="tmvu-scouts-inline-metric"><span class="tmvu-scouts-inline-main">${escapeHtml16(value)}</span><span class="tmvu-scouts-inline-sub">Age ${item.age}</span></div>` },
       { key: "seniors", label: "Sen", align: "c", render: (value) => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
       { key: "youths", label: "Yth", align: "c", render: (value) => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
       { key: "physical", label: "Phy", align: "c", render: (value) => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
@@ -16680,7 +17058,7 @@ order:initial
       { key: "technical", label: "Tec", align: "c", render: (value) => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
       { key: "development", label: "Dev", align: "c", render: (value) => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
       { key: "psychology", label: "Psy", align: "c", render: (value) => `<span style="color:${TmUtils.skillColor(value)};font-weight:700">${value}</span>` },
-      { key: "id", label: "", align: "r", sortable: false, render: (_, item) => item.id ? `<a href="#" class="tmvu-scouts-fire" data-scout-id="${escapeHtml15(item.id)}" data-scout-name="${escapeHtml15(item.fullName)}">Fire</a>` : "" }
+      { key: "id", label: "", align: "r", sortable: false, render: (_, item) => item.id ? `<a href="#" class="tmvu-scouts-fire" data-scout-id="${escapeHtml16(item.id)}" data-scout-name="${escapeHtml16(item.fullName)}">Fire</a>` : "" }
     ],
     items: scouts,
     sortKey: "seniors",
@@ -16693,7 +17071,7 @@ order:initial
       return;
     }
     const reportChipHtml = (label) => TmUI.chip({
-      label: escapeHtml15(label),
+      label: escapeHtml16(label),
       tone: "overlay",
       size: "md",
       shape: "full",
@@ -16701,9 +17079,9 @@ order:initial
     });
     container.innerHTML = `<div class="tmvu-scouts-report-list">${items.map((item) => {
       if (!item.fullScoutData || !item.tooltipPlayer) {
-        return `<div class="tmvu-scouts-report-entry tmu-stack tmu-stack-density-tight"><div class="tmvu-scouts-report-entry-head"><div><div class="tmvu-scouts-report-entry-title"><a href="${escapeHtml15(item.playerHref)}">${escapeHtml15(item.name)}</a></div><div class="tmvu-scouts-report-entry-copy">${escapeHtml15(item.position)} \u2022 Age ${item.age || "-"}${item.currentAge ? ` \u2022 Now ${escapeHtml15(item.currentAge)}` : ""}</div></div>${reportChipHtml("Loading")}</div>${TmUI.info("Best Estimate data is still loading for this player.", true)}</div>`;
+        return `<div class="tmvu-scouts-report-entry tmu-stack tmu-stack-density-tight"><div class="tmvu-scouts-report-entry-head"><div><div class="tmvu-scouts-report-entry-title"><a href="${escapeHtml16(item.playerHref)}">${escapeHtml16(item.name)}</a></div><div class="tmvu-scouts-report-entry-copy">${escapeHtml16(item.position)} \u2022 Age ${item.age || "-"}${item.currentAge ? ` \u2022 Now ${escapeHtml16(item.currentAge)}` : ""}</div></div>${reportChipHtml("Loading")}</div>${TmUI.info("Best Estimate data is still loading for this player.", true)}</div>`;
       }
-      return `<div class="tmvu-scouts-report-entry tmu-stack tmu-stack-density-tight"><div class="tmvu-scouts-report-entry-head"><div><div class="tmvu-scouts-report-entry-title"><a href="${escapeHtml15(item.playerHref)}">${escapeHtml15(item.name)}</a></div><div class="tmvu-scouts-report-entry-copy">${escapeHtml15(item.position)} \u2022 Report ${escapeHtml15(item.done || item.displayTime || "-")} \u2022 ${escapeHtml15(item.scoutName || "-")}</div></div>${reportChipHtml(item.currentAge ? `Now ${item.currentAge}` : `Age ${item.age || "-"}`)}</div><div class="tmvu-scouts-report-card">${TmScoutReportCards.bestEstimateHtml({ scoutData: item.fullScoutData, player: item.tooltipPlayer }) || TmUI.info("Best Estimate data is unavailable for this report.", true)}</div></div>`;
+      return `<div class="tmvu-scouts-report-entry tmu-stack tmu-stack-density-tight"><div class="tmvu-scouts-report-entry-head"><div><div class="tmvu-scouts-report-entry-title"><a href="${escapeHtml16(item.playerHref)}">${escapeHtml16(item.name)}</a></div><div class="tmvu-scouts-report-entry-copy">${escapeHtml16(item.position)} \u2022 Report ${escapeHtml16(item.done || item.displayTime || "-")} \u2022 ${escapeHtml16(item.scoutName || "-")}</div></div>${reportChipHtml(item.currentAge ? `Now ${item.currentAge}` : `Age ${item.age || "-"}`)}</div><div class="tmvu-scouts-report-card">${TmScoutReportCards.bestEstimateHtml({ scoutData: item.fullScoutData, player: item.tooltipPlayer }) || TmUI.info("Best Estimate data is unavailable for this report.", true)}</div></div>`;
     }).join("")}</div>`;
   };
   var bindActions = (scouts) => {
@@ -16787,14 +17165,14 @@ order:initial
   }
 
   // src/pages/scouts-hire.js
-  var STYLE_ID32 = "tmvu-scouts-hire-style";
-  var cleanText11 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-  var escapeHtml16 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  var buttonHtml5 = (opts) => TmUI.button(opts).outerHTML;
+  var STYLE_ID34 = "tmvu-scouts-hire-style";
+  var cleanText13 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var escapeHtml17 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var buttonHtml6 = (opts) => TmUI.button(opts).outerHTML;
   var skillHtml = (value) => TmUI.skillBadge(value);
   var parseMoneyText = (value) => {
     var _a2;
-    const text = cleanText11(value);
+    const text = cleanText13(value);
     const number = parseFloat(((_a2 = text.replace(/,/g, "").match(/[\d.]+/)) == null ? void 0 : _a2[0]) || "0");
     if (!Number.isFinite(number)) return 0;
     if (/\bmil\b/i.test(text)) return Math.round(number * 1e6);
@@ -16803,13 +17181,13 @@ order:initial
   };
   var parseSkillCell = (cell) => {
     const img = cell == null ? void 0 : cell.querySelector("img[alt], img[title]");
-    const raw = (img == null ? void 0 : img.getAttribute("alt")) || (img == null ? void 0 : img.getAttribute("title")) || cleanText11(cell == null ? void 0 : cell.textContent);
+    const raw = (img == null ? void 0 : img.getAttribute("alt")) || (img == null ? void 0 : img.getAttribute("title")) || cleanText13(cell == null ? void 0 : cell.textContent);
     return parseInt(raw || "0", 10) || 0;
   };
   var parseMenu7 = (sourceRoot3) => Array.from(sourceRoot3.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
     if (node.tagName === "HR") return [{ type: "separator" }];
     if (node.tagName !== "A") return [];
-    const label = cleanText11(node.textContent);
+    const label = cleanText13(node.textContent);
     let icon = "\u{1F9ED}";
     if (/hire/i.test(label)) icon = "\u2795";
     else if (/wage/i.test(label)) icon = "\u{1F4B0}";
@@ -16827,9 +17205,9 @@ order:initial
       var _a2, _b, _c, _d, _e, _f;
       const cells = Array.from(row.querySelectorAll("td"));
       if (cells.length < 9) return null;
-      const heading = cleanText11(((_a2 = cells[0].querySelector("span")) == null ? void 0 : _a2.textContent) || cells[0].textContent);
+      const heading = cleanText13(((_a2 = cells[0].querySelector("span")) == null ? void 0 : _a2.textContent) || cells[0].textContent);
       const nameMatch = heading.match(/^(.*?)\((\d+)\s*Years?\)$/i);
-      const metaText = cleanText11(((_b = cells[0].querySelector(".subtle")) == null ? void 0 : _b.textContent) || "");
+      const metaText = cleanText13(((_b = cells[0].querySelector(".subtle")) == null ? void 0 : _b.textContent) || "");
       const wageParts = metaText.split(/,\s*Sign-on fee:\s*/i);
       let hireHref = "";
       let countryHref = "";
@@ -16848,13 +17226,13 @@ order:initial
       const development = parseSkillCell(cells[6]);
       const psychology = parseSkillCell(cells[7]);
       const overall = Number(((seniors + youths + physical + tactical + technical + development + psychology) / 7).toFixed(1));
-      const wageLabel = cleanText11(wageParts[0].replace(/^Wage:\s*/i, "") || "0");
-      const signOnFeeLabel = cleanText11(wageParts[1] || "0");
+      const wageLabel = cleanText13(wageParts[0].replace(/^Wage:\s*/i, "") || "0");
+      const signOnFeeLabel = cleanText13(wageParts[1] || "0");
       const wageValue = TmUtils.parseNum(wageLabel);
       const signOnFeeValue = parseMoneyText(signOnFeeLabel);
       return {
         id,
-        fullName: cleanText11((nameMatch == null ? void 0 : nameMatch[1]) || heading),
+        fullName: cleanText13((nameMatch == null ? void 0 : nameMatch[1]) || heading),
         age: parseInt((nameMatch == null ? void 0 : nameMatch[2]) || "0", 10) || 0,
         countryCode,
         wageLabel,
@@ -16877,16 +17255,16 @@ order:initial
   var renderCandidateName = (item) => `
         <div class="tmvu-scouts-hire-name-cell">
             <div class="tmvu-scouts-hire-name-row">
-                <strong class="tmvu-scouts-hire-name">${escapeHtml16(item.fullName)}</strong>
+                <strong class="tmvu-scouts-hire-name">${escapeHtml17(item.fullName)}</strong>
             </div>
-            <div class="tmvu-scouts-hire-meta">${escapeHtml16(item.age)} yrs \u2022 Wage ${escapeHtml16(item.wageLabel)} \u2022 Fee ${escapeHtml16(item.signOnFeeLabel)}</div>
+            <div class="tmvu-scouts-hire-meta">${escapeHtml17(item.age)} yrs \u2022 Wage ${escapeHtml17(item.wageLabel)} \u2022 Fee ${escapeHtml17(item.signOnFeeLabel)}</div>
         </div>
     `;
   var injectStyles24 = () => {
-    if (document.getElementById(STYLE_ID32)) return;
+    if (document.getElementById(STYLE_ID34)) return;
     injectTmPageLayoutStyles();
     const style = document.createElement("style");
-    style.id = STYLE_ID32;
+    style.id = STYLE_ID34;
     style.textContent = `
             .tmvu-scouts-hire-page {
                 --tmu-page-rail-width: 320px;
@@ -17003,7 +17381,7 @@ order:initial
           label: "Overall",
           align: "c",
           width: "88px",
-          render: (value) => `<div class="tmvu-scouts-hire-overall">${escapeHtml16(String(value))}</div>`
+          render: (value) => `<div class="tmvu-scouts-hire-overall">${escapeHtml17(String(value))}</div>`
         },
         {
           key: "yearlyCost",
@@ -17012,7 +17390,7 @@ order:initial
           kind: "action",
           sortable: false,
           width: "108px",
-          render: (_, item) => buttonHtml5({
+          render: (_, item) => buttonHtml6({
             label: "Hire",
             color: "primary",
             size: "sm",
@@ -17025,7 +17403,7 @@ order:initial
     table.addEventListener("click", (event) => {
       const trigger = event.target.closest("[data-scout-hire]");
       if (!trigger) return;
-      const candidate = candidatesById.get(cleanText11(trigger.getAttribute("data-scout-hire")));
+      const candidate = candidatesById.get(cleanText13(trigger.getAttribute("data-scout-hire")));
       if (!candidate) return;
       event.preventDefault();
       if (typeof window.hire_scout_pop === "function") {
@@ -17067,14 +17445,14 @@ order:initial
   }
 
   // src/pages/sponsors.js
-  var STYLE_ID33 = "tmvu-sponsors-style";
+  var STYLE_ID35 = "tmvu-sponsors-style";
   var refreshTimer = 0;
   var sponsorObserver = null;
-  var cleanText12 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-  var escapeHtml17 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  var parseMoney4 = (value) => TmUtils.parseNum(cleanText12(value));
+  var cleanText14 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var escapeHtml18 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var parseMoney4 = (value) => TmUtils.parseNum(cleanText14(value));
   var formatMoney4 = (value) => Number(value || 0).toLocaleString("en-US");
-  var titleize = (value) => cleanText12(value).replace(/[_-]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+  var titleize = (value) => cleanText14(value).replace(/[_-]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
   var actionButton = (label, onClick) => TmUI.button({
     label,
     color: "secondary",
@@ -17092,10 +17470,10 @@ order:initial
     return "\u2022";
   };
   var injectStyles25 = () => {
-    if (document.getElementById(STYLE_ID33)) return;
+    if (document.getElementById(STYLE_ID35)) return;
     injectTmPageLayoutStyles();
     const style = document.createElement("style");
-    style.id = STYLE_ID33;
+    style.id = STYLE_ID35;
     style.textContent = `
             .tmvu-sponsors-note {
                 color: var(--tmu-text-muted);
@@ -17379,7 +17757,7 @@ order:initial
   var parseMenu8 = (sourceRoot3) => Array.from(sourceRoot3.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
     if (node.tagName === "HR") return [{ type: "separator" }];
     if (node.tagName !== "A") return [];
-    const label = cleanText12(node.textContent);
+    const label = cleanText14(node.textContent);
     return [{
       type: "link",
       href: node.getAttribute("href") || "#",
@@ -17404,7 +17782,7 @@ order:initial
   };
   var extractOptionNote = (row, optionLabel, bonusText) => {
     if (!row) return "";
-    const texts = Array.from(row.querySelectorAll("th, td")).map((cell) => cleanText12(cell.textContent)).filter(Boolean).filter((text) => text !== optionLabel && text !== bonusText);
+    const texts = Array.from(row.querySelectorAll("th, td")).map((cell) => cleanText14(cell.textContent)).filter(Boolean).filter((text) => text !== optionLabel && text !== bonusText);
     return texts.join(" | ");
   };
   var findOptionImage = (radio, labelNode) => {
@@ -17425,7 +17803,7 @@ order:initial
   var parseGoalGroups = (box) => {
     if (!box) return [];
     return Array.from(box.querySelectorAll("h3")).map((heading) => {
-      const title = cleanText12(heading.textContent);
+      const title = cleanText14(heading.textContent);
       let section = heading.nextElementSibling;
       while (section && !section.matches(".std, form, table")) {
         if (section.matches("h3")) return null;
@@ -17440,9 +17818,9 @@ order:initial
         options: radios.map((radio) => {
           const row = radio.closest("tr") || radio.parentElement;
           const labelNode = getLabelForInput(section, radio) || getLabelForInput(box, radio) || (row == null ? void 0 : row.querySelector("label"));
-          const optionLabel = cleanText12((labelNode == null ? void 0 : labelNode.textContent) || radio.value || radio.name);
+          const optionLabel = cleanText14((labelNode == null ? void 0 : labelNode.textContent) || radio.value || radio.name);
           const bonusNode = row == null ? void 0 : row.querySelector("td.align_right, .align_right");
-          const bonusText = cleanText12((bonusNode == null ? void 0 : bonusNode.textContent) || "0");
+          const bonusText = cleanText14((bonusNode == null ? void 0 : bonusNode.textContent) || "0");
           const imageNode = findOptionImage(radio, labelNode);
           return {
             id: radio.id || "",
@@ -17461,7 +17839,7 @@ order:initial
   var parseOfferActions = (node) => {
     const seen = /* @__PURE__ */ new Set();
     return Array.from(node.querySelectorAll('.msgbuttons .button_border, .msgbuttons button, .msgbuttons input[type="button"], .msgbuttons input[type="submit"], a.button_border')).map((element) => {
-      const label = cleanText12(element.value || element.textContent || element.getAttribute("title") || "Action");
+      const label = cleanText14(element.value || element.textContent || element.getAttribute("title") || "Action");
       const key = `${label}|${element.getAttribute("onclick") || ""}`;
       if (!label || seen.has(key)) return null;
       seen.add(key);
@@ -17476,7 +17854,7 @@ order:initial
         offers: []
       };
     }
-    const hostText = cleanText12(host.textContent);
+    const hostText = cleanText14(host.textContent);
     if (host.querySelector(".loading_animation") || /loading/i.test(hostText)) {
       return {
         status: "loading",
@@ -17490,8 +17868,8 @@ order:initial
       var _a2;
       const image = node.querySelector("img");
       const moneyNode = node.querySelector(".large.bold, .very_large .coin_big, .coin_big, .coin");
-      const title = cleanText12(((_a2 = node.querySelector("h1, h2, h3, strong, b")) == null ? void 0 : _a2.textContent) || "Sponsor Offer");
-      const paragraphs = Array.from(node.querySelectorAll("p, li")).map((item) => cleanText12(item.textContent)).filter(Boolean);
+      const title = cleanText14(((_a2 = node.querySelector("h1, h2, h3, strong, b")) == null ? void 0 : _a2.textContent) || "Sponsor Offer");
+      const paragraphs = Array.from(node.querySelectorAll("p, li")).map((item) => cleanText14(item.textContent)).filter(Boolean);
       const detailSet = /* @__PURE__ */ new Set();
       const details = paragraphs.filter((text) => {
         if (detailSet.has(text)) return false;
@@ -17503,7 +17881,7 @@ order:initial
       const meta = details.filter((text) => text !== contract && text !== expires);
       const actions = parseOfferActions(node);
       const amount = parseMoney4((moneyNode == null ? void 0 : moneyNode.textContent) || "0");
-      const fallbackText = cleanText12(node.textContent);
+      const fallbackText = cleanText14(node.textContent);
       if (!amount && !contract && !image && !actions.length && !fallbackText) return null;
       return {
         title,
@@ -17657,8 +18035,8 @@ order:initial
       const header = document.createElement("div");
       header.className = "tmvu-sponsors-group-head";
       header.innerHTML = `
-                <div class="tmvu-sponsors-group-title">${escapeHtml17(group.title)}</div>
-                <div class="tmvu-sponsors-group-meta">${escapeHtml17(selected ? formatMoney4(selected.bonus) : "No bonus")}</div>
+                <div class="tmvu-sponsors-group-title">${escapeHtml18(group.title)}</div>
+                <div class="tmvu-sponsors-group-meta">${escapeHtml18(selected ? formatMoney4(selected.bonus) : "No bonus")}</div>
             `;
       groupEl.appendChild(header);
       const list = document.createElement("div");
@@ -17675,13 +18053,13 @@ order:initial
         button.dataset.sponsorOptionId = option.id;
         button.innerHTML = `
                     <div class="tmvu-sponsors-option-media">
-                        ${option.imageSrc ? `<img class="tmvu-sponsors-option-logo" src="${escapeHtml17(option.imageSrc)}" alt="">` : ""}
+                        ${option.imageSrc ? `<img class="tmvu-sponsors-option-logo" src="${escapeHtml18(option.imageSrc)}" alt="">` : ""}
                         <div>
-                            <div class="tmvu-sponsors-option-name">${escapeHtml17(option.name)}</div>
-                            ${option.note ? `<div class="tmvu-sponsors-option-note">${escapeHtml17(option.note)}</div>` : ""}
+                            <div class="tmvu-sponsors-option-name">${escapeHtml18(option.name)}</div>
+                            ${option.note ? `<div class="tmvu-sponsors-option-note">${escapeHtml18(option.note)}</div>` : ""}
                         </div>
                     </div>
-                    <div class="tmvu-sponsors-option-bonus">${escapeHtml17(option.bonus ? formatMoney4(option.bonus) : "-")}</div>
+                    <div class="tmvu-sponsors-option-bonus">${escapeHtml18(option.bonus ? formatMoney4(option.bonus) : "-")}</div>
                 `;
         list.appendChild(button);
       });
@@ -17713,9 +18091,9 @@ order:initial
       button.dataset.sponsorOptionId = option.id;
       button.innerHTML = `
                 <div class="tmvu-sponsors-option-media">
-                    ${option.imageSrc ? `<img class="tmvu-sponsors-option-logo" src="${escapeHtml17(option.imageSrc)}" alt="">` : ""}
+                    ${option.imageSrc ? `<img class="tmvu-sponsors-option-logo" src="${escapeHtml18(option.imageSrc)}" alt="">` : ""}
                     <div>
-                        <div class="tmvu-sponsors-option-name">${escapeHtml17(option.name)}</div>
+                        <div class="tmvu-sponsors-option-name">${escapeHtml18(option.name)}</div>
                     </div>
                 </div>
                 <div class="tmvu-sponsors-option-bonus">${option.checked ? "Selected" : ""}</div>
@@ -18344,12 +18722,12 @@ order:initial
   // src/components/shared/tm-training-dots.js
   var TRN_LABELS = TRAINING_CUSTOM.map((g) => g.label);
   var DOT_COLORS = ["var(--tmu-text-dim)", "var(--tmu-danger)", "var(--tmu-warning-soft)", "var(--tmu-warning)", "var(--tmu-accent)", "var(--tmu-success-strong)"];
-  var STYLE_ID34 = "tm-trn-dots-style";
+  var STYLE_ID36 = "tm-trn-dots-style";
   var injectCSS2 = () => {
     if (typeof document === "undefined") return;
-    if (document.getElementById(STYLE_ID34)) return;
+    if (document.getElementById(STYLE_ID36)) return;
     const s6 = document.createElement("style");
-    s6.id = STYLE_ID34;
+    s6.id = STYLE_ID36;
     s6.textContent = `
         .tm-trn-dots { display: inline-flex; gap: 2px; align-items: center; }
         .tm-trn-dot {
@@ -18382,7 +18760,7 @@ order:initial
   var PlayerTrainingDots = { render: render11, injectCSS: injectCSS2 };
 
   // src/pages/training.js
-  var STYLE_ID35 = "tmvu-training-style";
+  var STYLE_ID37 = "tmvu-training-style";
   var mainColumn3 = null;
   var renderScheduled = false;
   var mountedMain2 = null;
@@ -18392,8 +18770,8 @@ order:initial
     notice: "",
     selectedPlayerId: ""
   };
-  var cleanText13 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-  var escapeHtml18 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var cleanText15 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var escapeHtml19 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var formatAge = (years, months) => `${Number(years) || 0}.${String(Number(months) || 0).padStart(2, "0")}`;
   var htmlOf5 = (node) => (node == null ? void 0 : node.outerHTML) || "";
   var chipHtml = (opts) => htmlOf5(TmUI.chip(opts));
@@ -18402,17 +18780,17 @@ order:initial
   var inputHtml2 = (opts) => htmlOf5(TmUI.input({ tone: "overlay", density: "comfy", ...opts }));
   var getOwnClubId2 = () => {
     var _a2, _b, _c;
-    return cleanText13(((_a2 = window.SESSION) == null ? void 0 : _a2.main_id) || ((_b = window.SESSION) == null ? void 0 : _b.club_id) || ((_c = window.SESSION) == null ? void 0 : _c.id));
+    return cleanText15(((_a2 = window.SESSION) == null ? void 0 : _a2.main_id) || ((_b = window.SESSION) == null ? void 0 : _b.club_id) || ((_c = window.SESSION) == null ? void 0 : _c.id));
   };
   var getBTeamClubId = () => {
     var _a2;
-    return cleanText13((_a2 = window.SESSION) == null ? void 0 : _a2.b_team);
+    return cleanText15((_a2 = window.SESSION) == null ? void 0 : _a2.b_team);
   };
   var injectStyles26 = () => {
-    if (document.getElementById(STYLE_ID35)) return;
+    if (document.getElementById(STYLE_ID37)) return;
     injectTmPageLayoutStyles();
     const style = document.createElement("style");
-    style.id = STYLE_ID35;
+    style.id = STYLE_ID37;
     style.textContent = `
         .tmvu-tr-copy {
             color: var(--tmu-text-main);
@@ -18594,11 +18972,11 @@ order:initial
     };
   };
   var getFilteredPlayers = () => {
-    const query = cleanText13(state3.query).toLowerCase();
+    const query = cleanText15(state3.query).toLowerCase();
     if (!query) return state3.players;
     return state3.players.filter((player2) => {
-      const name = cleanText13(player2.name).toLowerCase();
-      const pos = cleanText13(player2.favposition).toLowerCase();
+      const name = cleanText15(player2.name).toLowerCase();
+      const pos = cleanText15(player2.favposition).toLowerCase();
       return name.includes(query) || pos.includes(query);
     });
   };
@@ -18623,7 +19001,7 @@ order:initial
     queueRender2();
   };
   var renderModeChip = (label, tone = "overlay") => chipHtml({
-    label: escapeHtml18(label),
+    label: escapeHtml19(label),
     tone,
     size: "md",
     shape: "full",
@@ -18701,8 +19079,8 @@ order:initial
         render: (_, player2) => `
                 <div class="tmvu-tr-player-cell">
                     <div class="tmvu-tr-player-meta">
-                        <a class="tmvu-tr-player-name" href="/players/${player2.id}/">${escapeHtml18(player2.name)}</a>
-                        <div class="tmvu-tr-player-sub">${escapeHtml18(getPlayerSubtitle(player2.trainingState))}</div>
+                        <a class="tmvu-tr-player-name" href="/players/${player2.id}/">${escapeHtml19(player2.name)}</a>
+                        <div class="tmvu-tr-player-sub">${escapeHtml19(getPlayerSubtitle(player2.trainingState))}</div>
                     </div>
                 </div>
             `
@@ -18776,7 +19154,7 @@ order:initial
         <div class="tmvu-tr-editor-header">
             <div class="tmvu-tr-editor-title">
                 <div class="tmvu-tr-editor-kicker">Selected Player</div>
-                <div class="tmvu-tr-editor-name">${escapeHtml18(player2.name)}</div>
+                <div class="tmvu-tr-editor-name">${escapeHtml19(player2.name)}</div>
                 <div class="tmvu-tr-editor-sub">
                     <span>${TmPosition.chip(((_a2 = player2.positions) == null ? void 0 : _a2.length) ? player2.positions : [String(player2.favposition || "").split(",")[0] || ""])}</span>
                     ${badgeHtml2({ label: "Age", value: formatAge(player2.age, player2.months) }, "muted")}
@@ -18876,7 +19254,7 @@ order:initial
   }
 
   // src/components/youth/tm-youth-player-card.js
-  var STYLE_ID36 = "tmvu-youth-player-card-style";
+  var STYLE_ID38 = "tmvu-youth-player-card-style";
   var _esc = TmUtils.escHtml;
   var _fmtAge = (p) => `${p.age}.${String(p.month).padStart(2, "0")}`;
   var _fmtAsi = (v) => Number.isFinite(v) ? Math.round(v).toLocaleString("en-US") : "--";
@@ -18887,9 +19265,9 @@ order:initial
   };
   var TmYouthPlayerCard = {
     injectStyles() {
-      if (document.getElementById(STYLE_ID36)) return;
+      if (document.getElementById(STYLE_ID38)) return;
       const s6 = document.createElement("style");
-      s6.id = STYLE_ID36;
+      s6.id = STYLE_ID38;
       s6.textContent = `
             .tmvu-yd-player-card {
                 display: grid;
@@ -20971,7 +21349,7 @@ order:initial
   }
 
   // src/components/shared/tm-summary-strip.js
-  var STYLE_ID37 = "tm-summary-strip-style";
+  var STYLE_ID39 = "tm-summary-strip-style";
   var CSS_TEXT2 = `
 .tmu-summary-strip{
     display:flex;
@@ -21028,16 +21406,16 @@ order:initial
   function ensureStyle2(target) {
     if (!target) return;
     if (target === document.head) {
-      if (document.getElementById(STYLE_ID37)) return;
-    } else if (target.querySelector && target.querySelector(`#${STYLE_ID37}`)) {
+      if (document.getElementById(STYLE_ID39)) return;
+    } else if (target.querySelector && target.querySelector(`#${STYLE_ID39}`)) {
       return;
     }
     const style = document.createElement("style");
-    style.id = STYLE_ID37;
+    style.id = STYLE_ID39;
     style.textContent = CSS_TEXT2;
     target.appendChild(style);
   }
-  function escapeHtml19(value) {
+  function escapeHtml20(value) {
     return String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
   function renderItem(item, opts) {
@@ -21051,8 +21429,8 @@ order:initial
     const itemStyle = item.minWidth || opts.itemMinWidth ? ` style="min-width:${item.minWidth || opts.itemMinWidth}"` : "";
     const labelCls = ["tmu-summary-label", opts.labelCls || "", item.labelCls || ""].filter(Boolean).join(" ");
     const valueCls = ["tmu-summary-value", opts.valueCls || "", item.valueCls || ""].filter(Boolean).join(" ");
-    const labelHtml = `<div class="${labelCls}">${escapeHtml19(item.label)}</div>`;
-    const valueHtml = `<div class="${valueCls}"${item.valueStyle ? ` style="${item.valueStyle}"` : ""}>${item.valueHtml != null ? item.valueHtml : escapeHtml19(item.value)}</div>`;
+    const labelHtml = `<div class="${labelCls}">${escapeHtml20(item.label)}</div>`;
+    const valueHtml = `<div class="${valueCls}"${item.valueStyle ? ` style="${item.valueStyle}"` : ""}>${item.valueHtml != null ? item.valueHtml : escapeHtml20(item.value)}</div>`;
     return `<div class="${itemCls}"${itemStyle}>${opts.valueFirst ? valueHtml + labelHtml : labelHtml + valueHtml}</div>`;
   }
   var TmSummaryStrip = {
@@ -21072,15 +21450,15 @@ order:initial
   };
 
   // src/components/shared/tm-player-status-icons.js
-  var STYLE_ID38 = "tmu-pstatus-style";
+  var STYLE_ID40 = "tmu-pstatus-style";
   var CSS4 = `
 .tmu-psi{display:inline-flex;align-items:center;gap:3px;vertical-align:middle;margin-left:4px}
 .tmu-psi-icon{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;vertical-align:middle}
 `;
   function ensureCSS() {
-    if (document.getElementById(STYLE_ID38)) return;
+    if (document.getElementById(STYLE_ID40)) return;
     const s6 = document.createElement("style");
-    s6.id = STYLE_ID38;
+    s6.id = STYLE_ID40;
     s6.textContent = CSS4;
     document.head.appendChild(s6);
   }
@@ -21294,11 +21672,11 @@ order:initial
   var TmSquadTable = { render: render12 };
 
   // src/components/club/tm-club-side-menu.js
-  var STYLE_ID39 = "tmvu-club-side-menu-style";
+  var STYLE_ID41 = "tmvu-club-side-menu-style";
   function injectStyles27() {
-    if (document.getElementById(STYLE_ID39)) return;
+    if (document.getElementById(STYLE_ID41)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID39;
+    style.id = STYLE_ID41;
     style.textContent = `
         .tmvu-main.tmvu-club-layout {
             display: flex !important;
@@ -21349,7 +21727,7 @@ order:initial
     Stadium: "\u{1F3DF}",
     Table: "\u{1F3C6}"
   };
-  function cleanText14(value) {
+  function cleanText16(value) {
     return String(value || "").replace(/\s+/g, " ").trim();
   }
   function normalizeClubHref(href) {
@@ -21397,7 +21775,7 @@ order:initial
       }
       if (node.tagName !== "A") return;
       const href = normalizeClubHref(node.getAttribute("href") || "");
-      const label = mapLabel(cleanText14(node.textContent));
+      const label = mapLabel(cleanText16(node.textContent));
       if (!href || !label) return;
       items.push({ type: "link", href, label, icon: ICONS2[label] || "\u{1F4CB}" });
     });
@@ -23035,8 +23413,8 @@ order:initial
   }
 
   // src/components/shared/tm-native-feed.js
-  var STYLE_ID40 = "tmvu-native-feed-style";
-  var buttonHtml6 = ({ cls = "", attrs = {}, shape = "full", size = "sm", color = "secondary", ...opts } = {}) => TmUI.button({
+  var STYLE_ID42 = "tmvu-native-feed-style";
+  var buttonHtml7 = ({ cls = "", attrs = {}, shape = "full", size = "sm", color = "secondary", ...opts } = {}) => TmUI.button({
     cls,
     attrs,
     shape,
@@ -23045,9 +23423,9 @@ order:initial
     ...opts
   }).outerHTML;
   function injectStyles28() {
-    if (document.getElementById(STYLE_ID40)) return;
+    if (document.getElementById(STYLE_ID42)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID40;
+    style.id = STYLE_ID42;
     style.textContent = `
         .tmvu-native-feed-box {
             background: var(--tmu-surface-input-dark-focus) !important;
@@ -23551,12 +23929,12 @@ order:initial
         const actionBar = document.createElement("div");
         actionBar.className = "tmvu-feed-post-actions";
         actionBar.innerHTML = [
-          buttonHtml6({ label: "Like", cls: "tmvu-feed-post-action", attrs: { "data-action": "like" } }),
-          buttonHtml6({ label: "Comment", cls: "tmvu-feed-post-action", attrs: { "data-action": "comment" } }),
-          buttonHtml6({ label: "Reply", cls: "tmvu-feed-post-action", attrs: { "data-action": "reply" } }),
-          buttonHtml6({ label: "Link", cls: "tmvu-feed-post-action", attrs: { "data-action": "link" } }),
-          buttonHtml6({ label: "Mute", cls: "tmvu-feed-post-action", attrs: { "data-action": "mute" } }),
-          buttonHtml6({ label: "More", cls: "tmvu-feed-post-action", attrs: { "data-action": "more" } })
+          buttonHtml7({ label: "Like", cls: "tmvu-feed-post-action", attrs: { "data-action": "like" } }),
+          buttonHtml7({ label: "Comment", cls: "tmvu-feed-post-action", attrs: { "data-action": "comment" } }),
+          buttonHtml7({ label: "Reply", cls: "tmvu-feed-post-action", attrs: { "data-action": "reply" } }),
+          buttonHtml7({ label: "Link", cls: "tmvu-feed-post-action", attrs: { "data-action": "link" } }),
+          buttonHtml7({ label: "Mute", cls: "tmvu-feed-post-action", attrs: { "data-action": "mute" } }),
+          buttonHtml7({ label: "More", cls: "tmvu-feed-post-action", attrs: { "data-action": "more" } })
         ].join("");
         const anchor = postEl.querySelector(".feed_post_inner") || postEl.querySelector(".feed_post_content") || postEl;
         anchor.appendChild(actionBar);
@@ -23648,11 +24026,11 @@ order:initial
   };
 
   // src/components/club/tm-club-overview.js
-  var STYLE_ID41 = "tmvu-club-overview-style";
+  var STYLE_ID43 = "tmvu-club-overview-style";
   function injectStyles29() {
-    if (document.getElementById(STYLE_ID41)) return;
+    if (document.getElementById(STYLE_ID43)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID41;
+    style.id = STYLE_ID43;
     style.textContent = `
         .tmvu-main.tmvu-club-layout {
             align-items: flex-start;
@@ -23988,14 +24366,14 @@ order:initial
     `;
     document.head.appendChild(style);
   }
-  function cleanText15(value) {
+  function cleanText17(value) {
     return String(value || "").replace(/\s+/g, " ").trim();
   }
-  function escapeHtml20(value) {
+  function escapeHtml21(value) {
     return String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
   function normalizeFoundedText(text) {
-    return cleanText15(text).replace(/^Founded\s+Founded/i, "Founded").replace(/^Founded(\d)/i, "Founded $1");
+    return cleanText17(text).replace(/^Founded\s+Founded/i, "Founded").replace(/^Founded(\d)/i, "Founded $1");
   }
   function parsePlayers(table) {
     if (!table) return [];
@@ -24004,12 +24382,12 @@ order:initial
       const playerLink = row.querySelector('a[player_link], a[href*="/players/"]');
       if (!playerLink || cells.length < 4) return null;
       return {
-        name: cleanText15(playerLink.textContent),
+        name: cleanText17(playerLink.textContent),
         href: playerLink.getAttribute("href") || "#",
         firstCellHtml: cells[0].innerHTML,
         starsHtml: cells[1].innerHTML,
-        rating: cleanText15(cells[2].textContent),
-        goals: cleanText15(cells[3].textContent)
+        rating: cleanText17(cells[2].textContent),
+        goals: cleanText17(cells[3].textContent)
       };
     }).filter(Boolean);
   }
@@ -24044,8 +24422,8 @@ order:initial
       var _a2;
       const icon = row.children[0];
       const content = row.children[1];
-      const season = cleanText15(((_a2 = content == null ? void 0 : content.querySelector(".subtle")) == null ? void 0 : _a2.textContent) || "");
-      const title = season ? cleanText15((content == null ? void 0 : content.textContent.replace(season, "")) || "") : cleanText15((content == null ? void 0 : content.textContent) || "");
+      const season = cleanText17(((_a2 = content == null ? void 0 : content.querySelector(".subtle")) == null ? void 0 : _a2.textContent) || "");
+      const title = season ? cleanText17((content == null ? void 0 : content.textContent.replace(season, "")) || "") : cleanText17((content == null ? void 0 : content.textContent) || "");
       return {
         small: row.classList.contains("small"),
         iconStyle: (icon == null ? void 0 : icon.getAttribute("style")) || "",
@@ -24083,7 +24461,7 @@ order:initial
       clubHref,
       clubId: clubId2,
       showToolbox,
-      clubName: cleanText15((clubNameLink == null ? void 0 : clubNameLink.textContent) || "Club"),
+      clubName: cleanText17((clubNameLink == null ? void 0 : clubNameLink.textContent) || "Club"),
       statusHtml: ((_d = topMeta == null ? void 0 : topMeta.querySelector(".large")) == null ? void 0 : _d.innerHTML) || "",
       competitionHtml: (competitionLine == null ? void 0 : competitionLine.innerHTML) || "",
       changeClubHref,
@@ -24107,8 +24485,8 @@ order:initial
             <tr>
                 <td>${player2.firstCellHtml}</td>
                 <td>${player2.starsHtml}</td>
-                <td class="align_center">${escapeHtml20(player2.rating)}</td>
-                <td class="align_center">${escapeHtml20(player2.goals)}</td>
+                <td class="align_center">${escapeHtml21(player2.rating)}</td>
+                <td class="align_center">${escapeHtml21(player2.goals)}</td>
             </tr>
         `).join("")
     });
@@ -24123,8 +24501,8 @@ order:initial
         <div class="tmco-trophy${item.small ? " small" : ""}">
             <div class="tmco-trophy-icon" style="${item.iconStyle}"></div>
             <div>
-                <div class="tmco-trophy-title">${escapeHtml20(item.title)}</div>
-                ${item.season ? `<div class="tmco-trophy-sub">${escapeHtml20(item.season)}</div>` : ""}
+                <div class="tmco-trophy-title">${escapeHtml21(item.title)}</div>
+                ${item.season ? `<div class="tmco-trophy-sub">${escapeHtml21(item.season)}</div>` : ""}
             </div>
         </div>
     `).join("");
@@ -24138,7 +24516,7 @@ order:initial
                 ${data.changeClubHref ? `<a class="tmco-club-action" href="${data.changeClubHref}">Change</a>` : ""}
                 <div class="tmco-club-name">
                     <img class="tmco-wing" src="/pics/club_wing_left.gif" alt="">
-                    <a href="${data.clubHref}">${escapeHtml20(data.clubName)}</a>
+                    <a href="${data.clubHref}">${escapeHtml21(data.clubName)}</a>
                     ${data.statusHtml.replace(/^[\s\S]*?<a[^>]*club_link[^>]*>.*?<\/a>/i, "").replace(/<img src="\/pics\/club_wing_right\.gif">/i, "")}
                     <img class="tmco-wing" src="/pics/club_wing_right.gif" alt="">
                 </div>
@@ -24147,11 +24525,11 @@ order:initial
             <div class="tmco-logo-stage">
                 <div class="tmco-logo-shell">
                     <div class="tmco-logo-card">
-                        ${data.logoSrc ? `<img src="${data.logoSrc}" alt="${escapeHtml20(data.logoAlt)}">` : ""}
+                        ${data.logoSrc ? `<img src="${data.logoSrc}" alt="${escapeHtml21(data.logoAlt)}">` : ""}
                     </div>
                 </div>
             </div>
-            ${data.founded ? `<div class="tmco-founded"><span>${escapeHtml20(data.founded)}</span></div>` : ""}
+            ${data.founded ? `<div class="tmco-founded"><span>${escapeHtml21(data.founded)}</span></div>` : ""}
             ${buildPlayersTableHtml(data.players)}
             <div class="tmco-info-block">
                 ${data.infoChangeHref ? `<a class="tmco-info-link" href="${data.infoChangeHref}">Change info</a>` : ""}
@@ -24213,7 +24591,7 @@ order:initial
     const svgBuddyRemove = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="23" y1="11" x2="17" y2="11"></line></svg>`;
     const btnHtml2 = (svgContent, text) => `<div style="display: flex; align-items: center; justify-content: center; gap: var(--tmu-space-sm);">
         ${svgContent}
-        <span>${escapeHtml20(text)}</span>
+        <span>${escapeHtml21(text)}</span>
     </div>`;
     const openComposer = () => {
       const wrap = document.createElement("div");
@@ -24378,7 +24756,7 @@ order:initial
     if (!(layout == null ? void 0 : layout.mainColumn)) return;
     const container = layout.mainColumn;
     const htmlOf7 = (node) => (node == null ? void 0 : node.outerHTML) || "";
-    const buttonHtml12 = (opts) => htmlOf7(TmUI.button(opts));
+    const buttonHtml13 = (opts) => htmlOf7(TmUI.button(opts));
     const MATCH_TYPE_KEYS = {
       "League": "league",
       "Friendly": "friendly",
@@ -24476,7 +24854,7 @@ order:initial
         ["cup", "Cup"],
         ["international_cup", "International Cup"]
       ];
-      return buttons.filter(([key]) => counts[key] > 0).map(([key, label]) => buttonHtml12({
+      return buttons.filter(([key]) => counts[key] > 0).map(([key, label]) => buttonHtml13({
         label: `${label} (${counts[key]})`,
         color: "primary",
         active: activeFilter === key,
@@ -25747,7 +26125,7 @@ order:initial
 
   // src/components/stats/tm-stats-bars-section.js
   var _fix23 = (v) => (Math.round(v * 100) / 100).toFixed(2);
-  var escapeHtml21 = (s6) => String(s6).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  var escapeHtml22 = (s6) => String(s6).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   var TmStatsBarsSection = {
     render({ bars, advLeft, advRight, leftTone = "for", rightTone = "against", tf = "total", mCount = 1, leftLabel = null, rightLabel = null }) {
       const bNum = (v) => tf === "average" ? Number(_fix23(v / mCount)) : v;
@@ -25773,9 +26151,9 @@ order:initial
       html2 += bar("Red Cards", bars.red[0], bars.red[1]);
       html2 += bar("Free Kicks", bars.freekicks[0], bars.freekicks[1]);
       html2 += bar("Penalties", bars.penalties[0], bars.penalties[1]);
-      html2 += `<div class="tsa-section-title">${leftLabel ? escapeHtml21(leftLabel) + " Attacking Styles" : "Our Attacking Styles"}</div>`;
+      html2 += `<div class="tsa-section-title">${leftLabel ? escapeHtml22(leftLabel) + " Attacking Styles" : "Our Attacking Styles"}</div>`;
       html2 += '<div data-tsbs="left"></div>';
-      html2 += `<div class="tsa-section-title">${rightLabel ? escapeHtml21(rightLabel) + " Attacking Styles" : "Opponent Attacking Styles"}</div>`;
+      html2 += `<div class="tsa-section-title">${rightLabel ? escapeHtml22(rightLabel) + " Attacking Styles" : "Opponent Attacking Styles"}</div>`;
       html2 += '<div data-tsbs="right"></div>';
       const mountAdvTables = (container, { onTable } = {}) => {
         const phL = container.querySelector('[data-tsbs="left"]');
@@ -26241,7 +26619,7 @@ order:initial
   var TmTransferSidebar = {
     build() {
       const { SKILL_KEYS_OUT: SKILL_KEYS_OUT2, SKILL_KEYS_GK: SKILL_KEYS_GK2, SKILL_LABELS: SKILL_LABELS2 } = TmConst;
-      const buttonHtml12 = (opts) => TmUI.button(opts).outerHTML;
+      const buttonHtml13 = (opts) => TmUI.button(opts).outerHTML;
       const checkboxFieldHtml = (opts) => TmUI.checkboxField(opts).outerHTML;
       const inputHtml4 = (opts) => TmUI.input({ type: "number", size: "full", density: "regular", grow: true, ...opts }).outerHTML;
       const skillSelectOpts = (withNone = true) => {
@@ -26323,21 +26701,21 @@ order:initial
           </div>
       </div>
       <div class="tms-primary-actions">
-        ${buttonHtml12({ id: "tms-search-btn", label: "\u{1F50D} Search 100", color: "primary", block: true })}
-        ${buttonHtml12({ id: "tms-findall-btn", label: "\u2B07\uFE0F Find All", color: "secondary", size: "sm", block: true })}
+        ${buttonHtml13({ id: "tms-search-btn", label: "\u{1F50D} Search 100", color: "primary", block: true })}
+        ${buttonHtml13({ id: "tms-findall-btn", label: "\u2B07\uFE0F Find All", color: "secondary", size: "sm", block: true })}
       </div>
       <div class="tms-sb-section" style="margin-top:var(--tmu-space-sm)">
         <div class="tms-sb-head">Saved Filters</div>
         <div class="tms-sb-body">
           <select id="tms-saved-filters-sel" class="tms-sel" style="width:100%;margin-bottom:var(--tmu-space-sm)"><option value="">\u2014 no saved filters \u2014</option></select>
           <div class="tms-filter-actions">
-            <div class="tms-filter-action-cell">${buttonHtml12({ id: "tms-filter-load-btn", label: "\u{1F4C2} Load", color: "secondary", size: "xs", block: true })}</div>
-            <div class="tms-filter-action-cell tms-filter-action-cell-wide">${buttonHtml12({ id: "tms-filter-save-btn", label: "\u{1F4BE} Save Current", color: "secondary", size: "xs", block: true })}</div>
-            <div class="tms-filter-action-cell">${buttonHtml12({ id: "tms-filter-del-btn", icon: "\u{1F5D1}", color: "danger", size: "xs", block: true })}</div>
+            <div class="tms-filter-action-cell">${buttonHtml13({ id: "tms-filter-load-btn", label: "\u{1F4C2} Load", color: "secondary", size: "xs", block: true })}</div>
+            <div class="tms-filter-action-cell tms-filter-action-cell-wide">${buttonHtml13({ id: "tms-filter-save-btn", label: "\u{1F4BE} Save Current", color: "secondary", size: "xs", block: true })}</div>
+            <div class="tms-filter-action-cell">${buttonHtml13({ id: "tms-filter-del-btn", icon: "\u{1F5D1}", color: "danger", size: "xs", block: true })}</div>
           </div>
         </div>
       </div>
-      <div class="tms-more-toggle-wrap">${buttonHtml12({
+      <div class="tms-more-toggle-wrap">${buttonHtml13({
         id: "tms-more-toggle",
         color: "secondary",
         size: "xs",
@@ -27928,7 +28306,7 @@ order:initial
         `;
     document.head.appendChild(_s2);
   }
-  var buttonHtml7 = (opts) => TmUI.button(opts).outerHTML;
+  var buttonHtml8 = (opts) => TmUI.button(opts).outerHTML;
   var createAutocomplete = (opts) => TmUI.autocomplete({ tone: "overlay", density: "comfy", size: "full", grow: true, ...opts });
   var createFlag = (suffix) => {
     if (!suffix) return null;
@@ -27954,7 +28332,7 @@ order:initial
             <div class="tsa-ld-box" id="tsa-ld-box">
                 <div class="tsa-ld-header">
                     <span class="tsa-ld-title">Change League</span>
-                    ${buttonHtml7({ id: "tsa-ld-close", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>', variant: "icon", color: "secondary", size: "xs" })}
+                    ${buttonHtml8({ id: "tsa-ld-close", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>', variant: "icon", color: "secondary", size: "xs" })}
                 </div>
                 <div class="tsa-ld-body" id="tsa-ld-body">
                     ${TmUI.loading("Loading leagues...")}
@@ -27992,7 +28370,7 @@ order:initial
                     <div id="tsa-ld-group-ac"></div>
                 </div>
                 <div class="tsa-ld-footer">
-                    ${buttonHtml7({ id: "tsa-ld-go", label: "Go", color: "primary", disabled: true })}
+                    ${buttonHtml8({ id: "tsa-ld-go", label: "Go", color: "primary", disabled: true })}
                 </div>
             </div>`;
     let selCountry = null, selDivision = null, selGroup = null, divisionData = null;
@@ -28169,7 +28547,7 @@ order:initial
         `;
     document.head.appendChild(_s2);
   }
-  var buttonHtml8 = ({ label, slot, cls = "", active = false, ...opts }) => TmButton.button({
+  var buttonHtml9 = ({ label, slot, cls = "", active = false, ...opts }) => TmButton.button({
     color: "primary",
     size: "sm",
     label,
@@ -28257,8 +28635,8 @@ order:initial
     container.innerHTML = `
         <div class="tsa-stats-bar">
             <div>
-                ${buttonHtml8({ cls: "tsa-stat-mode-btn", label: "Players", active: isPlayers, attrs: { "data-mode": "players" } })}
-                ${buttonHtml8({ cls: "tsa-stat-mode-btn", label: "Clubs", active: !isPlayers, attrs: { "data-mode": "clubs" } })}
+                ${buttonHtml9({ cls: "tsa-stat-mode-btn", label: "Players", active: isPlayers, attrs: { "data-mode": "players" } })}
+                ${buttonHtml9({ cls: "tsa-stat-mode-btn", label: "Clubs", active: !isPlayers, attrs: { "data-mode": "clubs" } })}
             </div>
         </div>
         <div id="tsa-stats-content-inner"></div>
@@ -28290,7 +28668,7 @@ order:initial
     inner.innerHTML = `
         <div class="tsa-stats-bar">
             <div class="tsa-stat-btns">
-                ${CLUB_STAT_DEFS.map(([k, v]) => buttonHtml8({ cls: "tsa-stat-btn", label: v, active: curStat === k, attrs: { "data-stat": k } })).join("")}
+                ${CLUB_STAT_DEFS.map(([k, v]) => buttonHtml9({ cls: "tsa-stat-btn", label: v, active: curStat === k, attrs: { "data-stat": k } })).join("")}
             </div>
         </div>
         <div id="tsa-stats-table-wrap">${TmUI.loading("Loading\u2026")}</div>
@@ -28334,7 +28712,7 @@ order:initial
   var TmLeagueStats = { renderPlayerStatsTab };
 
   // src/components/league/tm-league-transfers.js
-  var buttonHtml9 = ({ label, slot, cls = "", active = false, ...opts }) => TmButton.button({
+  var buttonHtml10 = ({ label, slot, cls = "", active = false, ...opts }) => TmButton.button({
     color: "primary",
     size: "sm",
     label,
@@ -28472,9 +28850,9 @@ order:initial
       container.innerHTML = `
             <div class="tsa-stats-bar">
                 <div>
-                    ${buttonHtml9({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "bought", slot: `Bought <span class="tsa-tr-count">${data.bought.length}</span>` })}
-                    ${buttonHtml9({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "sold", slot: `Sold <span class="tsa-tr-count">${data.sold.length}</span>` })}
-                    ${buttonHtml9({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "teams", slot: "Teams" })}
+                    ${buttonHtml10({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "bought", slot: `Bought <span class="tsa-tr-count">${data.bought.length}</span>` })}
+                    ${buttonHtml10({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "sold", slot: `Sold <span class="tsa-tr-count">${data.sold.length}</span>` })}
+                    ${buttonHtml10({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "teams", slot: "Teams" })}
                 </div>
             </div>
             <div id="tsa-tr-bought-wrap" style="display:${s6.transfersView === "bought" ? "" : "none"}"></div>
@@ -29246,7 +29624,7 @@ order:initial
 
   // src/utils/home-feed.js
   var clean = (value) => String(value || "").replace(/\s+/g, " ").trim();
-  var escapeHtml22 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var escapeHtml23 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var normalizeFeedTime = (value) => clean(String(value || "").replace(/\s*\+\d+\s*$/g, ""));
   var extractFeedPlayerIds2 = (text) => Array.from(String(text || "").matchAll(/\[player=(\d+)\]/g), (match) => clean(match[1])).filter(Boolean);
   var extractFeedClubIds2 = (item) => {
@@ -29281,15 +29659,15 @@ order:initial
     return "";
   };
   var buildFeedLinkHtml2 = (target, label) => {
-    const safeLabel = escapeHtml22(clean(label) || target);
+    const safeLabel = escapeHtml23(clean(label) || target);
     const href = resolveFeedLinkTarget2(target);
     if (!href) return safeLabel;
-    return `<a href="${escapeHtml22(href)}">${safeLabel}</a>`;
+    return `<a href="${escapeHtml23(href)}">${safeLabel}</a>`;
   };
   var formatFeedMoney2 = (value) => {
     const amount = Number(value);
-    if (!Number.isFinite(amount)) return escapeHtml22(String(value || ""));
-    return escapeHtml22(amount.toLocaleString("en-US"));
+    if (!Number.isFinite(amount)) return escapeHtml23(String(value || ""));
+    return escapeHtml23(amount.toLocaleString("en-US"));
   };
   var renderFeedFlagHtml = (country) => {
     const normalized = clean(country).toLowerCase();
@@ -29297,7 +29675,7 @@ order:initial
     if (typeof window !== "undefined" && typeof window.get_flag === "function") {
       return window.get_flag(normalized);
     }
-    return `<span class="tmvu-feed-flag-fallback">${escapeHtml22(normalized.toUpperCase())}</span>`;
+    return `<span class="tmvu-feed-flag-fallback">${escapeHtml23(normalized.toUpperCase())}</span>`;
   };
   var renderPotentialStarsHtml = (value) => {
     const raw = Number(value);
@@ -29312,7 +29690,7 @@ order:initial
   var replaceFeedClubMentions = (content, clubMap, storeReplacement) => content.replace(/(^|[^\w])([@#])(\d+)\b/g, (match, prefix, _marker, clubId2) => {
     const id = clean(clubId2);
     const label = clubMap.get(id) || `#${id}`;
-    const linkHtml = `<a href="/club/${escapeHtml22(id)}/">${escapeHtml22(label)}</a>`;
+    const linkHtml = `<a href="/club/${escapeHtml23(id)}/">${escapeHtml23(label)}</a>`;
     return `${prefix}${storeReplacement(linkHtml)}`;
   });
   var renderFeedTextHtml2 = (text, { playerMap = /* @__PURE__ */ new Map(), clubMap = /* @__PURE__ */ new Map() } = {}) => {
@@ -29327,13 +29705,13 @@ order:initial
     content = content.replace(/\[player=(\d+)\]/g, (_, playerId) => {
       const id = clean(playerId);
       const label = playerMap.get(id) || `#${id}`;
-      return storeReplacement(`<a href="/players/${escapeHtml22(id)}/">${escapeHtml22(label)}</a>`);
+      return storeReplacement(`<a href="/players/${escapeHtml23(id)}/">${escapeHtml23(label)}</a>`);
     });
     content = content.replace(/\[potential_stars=(\d+)\]/g, (_, stars) => storeReplacement(renderPotentialStarsHtml(stars)));
     content = content.replace(/\[flag=([a-z]{2})\]/ig, (_, country) => storeReplacement(renderFeedFlagHtml(country)));
     content = content.replace(/\[money=(\d+)\]/g, (_, amount) => storeReplacement(formatFeedMoney2(amount)));
     content = replaceFeedClubMentions(content, clubMap, storeReplacement);
-    let html2 = escapeHtml22(content).replace(/\n/g, "<br>");
+    let html2 = escapeHtml23(content).replace(/\n/g, "<br>");
     replacements.forEach((entry) => {
       html2 = html2.replaceAll(entry.token, entry.html);
     });
@@ -29370,7 +29748,7 @@ order:initial
       authorLogoSrc: getClubLogoFromId(clubId2),
       authorLogoFallbackSrc: "",
       time: timeText,
-      bodyHtml: `<div class="tmvu-home-feed-comment-body">${timeText ? `<div class="tmvu-home-feed-comment-time" style="float: right;">${escapeHtml22(timeText)}</div>` : ""}${contentHtml}</div>`
+      bodyHtml: `<div class="tmvu-home-feed-comment-body">${timeText ? `<div class="tmvu-home-feed-comment-time" style="float: right;">${escapeHtml23(timeText)}</div>` : ""}${contentHtml}</div>`
     };
   };
   var buildHomeFeedModel = async ({ payload, nativePostMap = /* @__PURE__ */ new Map(), fetchFeedNames }) => {
@@ -29419,7 +29797,7 @@ order:initial
 
   // src/utils/home-feed-native.js
   var clean2 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-  var escapeHtml23 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var escapeHtml24 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var normalizeFeedTime2 = (value) => clean2(String(value || "").replace(/\s*\+\d+\s*$/g, ""));
   var isNativeFeedPostVisible = (postEl, feedRoot) => {
     var _a2, _b, _c;
@@ -29477,7 +29855,7 @@ order:initial
     var _a2;
     const bodySource = commentEl == null ? void 0 : commentEl.querySelector(".comment_text");
     if (!bodySource) {
-      return `<div class="tmvu-home-feed-comment-body"><div>${escapeHtml23(clean2((commentEl == null ? void 0 : commentEl.textContent) || ""))}</div></div>`;
+      return `<div class="tmvu-home-feed-comment-body"><div>${escapeHtml24(clean2((commentEl == null ? void 0 : commentEl.textContent) || ""))}</div></div>`;
     }
     const bodyClone = bodySource.cloneNode(true);
     const timeNode = bodyClone.querySelector(".comment_time");
@@ -29485,7 +29863,7 @@ order:initial
     if (timeNode) timeNode.remove();
     const contentHtml = bodyClone.innerHTML.trim();
     const wrappedContent = /^<div[\s>]/i.test(contentHtml) ? contentHtml : `<div>${contentHtml}</div>`;
-    return `<div class="tmvu-home-feed-comment-body">${timeText ? `<div class="tmvu-home-feed-comment-time" style="float: right;">${escapeHtml23(timeText)}</div>` : ""}${wrappedContent}</div>`;
+    return `<div class="tmvu-home-feed-comment-body">${timeText ? `<div class="tmvu-home-feed-comment-time" style="float: right;">${escapeHtml24(timeText)}</div>` : ""}${wrappedContent}</div>`;
   };
   var parseFeedComments = (postEl) => Array.from(postEl.querySelectorAll(".comments .comment_holder, .comments .comment")).filter((commentEl) => commentEl.querySelector(".comment_text")).map((commentEl) => {
     var _a2, _b;
@@ -29588,10 +29966,10 @@ order:initial
   }));
 
   // src/components/shared/tm-social-feed.js
-  var STYLE_ID42 = "tmvu-social-feed-style";
+  var STYLE_ID44 = "tmvu-social-feed-style";
   var clean3 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-  var escapeHtml24 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  var buttonHtml10 = ({ cls = "", attrs = {}, shape = "full", size = "sm", color = "secondary", ...opts } = {}) => TmUI.button({
+  var escapeHtml25 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var buttonHtml11 = ({ cls = "", attrs = {}, shape = "full", size = "sm", color = "secondary", ...opts } = {}) => TmUI.button({
     cls,
     attrs,
     shape,
@@ -29600,9 +29978,9 @@ order:initial
     ...opts
   }).outerHTML;
   var injectStyles30 = () => {
-    if (document.getElementById(STYLE_ID42)) return;
+    if (document.getElementById(STYLE_ID44)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID42;
+    style.id = STYLE_ID44;
     style.textContent = [
       ".tmvu-social-feed-source.tmvu-social-feed-source--hidden>:not([data-tmvu-social-feed-mount]){display:none!important}",
       ".tmvu-home-feed{display:flex;flex-direction:column;gap:var(--tmu-space-lg)}",
@@ -29690,7 +30068,7 @@ order:initial
     const normalized = clean3(country).toLowerCase();
     if (typeof window.get_flag === "function" && normalized) return window.get_flag(normalized);
     if (!normalized) return "";
-    return `<span class="tmvu-home-feed-flag-fallback">${escapeHtml24(normalized.toUpperCase())}</span>`;
+    return `<span class="tmvu-home-feed-flag-fallback">${escapeHtml25(normalized.toUpperCase())}</span>`;
   };
   var formatFeedLikeTime = (unixTime) => {
     const value = Number(unixTime);
@@ -29708,8 +30086,8 @@ order:initial
     }
   };
   var renderFeedLogo = (src, fallbackSrc = "") => {
-    const primary = escapeHtml24(src || "");
-    const fallback = escapeHtml24(fallbackSrc || "");
+    const primary = escapeHtml25(src || "");
+    const fallback = escapeHtml25(fallbackSrc || "");
     if (!primary) return '<span class="tmvu-home-feed-side-fallback">\u26BD</span>';
     if (!fallback || fallback === primary) return `<img src="${primary}" alt="">`;
     return `<img src="${primary}" data-fallback-src="${fallback}" onerror="if(this.dataset.fallbackSrc&&this.src!==this.dataset.fallbackSrc){this.src=this.dataset.fallbackSrc;this.removeAttribute('data-fallback-src');return;}this.onerror=null;this.style.display='none'" alt="">`;
@@ -29717,7 +30095,7 @@ order:initial
   var renderFeedDialogLogo = (clubId2) => {
     const id = clean3(clubId2);
     if (!id) return '<span class="tmvu-home-feed-side-fallback">\u26BD</span>';
-    return `<img src="/pics/club_logos/${escapeHtml24(id)}.png" onerror="this.onerror=null;this.style.display='none';this.insertAdjacentHTML('afterend','<span class=&quot;tmvu-home-feed-side-fallback&quot;>\u26BD</span>')" alt="">`;
+    return `<img src="/pics/club_logos/${escapeHtml25(id)}.png" onerror="this.onerror=null;this.style.display='none';this.insertAdjacentHTML('afterend','<span class=&quot;tmvu-home-feed-side-fallback&quot;>\u26BD</span>')" alt="">`;
   };
   var normalizeFeedLikes = (payload) => {
     const likes = Array.isArray(payload == null ? void 0 : payload.likes) ? payload.likes : [];
@@ -29752,7 +30130,7 @@ order:initial
                     <div id="tmvu-home-feed-likes-title" class="tmvu-home-feed-likes-title">Likes</div>
                     <div class="tmvu-home-feed-likes-subtitle">Loading clubs who liked this post...</div>
                 </div>
-                ${buttonHtml10({ label: "Close", cls: "tmvu-home-feed-likes-close", attrs: { "data-feed-likes-close": true } })}
+                ${buttonHtml11({ label: "Close", cls: "tmvu-home-feed-likes-close", attrs: { "data-feed-likes-close": true } })}
             </div>
             <div class="tmvu-home-feed-likes-body" data-feed-likes-body>
                 ${TmUI.loading("Loading likes...", true)}
@@ -29782,11 +30160,11 @@ order:initial
     body.innerHTML = `
         <div class="tmvu-home-feed-likes-list">
             ${likes.map((like) => `
-                <a class="tmvu-home-feed-likes-item" href="${escapeHtml24(like.href || "#")}">
+                <a class="tmvu-home-feed-likes-item" href="${escapeHtml25(like.href || "#")}">
                     <div class="tmvu-home-feed-likes-item-logo">${renderFeedDialogLogo(like.clubId)}</div>
                     <div class="tmvu-home-feed-likes-item-copy">
-                        <div class="tmvu-home-feed-likes-item-name">${like.country ? `${renderFlag3(like.country)} ` : ""}${escapeHtml24(like.clubName)}</div>
-                        <div class="tmvu-home-feed-likes-item-meta">${escapeHtml24([like.managerName, like.timeText].filter(Boolean).join(" \u2022 "))}</div>
+                        <div class="tmvu-home-feed-likes-item-name">${like.country ? `${renderFlag3(like.country)} ` : ""}${escapeHtml25(like.clubName)}</div>
+                        <div class="tmvu-home-feed-likes-item-meta">${escapeHtml25([like.managerName, like.timeText].filter(Boolean).join(" \u2022 "))}</div>
                     </div>
                 </a>
             `).join("")}
@@ -29895,8 +30273,8 @@ order:initial
       targetEl.innerHTML = `
             <textarea class="tmvu-home-feed-composer-input" data-role="input" placeholder="${mode === "reply" ? "Write a reply..." : "Write a comment..."}"></textarea>
             <div class="tmvu-home-feed-composer-actions">
-                ${buttonHtml10({ label: "Cancel", cls: "tmvu-home-feed-composer-btn", attrs: { "data-role": "cancel" } })}
-                ${buttonHtml10({ label: mode === "reply" ? "Reply" : "Comment", cls: "tmvu-home-feed-composer-btn", attrs: { "data-role": "submit" } })}
+                ${buttonHtml11({ label: "Cancel", cls: "tmvu-home-feed-composer-btn", attrs: { "data-role": "cancel" } })}
+                ${buttonHtml11({ label: mode === "reply" ? "Reply" : "Comment", cls: "tmvu-home-feed-composer-btn", attrs: { "data-role": "submit" } })}
             </div>
         `;
       targetEl.hidden = false;
@@ -29947,7 +30325,7 @@ order:initial
       state5.currentFeedRoot = feedRoot;
       state5.currentModel = feedModel;
       if (!posts.length) {
-        mount8.innerHTML = TmUI.empty(escapeHtml24(emptyCopy), true);
+        mount8.innerHTML = TmUI.empty(escapeHtml25(emptyCopy), true);
         return;
       }
       mount8.innerHTML = `
@@ -29960,25 +30338,25 @@ order:initial
         const hasCommentSummaryAction = Boolean(remainingCommentCopy || post.hiddenCommentsAction || post.comments.length > 3);
         const similarStoriesLabel = getSimilarStoriesLabel(post);
         return `
-                        <article class="tmvu-home-feed-post${post.isSimilarPost ? " tmvu-home-feed-post--similar" : ""}" data-feed-post-id="${escapeHtml24(post.id)}">
+                        <article class="tmvu-home-feed-post${post.isSimilarPost ? " tmvu-home-feed-post--similar" : ""}" data-feed-post-id="${escapeHtml25(post.id)}">
                             <div class="tmvu-home-feed-side">
                                 <div class="tmvu-home-feed-side-logo">${renderFeedLogo(post.authorLogoSrc, post.authorLogoFallbackSrc)}</div>
-                                ${post.authorName ? post.authorHref ? `<a class="tmvu-home-feed-side-name" href="${escapeHtml24(post.authorHref)}">${escapeHtml24(post.authorName)}</a>` : `<div class="tmvu-home-feed-side-name">${escapeHtml24(post.authorName)}</div>` : ""}
+                                ${post.authorName ? post.authorHref ? `<a class="tmvu-home-feed-side-name" href="${escapeHtml25(post.authorHref)}">${escapeHtml25(post.authorName)}</a>` : `<div class="tmvu-home-feed-side-name">${escapeHtml25(post.authorName)}</div>` : ""}
                             </div>
                             <div class="tmvu-home-feed-main">
-                                <div>${post.time ? `<div class="tmvu-home-feed-time" style="float:right;">${escapeHtml24(post.time)}</div>` : ""}<div class="tmvu-home-feed-body">${post.bodyHtml || ""}</div></div>
+                                <div>${post.time ? `<div class="tmvu-home-feed-time" style="float:right;">${escapeHtml25(post.time)}</div>` : ""}<div class="tmvu-home-feed-body">${post.bodyHtml || ""}</div></div>
                                 <div class="tmvu-home-feed-meta">
                                     <div class="tmvu-home-feed-meta-left">
-                                        ${post.likeCount > 0 ? `<button type="button" class="tmvu-home-feed-like-count" data-feed-like-summary title="Show likes">${escapeHtml24(formatLikeCountLabel(post.likeCount))}</button>` : ""}
-                                        ${commentSummaryLabel ? hasCommentSummaryAction ? `<button type="button" class="tmvu-home-feed-comment-count tmvu-home-feed-comment-count--action" data-feed-comment-summary title="Open comments">${escapeHtml24(commentSummaryLabel)}</button>` : `<span class="tmvu-home-feed-comment-count">${escapeHtml24(commentSummaryLabel)}</span>` : ""}
+                                        ${post.likeCount > 0 ? `<button type="button" class="tmvu-home-feed-like-count" data-feed-like-summary title="Show likes">${escapeHtml25(formatLikeCountLabel(post.likeCount))}</button>` : ""}
+                                        ${commentSummaryLabel ? hasCommentSummaryAction ? `<button type="button" class="tmvu-home-feed-comment-count tmvu-home-feed-comment-count--action" data-feed-comment-summary title="Open comments">${escapeHtml25(commentSummaryLabel)}</button>` : `<span class="tmvu-home-feed-comment-count">${escapeHtml25(commentSummaryLabel)}</span>` : ""}
                                     </div>
                                 </div>
                                 <div class="tmvu-home-feed-actions">
-                                    ${buttonHtml10({ label: "Like", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "like" } })}
-                                    ${buttonHtml10({ label: "Comment", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "comment" } })}
-                                    ${buttonHtml10({ label: "Reply", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "reply" } })}
-                                    ${buttonHtml10({ label: "Link", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "link" } })}
-                                    ${buttonHtml10({ label: "Mute", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "mute" } })}
+                                    ${buttonHtml11({ label: "Like", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "like" } })}
+                                    ${buttonHtml11({ label: "Comment", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "comment" } })}
+                                    ${buttonHtml11({ label: "Reply", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "reply" } })}
+                                    ${buttonHtml11({ label: "Link", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "link" } })}
+                                    ${buttonHtml11({ label: "Mute", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "mute" } })}
                                 </div>
                                 <div class="tmvu-home-feed-composer" data-feed-composer hidden></div>
                                 ${post.totalCommentCount > 0 || post.comments.length ? `
@@ -29987,7 +30365,7 @@ order:initial
                                             <button type="button" class="tmvu-home-feed-more-comments" data-feed-more-comments>
                                                 <span class="tmvu-home-feed-more-comments-badge">+</span>
                                                 <span class="tmvu-home-feed-more-comments-copy">
-                                                    <span class="tmvu-home-feed-more-comments-title">${escapeHtml24(remainingCommentCopy.title)}</span>
+                                                    <span class="tmvu-home-feed-more-comments-title">${escapeHtml25(remainingCommentCopy.title)}</span>
                                                 </span>
                                             </button>
                                         ` : ""}
@@ -30001,7 +30379,7 @@ order:initial
                                 ` : ""}
                                 ${similarStoriesLabel ? `
                                     <div class="tmvu-home-feed-similar">
-                                        ${buttonHtml10({ label: similarStoriesLabel, cls: "tmvu-home-feed-similar-btn", color: "secondary", attrs: { "data-feed-similar-stories": true } })}
+                                        ${buttonHtml11({ label: similarStoriesLabel, cls: "tmvu-home-feed-similar-btn", color: "secondary", attrs: { "data-feed-similar-stories": true } })}
                                     </div>
                                 ` : ""}
                             </div>
@@ -30010,7 +30388,7 @@ order:initial
       }).join("")}
                 ${(feedModel == null ? void 0 : feedModel.kind) === "api" && ((feedModel == null ? void 0 : feedModel.canLoadMore) || (feedModel == null ? void 0 : feedModel.isLoadingMore)) ? `
                     <div class="tmvu-home-feed-load-more">
-                        ${buttonHtml10({
+                        ${buttonHtml11({
         label: (feedModel == null ? void 0 : feedModel.isLoadingMore) ? "Loading more..." : "Load older feed posts",
         cls: "tmvu-home-feed-load-more-btn",
         attrs: {
@@ -30134,11 +30512,11 @@ order:initial
       },
       renderLoading(copy = loadingCopy) {
         if (!hostMount) return;
-        hostMount.innerHTML = TmUI.loading(escapeHtml24(copy), true);
+        hostMount.innerHTML = TmUI.loading(escapeHtml25(copy), true);
       },
       renderEmpty(copy = emptyCopy) {
         if (!hostMount) return;
-        hostMount.innerHTML = TmUI.empty(escapeHtml24(copy), true);
+        hostMount.innerHTML = TmUI.empty(escapeHtml25(copy), true);
       },
       ...renderer
     };
@@ -30371,7 +30749,7 @@ order:initial
     let statsMode = "players";
     let statsClubStat = "goals";
     let transfersView = "bought";
-    let statsCache2 = {};
+    let statsCache3 = {};
     const ctx = window.TmLeagueCtx = {
       // eslint-disable-line no-unused-vars
       // ── League identity (set by tm-league.user.js; reset on navigation) ──
@@ -30608,7 +30986,7 @@ order:initial
         transfersView = v;
       },
       get statsCache() {
-        return statsCache2;
+        return statsCache3;
       },
       // only mutated
       // Functions — lazy getters (defined later in IIFE; called only from events/timers)
@@ -30780,7 +31158,7 @@ order:initial
       }
       renderLeagueFeed();
     };
-    const injectStyles48 = () => TmLeagueStyles.inject();
+    const injectStyles50 = () => TmLeagueStyles.inject();
     const cleanupPage = () => {
       if (leaguePollInterval) {
         clearInterval(leaguePollInterval);
@@ -30822,7 +31200,7 @@ order:initial
       }
       if (leagueBootstrapped || !hasLeagueRoots()) return;
       ({ leagueCountry, leagueDivision, leagueGroup } = getLeagueRouteParams(path));
-      injectStyles48();
+      injectStyles50();
       primeLeaguePanelContext();
       prepareLeagueLayout();
       initLeagueFeed();
@@ -30893,11 +31271,11 @@ order:initial
   }
 
   // src/components/match-new/tm-match-header.js
-  var STYLE_ID43 = "mp-header-style";
+  var STYLE_ID45 = "mp-header-style";
   var injectStyles31 = () => {
-    if (document.getElementById(STYLE_ID43)) return;
+    if (document.getElementById(STYLE_ID45)) return;
     const s6 = document.createElement("style");
-    s6.id = STYLE_ID43;
+    s6.id = STYLE_ID45;
     s6.textContent = `
         .mp-head {
             flex-shrink: 0; padding: 12px 48px 8px; position: relative;
@@ -31052,13 +31430,20 @@ order:initial
       });
       controls.appendChild(modeSwitcher);
       el2.appendChild(controls);
+      if (match.status === "future") controls.style.display = "none";
       const scoreEl = headRow.querySelector(".mp-score");
       const minEl = headRow.querySelector(".mp-minute");
       const progEl = progress.querySelector(".mp-progress-fill");
       const update = (match2, replayState, maximumMinute) => {
         const { h, a } = scoreAt(match2, replayState.currentMinute, replayState.committedActionIndex);
         scoreEl.textContent = `${h} - ${a}`;
-        if (replayState.ended) {
+        if (match2.status === "future") {
+          const [yr, mo, dy] = (match2.date || "").split("-");
+          const d = dy && mo && yr ? `${dy}.${mo}.${yr}` : match2.date || "";
+          const t = match2.kickoffTime || "";
+          minEl.textContent = t ? `${d} \xB7 ${t}` : d;
+          minEl.classList.add("ended");
+        } else if (replayState.ended) {
           minEl.textContent = "FT";
           minEl.classList.add("ended");
         } else {
@@ -31089,16 +31474,18 @@ order:initial
         homeTactic.update(deriveMentality("home"));
         awayTactic.update(deriveMentality("away"));
       };
-      return { el: el2, update };
+      return { el: el2, update, showControls() {
+        controls.style.display = "";
+      } };
     }
   };
 
   // src/components/match-new/tm-match-feed.js
-  var STYLE_ID44 = "mp-feed-style";
+  var STYLE_ID46 = "mp-feed-style";
   var injectStyles32 = () => {
-    if (document.getElementById(STYLE_ID44)) return;
+    if (document.getElementById(STYLE_ID46)) return;
     const s6 = document.createElement("style");
-    s6.id = STYLE_ID44;
+    s6.id = STYLE_ID46;
     s6.textContent = `
         /* Feed panel \u2014 20% of mp-body */
         .mp-feed {
@@ -31476,11 +31863,11 @@ order:initial
   };
 
   // src/components/match-new/tm-match-stats-panel.js
-  var STYLE_ID45 = "mp-stats-panel-style";
+  var STYLE_ID47 = "mp-stats-panel-style";
   var injectStyles33 = () => {
-    if (document.getElementById(STYLE_ID45)) return;
+    if (document.getElementById(STYLE_ID47)) return;
     const s6 = document.createElement("style");
-    s6.id = STYLE_ID45;
+    s6.id = STYLE_ID47;
     s6.textContent = `
         .mp-sp-wrap { max-width: 860px; margin: 0 auto; padding: var(--tmu-space-md); background: var(--tmu-surface-embedded); }
 
@@ -31750,11 +32137,11 @@ order:initial
   };
 
   // src/components/match-new/tm-unity-player.js
-  var STYLE_ID46 = "mp-unity-style";
+  var STYLE_ID48 = "mp-unity-style";
   var injectStyles34 = () => {
-    if (document.getElementById(STYLE_ID46)) return;
+    if (document.getElementById(STYLE_ID48)) return;
     const s6 = document.createElement("style");
-    s6.id = STYLE_ID46;
+    s6.id = STYLE_ID48;
     s6.textContent = `
         /* TV frame \u2014 bezel wrapping the canvas */
         #mp-viewport-wrap {
@@ -32550,9 +32937,9 @@ order:initial
   };
 
   // src/components/tactics/tm-tactics-styles.js
-  var STYLE_ID47 = "tmtc-style";
+  var STYLE_ID49 = "tmtc-style";
   function injectTacticsStyles() {
-    if (document.getElementById(STYLE_ID47)) return;
+    if (document.getElementById(STYLE_ID49)) return;
     const pitchSvg = [
       `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 420">`,
       `<rect x="0" y="0" width="280" height="420" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="2"/>`,
@@ -32581,7 +32968,7 @@ order:initial
     ].join("");
     const pitchBg = `url("data:image/svg+xml,${encodeURIComponent(pitchSvg)}")`;
     const s6 = document.createElement("style");
-    s6.id = STYLE_ID47;
+    s6.id = STYLE_ID49;
     s6.textContent = `
         /* \u2500\u2500 full-width override \u2500\u2500 */
         body:has(.tmtc-page) .tmvu-main {
@@ -32818,6 +33205,15 @@ order:initial
             line-height: 1;
             vertical-align: middle;
             flex-shrink: 0;
+        }
+        .tmtc-slot-events {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            font-size: 10px;
+            line-height: 1;
+            min-height: 12px;
         }
         .tmtc-slot-pos {
             font-key: var(--tmu-font-2xs);
@@ -33353,7 +33749,8 @@ order:initial
       drag,
       save,
       readOnly = false,
-      showMatchRatingRef = null
+      showMatchRatingRef = null,
+      eventsRef = null
     } = ctx;
     let hoverTimer = null;
     container.addEventListener("mouseover", (event) => {
@@ -33503,9 +33900,24 @@ order:initial
         const slotRoutine = showMR || player2.routine == null || player2.routine <= 0 ? null : Number(player2.routine).toFixed(1);
         const moodPenalty = showMR ? 0 : TmPosition.moodPenalty(player2, posKey);
         const momBadge = showMR && player2.mom ? '<span class="tmtc-slot-mom" title="Man of the Match">\u2605</span>' : "";
+        let slotEventsHtml = "";
+        if ((eventsRef == null ? void 0 : eventsRef.value) && player2.id) {
+          const ev = eventsRef.value[String(player2.id)];
+          if (ev) {
+            let eh = "";
+            if (ev.goals > 0) eh += `\u26BD${ev.goals > 1 ? `\xD7${ev.goals}` : ""}`;
+            if (ev.assists > 0) eh += `\u{1F170}${ev.assists > 1 ? `\xD7${ev.assists}` : ""}`;
+            if (ev.yellowRedCards > 0) eh += "\u{1F7E8}\u{1F7E5}";
+            else if (ev.yellowCards > 0) eh += "\u{1F7E8}";
+            if (ev.redCards > 0) eh += "\u{1F7E5}";
+            if (ev.injured) eh += '<span style="color:#ff3c3c;font-size:9px;font-weight:800">\u271A</span>';
+            if (eh) slotEventsHtml = `<span class="tmtc-slot-events">${eh}</span>`;
+          }
+        }
         slotEl.innerHTML = `
                 <span class="tmtc-slot-no"${slotNoColor ? ` style="color:${slotNoColor}"` : ""}>${escHtml2(slotNoText)}</span>
                 <span class="tmtc-slot-name">${escHtml2(player2.lastname || player2.name || "")}${player2.captain ? '<span class="tmtc-capt-badge">C</span>' : ""}${playerStatusIconsHtml(player2)}${momBadge}</span>
+                ${slotEventsHtml}
                 ${TmPosition.chip([posKey || ""])}
                 <span class="tmtc-slot-meta">
                     <span class="tmtc-slot-rec">${!showMR && slotRec != null ? TmStars.recommendation(slotRec, "tmtc-rec-stars tmtc-rec-stars-sm") || '<span class="tmtc-slot-rec-empty">\u2014</span>' : '<span class="tmtc-slot-rec-empty">\u2014</span>'}</span>
@@ -33612,10 +34024,11 @@ order:initial
     };
   }
   function mountTacticsFieldReadOnly(container, posPlayerMap, players = [], opts = {}) {
-    var _a2;
+    var _a2, _b;
     const players_by_id = Object.fromEntries(players.map((p) => [String(p.id), p]));
     const { POSITION_MAP: POSITION_MAP2 } = TmConst;
     const showMatchRatingRef = (_a2 = opts.showMatchRatingRef) != null ? _a2 : { value: false };
+    const eventsRef = (_b = opts.eventsRef) != null ? _b : null;
     const result = mountTacticsField(container, {
       readOnly: true,
       players_by_id,
@@ -33636,7 +34049,8 @@ order:initial
       },
       refreshAll: () => {
       },
-      showMatchRatingRef
+      showMatchRatingRef,
+      eventsRef
     });
     return { ...result, showMatchRatingRef };
   }
@@ -33654,26 +34068,29 @@ order:initial
       injectTacticsStyles();
       const col = document.createElement("div");
       col.className = "mp-lu-tactics-col";
-      const { refresh, showMatchRatingRef } = mountTacticsFieldReadOnly(col, posPlayerMap, players);
-      if (opts.onPlayerClick) {
-        col.addEventListener("click", (e) => {
-          const slot = e.target.closest(".tmtc-slot[data-player-id]");
-          if (!slot) return;
-          const pid = slot.dataset.playerId;
-          const player2 = players.find((p) => String(p.id) === pid);
-          if (player2) opts.onPlayerClick(player2);
-        });
-      }
+      const { refresh, showMatchRatingRef } = mountTacticsFieldReadOnly(col, posPlayerMap, players, { eventsRef: opts.eventsRef });
+      col.addEventListener("click", (e) => {
+        const slot = e.target.closest(".tmtc-slot[data-player-id]");
+        if (!slot) return;
+        const pid = slot.dataset.playerId;
+        const player2 = players.find((p) => String(p.id) === pid);
+        if (!player2) return;
+        if (e.ctrlKey && player2.id) {
+          window.open(`/players/${player2.id}/`, "_blank");
+          return;
+        }
+        if (opts.onPlayerClick) opts.onPlayerClick(player2);
+      });
       return { el: col, refresh, showMatchRatingRef };
     }
   };
 
   // src/components/shared/tm-player-row.js
-  var STYLE_ID48 = "tm-player-row-style";
+  var STYLE_ID50 = "tm-player-row-style";
   function injectTmPlayerRowStyles() {
-    if (document.getElementById(STYLE_ID48)) return;
+    if (document.getElementById(STYLE_ID50)) return;
     const s6 = document.createElement("style");
-    s6.id = STYLE_ID48;
+    s6.id = STYLE_ID50;
     s6.textContent = `
         .tm-pr {
             display: flex; align-items: center; gap: 5px;
@@ -33727,6 +34144,10 @@ order:initial
             flex-shrink: 0; font-size: 11px; color: #f5c518;
             line-height: 1; padding: 0 1px;
         }
+        .tm-pr-events {
+            flex-shrink: 0; display: flex; align-items: center; gap: 2px;
+            font-size: 11px; line-height: 1;
+        }
     `;
     document.head.appendChild(s6);
   }
@@ -33755,8 +34176,8 @@ order:initial
      *   @param {string}  [opts.state]   — 'active' | 'bench' | 'off' | 'sub-in'  (default: 'active')
      * @returns {HTMLDivElement}
      */
-    build(player2, { posKey, state: state5 = "active", compact = false, showMatchRating = false } = {}) {
-      var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
+    build(player2, { posKey, state: state5 = "active", compact = false, showMatchRating = false, matchEvents = null } = {}) {
+      var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m;
       injectTmPlayerRowStyles();
       const raw = posKey || player2.position || "";
       const slot = /^sub/i.test(raw) ? "" : raw.toLowerCase();
@@ -33840,9 +34261,27 @@ order:initial
           el2.appendChild(mv);
         }
       }
+      if (matchEvents) {
+        const ev = matchEvents[String((_l = (_k = player2.id) != null ? _k : player2.player_id) != null ? _l : "")];
+        if (ev) {
+          let evHtml = "";
+          if (ev.goals > 0) evHtml += `\u26BD${ev.goals > 1 ? `\xD7${ev.goals}` : ""}`;
+          if (ev.assists > 0) evHtml += `\u{1F170}${ev.assists > 1 ? `\xD7${ev.assists}` : ""}`;
+          if (ev.yellowRedCards > 0) evHtml += "\u{1F7E8}\u{1F7E5}";
+          else if (ev.yellowCards > 0) evHtml += "\u{1F7E8}";
+          if (ev.redCards > 0) evHtml += "\u{1F7E5}";
+          if (ev.injured) evHtml += '<span style="color:#ff3c3c;font-size:10px;font-weight:800">\u271A</span>';
+          if (evHtml) {
+            const evEl = document.createElement("span");
+            evEl.className = "tm-pr-events";
+            evEl.innerHTML = evHtml;
+            el2.appendChild(evEl);
+          }
+        }
+      }
       const icon = document.createElement("span");
       icon.className = "tm-pr-icon";
-      icon.textContent = (_k = ICONS3[state5]) != null ? _k : "";
+      icon.textContent = (_m = ICONS3[state5]) != null ? _m : "";
       el2.appendChild(icon);
       return el2;
     },
@@ -33950,7 +34389,7 @@ order:initial
       emptyText: "No players.",
       afterRender: ({ table }) => {
         table.querySelectorAll("tbody [data-tpr-pid]").forEach((placeholder) => {
-          var _a2;
+          var _a2, _b;
           const pid = placeholder.dataset.tprPid;
           const state5 = placeholder.dataset.tprState || "active";
           const benchRole = placeholder.dataset.tprBench || null;
@@ -33958,7 +34397,7 @@ order:initial
           if (!player2) return;
           const slot = getPlayerSlot(player2);
           const posKey = isFieldSlot(slot) ? slot : null;
-          const row = TmPlayerRow.build(player2, { posKey, state: state5, compact, showMatchRating: (_a2 = ctx.showMatchRating) != null ? _a2 : false });
+          const row = TmPlayerRow.build(player2, { posKey, state: state5, compact, showMatchRating: (_a2 = ctx.showMatchRating) != null ? _a2 : false, matchEvents: (_b = ctx.matchEvents) != null ? _b : null });
           if (benchRole) {
             const num = benchRole.replace("sub", "");
             const posWrap = row.querySelector(".tm-pr-pos");
@@ -34065,11 +34504,11 @@ order:initial
   }
 
   // src/components/match-new/tm-match-player-dialog.js
-  var STYLE_ID49 = "mpd-style";
+  var STYLE_ID51 = "mpd-style";
   var ensureStyles2 = () => {
-    if (document.getElementById(STYLE_ID49)) return;
+    if (document.getElementById(STYLE_ID51)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID49;
+    style.id = STYLE_ID51;
     style.textContent = `
         .mpd-wrap {
             display: flex;
@@ -34237,7 +34676,7 @@ order:initial
       const ratingStr = player2.rating != null ? player2.rating.toFixed(1) : "-";
       const contentEl = document.createElement("div");
       contentEl.className = "mpd-wrap";
-      contentEl.innerHTML = `<div class="mpd-head"><span class="mpd-no">${(_a2 = player2.no) != null ? _a2 : ""}</span>${posChip2}<span class="mpd-name">${name}${player2.captain ? ' <span class="tmu-text-dim" style="font-size:10px">(C)</span>' : ""}</span><span class="mpd-meta">${showRating && player2.mom ? '<span title="Man of the Match" style="color:#f5c518">&#9733;</span>' : ""}${minsPlayed > 0 ? `<span>${minsPlayed}'</span>` : ""}${showRating ? `<span class="tmu-tabular" style="color:${ratingColor2};font-weight:800">${ratingStr}</span>` : ""}</span></div><div class="mpd-body">${renderBody(buildSections(st, isGK))}</div>`;
+      contentEl.innerHTML = `<div class="mpd-head"><span class="mpd-no">${(_a2 = player2.no) != null ? _a2 : ""}</span>${posChip2}<span class="mpd-name">${player2.id ? `<a href="/players/${player2.id}/" target="_blank" style="color:inherit;text-decoration:none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${name}</a>` : name}${player2.captain ? ' <span class="tmu-text-dim" style="font-size:10px">(C)</span>' : ""}</span><span class="mpd-meta">${showRating && player2.mom ? '<span title="Man of the Match" style="color:#f5c518">&#9733;</span>' : ""}${minsPlayed > 0 ? `<span>${minsPlayed}'</span>` : ""}${showRating ? `<span class="tmu-tabular" style="color:${ratingColor2};font-weight:800">${ratingStr}</span>` : ""}</span></div><div class="mpd-body">${renderBody(buildSections(st, isGK))}</div>`;
       return TmModal.open({
         contentEl,
         maxWidth: "min(720px, 96vw)"
@@ -34246,11 +34685,11 @@ order:initial
   };
 
   // src/components/match-new/tm-match-postmatch.js
-  var STYLE_ID50 = "mp-postmatch-style";
+  var STYLE_ID52 = "mp-postmatch-style";
   var ensureStyles3 = () => {
-    if (document.getElementById(STYLE_ID50)) return;
+    if (document.getElementById(STYLE_ID52)) return;
     const s6 = document.createElement("style");
-    s6.id = STYLE_ID50;
+    s6.id = STYLE_ID52;
     s6.textContent = `
         .pm-wrap {
             display: flex;
@@ -34484,42 +34923,54 @@ order:initial
     subOut: false,
     injured: false
   });
-  function buildMatchPlayerStats(match, upToMinute = Infinity) {
+  function buildMatchPlayerStats(match, upToMinute = Infinity, committedClipIndex = Infinity) {
     const map = {};
     const ensure = (pid) => {
       var _a2;
       return (_a2 = map[pid]) != null ? _a2 : map[pid] = STAT_ZERO();
     };
-    for (const [minStr, playsArr] of Object.entries(match.plays || {})) {
-      if (Number(minStr) > upToMinute) continue;
-      for (const play of playsArr) {
+    const minuteKeys = Object.keys(match.plays || {}).map(Number).sort((a, b) => a - b);
+    for (const min of minuteKeys) {
+      if (min > upToMinute) break;
+      const isCurrent = min === upToMinute && Number.isFinite(committedClipIndex);
+      let ci = -1;
+      let minDone = false;
+      for (const play of match.plays[String(min)] || []) {
+        if (minDone) break;
         for (const clip of play.clips || []) {
+          if (isCurrent) {
+            ci++;
+            if (ci > committedClipIndex) {
+              minDone = true;
+              break;
+            }
+          }
           for (const act of clip.actions || []) {
             const pid = String(act.by || "");
             if (!pid) continue;
             const s6 = ensure(pid);
+            const goalRevealed = !isCurrent || ci + 1 <= committedClipIndex;
             switch (act.action) {
               case "shot":
                 s6.shots++;
-                if (act.onTarget) s6.shotsOnTarget++;
-                if (act.head) {
-                  s6.shotsHead++;
-                  if (act.onTarget) s6.shotsOnTargetHead++;
-                } else {
-                  s6.shotsFoot++;
-                  if (act.onTarget) s6.shotsOnTargetFoot++;
-                }
-                if (act.goal) {
-                  s6.goals++;
-                  if (act.head) s6.goalsHead++;
-                  else s6.goalsFoot++;
-                  if (act.penalty) s6.penaltiesScored++;
-                  if (act.freekick) s6.freekickGoals++;
+                if (act.head) s6.shotsHead++;
+                else s6.shotsFoot++;
+                if (act.onTarget && goalRevealed) {
+                  s6.shotsOnTarget++;
+                  if (act.head) s6.shotsOnTargetHead++;
+                  else s6.shotsOnTargetFoot++;
+                  if (act.goal) {
+                    s6.goals++;
+                    if (act.head) s6.goalsHead++;
+                    else s6.goalsFoot++;
+                    if (act.penalty) s6.penaltiesScored++;
+                    if (act.freekick) s6.freekickGoals++;
+                  }
                 }
                 if (act.penalty) s6.penaltiesTaken++;
                 break;
               case "assist":
-                s6.assists++;
+                if (goalRevealed) s6.assists++;
                 break;
               case "keyPass":
                 s6.keyPasses++;
@@ -34707,7 +35158,7 @@ order:initial
   };
 
   // src/components/match-new/tm-match-lineup.js
-  var STYLE_ID51 = "mp-lineup-style";
+  var STYLE_ID53 = "mp-lineup-style";
   var positionOrder = (player2) => {
     var _a2, _b;
     return (_b = (_a2 = TmConst.POSITION_MAP[((player2 == null ? void 0 : player2.position) || "").toLowerCase()]) == null ? void 0 : _a2.ordering) != null ? _b : 99;
@@ -34719,9 +35170,9 @@ order:initial
     }
   );
   function injectStyles35() {
-    if (document.getElementById(STYLE_ID51)) return;
+    if (document.getElementById(STYLE_ID53)) return;
     const s6 = document.createElement("style");
-    s6.id = STYLE_ID51;
+    s6.id = STYLE_ID53;
     s6.textContent = `
         /* \u2500\u2500 Side panels \u2500\u2500 */
         .mp-lu-side {
@@ -34751,10 +35202,28 @@ order:initial
             display: flex; flex-direction: column;
             overflow-y: auto; padding: 0 4px;
         }
+
+        /* \u2500\u2500 Unavailable subheader in squad list \u2500\u2500 */
+        .mp-lu-unavailable-sep {
+            border-top: 2px solid var(--tmu-border-pill-active);
+            margin: 4px 0 0; padding: 3px 6px 1px;
+            font-size: 10px; font-weight: 700;
+            color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 1px;
+        }
+        /* mimics .tmu-tbl tbody td (tight density = 4px padding, 1px border) */
+        .mp-lu-unavailable-cell {
+            padding: 4px;
+            border-bottom: 1px solid var(--tmu-border-faint);
+        }
+        /* wrap mimics <td> from .tmu-tbl tbody td (tight density: 4px padding, 1px border) */
+        .mp-lu-unavailable-cell {
+            padding: 4px;
+            border-bottom: 1px solid var(--tmu-border-faint);
+        }
     `;
     document.head.appendChild(s6);
   }
-  function derivePitchState(match, currentMinute) {
+  function derivePitchState(match, currentMinute, committedClipIndex = Infinity) {
     const playerSlot = /* @__PURE__ */ new Map();
     const slotPlayer = /* @__PURE__ */ new Map();
     for (const side of ["home", "away"]) {
@@ -34769,8 +35238,19 @@ order:initial
     const homePids = new Set(match.home.lineup.map((p) => String(p.id)));
     for (const min of Object.keys(match.plays).map(Number).sort((a, b) => a - b)) {
       if (min > currentMinute) break;
+      const isCurrent = min === currentMinute && Number.isFinite(committedClipIndex);
+      let ci = -1;
+      let minDone = false;
       for (const play of match.plays[String(min)]) {
+        if (minDone) break;
         for (const clip of play.clips || []) {
+          if (isCurrent) {
+            ci++;
+            if (ci > committedClipIndex) {
+              minDone = true;
+              break;
+            }
+          }
           const outs = [], ins = [];
           const posChanges = /* @__PURE__ */ new Map();
           const injured = [];
@@ -34893,6 +35373,7 @@ order:initial
         ...match.away.lineup.map((p) => [String(p.id), p])
       ]);
       let lastMinute = -1;
+      let lastClipIdx = -2;
       const handlePlayerClick = (player2) => {
         var _a2, _b, _c;
         const min = lastMinute < 0 ? 0 : lastMinute;
@@ -34902,11 +35383,12 @@ order:initial
         TmMatchPlayerDialog.open(player2, stats[String(player2.id)] || {}, (_c = mins.get(String(player2.id))) != null ? _c : 0, { showRating });
       };
       const homePosMap = buildInitialPosMap(match.home.lineup);
-      const homeField = TmMatchField.create(homePosMap, match.home.lineup, { onPlayerClick: handlePlayerClick });
+      const eventsRef = { value: null };
+      const homeField = TmMatchField.create(homePosMap, match.home.lineup, { onPlayerClick: handlePlayerClick, eventsRef });
       const awayPosMap = buildInitialPosMap(match.away.lineup);
-      const awayField = TmMatchField.create(awayPosMap, match.away.lineup, { onPlayerClick: handlePlayerClick });
-      const luHomeField = TmMatchField.create(homePosMap, match.home.lineup, { onPlayerClick: handlePlayerClick });
-      const luAwayField = TmMatchField.create(awayPosMap, match.away.lineup, { onPlayerClick: handlePlayerClick });
+      const awayField = TmMatchField.create(awayPosMap, match.away.lineup, { onPlayerClick: handlePlayerClick, eventsRef });
+      const luHomeField = TmMatchField.create(homePosMap, match.home.lineup, { onPlayerClick: handlePlayerClick, eventsRef });
+      const luAwayField = TmMatchField.create(awayPosMap, match.away.lineup, { onPlayerClick: handlePlayerClick, eventsRef });
       const starterHomePids = new Set(match.home.lineup.filter((p) => POSITION_MAP[(p.position || "").toLowerCase()]).map((p) => String(p.id)));
       const starterAwayPids = new Set(match.away.lineup.filter((p) => POSITION_MAP[(p.position || "").toLowerCase()]).map((p) => String(p.id)));
       const luHomeCtx = makeMatchSquadCtx(match.home.lineup);
@@ -34929,38 +35411,86 @@ order:initial
           const row = e.target.closest(".tm-pr[data-id]");
           if (!row) return;
           const player2 = allPlayersById.get(row.dataset.id);
-          if (player2) handlePlayerClick(player2);
+          if (!player2) return;
+          if (e.ctrlKey && player2.id) {
+            window.open(`/players/${player2.id}/`, "_blank");
+            return;
+          }
+          handlePlayerClick(player2);
         });
       };
       wireListClick(luHomeListEl);
       wireListClick(luAwayListEl);
       function update(replayState) {
-        var _a2, _b, _c;
+        var _a2, _b, _c, _d;
         const minute = (_a2 = replayState == null ? void 0 : replayState.currentMinute) != null ? _a2 : 0;
-        if (minute === lastMinute) return;
+        const clipIdx = (_b = replayState == null ? void 0 : replayState.committedClipIndex) != null ? _b : -1;
+        if (minute === lastMinute && clipIdx === lastClipIdx) return;
         lastMinute = minute;
-        const isFinished = minute >= ((_c = (_b = match.duration) == null ? void 0 : _b.total) != null ? _c : 95);
-        const playerSlot = derivePitchState(match, minute);
+        lastClipIdx = clipIdx;
+        const isFinished = minute >= ((_d = (_c = match.duration) == null ? void 0 : _c.total) != null ? _d : 95);
+        const stats = buildMatchPlayerStats(match, minute, clipIdx);
+        eventsRef.value = stats;
+        luHomeCtx.matchEvents = stats;
+        luAwayCtx.matchEvents = stats;
+        const playerSlot = derivePitchState(match, minute, clipIdx);
         rebuildPosMap(homePosMap, "home", playerSlot, allPlayersById);
         rebuildPosMap(awayPosMap, "away", playerSlot, allPlayersById);
-        homeField.showMatchRatingRef.value = isFinished;
-        awayField.showMatchRatingRef.value = isFinished;
-        luHomeField.showMatchRatingRef.value = isFinished;
-        luAwayField.showMatchRatingRef.value = isFinished;
-        homeField.refresh();
-        awayField.refresh();
-        luHomeField.refresh();
-        luAwayField.refresh();
         const homePitchPids = new Set([...playerSlot].filter(([, s6]) => s6.startsWith("home:")).map(([pid]) => pid));
         const awayPitchPids = new Set([...playerSlot].filter(([, s6]) => s6.startsWith("away:")).map(([pid]) => pid));
         luHomeCtx.stateOf = (p) => homePitchPids.has(String(p.id)) ? starterHomePids.has(String(p.id)) ? "active" : "sub-in" : starterHomePids.has(String(p.id)) ? "off" : "bench";
         luAwayCtx.stateOf = (p) => awayPitchPids.has(String(p.id)) ? starterAwayPids.has(String(p.id)) ? "active" : "sub-in" : starterAwayPids.has(String(p.id)) ? "off" : "bench";
+        homeField.showMatchRatingRef.value = isFinished;
+        awayField.showMatchRatingRef.value = isFinished;
+        luHomeField.showMatchRatingRef.value = isFinished;
+        luAwayField.showMatchRatingRef.value = isFinished;
         luHomeCtx.showMatchRating = isFinished;
         luAwayCtx.showMatchRating = isFinished;
+        homeField.refresh();
+        awayField.refresh();
+        luHomeField.refresh();
+        luAwayField.refresh();
         luHomeSquad.refresh();
         luAwaySquad.refresh();
       }
       update(null);
+      const appendUnavailable = (listEl, players) => {
+        if (!players.length) return;
+        const sep = document.createElement("div");
+        sep.className = "mp-lu-unavailable-sep";
+        sep.textContent = "Unavailable";
+        listEl.appendChild(sep);
+        players.forEach((p) => {
+          const fullPlayer = allPlayersById.get(p.id);
+          const playerObj = fullPlayer || { id: p.id, name: p.name, no: "", positions: [] };
+          let row = TmPlayerRow.build(playerObj, { state: "bench", compact: true });
+          const cell = document.createElement("div");
+          cell.className = "mp-lu-unavailable-cell";
+          cell.appendChild(row);
+          listEl.appendChild(cell);
+          if (!fullPlayer) {
+            TmPlayerService.fetchPlayerTooltip(p.id).then((fetched) => {
+              if (!fetched) return;
+              const newRow = TmPlayerRow.build(fetched, { state: "bench", compact: true });
+              newRow.addEventListener("mouseenter", () => TmPlayerTooltip.show(newRow, fetched));
+              newRow.addEventListener("mouseleave", () => TmPlayerTooltip.hide());
+              newRow.addEventListener("click", (e) => {
+                if (e.ctrlKey && fetched.id) window.open(`/players/${fetched.id}/`, "_blank");
+              });
+              cell.replaceChild(newRow, row);
+              row = newRow;
+            });
+          } else {
+            row.addEventListener("mouseenter", () => TmPlayerTooltip.show(row, fullPlayer));
+            row.addEventListener("mouseleave", () => TmPlayerTooltip.hide());
+            row.addEventListener("click", (e) => {
+              if (e.ctrlKey && fullPlayer.id) window.open(`/players/${fullPlayer.id}/`, "_blank");
+            });
+          }
+        });
+      };
+      appendUnavailable(luHomeListEl, match.home.lineupOut || []);
+      appendUnavailable(luAwayListEl, match.away.lineupOut || []);
       return {
         homePanel: { el: homePanel },
         awayPanel: { el: awayPanel },
@@ -35326,11 +35856,11 @@ order:initial
   };
 
   // src/components/match-new/tm-match-league.js
-  var STYLE_ID52 = "mp-nleague-style";
+  var STYLE_ID54 = "mp-nleague-style";
   var injectStyles36 = () => {
-    if (document.getElementById(STYLE_ID52)) return;
+    if (document.getElementById(STYLE_ID54)) return;
     const s6 = document.createElement("style");
-    s6.id = STYLE_ID52;
+    s6.id = STYLE_ID54;
     s6.textContent = `
         .mp-league-tab { width: 100%; padding: 16px 0; box-sizing: border-box; }
         .rnd-league-wrap { max-width: 100%; margin: 0 auto; padding: 0 0 var(--tmu-space-xl); }
@@ -35517,7 +36047,13 @@ order:initial
         const sortedRows = computeSortedRows(currentLiveScores);
         const badgeWrap = el2.querySelector(".rnd-league-min-badge");
         if (badgeWrap) {
-          if (minCutoff < Infinity) {
+          if (match.status === "future") {
+            const [yr, mo, dy] = (match.date || "").split("-");
+            const d = dy && mo && yr ? `${dy}.${mo}.${yr}` : match.date || "";
+            const t = match.kickoffTime || "";
+            badgeWrap.innerHTML = TmUI.badge({ label: t ? `${d} \xB7 ${t}` : d, size: "md", shape: "full" }, "muted");
+            badgeWrap.classList.add("visible");
+          } else if (minCutoff < Infinity) {
             badgeWrap.innerHTML = TmUI.badge({ icon: "\u23F1", label: Math.floor(minCutoff) + "'", size: "md", shape: "full", weight: "bold" }, "live");
             badgeWrap.classList.add("visible");
           } else {
@@ -35700,8 +36236,8 @@ order:initial
   };
 
   // src/services/international-cup.js
-  var cleanText16 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-  var normalizeCountryKey = (value) => cleanText16(value).toLowerCase();
+  var cleanText18 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var normalizeCountryKey = (value) => cleanText18(value).toLowerCase();
   var isDebugEnabled = () => {
     var _a2;
     try {
@@ -35737,7 +36273,7 @@ order:initial
     const homeAnchor = item.querySelector('.hometeam a[club_link], .hometeam a[href*="/club/"]');
     const awayAnchor = item.querySelector('.awayteam a[club_link], .awayteam a[href*="/club/"]');
     if (!homeAnchor || !awayAnchor) return null;
-    const scoreText = cleanText16(((_a2 = item.querySelector(".match_result")) == null ? void 0 : _a2.textContent) || "");
+    const scoreText = cleanText18(((_a2 = item.querySelector(".match_result")) == null ? void 0 : _a2.textContent) || "");
     const scoreMatch = scoreText.match(/(\d+)\s*-\s*(\d+)/);
     if (!scoreMatch) return null;
     return {
@@ -35753,7 +36289,7 @@ order:initial
   var HEADING_SELECTOR = "h1, h2, h3, .stage_title, .sub_header, .box_headline, .box_sub_header .large";
   function getBoxTitle(box) {
     var _a2;
-    return cleanText16(
+    return cleanText18(
       ((_a2 = box == null ? void 0 : box.querySelector(".box_head h2, .box_headline, .box_sub_header .large, h3, h2")) == null ? void 0 : _a2.textContent) || ""
     );
   }
@@ -35764,10 +36300,10 @@ order:initial
       let sibling = current.previousElementSibling;
       while (sibling) {
         if ((_a2 = sibling.matches) == null ? void 0 : _a2.call(sibling, HEADING_SELECTOR)) {
-          const title = cleanText16(sibling.textContent);
+          const title = cleanText18(sibling.textContent);
           if (title) return title;
         }
-        const nestedHeading = Array.from(((_b = sibling.querySelectorAll) == null ? void 0 : _b.call(sibling, HEADING_SELECTOR)) || []).map((candidate) => cleanText16(candidate.textContent)).filter(Boolean).pop();
+        const nestedHeading = Array.from(((_b = sibling.querySelectorAll) == null ? void 0 : _b.call(sibling, HEADING_SELECTOR)) || []).map((candidate) => cleanText18(candidate.textContent)).filter(Boolean).pop();
         if (nestedHeading) return nestedHeading;
         sibling = sibling.previousElementSibling;
       }
@@ -35794,7 +36330,7 @@ order:initial
     return Array.from(groupedSections.values()).filter((section) => section.nodes.length);
   }
   function classifyStage(title, passedGroupStage) {
-    const text = cleanText16(title).toLowerCase();
+    const text = cleanText18(title).toLowerCase();
     if (/group stage|groups?/.test(text)) return "group";
     if (/qualification|qualifying|play\s*-?\s*off|preliminary/.test(text)) return "qualification";
     if (/round of|quarter|semi|final/.test(text)) return "knockout";
@@ -35920,12 +36456,12 @@ order:initial
   };
 
   // src/components/match-new/tm-match-intcup.js
-  var STYLE_ID53 = "mp-intcup-style";
+  var STYLE_ID55 = "mp-intcup-style";
   var injectStyles37 = () => {
     injectLeagueMatchStyles();
-    if (document.getElementById(STYLE_ID53)) return;
+    if (document.getElementById(STYLE_ID55)) return;
     const s6 = document.createElement("style");
-    s6.id = STYLE_ID53;
+    s6.id = STYLE_ID55;
     s6.textContent = `
         .mp-icup { width:100%; padding:16px 0; box-sizing:border-box; }
         .mp-icup-wrap { max-width:100%; margin:0 auto; padding:0 0 var(--tmu-space-xl); }
@@ -35962,6 +36498,11 @@ order:initial
         .mp-icup-tip.in { opacity:1; }
         .mp-icup-standings-host { overflow-x:auto; }
         .mp-icup-day-header { font-size:var(--tmu-font-xs); font-weight:700; color:var(--tmu-text-faint); text-transform:uppercase; letter-spacing:1.5px; padding:var(--tmu-space-sm) var(--tmu-space-md); border-bottom:1px solid var(--tmu-border-soft-alpha); margin-top:var(--tmu-space-sm); }
+        .mp-icup-group { border-top:2px solid var(--tmu-border-soft-alpha); }
+        .mp-icup-group + .mp-icup-group { margin-top:0; }
+        .mp-icup-group-header { font-size:var(--tmu-font-xs); font-weight:800; color:var(--tmu-text-faint); text-transform:uppercase; letter-spacing:2px; padding:var(--tmu-space-sm) var(--tmu-space-xl); background:var(--tmu-surface-dark-soft); }
+        .mp-icup-group-ours { border-top-color:var(--tmu-accent); }
+        .mp-icup-group-ours .mp-icup-group-header { color:var(--tmu-accent); }
     `;
     document.head.appendChild(s6);
   };
@@ -36004,7 +36545,7 @@ order:initial
       let lastMin = initialMin;
       let isGroup = false;
       const rowMap = {};
-      let standingsHost = null;
+      let standingsHosts = {};
       let _tip = null, _showT = null, _hideT = null;
       const destroyTip = () => {
         if (_tip) {
@@ -36032,6 +36573,10 @@ order:initial
       };
       const computeStatus = (mData, minCutoff) => {
         var _a3, _b2;
+        if (mData.status === "future") {
+          const time = mData.kickoffTime || "";
+          return { statusText: time || "\u2013", statusCls: "", homeGoals: null, awayGoals: null };
+        }
         const itemKickoff = mData.kickoff ? mData.kickoff + parseTimeOfDay(mData.kickoffTime) : null;
         const virtualNow = toVirtualNow(minCutoff);
         if (!itemKickoff || !virtualNow) {
@@ -36052,10 +36597,19 @@ order:initial
         const snap = snapshotFromMData(mData, min + 1);
         return { statusText: min + "'", statusCls: "live", homeGoals: snap.homeGoals, awayGoals: snap.awayGoals };
       };
+      const fmtKickoff = () => {
+        const [yr, mo, dy] = (match.date || "").split("-");
+        const d = dy && mo && yr ? `${dy}.${mo}.${yr}` : match.date || "";
+        const t = match.kickoffTime || "";
+        return t ? `${d} \xB7 ${t}` : d;
+      };
       const renderUpdate = (minCutoff) => {
         const badge2 = el2.querySelector(".mp-icup-badge");
         if (badge2) {
-          if (minCutoff < Infinity) {
+          if (match.status === "future") {
+            badge2.innerHTML = TmUI.badge({ label: fmtKickoff(), size: "md", shape: "full" }, "muted");
+            badge2.classList.add("on");
+          } else if (minCutoff < Infinity) {
             badge2.innerHTML = TmUI.badge({ icon: "\u23F1", label: Math.floor(minCutoff) + "'", size: "md", shape: "full", weight: "bold" }, "live");
             badge2.classList.add("on");
           } else {
@@ -36073,7 +36627,7 @@ order:initial
             entry.scoreEl.innerHTML = st.homeGoals != null ? `<span>${st.homeGoals}</span>-<span>${st.awayGoals}</span>` : '<span style="opacity:0.4">\u2013</span>';
           }
         }
-        if (isGroup && standingsHost) renderStandings(minCutoff);
+        if (isGroup && Object.keys(standingsHosts).length) renderStandings(minCutoff);
       };
       const applyResult2 = (table, homeId, awayId, hg, ag) => {
         const h = table[homeId], a = table[awayId];
@@ -36100,38 +36654,45 @@ order:initial
         }
       };
       const renderStandings = (minCutoff) => {
-        const table = {};
-        const ensure = (id, name) => {
-          if (!table[id]) table[id] = { id, name, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 };
-        };
-        for (const entry of Object.values(rowMap)) {
-          if (!entry.mDataResolved || !entry.mData) continue;
-          const mData = entry.mData;
-          const homeId = String(mData.home.club.id);
-          const awayId = String(mData.away.club.id);
-          ensure(homeId, mData.home.club.name);
-          ensure(awayId, mData.away.club.name);
-          const st = computeStatus(mData, minCutoff);
-          if (st.homeGoals != null) applyResult2(table, homeId, awayId, st.homeGoals, st.awayGoals);
+        for (const [grpKey, host] of Object.entries(standingsHosts)) {
+          const table = {};
+          const ensure = (id, name) => {
+            if (!table[id]) table[id] = { id, name, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 };
+          };
+          for (const entry of Object.values(rowMap)) {
+            if (!entry.mDataResolved || !entry.mData || entry.groupRoot !== grpKey) continue;
+            const mData = entry.mData;
+            if (mData.status === "future") {
+              ensure(String(mData.home.club.id), mData.home.club.name);
+              ensure(String(mData.away.club.id), mData.away.club.name);
+              continue;
+            }
+            const homeId = String(mData.home.club.id);
+            const awayId = String(mData.away.club.id);
+            ensure(homeId, mData.home.club.name);
+            ensure(awayId, mData.away.club.name);
+            const st = computeStatus(mData, minCutoff);
+            if (st.homeGoals != null) applyResult2(table, homeId, awayId, st.homeGoals, st.awayGoals);
+          }
+          const sorted = Object.values(table).map((r) => ({ ...r, gd: r.gf - r.ga })).sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
+          host.innerHTML = TmStandingsTable.buildHtml({
+            rows: sorted.map((r, i) => ({
+              rank: i + 1,
+              clubId: r.id,
+              clubName: r.name,
+              gp: r.p,
+              w: r.w,
+              d: r.d,
+              l: r.l,
+              gf: r.gf,
+              ga: r.ga,
+              pts: r.pts,
+              isMe: r.id === myHomeId || r.id === myAwayId,
+              zone: "",
+              rankDelta: 0
+            }))
+          });
         }
-        const sorted = Object.values(table).map((r) => ({ ...r, gd: r.gf - r.ga })).sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
-        standingsHost.innerHTML = TmStandingsTable.buildHtml({
-          rows: sorted.map((r, i) => ({
-            rank: i + 1,
-            clubId: r.id,
-            clubName: r.name,
-            gp: r.p,
-            w: r.w,
-            d: r.d,
-            l: r.l,
-            gf: r.gf,
-            ga: r.ga,
-            pts: r.pts,
-            isMe: r.id === myHomeId || r.id === myAwayId,
-            zone: "",
-            rankDelta: 0
-          }))
-        });
       };
       const wireRow = (entry, row) => {
         const { matchId, mData } = entry;
@@ -36189,18 +36750,7 @@ order:initial
           }).catch(() => {
           })
         )).then(() => {
-          const byRound = {};
-          matchIds.forEach(({ id, nodeIndex }) => {
-            const entry = rowMap[id];
-            if (!entry) return;
-            (byRound[nodeIndex] = byRound[nodeIndex] || []).push(entry);
-          });
-          const matchDays = Object.keys(byRound).map(Number).sort((a, b) => a - b).map((nodeIndex, i) => ({
-            label: `Match Day ${i + 1}`,
-            entries: byRound[nodeIndex].sort(
-              (a, b) => (a.mData.kickoff || 0) - (b.mData.kickoff || 0)
-            )
-          }));
+          var _a3;
           const rowsHtml = (entries) => entries.map(({ matchId, mData }) => {
             const homeId = String(mData.home.club.id);
             const awayId = String(mData.away.club.id);
@@ -36210,31 +36760,102 @@ order:initial
               { extraClass: isCur ? " mp-icup-current" : "" }
             );
           }).join("");
-          const daysHtml = matchDays.map(
-            (md) => `<div class="mp-icup-day-header">${esc2(md.label)}</div>${rowsHtml(md.entries)}`
-          ).join("");
           let html2 = `<div class="mp-icup-wrap">
                     <div class="mp-icup-header">
                         <span class="mp-icup-title">${esc2(title)}</span>
                         <span class="mp-icup-badge"></span>
                     </div>`;
           if (isGroup) {
-            html2 += `<div class="mp-icup-cols">
-                        <div class="mp-icup-col-matches">
-                            <div class="mp-icup-col-title">Matches</div>
-                            ${daysHtml}
-                        </div>
-                        <div class="mp-icup-col-standings">
-                            <div class="mp-icup-col-title">Group Table</div>
-                            <div class="mp-icup-standings-host"></div>
-                        </div>
-                    </div>`;
+            const _uf = {};
+            const _find = (x) => {
+              if (!_uf[x]) _uf[x] = x;
+              return _uf[x] === x ? x : _uf[x] = _find(_uf[x]);
+            };
+            const _union = (x, y) => {
+              _uf[_find(x)] = _find(y);
+            };
+            for (const entry of Object.values(rowMap)) {
+              if (!entry.mData) continue;
+              _union(String(entry.mData.home.club.id), String(entry.mData.away.club.id));
+            }
+            const byGroupRoot = {};
+            for (const entry of Object.values(rowMap)) {
+              if (!entry.mData) continue;
+              const root2 = _find(String(entry.mData.home.club.id));
+              entry.groupRoot = root2;
+              (byGroupRoot[root2] = byGroupRoot[root2] || []).push(entry);
+            }
+            const ourGroupRoot = _find(myHomeId) || _find(myAwayId);
+            const groupRoots = Object.keys(byGroupRoot).sort((a, b) => {
+              if (a === ourGroupRoot) return -1;
+              if (b === ourGroupRoot) return 1;
+              const minA = Math.min(...byGroupRoot[a].map((e) => Number(e.mData.home.club.id) || 0));
+              const minB = Math.min(...byGroupRoot[b].map((e) => Number(e.mData.home.club.id) || 0));
+              return minA - minB;
+            });
+            const ourEntry = rowMap[myMatchId];
+            const ourKickoffDay = ((_a3 = ourEntry == null ? void 0 : ourEntry.mData) == null ? void 0 : _a3.kickoff) ? Math.floor(ourEntry.mData.kickoff / 86400) : null;
+            const ourGroupDays = (() => {
+              const d = {};
+              (byGroupRoot[ourGroupRoot] || []).forEach((e) => {
+                var _a4;
+                if (!((_a4 = e.mData) == null ? void 0 : _a4.kickoff)) return;
+                d[Math.floor(e.mData.kickoff / 86400)] = true;
+              });
+              return Object.keys(d).map(Number).sort((a, b) => a - b);
+            })();
+            const ourRoundIdx = ourKickoffDay !== null ? Math.max(0, ourGroupDays.indexOf(ourKickoffDay)) : ourGroupDays.length - 1;
+            const LABELS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            groupRoots.forEach((root2, idx) => {
+              var _a4;
+              const isOurGroup = root2 === ourGroupRoot;
+              const grpLabel = `Group ${LABELS[idx] || idx + 1}`;
+              const entries = byGroupRoot[root2];
+              const byDay = {};
+              entries.forEach((entry) => {
+                const day = entry.mData.kickoff ? Math.floor(entry.mData.kickoff / 86400) : 0;
+                (byDay[day] = byDay[day] || []).push(entry);
+              });
+              const days = Object.keys(byDay).map(Number).sort((a, b) => a - b);
+              const targetDayKey = (_a4 = days[ourRoundIdx]) != null ? _a4 : days[days.length - 1];
+              const dayEntries = (byDay[targetDayKey] || []).sort((a, b) => (a.mData.kickoff || 0) - (b.mData.kickoff || 0));
+              const daysHtml = `<div class="mp-icup-day-header">Match Day ${ourRoundIdx + 1}</div>${rowsHtml(dayEntries)}`;
+              html2 += `<div class="mp-icup-group${isOurGroup ? " mp-icup-group-ours" : ""}">
+                            <div class="mp-icup-group-header">${esc2(grpLabel)}</div>
+                            <div class="mp-icup-cols">
+                                <div class="mp-icup-col-matches">
+                                    <div class="mp-icup-col-title">Matches</div>
+                                    ${daysHtml}
+                                </div>
+                                <div class="mp-icup-col-standings">
+                                    <div class="mp-icup-col-title">Standings</div>
+                                    <div class="mp-icup-standings-host" data-grp="${esc2(root2)}"></div>
+                                </div>
+                            </div>
+                        </div>`;
+            });
           } else {
+            const byRound = {};
+            matchIds.forEach(({ id, nodeIndex }) => {
+              const entry = rowMap[id];
+              if (!entry) return;
+              (byRound[nodeIndex] = byRound[nodeIndex] || []).push(entry);
+            });
+            const matchDays = Object.keys(byRound).map(Number).sort((a, b) => a - b).map((nodeIndex, i) => ({
+              label: `Match Day ${i + 1}`,
+              entries: byRound[nodeIndex].sort((a, b) => (a.mData.kickoff || 0) - (b.mData.kickoff || 0))
+            }));
+            const daysHtml = matchDays.map(
+              (md) => `<div class="mp-icup-day-header">${esc2(md.label)}</div>${rowsHtml(md.entries)}`
+            ).join("");
             html2 += `<div class="mp-icup-days">${daysHtml}</div>`;
           }
           html2 += "</div>";
           el2.innerHTML = html2;
-          standingsHost = el2.querySelector(".mp-icup-standings-host");
+          standingsHosts = {};
+          el2.querySelectorAll(".mp-icup-standings-host[data-grp]").forEach((host) => {
+            standingsHosts[host.getAttribute("data-grp")] = host;
+          });
           for (const entry of Object.values(rowMap)) {
             const row = el2.querySelector(`.tmvu-fixture-row[data-mid="${entry.matchId}"]`);
             if (!row) continue;
@@ -36300,6 +36921,285 @@ order:initial
         renderUpdate(min);
       };
       return { el: el2, update };
+    }
+  };
+
+  // src/services/cup.js
+  var TmCupService = {
+    /**
+     * Fetch cup fixtures for a given country and cup ID.
+     * @param {string} country — country code (e.g. 'cs')
+     * @param {string|number} cupId — cup/round identifier (var2)
+     * @returns {Promise<object|null>}
+     */
+    fetchCupFixtures(country, cupId = "") {
+      return _post("/ajax/fixtures.ajax.php", { type: "cup", var1: country, var2: cupId, var3: "" });
+    }
+  };
+
+  // src/models/cup.js
+  var TmCupModel = {
+    /**
+     * Fetch cup fixtures for a given country and cup ID.
+     * @param {string} country — country code (e.g. 'cs')
+     * @param {string|number} cupId — cup/round identifier (var2)
+     * @returns {Promise<object|null>}
+     */
+    fetchCupFixtures(country, cupId = "") {
+      return TmCupService.fetchCupFixtures(country, cupId);
+    }
+  };
+
+  // src/components/match-new/tm-match-cup.js
+  var isPow2 = (n) => n > 0 && (n & n - 1) === 0;
+  var roundLabelFromCount = (matchCount) => {
+    if (!isPow2(matchCount)) return "First Qualification Round";
+    const teams = matchCount * 2;
+    if (teams === 2) return "Final";
+    if (teams === 4) return "Semifinals";
+    if (teams === 8) return "Quarterfinals";
+    if (teams === 16) return "Round of 16";
+    return `Round of ${teams}`;
+  };
+  var STYLE_ID56 = "mp-cup-style";
+  var injectStyles38 = () => {
+    injectLeagueMatchStyles();
+    if (document.getElementById(STYLE_ID56)) return;
+    const s6 = document.createElement("style");
+    s6.id = STYLE_ID56;
+    s6.textContent = `
+        .mp-cup { width: 100%; padding: 16px 0; box-sizing: border-box; }
+        .mp-cup-wrap { max-width: 780px; margin: 0 auto; padding: 0 0 var(--tmu-space-xl); }
+        .mp-cup-header { display: flex; align-items: center; justify-content: center; gap: 14px; padding: var(--tmu-space-md) var(--tmu-space-xl); background: linear-gradient(180deg, var(--tmu-surface-accent-soft) 0%, transparent 100%); border-bottom: 1px solid var(--tmu-border-soft-alpha); margin-bottom: var(--tmu-space-xs); }
+        .mp-cup-title { font-size: var(--tmu-font-sm); font-weight: 700; color: var(--tmu-text-main); text-transform: uppercase; letter-spacing: 1.5px; }
+        .mp-cup-badge { display: none; }
+        .mp-cup-badge.on { display: inline-flex; }
+        .mp-cup-badge .tmu-badge { animation: cup-pulse 1.5s ease-in-out infinite; }
+        @keyframes cup-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+        .mp-cup-list { padding: 0 var(--tmu-space-lg); }
+        .mp-cup-current { background: var(--tmu-success-fill-hover) !important; box-shadow: inset 3px 0 0 var(--tmu-success); }
+        .mp-cup-current:hover { background: var(--tmu-success-fill-strong) !important; }
+        .mp-cup-tip { position: fixed; z-index: 99999; background: var(--tmu-surface-card-soft); border-radius: var(--tmu-space-md); padding: 0; min-width: 320px; max-width: 420px; max-height: 70vh; overflow-y: auto; box-shadow: 0 8px 32px var(--tmu-shadow-panel); pointer-events: auto; opacity: 0; transition: opacity 0.12s; }
+        .mp-cup-tip.in { opacity: 1; }
+    `;
+    document.head.appendChild(s6);
+  };
+  var TmMatchCupNew = {
+    create(match, initialReplayState) {
+      var _a2, _b, _c, _d;
+      injectStyles38();
+      const typeRaw = ((_a2 = match.competition) == null ? void 0 : _a2.typeRaw) || "";
+      const roundNum = (_c = (_b = /^p(\d+)$/.exec(typeRaw)) == null ? void 0 : _b[1]) != null ? _c : "";
+      const country = match.home.club.country;
+      const matchDate = match.date;
+      const myMatchId = String(match.id || "");
+      const myHomeId = String(match.home.club.id);
+      const myAwayId = String(match.away.club.id);
+      const cupName = ((_d = match.competition) == null ? void 0 : _d.name) || "Cup";
+      const parseTimeOfDay = (str) => {
+        const [h, m] = (str || "").split(":").map(Number);
+        return (h || 0) * 3600 + (m || 0) * 60;
+      };
+      const myKickoff = match.kickoff ? match.kickoff + parseTimeOfDay(match.kickoffTime) : null;
+      const el2 = document.createElement("div");
+      el2.className = "mp-cup";
+      if (!country || !roundNum || !matchDate) {
+        el2.innerHTML = TmUI.error("Cannot determine cup round info");
+        return { el: el2, update: () => {
+        } };
+      }
+      const initialMin = (initialReplayState == null ? void 0 : initialReplayState.currentMinute) != null ? initialReplayState.currentMinute : Infinity;
+      let lastMin = initialMin;
+      const rowMap = {};
+      let _tip = null, _showT = null, _hideT = null;
+      const destroyTip = () => {
+        if (_tip) {
+          _tip.remove();
+          _tip = null;
+        }
+      };
+      const placeTip = (anchor) => {
+        if (!_tip) return;
+        const r = anchor.getBoundingClientRect();
+        const w = _tip.offsetWidth || 380;
+        let left = r.left + r.width / 2 - w / 2;
+        let top = r.bottom + 6;
+        if (left + w > window.innerWidth - 8) left = window.innerWidth - w - 8;
+        if (left < 8) left = 8;
+        if (top + 300 > window.innerHeight) top = Math.max(8, r.top - 6 - (_tip.offsetHeight || 300));
+        _tip.style.left = left + "px";
+        _tip.style.top = top + "px";
+      };
+      const toVirtualNow = (minCutoff) => {
+        var _a3, _b2;
+        if (!myKickoff) return null;
+        const min = Number.isFinite(minCutoff) ? Math.floor(minCutoff) : (_b2 = (_a3 = match.duration) == null ? void 0 : _a3.total) != null ? _b2 : 95;
+        return myKickoff + min * 60;
+      };
+      const computeStatus = (mData, minCutoff) => {
+        var _a3, _b2;
+        if (mData.status === "future") {
+          const time = mData.kickoffTime || "";
+          return { statusText: time || "\u2013", statusCls: "", homeGoals: null, awayGoals: null };
+        }
+        const itemKickoff = mData.kickoff ? mData.kickoff + parseTimeOfDay(mData.kickoffTime) : null;
+        const virtualNow = toVirtualNow(minCutoff);
+        if (!itemKickoff || !virtualNow) {
+          const snap2 = snapshotFromMData(mData, Infinity);
+          return { statusText: "FT", statusCls: "ft", homeGoals: snap2.homeGoals, awayGoals: snap2.awayGoals };
+        }
+        const elapsed = virtualNow - itemKickoff;
+        if (elapsed < 0) {
+          const time = mData.kickoffTime || "";
+          return { statusText: time || "\u2013", statusCls: "", homeGoals: null, awayGoals: null };
+        }
+        const matchDuration = ((_b2 = (_a3 = mData.duration) == null ? void 0 : _a3.total) != null ? _b2 : 95) * 60;
+        if (elapsed > matchDuration) {
+          const snap2 = snapshotFromMData(mData, Infinity);
+          return { statusText: "FT", statusCls: "ft", homeGoals: snap2.homeGoals, awayGoals: snap2.awayGoals };
+        }
+        const min = Math.max(1, Math.floor(elapsed / 60));
+        const snap = snapshotFromMData(mData, min + 1);
+        return { statusText: min + "'", statusCls: "live", homeGoals: snap.homeGoals, awayGoals: snap.awayGoals };
+      };
+      const wireRow = (matchId, mData, rowEl) => {
+        rowEl.style.cursor = "pointer";
+        rowEl.addEventListener("click", (e) => {
+          if (e.target.closest("a")) return;
+          window.location.href = `/matches/${matchId}/`;
+        });
+        rowEl.addEventListener("mouseenter", () => {
+          clearTimeout(_hideT);
+          clearTimeout(_showT);
+          destroyTip();
+          _showT = setTimeout(() => {
+            _tip = document.createElement("div");
+            _tip.className = "mp-cup-tip";
+            document.body.appendChild(_tip);
+            placeTip(rowEl);
+            _tip.addEventListener("mouseenter", () => clearTimeout(_hideT));
+            _tip.addEventListener("mouseleave", () => {
+              _hideT = setTimeout(destroyTip, 200);
+            });
+            const tipMin = (() => {
+              var _a3, _b2;
+              const vn = toVirtualNow(lastMin);
+              const iko = mData.kickoff ? mData.kickoff + parseTimeOfDay(mData.kickoffTime) : null;
+              if (!vn || !iko) return Infinity;
+              const elapsed = vn - iko;
+              if (elapsed > ((_b2 = (_a3 = mData.duration) == null ? void 0 : _a3.total) != null ? _b2 : 95) * 60) return Infinity;
+              if (elapsed < 0) return 0;
+              return Math.max(1, Math.floor(elapsed / 60)) + 1;
+            })();
+            _tip.innerHTML = "";
+            _tip.appendChild(buildModalContentEl(snapshotFromMData(mData, tipMin)));
+            requestAnimationFrame(() => {
+              placeTip(rowEl);
+              _tip == null ? void 0 : _tip.classList.add("in");
+            });
+          }, 200);
+        });
+        rowEl.addEventListener("mouseleave", () => {
+          clearTimeout(_showT);
+          _hideT = setTimeout(destroyTip, 200);
+        });
+      };
+      const fmtKickoff = () => {
+        const [yr, mo, dy] = (match.date || "").split("-");
+        const d = dy && mo && yr ? `${dy}.${mo}.${yr}` : match.date || "";
+        const t = match.kickoffTime || "";
+        return t ? `${d} \xB7 ${t}` : d;
+      };
+      const renderUpdate = (minCutoff) => {
+        const badge2 = el2.querySelector(".mp-cup-badge");
+        if (badge2) {
+          if (match.status === "future") {
+            badge2.innerHTML = TmUI.badge({ label: fmtKickoff(), size: "md", shape: "full" }, "muted");
+            badge2.classList.add("on");
+          } else if (Number.isFinite(minCutoff)) {
+            badge2.innerHTML = TmUI.badge({ icon: "\u23F1", label: Math.floor(minCutoff) + "'", size: "md", shape: "full", weight: "bold" }, "live");
+            badge2.classList.add("on");
+          } else {
+            badge2.classList.remove("on");
+          }
+        }
+        for (const [matchId, entry] of Object.entries(rowMap)) {
+          if (!entry.mData || !entry.statusEl) continue;
+          const st = computeStatus(entry.mData, minCutoff);
+          entry.statusEl.textContent = st.statusText;
+          entry.statusEl.className = `mp-icup-status${st.statusCls ? " " + st.statusCls : ""}`;
+          if (entry.scoreEl) {
+            entry.scoreEl.innerHTML = st.homeGoals != null ? `<span>${st.homeGoals}</span>-<span>${st.awayGoals}</span>` : '<span style="opacity:0.4">\u2013</span>';
+          }
+        }
+      };
+      const esc4 = (v) => String(v != null ? v : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+      el2.innerHTML = TmUI.loading("Loading cup fixtures\u2026");
+      TmCupModel.fetchCupFixtures(country, roundNum).then((data) => {
+        const allInRound = [];
+        if (data) {
+          for (const monthData of Object.values(data)) {
+            if (!(monthData == null ? void 0 : monthData.matches)) continue;
+            for (const m of monthData.matches) allInRound.push(m);
+          }
+        }
+        const allMatches = allInRound.filter((m) => m.date === matchDate);
+        const roundLabel = allInRound.length ? roundLabelFromCount(allInRound.length) : "";
+        if (!allMatches.length) {
+          el2.innerHTML = TmUI.error("No cup fixtures found for this round");
+          return;
+        }
+        const rowsHtml = allMatches.map((m, idx) => {
+          const matchId = String(m.id);
+          const isCur = matchId === myMatchId;
+          const homeName = m.hometeam_name || String(m.hometeam);
+          const awayName = m.awayteam_name || String(m.awayteam);
+          const homeId = String(m.hometeam);
+          const awayId = String(m.awayteam);
+          return TmFixtureMatchRow.render(
+            { homeId, awayId, homeName, awayName, matchId, scoreText: "" },
+            { index: idx, extraClass: isCur ? " mp-cup-current" : "" }
+          );
+        }).join("");
+        el2.innerHTML = `
+                <div class="mp-cup-wrap">
+                    <div class="mp-cup-header">
+                        <span class="mp-cup-title">${esc4(cupName)}${roundLabel ? " \xB7 " + esc4(roundLabel) : ""}</span>
+                        <span class="mp-cup-badge"></span>
+                    </div>
+                    <div class="mp-cup-list">${rowsHtml}</div>
+                </div>`;
+        allMatches.forEach((m) => {
+          const matchId = String(m.id);
+          const isCur = matchId === myMatchId;
+          const rowEl = el2.querySelector(`.tmvu-fixture-row[data-mid="${matchId}"]`);
+          if (!rowEl) return;
+          const statusEl = document.createElement("span");
+          statusEl.className = "mp-icup-status";
+          statusEl.textContent = "\u2026";
+          rowEl.prepend(statusEl);
+          const scoreEl = rowEl.querySelector(".tmvu-fixture-score");
+          rowMap[matchId] = { mData: null, rowEl, statusEl, scoreEl };
+          const fetchTarget = isCur ? Promise.resolve(match) : TmMatchModel.fetchMatch(matchId, { dbSync: false });
+          fetchTarget.then((mData) => {
+            if (!mData) return;
+            rowMap[matchId].mData = mData;
+            wireRow(matchId, mData, rowEl);
+            renderUpdate(lastMin);
+          }).catch(() => {
+          });
+        });
+        renderUpdate(lastMin);
+      }).catch(() => {
+        el2.innerHTML = TmUI.error("Failed to load cup fixtures");
+      });
+      return {
+        el: el2,
+        update(replayState) {
+          lastMin = (replayState == null ? void 0 : replayState.currentMinute) != null ? replayState.currentMinute : Infinity;
+          renderUpdate(lastMin);
+        }
+      };
     }
   };
 
@@ -36513,15 +37413,15 @@ order:initial
     s6.textContent = `
         .mp-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: var(--tmu-surface-overlay-strong);
+            background: var(--tmu-surface-panel, #001012);
             z-index: 10000; display: flex; align-items: flex-start; justify-content: center;
         }
         .mp-dialog {
-            background: var(--tmu-match-shell-bg, var(--tmu-surface-panel));
+            background: var(--tmu-match-shell-bg, var(--tmu-surface-panel, #001012));
             width: 100vw; height: 100vh;
             display: flex; flex-direction: column; overflow: hidden;
         }
-        .mp-body { flex: 1; display: flex; flex-direction: row; overflow: hidden; min-height: 0; padding: 8px; gap: 8px; background: var(--tmu-match-content-bg, transparent); }
+        .mp-body { flex: 1; display: flex; flex-direction: row; overflow: hidden; min-height: 0; padding: 8px; gap: 8px; background: var(--tmu-match-content-bg, var(--tmu-surface-panel, #001012)); }
         .mp-center { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; padding: 0 16px; }
         .mp-tab-content { flex: 1; overflow-y: auto; min-height: 0; }
         .mp-tabs.tmu-tabs,
@@ -36545,7 +37445,7 @@ order:initial
     document.head.appendChild(s6);
   };
   var openPlayer = async (matchId) => {
-    var _a2, _b;
+    var _a2, _b, _c;
     const match = await TmMatchModel.fetchMatchWithProfiles(matchId);
     if (!match) return;
     const isFuture = match.status === "future";
@@ -36744,7 +37644,7 @@ order:initial
       prevH = h;
       prevA = a;
     };
-    let activeTab3 = "details";
+    let activeTab3 = isFuture ? "lineups" : "details";
     let reportInstance = null;
     let leagueInstance = null;
     let timelineInstance = null;
@@ -36813,7 +37713,7 @@ order:initial
     tabContent.style.display = "none";
     let renderedTabs = /* @__PURE__ */ new Set();
     const renderTab = (key) => {
-      var _a3;
+      var _a3, _b2;
       if (renderedTabs.has(key)) return;
       renderedTabs.add(key);
       if (key === "venue") {
@@ -36838,6 +37738,8 @@ order:initial
       } else if (key === "league") {
         if (((_a3 = match.competition) == null ? void 0 : _a3.type) === "international_cup") {
           leagueInstance = TmMatchIntCupNew.create(match, ctrl.getState());
+        } else if (((_b2 = match.competition) == null ? void 0 : _b2.type) === "cup") {
+          leagueInstance = TmMatchCupNew.create(match, ctrl.getState());
         } else {
           leagueInstance = TmMatchLeagueNew.create(match, ctrl.getState());
         }
@@ -36848,18 +37750,20 @@ order:initial
       }
     };
     dialog.appendChild(header.el);
+    const prematchHiddenTabs = /* @__PURE__ */ new Set(["details", "statistics", "report", "timeline"]);
+    const allTabItems = [
+      { key: "details", label: "Details" },
+      { key: "lineups", label: "Lineups" },
+      { key: "statistics", label: "Statistics" },
+      { key: "report", label: "Report" },
+      { key: "h2h", label: "H2H" },
+      { key: "league", label: ((_b = match.competition) == null ? void 0 : _b.type) === "international_cup" ? match.competition.name || "Cup" : ((_c = match.competition) == null ? void 0 : _c.type) === "cup" ? match.competition.name || "Cup" : "League" },
+      { key: "timeline", label: "Timeline" },
+      { key: "venue", label: "Venue" }
+    ];
     const tabs = TmTabs.tabs({
-      items: [
-        { key: "details", label: "Details" },
-        { key: "lineups", label: "Lineups" },
-        { key: "statistics", label: "Statistics" },
-        { key: "report", label: "Report" },
-        { key: "h2h", label: "H2H" },
-        { key: "league", label: ((_b = match.competition) == null ? void 0 : _b.type) === "international_cup" ? match.competition.name || "Cup" : "League" },
-        { key: "timeline", label: "Timeline" },
-        { key: "venue", label: "Venue" }
-      ],
-      active: "details",
+      items: isFuture ? allTabItems.filter((t) => !prematchHiddenTabs.has(t.key)) : allTabItems,
+      active: isFuture ? "lineups" : "details",
       stretch: true,
       cls: "mp-tabs",
       onChange: (key) => {
@@ -36895,6 +37799,13 @@ order:initial
     overlay.appendChild(dialog);
     document.body.appendChild(overlay);
     document.body.style.overflow = "hidden";
+    if (isFuture) {
+      body.style.display = "none";
+      renderTab("lineups");
+      tabContent.style.display = "";
+    }
+    if (isFuture) unity.init = () => {
+    };
     if (!isFuture) unity.init();
     let canvasRO = null;
     const close = () => {
@@ -36923,6 +37834,50 @@ order:initial
     if (!isFuture) setTimeout(() => {
       if (!unity.isAvailable()) ctrl.play();
     }, 800);
+    if (isFuture && match.kickoff) {
+      const parseTimeOfDay = (str) => {
+        const [h, m] = (str || "").split(":").map(Number);
+        return (h || 0) * 3600 + (m || 0) * 60;
+      };
+      const kickoffMs = (match.kickoff + parseTimeOfDay(match.kickoffTime)) * 1e3;
+      const msUntil = kickoffMs - Date.now();
+      const pollInterval = 6e4;
+      const startAt = Math.max(0, msUntil);
+      let _pollTimer = null;
+      const poll = () => {
+        TmMatchModel.fetchMatchWithProfiles(matchId).then((fresh) => {
+          if (!fresh || fresh.status === "future") {
+            _pollTimer = setTimeout(poll, pollInterval);
+            return;
+          }
+          close();
+          openPlayer(matchId);
+        }).catch(() => {
+          _pollTimer = setTimeout(poll, pollInterval);
+        });
+      };
+      const _startTimer = setTimeout(() => {
+        header.showControls();
+        poll();
+      }, startAt);
+      const _baseClose = close;
+      const closeWithTimers = () => {
+        clearTimeout(_startTimer);
+        clearTimeout(_pollTimer);
+        _baseClose();
+      };
+      document.removeEventListener("keydown", onKey);
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeWithTimers();
+        if (e.key === " ") {
+          e.preventDefault();
+          ctrl.toggle();
+        }
+      });
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) closeWithTimers();
+      });
+    }
   };
   function initMatchPage(main2) {
     if (!main2 || !main2.isConnected) return;
@@ -36944,32 +37899,6 @@ order:initial
       openPlayer(matchId);
     });
   }
-
-  // src/services/cup.js
-  var TmCupService = {
-    /**
-     * Fetch cup fixtures for a given country and cup ID.
-     * @param {string} country — country code (e.g. 'cs')
-     * @param {string|number} cupId — cup/round identifier (var2)
-     * @returns {Promise<object|null>}
-     */
-    fetchCupFixtures(country, cupId = "") {
-      return _post("/ajax/fixtures.ajax.php", { type: "cup", var1: country, var2: cupId, var3: "" });
-    }
-  };
-
-  // src/models/cup.js
-  var TmCupModel = {
-    /**
-     * Fetch cup fixtures for a given country and cup ID.
-     * @param {string} country — country code (e.g. 'cs')
-     * @param {string|number} cupId — cup/round identifier (var2)
-     * @returns {Promise<object|null>}
-     */
-    fetchCupFixtures(country, cupId = "") {
-      return TmCupService.fetchCupFixtures(country, cupId);
-    }
-  };
 
   // src/components/shared/tm-tournament-page.js
   var TmTournamentPage = {
@@ -37011,12 +37940,12 @@ order:initial
   };
 
   // src/components/shared/tm-tournament-cards.js
-  var STYLE_ID54 = "tmvu-tournament-cards-style";
-  var escapeHtml25 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  var injectStyles38 = () => {
-    if (document.getElementById(STYLE_ID54)) return;
+  var STYLE_ID57 = "tmvu-tournament-cards-style";
+  var escapeHtml26 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var injectStyles39 = () => {
+    if (document.getElementById(STYLE_ID57)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID54;
+    style.id = STYLE_ID57;
     style.textContent = `
         .tmvu-cup-note {
             padding: var(--tmu-space-md) var(--tmu-space-md);
@@ -37139,7 +38068,7 @@ order:initial
     document.head.appendChild(style);
   };
   var buildFixtureList = (matches, { season = null } = {}) => {
-    injectStyles38();
+    injectStyles39();
     return `
         <div class="tmvu-match-list">
             ${matches.map((match, index) => TmMatchRow.render({
@@ -37159,12 +38088,12 @@ order:initial
     `;
   };
   var buildGroupedFixtureList = (groups, { season = null } = {}) => {
-    injectStyles38();
+    injectStyles39();
     return `
         <div class="tmvu-cup-round-groups">
             ${(groups || []).map((group) => `
                 <section class="tmvu-cup-round-group">
-                    <div class="tmvu-cup-route-round">${escapeHtml25(group.label || "Round")}</div>
+                    <div class="tmvu-cup-route-round">${escapeHtml26(group.label || "Round")}</div>
                     ${buildFixtureList(group.matches || [], { season })}
                 </section>
             `).join("")}
@@ -37172,33 +38101,33 @@ order:initial
     `;
   };
   var renderDrawCard = (section, { season = null, icon = "\u2694" } = {}) => {
-    injectStyles38();
+    injectStyles39();
     const wrap = document.createElement("section");
     TmUI.render(wrap, `
-        <tm-card data-title="${escapeHtml25(section.title)}" data-icon="${icon}">
+        <tm-card data-title="${escapeHtml26(section.title)}" data-icon="${icon}">
             ${buildFixtureList(section.rows || [], { season })}
         </tm-card>
     `);
     return wrap.firstElementChild || wrap;
   };
   var renderGroupedFixturesCard = (section, { season = null, icon = "\u{1F4C5}" } = {}) => {
-    injectStyles38();
+    injectStyles39();
     const wrap = document.createElement("section");
     TmUI.render(wrap, `
-        <tm-card data-title="${escapeHtml25(section.title)}" data-icon="${icon}">
+        <tm-card data-title="${escapeHtml26(section.title)}" data-icon="${icon}">
             ${buildGroupedFixtureList(section.groups || [], { season })}
         </tm-card>
     `);
     return wrap.firstElementChild || wrap;
   };
   var renderRouteCard = (routeRows, overview = {}, { season = null, title = "Route", icon = "\u{1F4C8}" } = {}) => {
-    injectStyles38();
+    injectStyles39();
     const wrap = document.createElement("section");
     TmUI.render(wrap, `
-        <tm-card data-title="${escapeHtml25(title)}" data-icon="${icon}">
+        <tm-card data-title="${escapeHtml26(title)}" data-icon="${icon}">
             <div class="tmvu-match-list">
                 ${routeRows.map((match, index) => `
-                    <div class="tmvu-cup-route-round-header">${escapeHtml25(match.roundLabel || "Match")}</div>
+                    <div class="tmvu-cup-route-round-header">${escapeHtml26(match.roundLabel || "Match")}</div>
                     ${TmMatchRow.render({
       matchId: match.matchId,
       season,
@@ -37220,17 +38149,17 @@ order:initial
     return wrap.firstElementChild || wrap;
   };
   var renderHistoryCard2 = (history, { title = "History", icon = "\u{1F4DC}" } = {}) => {
-    injectStyles38();
+    injectStyles39();
     const wrap = document.createElement("section");
     TmUI.render(wrap, `
-        <tm-card data-title="${escapeHtml25(title)}" data-icon="${icon}">
+        <tm-card data-title="${escapeHtml26(title)}" data-icon="${icon}">
             <div class="tmvu-cup-history-winners">
                 ${(history.historyItems || []).map((item) => `
                     <div class="tmvu-cup-history-item">
                         ${item.imageSrc ? `<img src="${item.imageSrc}" alt="Tournament history">` : ""}
                         <div class="tmvu-cup-history-copy">
                             <div class="tmvu-cup-history-club">${item.clubHtml || ""}</div>
-                            <div class="tmvu-cup-history-league">${escapeHtml25(item.leagueText)}</div>
+                            <div class="tmvu-cup-history-league">${escapeHtml26(item.leagueText)}</div>
                         </div>
                     </div>
                 `).join("")}
@@ -37243,7 +38172,7 @@ order:initial
     return wrap.firstElementChild || wrap;
   };
   var TmTournamentCards = {
-    injectStyles: injectStyles38,
+    injectStyles: injectStyles39,
     buildFixtureList,
     buildGroupedFixtureList,
     renderDrawCard,
@@ -37253,12 +38182,12 @@ order:initial
   };
 
   // src/components/shared/tm-cup-page.js
-  var STYLE_ID55 = "tmvu-cup-style";
-  function injectStyles39() {
-    if (document.getElementById(STYLE_ID55)) return;
+  var STYLE_ID58 = "tmvu-cup-style";
+  function injectStyles40() {
+    if (document.getElementById(STYLE_ID58)) return;
     injectTmPageLayoutStyles();
     const style = document.createElement("style");
-    style.id = STYLE_ID55;
+    style.id = STYLE_ID58;
     style.textContent = `
         .tmvu-cup-page {
             --tmu-page-main-track: minmax(0, 0.88fr);
@@ -37320,9 +38249,17 @@ order:initial
     `;
     document.head.appendChild(style);
   }
-  function cleanText17(value) {
+  function cleanText19(value) {
     return String(value || "").replace(/\s+/g, " ").trim();
   }
+  var isPow22 = (n) => n > 0 && (n & n - 1) === 0;
+  var roundLabelFromCount2 = (n) => {
+    if (!isPow22(n)) return "Qualification Round";
+    if (n === 1) return "Final";
+    if (n === 2) return "Semi-finals";
+    if (n === 4) return "Quarter-finals";
+    return `Round of ${n * 2}`;
+  };
   function htmlOf6(node) {
     return node ? node.outerHTML : "";
   }
@@ -37338,12 +38275,12 @@ order:initial
       isHighlight: false,
       home: {
         id: String(m.hometeam || ""),
-        name: cleanText17(m.hometeam_name || ""),
+        name: cleanText19(m.hometeam_name || ""),
         href: ((_b = (_a2 = m.home_link) == null ? void 0 : _a2.match(/href="([^"]+)"/)) == null ? void 0 : _b[1]) || `/club/${m.hometeam}/`
       },
       away: {
         id: String(m.awayteam || ""),
-        name: cleanText17(m.awayteam_name || ""),
+        name: cleanText19(m.awayteam_name || ""),
         href: ((_d = (_c = m.away_link) == null ? void 0 : _c.match(/href="([^"]+)"/)) == null ? void 0 : _d[1]) || `/club/${m.awayteam}/`
       }
     };
@@ -37355,7 +38292,7 @@ order:initial
       return [{
         type: "link",
         href: node.getAttribute("href") || "#",
-        label: cleanText17(node.textContent),
+        label: cleanText19(node.textContent),
         icon: /cup/i.test(node.textContent) ? "\u{1F3C6}" : /fixture/i.test(node.textContent) ? "\u{1F4C5}" : /stat/i.test(node.textContent) ? "\u{1F4CA}" : /history/i.test(node.textContent) ? "\u{1F4DC}" : "\u{1F4CB}"
       }];
     });
@@ -37387,7 +38324,7 @@ order:initial
     const changeLink = box.querySelector(".box_sub_header a.float_right");
     const emblem = box.querySelector(".align_center img");
     const roundLink = box.querySelector('.align_center a[href*="/fixtures/cup/"]');
-    const roundText = cleanText17(((_a2 = box.querySelector(".align_center")) == null ? void 0 : _a2.textContent) || "");
+    const roundText = cleanText19(((_a2 = box.querySelector(".align_center")) == null ? void 0 : _a2.textContent) || "");
     const progressHeading = Array.from(box.querySelectorAll("h3")).find((node) => /progress/i.test(node.textContent || ""));
     const progressStd = progressHeading == null ? void 0 : progressHeading.nextElementSibling;
     const sponsorP = (_b = progressStd == null ? void 0 : progressStd.querySelector("p")) == null ? void 0 : _b.cloneNode(true);
@@ -37406,13 +38343,13 @@ order:initial
       competitionHtml = clone.innerHTML.trim();
     }
     return {
-      clubName: cleanText17((clubLink == null ? void 0 : clubLink.textContent) || "Cup"),
+      clubName: cleanText19((clubLink == null ? void 0 : clubLink.textContent) || "Cup"),
       clubHref: (clubLink == null ? void 0 : clubLink.getAttribute("href")) || "#",
       changeHtml: htmlOf6(changeLink),
       competitionHtml,
       emblemSrc: (emblem == null ? void 0 : emblem.getAttribute("src")) || "",
       currentRoundHref: (roundLink == null ? void 0 : roundLink.getAttribute("href")) || "",
-      currentRoundLabel: cleanText17((roundLink == null ? void 0 : roundLink.textContent) || ""),
+      currentRoundLabel: cleanText19((roundLink == null ? void 0 : roundLink.textContent) || ""),
       roundText,
       sponsorHtml
     };
@@ -37444,7 +38381,7 @@ order:initial
   function buildFixtureGroups(data) {
     if (!data) return [];
     return Object.entries(data).sort(([a], [b]) => a.localeCompare(b)).map(([, month]) => ({
-      label: month.date_name || month.month || "Matches",
+      label: roundLabelFromCount2((month.matches || []).length),
       matches: (month.matches || []).map((m) => matchFromApi(m))
     })).filter((group) => group.matches.length > 0);
   }
@@ -37459,7 +38396,7 @@ order:initial
       return {
         imageSrc: ((_a2 = node.querySelector("img")) == null ? void 0 : _a2.getAttribute("src")) || "",
         clubHtml: (clubAnchor == null ? void 0 : clubAnchor.outerHTML) || "",
-        leagueText: cleanText17(clone.textContent || "")
+        leagueText: cleanText19(clone.textContent || "")
       };
     });
     const paragraphs = Array.from(box.querySelectorAll(".std p")).map((node) => node.outerHTML);
@@ -37489,7 +38426,7 @@ order:initial
     const render16 = async () => {
       var _a2, _b;
       try {
-        injectStyles39();
+        injectStyles40();
         TmTournamentCards.injectStyles();
         TmMatchHoverCard.injectStyles();
         const menuItems = parseMenu10(sourceRoot3);
@@ -37502,13 +38439,10 @@ order:initial
         const drawSections = buildDrawSections(fixturesData);
         const fixtureGroups = buildFixtureGroups(fixturesData);
         const history = parseHistoryPanel(sourceRoot3);
-        const fixtureCard = isFixturesPage && fixtureGroups.length ? TmTournamentCards.renderGroupedFixturesCard({
-          title: overview.currentRoundLabel || overview.roundText || "Fixtures",
-          groups: fixtureGroups
-        }, {
-          season: currentSeason4,
-          icon: "\u{1F4C5}"
-        }) : null;
+        const fixtureCards = isFixturesPage ? fixtureGroups.map((g) => TmTournamentCards.renderDrawCard(
+          { title: g.label, rows: g.matches },
+          { season: currentSeason4, icon: "\u{1F4C5}" }
+        )) : [];
         TmTournamentPage.mount(main2, {
           pageClass: "tmvu-cup-page tmu-page-layout-3rail tmu-page-density-regular",
           navId: "tmvu-cup-nav",
@@ -37517,7 +38451,7 @@ order:initial
           currentHref: currentPath,
           mainClass: "tmvu-cup-main tmu-page-section-stack",
           sideClass: "tmvu-cup-side tmu-page-rail-stack",
-          mainNodes: isFixturesPage ? [renderOverviewCard2(overview), fixtureCard] : [renderOverviewCard2(overview), ...drawSections.map(renderDrawCard2)],
+          mainNodes: isFixturesPage ? [renderOverviewCard2(overview), ...fixtureCards] : [renderOverviewCard2(overview), ...drawSections.map(renderDrawCard2)],
           sideNodes: [routeRows.length ? renderRouteCard2(routeRows, overview) : null, history ? renderHistoryCard3(history) : null],
           season: currentSeason4
         });
@@ -37538,12 +38472,294 @@ order:initial
     mountCupPage(main2, { mode: "fixtures" });
   }
 
+  // src/pages/cup-history.js
+  var STYLE_ID59 = "tmvu-cup-history-page-style";
+  function injectStyles41() {
+    if (document.getElementById(STYLE_ID59)) return;
+    injectTmPageLayoutStyles();
+    const s6 = document.createElement("style");
+    s6.id = STYLE_ID59;
+    s6.textContent = `
+        .tmvu-cuhist-page {
+            --tmu-page-main-track: minmax(0, 1fr);
+        }
+        .tmvu-cuhist-season-bar {
+            display: flex;
+            align-items: center;
+            gap: var(--tmu-space-md);
+            padding: var(--tmu-space-sm) var(--tmu-space-md);
+            background: var(--tmu-card-bg, var(--tmu-surface-tab-active));
+            border: 1px solid var(--tmu-border-input-overlay);
+            border-radius: var(--tmu-space-sm);
+        }
+        .tmvu-cuhist-season-label {
+            font-size: var(--tmu-font-xs);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: var(--tmu-text-panel-label);
+            flex-shrink: 0;
+        }
+        .tmvu-cuhist-season-select {
+            flex: 1 1 auto;
+            max-width: 180px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--tmu-border-input-overlay);
+            background: var(--tmu-surface-input, #1a1a2e);
+            color: var(--tmu-text-main);
+            font-size: var(--tmu-font-sm);
+            cursor: pointer;
+        }
+    `;
+    document.head.appendChild(s6);
+  }
+  function parseSeasons(sourceRoot3) {
+    return Array.from(sourceRoot3.querySelectorAll("#stats_type option")).map((opt) => ({
+      value: opt.value,
+      label: opt.textContent.trim(),
+      selected: opt.hasAttribute("selected") || opt.selected
+    })).filter((s6) => s6.value);
+  }
+  function extractCalendarDay(li) {
+    var _a2;
+    const src = ((_a2 = li.querySelector(".match_date img")) == null ? void 0 : _a2.getAttribute("src")) || "";
+    const m = src.match(/calendar_numeral_(\d+)\.png/);
+    return m ? m[1] : null;
+  }
+  function parseMatchFromLi(li) {
+    var _a2, _b, _c, _d;
+    const scoreEl = li.querySelector(".match_results [match_link]");
+    const matchId = (scoreEl == null ? void 0 : scoreEl.getAttribute("match_link")) || "";
+    const season = (scoreEl == null ? void 0 : scoreEl.getAttribute("match_season")) || "";
+    const scoreText = (scoreEl == null ? void 0 : scoreEl.textContent.trim()) || "x-x";
+    const homeEl = li.querySelector(".hometeam a");
+    const awayEl = li.querySelector(".awayteam a");
+    const homeId = (homeEl == null ? void 0 : homeEl.getAttribute("club_link")) || ((_b = (_a2 = homeEl == null ? void 0 : homeEl.getAttribute("href")) == null ? void 0 : _a2.match(/\/club\/(\d+)\//)) == null ? void 0 : _b[1]) || "";
+    const awayId = (awayEl == null ? void 0 : awayEl.getAttribute("club_link")) || ((_d = (_c = awayEl == null ? void 0 : awayEl.getAttribute("href")) == null ? void 0 : _c.match(/\/club\/(\d+)\//)) == null ? void 0 : _d[1]) || "";
+    return {
+      matchId,
+      season,
+      scoreText,
+      scoreHref: matchId ? `/matches/${matchId}/` : "#",
+      isPlayed: /\d-\d/.test(scoreText),
+      home: {
+        id: homeId,
+        name: (homeEl == null ? void 0 : homeEl.textContent.trim()) || "?",
+        href: (homeEl == null ? void 0 : homeEl.getAttribute("href")) || (homeId ? `/club/${homeId}/` : "#")
+      },
+      away: {
+        id: awayId,
+        name: (awayEl == null ? void 0 : awayEl.textContent.trim()) || "?",
+        href: (awayEl == null ? void 0 : awayEl.getAttribute("href")) || (awayId ? `/club/${awayId}/` : "#")
+      }
+    };
+  }
+  function parseRounds(sourceRoot3) {
+    const rounds = [];
+    const monthSections = sourceRoot3.querySelectorAll(".column2_a h3, .column2 h3");
+    monthSections.forEach((h3) => {
+      const monthLabel = h3.textContent.trim();
+      const ul = h3.nextElementSibling;
+      if (!ul || ul.tagName !== "UL") return;
+      const lis = Array.from(ul.querySelectorAll("li"));
+      let currentDay = null;
+      let currentRows = [];
+      const flushRound = () => {
+        if (currentRows.length) {
+          const title = currentDay ? `${monthLabel} \xB7 Day ${currentDay}` : monthLabel;
+          rounds.push({ title, rows: currentRows });
+          currentRows = [];
+        }
+      };
+      lis.forEach((li) => {
+        const day = extractCalendarDay(li);
+        if (day !== null) {
+          flushRound();
+          currentDay = day;
+        }
+        currentRows.push(parseMatchFromLi(li));
+      });
+      flushRound();
+    });
+    return rounds;
+  }
+  function parseMenu11(sourceRoot3) {
+    return Array.from(sourceRoot3.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
+      if (node.tagName === "HR") return [{ type: "separator" }];
+      if (node.tagName !== "A") return [];
+      return [{
+        type: "link",
+        href: node.getAttribute("href") || "#",
+        label: node.textContent.trim(),
+        icon: /cup/i.test(node.textContent) ? "\u{1F3C6}" : /fixture/i.test(node.textContent) ? "\u{1F4C5}" : /stat/i.test(node.textContent) ? "\u{1F4CA}" : /history/i.test(node.textContent) ? "\u{1F4DC}" : "\u{1F4CB}"
+      }];
+    });
+  }
+  function buildSeasonBar(seasons2, currentSeason4) {
+    const wrap = document.createElement("div");
+    wrap.className = "tmvu-cuhist-season-bar";
+    const label = document.createElement("span");
+    label.className = "tmvu-cuhist-season-label";
+    label.textContent = "Season";
+    wrap.appendChild(label);
+    const sel = document.createElement("select");
+    sel.className = "tmvu-cuhist-season-select";
+    seasons2.forEach((s6) => {
+      const opt = document.createElement("option");
+      opt.value = s6.value;
+      opt.textContent = s6.label;
+      if (s6.selected || s6.value === String(currentSeason4)) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    const pathBase = window.location.pathname.replace(/\/\d+\/?$/, "").replace(/\/$/, "");
+    sel.addEventListener("change", () => {
+      window.location.href = `${pathBase}/${sel.value}/`;
+    });
+    wrap.appendChild(sel);
+    return wrap;
+  }
+  function initCupHistoryPage(main2) {
+    var _a2;
+    if (!main2 || !main2.isConnected) return;
+    const sourceRoot3 = document.querySelector(".main_center") || document.body;
+    const currentSeason4 = ((_a2 = window.location.pathname.match(/\/history\/cup\/[^/]+\/(\d+)/)) == null ? void 0 : _a2[1]) || "";
+    const currentPath = window.location.pathname;
+    injectStyles41();
+    TmTournamentCards.injectStyles();
+    TmMatchHoverCard.injectStyles();
+    const seasons2 = parseSeasons(sourceRoot3);
+    const rounds = parseRounds(sourceRoot3).reverse();
+    const menuItems = parseMenu11(sourceRoot3);
+    const seasonEl = buildSeasonBar(seasons2, currentSeason4);
+    const roundCards = rounds.map(
+      (round) => TmTournamentCards.renderDrawCard(
+        { title: roundLabelFromCount2(round.rows.length), rows: round.rows },
+        { season: currentSeason4 ? Number(currentSeason4) : null, icon: "\u{1F4C5}" }
+      )
+    );
+    TmTournamentPage.mount(main2, {
+      pageClass: "tmvu-cuhist-page tmu-page-layout-3rail tmu-page-density-regular",
+      navId: "tmvu-cuhist-nav",
+      navClass: "tmvu-cup-nav tmu-page-sidebar-stack",
+      menuItems,
+      currentHref: currentPath,
+      mainClass: "tmvu-cup-main tmu-page-section-stack",
+      sideClass: null,
+      mainNodes: [seasonEl, ...roundCards],
+      sideNodes: [],
+      season: currentSeason4 ? Number(currentSeason4) : null
+    });
+  }
+
+  // src/components/shared/tm-cup-statistics-page.js
+  var cleanText20 = (v) => String(v != null ? v : "").replace(/\s+/g, " ").trim();
+  var cleanOpts = (sel) => sel && sel.options ? Array.from(sel.options).map((o) => ({ value: o.value, label: cleanText20(o.textContent), selected: o.selected })).filter((o) => o.value) : [];
+  function parseMenu12() {
+    return Array.from(document.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
+      if (node.tagName === "HR") return [{ type: "separator" }];
+      if (node.tagName !== "A") return [];
+      return [{
+        type: "link",
+        href: node.getAttribute("href") || "#",
+        label: cleanText20(node.textContent),
+        icon: /cup/i.test(node.textContent) ? "\u{1F3C6}" : /fixture/i.test(node.textContent) ? "\u{1F4C5}" : /stat/i.test(node.textContent) ? "\u{1F4CA}" : /history/i.test(node.textContent) ? "\u{1F4DC}" : "\u{1F4CB}"
+      }];
+    });
+  }
+  function buildDefaultMenu(country) {
+    return [
+      { type: "link", href: "/cup/", label: "Cup", icon: "\u{1F3C6}" },
+      { type: "link", href: `/statistics/cup/${country}/`, label: "Statistics", icon: "\u{1F4CA}" },
+      { type: "link", href: `/history/cup/${country}/`, label: "History", icon: "\u{1F4DC}" }
+    ];
+  }
+  var statsCache = {};
+  var fetchPlayerStats2 = (country, stat, season, teamIdx, onDone) => {
+    const seasonStr = season ? `${season}/` : "";
+    const key = `${country}|${stat}|${season}|${teamIdx}`;
+    if (statsCache[key]) {
+      onDone(statsCache[key]);
+      return;
+    }
+    window.fetch(`/statistics/cup/${country}/players/${stat}/${seasonStr}`).then((r) => r.text()).then((html2) => {
+      const rows = parsePlayerStatsHtml(html2, teamIdx);
+      statsCache[key] = rows;
+      onDone(rows);
+    }).catch(() => onDone(null));
+  };
+  function mountCupStatisticsPage(main2) {
+    var _a2, _b, _c, _d, _e, _f;
+    if (!main2) main2 = document.querySelector(".tmvu-main");
+    if (!main2) return;
+    injectTmPageLayoutStyles();
+    const sourceRoot3 = document.querySelector(".main_center") || main2;
+    const country = (_b = (_a2 = window.location.pathname.match(/\/statistics\/cup\/([^/]+)\//)) == null ? void 0 : _a2[1]) != null ? _b : "";
+    const seasonFromUrl = (_d = (_c = window.location.pathname.match(/\/statistics\/cup\/[^/]+\/players\/[^/]+\/(\d+)/)) == null ? void 0 : _c[1]) != null ? _d : "";
+    const domSeasonOpts = cleanOpts(sourceRoot3.querySelector("#stats_type, #stats_season"));
+    const maxSeason = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : 90;
+    const seasonOpts = domSeasonOpts.length ? domSeasonOpts : Array.from({ length: maxSeason }, (_, i) => maxSeason - i).map((n) => ({ value: String(n), label: `Season ${n}`, selected: String(n) === (seasonFromUrl || String(maxSeason)) }));
+    let activeSeason = seasonFromUrl || ((_e = seasonOpts.find((o) => o.selected)) == null ? void 0 : _e.value) || ((_f = seasonOpts[0]) == null ? void 0 : _f.value) || "";
+    const domMenuItems = parseMenu12();
+    const menuItems = domMenuItems.length ? domMenuItems : buildDefaultMenu(country);
+    let browserWrap = null;
+    const remountBrowser = () => {
+      if (!browserWrap) return;
+      browserWrap.innerHTML = "";
+      mountPlayerStatsBrowser(browserWrap, {
+        statDefs: PLAYER_STAT_DEFS,
+        initialStat: "goals",
+        initialTeam: 0,
+        showTeamToggle: false,
+        fetchFn: (stat, team, cb) => fetchPlayerStats2(country, stat, activeSeason, team, cb),
+        colLabel: PLAYER_COL_LABELS
+      });
+    };
+    const filtersRow = document.createElement("div");
+    filtersRow.className = "tmu-filters-row";
+    TmSeasonBar.mount(filtersRow, {
+      seasons: seasonOpts.map((o) => ({ id: o.value, label: o.label })),
+      current: activeSeason,
+      label: false,
+      cls: "",
+      onChange: (v) => {
+        activeSeason = v;
+        remountBrowser();
+      }
+    });
+    const bodyEl = document.createElement("div");
+    bodyEl.appendChild(filtersRow);
+    browserWrap = document.createElement("div");
+    bodyEl.appendChild(browserWrap);
+    main2.innerHTML = "";
+    main2.classList.add("tmu-page-layout-2col", "tmu-page-density-regular");
+    TmSideMenu.mount(main2, {
+      className: "tmu-page-sidebar-stack",
+      items: menuItems,
+      currentHref: window.location.pathname
+    });
+    const section = document.createElement("section");
+    section.className = "tmu-page-section-stack";
+    main2.appendChild(section);
+    const cardHost = document.createElement("div");
+    const refs = TmSectionCard.mount(cardHost, { title: "Player Statistics" });
+    if (refs == null ? void 0 : refs.body) refs.body.appendChild(bodyEl);
+    section.appendChild(cardHost);
+    remountBrowser();
+  }
+
+  // src/pages/cup-statistics.js
+  function initCupStatisticsPage(main2) {
+    if (!main2 || !main2.isConnected) return;
+    mountCupStatisticsPage(main2);
+  }
+
   // src/pages/home.js
   function initHomePage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID64 = "tmvu-home-style";
+    const STYLE_ID68 = "tmvu-home-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const escapeHtml34 = (v) => String(v != null ? v : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const escapeHtml35 = (v) => String(v != null ? v : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const findColumnBoxByTitle = (root2, title) => {
       const wanted = clean5(title).toLowerCase();
       return Array.from((root2 == null ? void 0 : root2.querySelectorAll(":scope > .box")) || []).find((box) => {
@@ -37552,14 +38768,14 @@ order:initial
         return heading === wanted;
       }) || null;
     };
-    const injectStyles48 = () => {
+    const injectStyles50 = () => {
       injectTmPageLayoutStyles();
       const rules = [
         ".tmvu-home-page{--tmu-page-gap:var(--tmu-space-xxl);display:grid!important;grid-template-columns:minmax(0,1fr) 320px;gap:var(--tmu-page-gap);align-items:start;max-width:1240px;margin:0 auto;padding:var(--tmu-space-sm) var(--tmu-space-md) var(--tmu-space-xl)}",
         ".tmvu-home-tabs-host{display:flex;flex-direction:column;min-width:0}",
         ".tmvu-home-tabpanel{display:none;padding:var(--tmu-space-xl)}",
         ".tmvu-home-tabpanel.tmvu-tab-active{display:block}",
-        ".tmvu-home-list-item{display:block;padding:var(--tmu-space-md) var(--tmu-space-lg);border:1px solid var(--tmu-border-soft-alpha);border-radius:var(--tmu-space-md);background:var(--tmu-border-contrast);text-decoration:none}",
+        ".tmvu-home-list-item{display:block;width:100%;padding:var(--tmu-space-md) var(--tmu-space-lg);border:1px solid var(--tmu-border-soft-alpha);border-radius:var(--tmu-space-md);background:var(--tmu-border-contrast);text-decoration:none;text-align:left;font:inherit;cursor:pointer;box-sizing:border-box}",
         ".tmvu-home-list-item:hover{background:var(--tmu-surface-overlay-soft);border-color:var(--tmu-success-fill-soft)}",
         ".tmvu-home-list-title{font-size:var(--tmu-font-sm);font-weight:800;color:var(--tmu-text-strong);line-height:1.45}",
         ".tmvu-home-list-sub{margin-top:var(--tmu-space-xs);font-size:var(--tmu-font-xs);color:var(--tmu-text-muted);line-height:1.5}",
@@ -37681,8 +38897,8 @@ order:initial
         ".tmvu-home-thread-copy{min-width:0}",
         ".tmvu-home-thread-date{font-size:var(--tmu-font-xs);font-weight:800;color:var(--tmu-text-muted);white-space:nowrap;padding:0;background:transparent;border:none;border-radius:0;text-align:left;min-height:0}"
       ];
-      const style = document.getElementById(STYLE_ID64) || document.createElement("style");
-      style.id = STYLE_ID64;
+      const style = document.getElementById(STYLE_ID68) || document.createElement("style");
+      style.id = STYLE_ID68;
       style.textContent = rules.join("");
       if (!style.parentNode) document.head.appendChild(style);
     };
@@ -38173,6 +39389,8 @@ order:initial
         if (!key || seen.has(key)) continue;
         seen.add(key);
         items.push({
+          id: clean5(message == null ? void 0 : message.id) || "",
+          conversationId: clean5(message == null ? void 0 : message.conversation_id) || "0",
           senderName: clean5(message == null ? void 0 : message.sender_name) || "Unknown sender",
           subject: clean5(message == null ? void 0 : message.subject) || "(No subject)",
           time: clean5(message == null ? void 0 : message.time),
@@ -38185,15 +39403,15 @@ order:initial
     const renderListPanel = (panel, items, emptyCopy) => {
       if (!panel) return;
       if (!items.length) {
-        panel.innerHTML = TmUI.empty(escapeHtml34(emptyCopy), true);
+        panel.innerHTML = TmUI.empty(escapeHtml35(emptyCopy), true);
         return;
       }
       panel.innerHTML = `
             <div class="tmvu-home-list tmu-stack tmu-stack-density-tight">
                 ${items.map((item) => `
-                    <a class="tmvu-home-list-item" href="${escapeHtml34(item.href || "#")}">
-                        <div class="tmvu-home-list-title">${escapeHtml34(item.title || item.subject || "Item")}</div>
-                        <div class="tmvu-home-list-sub">${escapeHtml34(item.sub || item.senderName || "")}${item.time ? ` \u2022 ${escapeHtml34(item.time)}` : ""}</div>
+                    <a class="tmvu-home-list-item" href="${escapeHtml35(item.href || "#")}">
+                        <div class="tmvu-home-list-title">${escapeHtml35(item.title || item.subject || "Item")}</div>
+                        <div class="tmvu-home-list-sub">${escapeHtml35(item.sub || item.senderName || "")}${item.time ? ` \u2022 ${escapeHtml35(item.time)}` : ""}</div>
                     </a>
                 `).join("")}
             </div>
@@ -38232,7 +39450,7 @@ order:initial
       const col1 = nativeMain.querySelector(":scope > .column1") || nativeMain.querySelector(".column1");
       const col2 = nativeMain.querySelector(":scope > .column2_a") || nativeMain.querySelector(".column2_a");
       if (!col1 || !col2) return;
-      injectStyles48();
+      injectStyles50();
       const origTabs = parseOrigTabs(col1);
       const tabsContent = col1.querySelector(".tabs_content");
       const activeKey = ((_a2 = origTabs.find((t) => t.isActive)) == null ? void 0 : _a2.targetId) || ((_b = origTabs[0]) == null ? void 0 : _b.targetId) || "";
@@ -38317,13 +39535,41 @@ order:initial
         if (!panel) return;
         panel.innerHTML = TmUI.loading("Loading messages...", true);
         const payload = await TmMessagesModel.fetchPmMessages("inbox");
-        const items = normalizePmConversationItems2(payload).map((item) => ({
-          title: item.subject,
-          sub: item.senderName,
-          time: item.time,
-          href: item.href
-        }));
-        renderListPanel(panel, items, "No recent conversations found.");
+        const pmItems = normalizePmConversationItems2(payload);
+        if (!pmItems.length) {
+          panel.innerHTML = TmUI.empty(escapeHtml35("No recent conversations found."), true);
+          return;
+        }
+        panel.innerHTML = `
+                <div class="tmvu-home-list tmu-stack tmu-stack-density-tight">
+                    ${pmItems.map((item) => `
+                        <button type="button" class="tmvu-home-list-item tmvu-home-pm-item"
+                            data-pm-id="${escapeHtml35(item.id)}"
+                            data-pm-conv-id="${escapeHtml35(item.conversationId)}"
+                            data-pm-subject="${escapeHtml35(item.subject)}">
+                            <div class="tmvu-home-list-title">${escapeHtml35(item.subject)}</div>
+                            <div class="tmvu-home-list-sub">${escapeHtml35(item.senderName)}${item.time ? ` \u2022 ${escapeHtml35(item.time)}` : ""}</div>
+                        </button>
+                    `).join("")}
+                </div>
+            `;
+        panel.querySelectorAll(".tmvu-home-pm-item").forEach((btn4) => {
+          btn4.addEventListener("click", () => {
+            const ctrl = window.TmPmController;
+            if (ctrl == null ? void 0 : ctrl.openDialog) {
+              ctrl.openDialog({
+                place: "inbox",
+                item: {
+                  id: btn4.dataset.pmId,
+                  conversationId: btn4.dataset.pmConvId || "0",
+                  subject: btn4.dataset.pmSubject || ""
+                }
+              });
+            } else {
+              window.location.assign("/pm/");
+            }
+          });
+        });
       };
       const renderReferralsPanel = async () => {
         const panel = panels[referralsKey];
@@ -38510,10 +39756,10 @@ order:initial
     if (!main2) main2 = document.querySelector(".tmvu-main");
     if (!main2) return;
     const sourceRoot3 = document.querySelector(".main_center") || main2;
-    const STYLE_ID64 = "tmvu-international-cup-overview-style";
+    const STYLE_ID68 = "tmvu-international-cup-overview-style";
     const CURRENT_SEASON2 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
-    const cleanText28 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-    const escapeHtml34 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const cleanText31 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const escapeHtml35 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const htmlOf7 = (node) => node ? node.outerHTML : "";
     const stripShadow = (root2) => {
       if (!root2) return null;
@@ -38521,10 +39767,10 @@ order:initial
       clone.querySelectorAll(".box_shadow").forEach((node) => node.remove());
       return clone;
     };
-    const injectStyles48 = () => {
-      if (document.getElementById(STYLE_ID64)) return;
+    const injectStyles50 = () => {
+      if (document.getElementById(STYLE_ID68)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID64;
+      style.id = STYLE_ID68;
       style.textContent = `
             .tmvu-main.tmvu-icup-page {
                 display: grid !important;
@@ -38720,10 +39966,10 @@ order:initial
         `;
       document.head.appendChild(style);
     };
-    const parseMenu11 = () => Array.from(sourceRoot3.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
+    const parseMenu13 = () => Array.from(sourceRoot3.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
       if (node.tagName === "HR") return [{ type: "separator" }];
       if (node.tagName !== "A") return [];
-      const label = cleanText28(node.textContent);
+      const label = cleanText31(node.textContent);
       const href = node.getAttribute("href") || "#";
       let icon = "\u{1F3C6}";
       if (/coeff/i.test(label)) icon = "\u2211";
@@ -38734,11 +39980,11 @@ order:initial
       var _a2, _b, _c;
       const options = Array.from(sourceRoot3.querySelectorAll("#change_league option")).map((option) => ({
         id: String(option.value || ""),
-        label: cleanText28(option.textContent)
+        label: cleanText31(option.textContent)
       })).filter((option) => option.id && option.label);
       const selectedId = ((_a2 = window.location.pathname.match(/^\/international-cup\/(\d+)\/?$/i)) == null ? void 0 : _a2[1]) || ((_b = options.find((option) => {
         var _a3;
-        return option.label === cleanText28((_a3 = sourceRoot3.querySelector(".box_sub_header .large")) == null ? void 0 : _a3.textContent);
+        return option.label === cleanText31((_a3 = sourceRoot3.querySelector(".box_sub_header .large")) == null ? void 0 : _a3.textContent);
       })) == null ? void 0 : _b.id) || ((_c = options[0]) == null ? void 0 : _c.id) || "";
       return { options, selectedId };
     };
@@ -38746,7 +39992,7 @@ order:initial
       var _a2;
       const box = sourceRoot3.querySelector(".column2_a > .box");
       const subHeader = box == null ? void 0 : box.querySelector(".box_sub_header");
-      const tournamentName = cleanText28(((_a2 = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _a2.textContent) || "International Cup");
+      const tournamentName = cleanText31(((_a2 = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _a2.textContent) || "International Cup");
       return { box, tournamentName };
     };
     const parseContentSections = (box) => {
@@ -38757,7 +40003,7 @@ order:initial
       Array.from(body.children).forEach((node) => {
         if (node.classList.contains("box_shadow") || node.classList.contains("box_sub_header") || node.id === "change_league") return;
         if (node.tagName === "H3") {
-          current = { title: cleanText28(node.textContent), nodes: [] };
+          current = { title: cleanText31(node.textContent), nodes: [] };
           sections2.push(current);
           return;
         }
@@ -38794,10 +40040,10 @@ order:initial
       if (!homeAnchor || !awayAnchor) return null;
       const matchDateNode = item.querySelector(".match_date");
       const scoreAnchor = item.querySelector('.match_result a[match_link], .match_result a[href*="/matches/"]');
-      const scoreText = cleanText28(((_a2 = item.querySelector(".match_result")) == null ? void 0 : _a2.textContent) || "\u2014");
+      const scoreText = cleanText31(((_a2 = item.querySelector(".match_result")) == null ? void 0 : _a2.textContent) || "\u2014");
       const matchId = extractMatchId(scoreAnchor);
       const scoreHref = matchId ? `/matches/${matchId}/` : "";
-      const dateLabel = cleanText28(
+      const dateLabel = cleanText31(
         (matchDateNode == null ? void 0 : matchDateNode.getAttribute("tooltip")) || (matchDateNode == null ? void 0 : matchDateNode.getAttribute("title")) || (matchDateNode == null ? void 0 : matchDateNode.textContent) || ""
       );
       return {
@@ -38810,13 +40056,13 @@ order:initial
         isHighlight: false,
         home: {
           id: extractClubId4(homeAnchor),
-          name: cleanText28(homeAnchor.textContent),
+          name: cleanText31(homeAnchor.textContent),
           href: homeAnchor.getAttribute("href") || "#",
           flagHtml: extractCountryFlagHtml(item.querySelector(".hometeam"))
         },
         away: {
           id: extractClubId4(awayAnchor),
-          name: cleanText28(awayAnchor.textContent),
+          name: cleanText31(awayAnchor.textContent),
           href: awayAnchor.getAttribute("href") || "#",
           flagHtml: extractCountryFlagHtml(item.querySelector(".awayteam"))
         }
@@ -38826,7 +40072,7 @@ order:initial
       var _a2;
       const box = sourceRoot3.querySelector(".column3_a .box");
       if (!box) return null;
-      const title = cleanText28(((_a2 = box.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "Tournament Notes");
+      const title = cleanText31(((_a2 = box.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "Tournament Notes");
       const body = stripShadow(box.querySelector(".box_body"));
       const winners = Array.from((body == null ? void 0 : body.querySelectorAll('.align_center[style*="display: inline-block"]')) || []).map((node) => {
         var _a3;
@@ -38836,7 +40082,7 @@ order:initial
         return {
           imageSrc: ((_a3 = node.querySelector("img")) == null ? void 0 : _a3.getAttribute("src")) || "",
           clubHtml: (clubAnchor == null ? void 0 : clubAnchor.outerHTML) || "",
-          leagueText: cleanText28(clone.textContent || "")
+          leagueText: cleanText31(clone.textContent || "")
         };
       });
       body == null ? void 0 : body.querySelectorAll('.align_center[style*="display: inline-block"]').forEach((node) => node.remove());
@@ -38903,7 +40149,7 @@ order:initial
       TmPageHero.mount(wrap, {
         slots: {
           kicker: "International Competition",
-          title: escapeHtml34(tournamentLabel),
+          title: escapeHtml35(tournamentLabel),
           side: TmHeroCard.button({
             id: "tmvu-icup-change",
             label: "Change tournament"
@@ -38978,7 +40224,7 @@ order:initial
       title: panel.title,
       icon: "\u{1F3C1}"
     });
-    injectStyles48();
+    injectStyles50();
     TmStandingsTable.injectStyles();
     TmTournamentCards.injectStyles();
     TmMatchHoverCard.injectStyles();
@@ -38995,7 +40241,7 @@ order:initial
       pageClass: "tmvu-icup-page",
       navId: "tmvu-icup-nav",
       navClass: "tmvu-icup-nav",
-      menuItems: parseMenu11(),
+      menuItems: parseMenu13(),
       currentHref: window.location.pathname,
       mainClass: "tmvu-icup-main",
       sideClass: "tmvu-icup-side",
@@ -39809,10 +41055,10 @@ order:initial
   // src/pages/teamsters.js
   function initTeamstersPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID64 = "tmvu-teamsters-style";
+    const STYLE_ID68 = "tmvu-teamsters-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles48 = () => {
-      if (document.getElementById(STYLE_ID64)) return;
+    const injectStyles50 = () => {
+      if (document.getElementById(STYLE_ID68)) return;
       injectTmPageLayoutStyles();
       const rules = [
         // page-shell overrides
@@ -39858,7 +41104,7 @@ order:initial
         ".tmvu-apply-intro a{color:var(--tmu-accent)}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID64;
+      style.id = STYLE_ID68;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -39917,7 +41163,7 @@ order:initial
       const navItems = snap1 ? parseNav(snap1) : [];
       const articleHtml = parseArticle(snap2);
       const tabDefs = snap3 ? parseTabs2(snap3) : [];
-      injectStyles48();
+      injectStyles50();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-teamsters-hero",
@@ -40106,7 +41352,7 @@ order:initial
       const isApply = /^\/teamsters\/apply\//i.test(window.location.pathname);
       const check = () => isApply ? document.querySelector("#teamster_apply") : document.querySelector(".column2_a .box_head");
       const run = () => {
-        injectStyles48();
+        injectStyles50();
         if (isApply) {
           const liveForm = document.querySelector("#teamster_apply");
           const nativeCol1 = document.querySelector(".main_center .column1");
@@ -40134,10 +41380,10 @@ order:initial
   // src/pages/about-tm.js
   function initAboutTmPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID64 = "tmvu-abouttm-style";
+    const STYLE_ID68 = "tmvu-abouttm-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles48 = () => {
-      if (document.getElementById(STYLE_ID64)) return;
+    const injectStyles50 = () => {
+      if (document.getElementById(STYLE_ID68)) return;
       injectTmPageLayoutStyles();
       const rules = [
         // page wrapper: single centered column
@@ -40160,7 +41406,7 @@ order:initial
         '.tmvu-abouttm-clearfix::after{content:"";display:table;clear:both}'
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID64;
+      style.id = STYLE_ID68;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -40180,7 +41426,7 @@ order:initial
         ((_a2 = snap.querySelector(".box_head h1.std, .box_head h2.std")) == null ? void 0 : _a2.textContent) || "About TM"
       );
       const articleHtml = transformArticle(snap.querySelector(".box_body .std"));
-      injectStyles48();
+      injectStyles50();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-abouttm-hero",
@@ -40219,10 +41465,10 @@ order:initial
   // src/pages/about-pro.js
   function initAboutProPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID64 = "tmvu-aboutpro-style";
+    const STYLE_ID68 = "tmvu-aboutpro-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles48 = () => {
-      if (document.getElementById(STYLE_ID64)) return;
+    const injectStyles50 = () => {
+      if (document.getElementById(STYLE_ID68)) return;
       injectTmPageLayoutStyles();
       const rules = [
         // hero: single column (no side slot)
@@ -40244,7 +41490,7 @@ order:initial
         ".tmvu-aboutpro-quote-attr{font-size:var(--tmu-font-xs);color:var(--tmu-text-faint);margin-top:var(--tmu-space-xs);text-align:right}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID64;
+      style.id = STYLE_ID68;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -40313,7 +41559,7 @@ order:initial
       const col2 = nativeMain.querySelector(".column2_a");
       const col3 = nativeMain.querySelector(".column3_a");
       if (!col2) return;
-      injectStyles48();
+      injectStyles50();
       const navItems = parseNav(col1);
       const sections = buildSections2(col2);
       const quotes = buildQuotes(col3);
@@ -40439,7 +41685,7 @@ order:initial
   // src/pages/buy-pro.js
   function initBuyProPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID64 = "tmvu-buypro-style";
+    const STYLE_ID68 = "tmvu-buypro-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const PRO_NAV = [
       { href: "/buy-pro", label: "Buy Pro" },
@@ -40447,8 +41693,8 @@ order:initial
       { href: "/donations", label: "Donations" },
       { href: "/support-pro", label: "Support" }
     ];
-    const injectStyles48 = () => {
-      if (document.getElementById(STYLE_ID64)) return;
+    const injectStyles50 = () => {
+      if (document.getElementById(STYLE_ID68)) return;
       injectTmPageLayoutStyles();
       const rules = [
         // hero: single column
@@ -40473,7 +41719,7 @@ order:initial
         ".tmvu-buypro-notice strong{color:var(--tmu-text-strong)}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID64;
+      style.id = STYLE_ID68;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -40533,7 +41779,7 @@ order:initial
       const col3 = nativeMain.querySelector(".column3_a");
       const liveForm = document.getElementById("order_submit");
       if (!liveForm) return;
-      injectStyles48();
+      injectStyles50();
       liveForm.style.display = "none";
       const liveCountry = document.getElementById("payment_country-button");
       if (liveCountry) liveCountry.style.display = "none";
@@ -40611,7 +41857,7 @@ order:initial
   // src/pages/free-pro.js
   function initFreeProPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID64 = "tmvu-freepro-style";
+    const STYLE_ID68 = "tmvu-freepro-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const PRO_NAV = [
       { href: "/buy-pro", label: "Buy Pro" },
@@ -40619,8 +41865,8 @@ order:initial
       { href: "/donations", label: "Donations" },
       { href: "/support-pro", label: "Support" }
     ];
-    const injectStyles48 = () => {
-      if (document.getElementById(STYLE_ID64)) return;
+    const injectStyles50 = () => {
+      if (document.getElementById(STYLE_ID68)) return;
       injectTmPageLayoutStyles();
       const rules = [
         ".tmvu-freepro-hero{grid-template-columns:minmax(0,1fr)!important}",
@@ -40631,7 +41877,7 @@ order:initial
         ".tmvu-freepro-body a:hover{text-decoration:underline}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID64;
+      style.id = STYLE_ID68;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -40642,7 +41888,7 @@ order:initial
       const snap = col2.cloneNode(true);
       const title = "Free Pro";
       const std = snap.querySelector(".box_body .std");
-      injectStyles48();
+      injectStyles50();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-freepro-hero",
@@ -40690,10 +41936,10 @@ order:initial
   // src/pages/donations.js
   function initDonationsPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID64 = "tmvu-donations-style";
+    const STYLE_ID68 = "tmvu-donations-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles48 = () => {
-      if (document.getElementById(STYLE_ID64)) return;
+    const injectStyles50 = () => {
+      if (document.getElementById(STYLE_ID68)) return;
       injectTmPageLayoutStyles();
       const rules = [
         ".tmvu-donations-hero{grid-template-columns:minmax(0,1fr)!important}",
@@ -40722,7 +41968,7 @@ order:initial
         ".tmvu-donations-legendary .tmvu-donations-club{background:var(--tmu-border-contrast);border-radius:var(--tmu-space-xs)}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID64;
+      style.id = STYLE_ID68;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -40816,7 +42062,7 @@ order:initial
       const title = "Legendary Clubs";
       const std = snap.querySelector(".box_body .std");
       const navItems = col1 ? parseNav(col1.cloneNode(true)) : [];
-      injectStyles48();
+      injectStyles50();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-donations-hero",
@@ -40851,7 +42097,7 @@ order:initial
       const title = "Donations";
       const std = snap.querySelector(".box_body .std");
       const navItems = col1 ? parseNav(col1.cloneNode(true)) : [];
-      injectStyles48();
+      injectStyles50();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-donations-hero",
@@ -40908,10 +42154,10 @@ order:initial
   // src/pages/user-guide.js
   function initUserGuidePage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID64 = "tmvu-ug-style";
+    const STYLE_ID68 = "tmvu-ug-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles48 = () => {
-      if (document.getElementById(STYLE_ID64)) return;
+    const injectStyles50 = () => {
+      if (document.getElementById(STYLE_ID68)) return;
       injectTmPageLayoutStyles();
       const rules = [
         // hero: single column (no side slot used)
@@ -40940,7 +42186,7 @@ order:initial
         ".tmvu-ug-article .text_orange{color:var(--tmu-warning-soft);font-weight:600}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID64;
+      style.id = STYLE_ID68;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -41005,7 +42251,7 @@ order:initial
         if (s6.label) menuItems.push({ type: "subtitle", label: s6.label });
         s6.links.forEach((l) => menuItems.push({ href: l.href, label: l.label }));
       });
-      injectStyles48();
+      injectStyles50();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-ug-hero-card",
@@ -41052,11 +42298,11 @@ order:initial
     if (!main2) main2 = document.querySelector(".tmvu-main, .main_center");
     if (!main2) return;
     const sourceRoot3 = (document.querySelector(".main_center") || main2).cloneNode(true);
-    const STYLE_ID64 = "tmvu-international-cup-coefficients-style";
+    const STYLE_ID68 = "tmvu-international-cup-coefficients-style";
     const CURRENT_SEASON2 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const coefficientTierBreakIndexes = [];
     let activeCoefficientGroup = null;
-    const cleanText28 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const cleanText31 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const htmlOf7 = (node) => node ? node.outerHTML : "";
     const COEFFICIENT_GROUPS = [
       { slug: "fita", label: "FITA (Global)", overviewIds: ["1", "2", "3", "4", "5", "6"], matchIds: [], aliases: ["fita", "global", "world", "globalno"], hasQualificationTiers: false },
@@ -41065,7 +42311,7 @@ order:initial
       { slug: "fata", label: "FATA", overviewIds: ["5", "6"], matchIds: ["5", "6"], aliases: ["fata", "liberty", "americana"], hasQualificationTiers: true }
     ];
     const findCoefficientGroup = (value) => {
-      const normalized = cleanText28(value).toLowerCase();
+      const normalized = cleanText31(value).toLowerCase();
       if (!normalized) return null;
       return COEFFICIENT_GROUPS.find((group) => normalized === group.slug || group.matchIds.includes(normalized) || normalized.includes(group.slug) || normalized.includes(group.label.toLowerCase()) || group.aliases.some((alias) => normalized.includes(alias)));
     };
@@ -41077,11 +42323,11 @@ order:initial
       const code = ((_c = href.match(/\/national-teams\/([^/]+)\//)) == null ? void 0 : _c[1]) || "";
       return TmInternationalCupModel.normalizeCountryKey(code || (countryAnchor == null ? void 0 : countryAnchor.textContent) || node.textContent || "");
     };
-    const escapeHtml34 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const escapeHtml35 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const renderFlag4 = (country) => {
       if (typeof window.get_flag === "function" && country) return window.get_flag(country);
       if (!country) return "";
-      return `<span class="tmvu-icup-flag-fallback">${escapeHtml34(String(country).toUpperCase())}</span>`;
+      return `<span class="tmvu-icup-flag-fallback">${escapeHtml35(String(country).toUpperCase())}</span>`;
     };
     const isDebugEnabled2 = () => {
       var _a2;
@@ -41101,10 +42347,10 @@ order:initial
       clone.querySelectorAll(".box_shadow").forEach((node) => node.remove());
       return clone;
     };
-    const injectStyles48 = () => {
-      if (document.getElementById(STYLE_ID64)) return;
+    const injectStyles50 = () => {
+      if (document.getElementById(STYLE_ID68)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID64;
+      style.id = STYLE_ID68;
       style.textContent = `
             .tmvu-main.tmvu-icup-page.tmvu-icup-page-coefficients {
                 display: grid !important;
@@ -41331,10 +42577,10 @@ order:initial
         `;
       document.head.appendChild(style);
     };
-    const parseMenu11 = (tournamentState2) => Array.from(sourceRoot3.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
+    const parseMenu13 = (tournamentState2) => Array.from(sourceRoot3.querySelectorAll(".column1 .content_menu > *")).flatMap((node) => {
       if (node.tagName === "HR") return [{ type: "separator" }];
       if (node.tagName !== "A") return [];
-      const label = cleanText28(node.textContent);
+      const label = cleanText31(node.textContent);
       const href = node.getAttribute("href") || "#";
       const resolvedHref = /coeff/i.test(label) ? `/international-cup/coefficients/${tournamentState2.selectedId}/` : href;
       let icon = "\u{1F3C6}";
@@ -41362,7 +42608,7 @@ order:initial
       var _a2;
       const box = sourceRoot3.querySelector(".column2_a > .box");
       const subHeader = box == null ? void 0 : box.querySelector(".box_sub_header");
-      const tournamentName = cleanText28(((_a2 = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _a2.textContent) || "International Cup");
+      const tournamentName = cleanText31(((_a2 = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _a2.textContent) || "International Cup");
       return { box, tournamentName };
     };
     const normalizeCoefficientTable = (table, label) => {
@@ -41387,7 +42633,7 @@ order:initial
           const countryAnchor = countryCell == null ? void 0 : countryCell.querySelector('a.country_link[href*="/national-teams/"]');
           const href = (countryAnchor == null ? void 0 : countryAnchor.getAttribute("href")) || "";
           const code = ((_a2 = href.match(/\/national-teams\/([^/]+)\//)) == null ? void 0 : _a2[1]) || "";
-          const qualifies = cleanText28(((_b = cells[2]) == null ? void 0 : _b.textContent) || "");
+          const qualifies = cleanText31(((_b = cells[2]) == null ? void 0 : _b.textContent) || "");
           if (shouldApplyQualificationTiers && index > 0 && qualifies && previousQualifies && qualifies !== previousQualifies) {
             coefficientTierBreakIndexes.push(index);
           }
@@ -41408,7 +42654,7 @@ order:initial
     const parseCoefficientTabs = (box) => {
       const labels = /* @__PURE__ */ new Map();
       box == null ? void 0 : box.querySelectorAll(".tabs [set_active]").forEach((tab) => {
-        labels.set(tab.getAttribute("set_active"), cleanText28(tab.textContent) || "Tab");
+        labels.set(tab.getAttribute("set_active"), cleanText31(tab.textContent) || "Tab");
       });
       return Array.from((box == null ? void 0 : box.querySelectorAll(".tab_container > div[id]")) || []).map((panel, index) => {
         const label = labels.get(panel.id) || `Tab ${index + 1}`;
@@ -41445,7 +42691,7 @@ order:initial
       TmHeroCard.mount(wrap, {
         slots: {
           kicker: "International Competition",
-          title: escapeHtml34(tournamentLabel),
+          title: escapeHtml35(tournamentLabel),
           actions: TmHeroCard.button({
             id: "tmvu-icup-change",
             label: "Change tournament"
@@ -41483,7 +42729,7 @@ order:initial
                 ${htmlOf7(tabsNode)}
                 <div class="tmvu-icup-tab-panels">
                     ${panels.map((panel, index) => `
-                        <section class="tmvu-icup-tab-panel" data-tab-panel="${escapeHtml34(panel.id)}"${index === 0 ? "" : " hidden"}>
+                        <section class="tmvu-icup-tab-panel" data-tab-panel="${escapeHtml35(panel.id)}"${index === 0 ? "" : " hidden"}>
                             ${panel.bodyHtml}
                         </section>
                     `).join("")}
@@ -41511,7 +42757,7 @@ order:initial
       return host;
     };
     const parseCellSortValue = (cell) => {
-      const text = cleanText28((cell == null ? void 0 : cell.textContent) || "");
+      const text = cleanText31((cell == null ? void 0 : cell.textContent) || "");
       if (!text || text === "\u2014") return { type: "empty", value: "" };
       const normalizedNumber = text.replace(/,/g, "");
       if (/^-?\d+(?:\.\d+)?$/.test(normalizedNumber)) {
@@ -41576,7 +42822,7 @@ order:initial
             flushPendingBlankCells();
           }
           cells.push({
-            label: cleanText28(entry.cell.textContent),
+            label: cleanText31(entry.cell.textContent),
             colspan: entry.colspan,
             rowspan: entry.rowspan
           });
@@ -41590,7 +42836,7 @@ order:initial
     const buildSortableTableFromNative = (table) => {
       var _a2, _b, _c;
       if (!table) return null;
-      const tableLabel = cleanText28(table.dataset.tmvuTableLabel || "");
+      const tableLabel = cleanText31(table.dataset.tmvuTableLabel || "");
       const headerRows = Array.from(table.querySelectorAll("tr")).filter((row) => row.querySelectorAll("th").length);
       if (!headerRows.length) return null;
       const { matrix, totalColumns } = buildHeaderMatrix(headerRows);
@@ -41602,7 +42848,7 @@ order:initial
           if (!entry) continue;
           const { cell } = entry;
           return {
-            label: cleanText28(cell.textContent),
+            label: cleanText31(cell.textContent),
             align: getCellAlign(cell)
           };
         }
@@ -41644,12 +42890,12 @@ order:initial
             const value = Number(item[`col${index}`]);
             return Number.isFinite(value) ? value : 0;
           });
-          if (currentWindowIndex >= 0 && !cleanText28(item.__html[currentWindowIndex] || "")) {
+          if (currentWindowIndex >= 0 && !cleanText31(item.__html[currentWindowIndex] || "")) {
             const currentWindowValue = yearValues.slice(0, -1).reduce((sum, value) => sum + value, 0);
             item[`col${currentWindowIndex}`] = currentWindowValue;
             item.__html[currentWindowIndex] = formatTableNumber(currentWindowValue);
           }
-          if (rollingWindowIndex >= 0 && !cleanText28(item.__html[rollingWindowIndex] || "")) {
+          if (rollingWindowIndex >= 0 && !cleanText31(item.__html[rollingWindowIndex] || "")) {
             const rollingWindowValue = yearValues.slice(1).reduce((sum, value) => sum + value, 0);
             item[`col${rollingWindowIndex}`] = rollingWindowValue;
             item.__html[rollingWindowIndex] = formatTableNumber(rollingWindowValue);
@@ -41699,7 +42945,7 @@ order:initial
     };
     const formatCoefficientValue = (value) => Number.isFinite(value) ? value.toFixed(3) : "0.000";
     const findCoefficientPanel = (root2, labelPattern) => {
-      const tab = Array.from(root2.querySelectorAll("[data-tab-target]")).find((node) => labelPattern.test(cleanText28(node.textContent)));
+      const tab = Array.from(root2.querySelectorAll("[data-tab-target]")).find((node) => labelPattern.test(cleanText31(node.textContent)));
       const panelId = (tab == null ? void 0 : tab.getAttribute("data-tab-target")) || "";
       return panelId ? root2.querySelector(`[data-tab-panel="${panelId}"]`) : null;
     };
@@ -41708,14 +42954,14 @@ order:initial
       const perYearTable = perYearPanel == null ? void 0 : perYearPanel.querySelector("table");
       if (!perYearTable) return;
       const allRows = Array.from(perYearTable.querySelectorAll("tr"));
-      const seasonGroupHeader = Array.from(perYearTable.querySelectorAll("th")).find((node) => /season/i.test(cleanText28(node.textContent)));
-      const numericHeaderRow = allRows.find((row) => Array.from(row.querySelectorAll("th")).some((node) => /^\d+$/.test(cleanText28(node.textContent))));
-      const seasonHeaders = Array.from((numericHeaderRow == null ? void 0 : numericHeaderRow.querySelectorAll("th")) || []).filter((node) => /^\d+$/.test(cleanText28(node.textContent)));
-      const totalHeader = Array.from(perYearTable.querySelectorAll("th")).find((node) => /total|\d+\s*-\s*\d+/i.test(cleanText28(node.textContent)));
-      const nextSeason = CURRENT_SEASON2 ? String(CURRENT_SEASON2) : seasonHeaders.length ? String(Math.max(...seasonHeaders.map((node) => Number(cleanText28(node.textContent)) || 0)) + 1) : "Current";
-      const currentStart = seasonHeaders[0] ? cleanText28(seasonHeaders[0].textContent) : "";
-      const currentEnd = seasonHeaders.length ? cleanText28(seasonHeaders[seasonHeaders.length - 1].textContent) : "";
-      const rollingStart = seasonHeaders[1] ? cleanText28(seasonHeaders[1].textContent) : "";
+      const seasonGroupHeader = Array.from(perYearTable.querySelectorAll("th")).find((node) => /season/i.test(cleanText31(node.textContent)));
+      const numericHeaderRow = allRows.find((row) => Array.from(row.querySelectorAll("th")).some((node) => /^\d+$/.test(cleanText31(node.textContent))));
+      const seasonHeaders = Array.from((numericHeaderRow == null ? void 0 : numericHeaderRow.querySelectorAll("th")) || []).filter((node) => /^\d+$/.test(cleanText31(node.textContent)));
+      const totalHeader = Array.from(perYearTable.querySelectorAll("th")).find((node) => /total|\d+\s*-\s*\d+/i.test(cleanText31(node.textContent)));
+      const nextSeason = CURRENT_SEASON2 ? String(CURRENT_SEASON2) : seasonHeaders.length ? String(Math.max(...seasonHeaders.map((node) => Number(cleanText31(node.textContent)) || 0)) + 1) : "Current";
+      const currentStart = seasonHeaders[0] ? cleanText31(seasonHeaders[0].textContent) : "";
+      const currentEnd = seasonHeaders.length ? cleanText31(seasonHeaders[seasonHeaders.length - 1].textContent) : "";
+      const rollingStart = seasonHeaders[1] ? cleanText31(seasonHeaders[1].textContent) : "";
       const currentLabel = currentStart && currentEnd ? `${currentStart}-${currentEnd}` : "Current";
       const rollingLabel = rollingStart && /^\d+$/.test(nextSeason) ? `${rollingStart}-${nextSeason}` : "Recent 5";
       if (seasonGroupHeader && !seasonGroupHeader.dataset.tmvuCurrentSeasonGroup) {
@@ -41751,7 +42997,7 @@ order:initial
         const countryCell = cells[1];
         const totalCell = cells[cells.length - 1];
         const seasonCells = cells.slice(2, -1);
-        const seasonValues = seasonCells.map((cell) => parseFloat(cleanText28(cell.textContent)) || 0);
+        const seasonValues = seasonCells.map((cell) => parseFloat(cleanText31(cell.textContent)) || 0);
         const countryKey = getCountryKeyFromNode(countryCell);
         const currentValue = (_a2 = countryPoints[countryKey]) == null ? void 0 : _a2.average;
         const currentCell = document.createElement("td");
@@ -41787,7 +43033,7 @@ order:initial
       var _a2;
       const box = sourceRoot3.querySelector(".column3_a .box");
       if (!box) return null;
-      const title = cleanText28(((_a2 = box.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "Tournament Notes");
+      const title = cleanText31(((_a2 = box.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "Tournament Notes");
       const body = stripShadow(box.querySelector(".box_body"));
       return {
         title,
@@ -41802,7 +43048,7 @@ order:initial
       title: panel.title,
       icon: "\u{1F3C1}"
     });
-    injectStyles48();
+    injectStyles50();
     TmTournamentCards.injectStyles();
     const header = parseHeader();
     if (!header.box) return;
@@ -41817,7 +43063,7 @@ order:initial
       pageClass: "tmvu-icup-page tmvu-icup-page-coefficients",
       navId: "tmvu-icup-nav",
       navClass: "tmvu-icup-nav",
-      menuItems: parseMenu11(tournamentState),
+      menuItems: parseMenu13(tournamentState),
       currentHref: `/international-cup/coefficients/${tournamentState.selectedId}/`,
       mainClass: "tmvu-icup-main",
       sideClass: "tmvu-icup-side",
@@ -41840,11 +43086,11 @@ order:initial
     { label: "Coefficients", href: "/international-cup/coefficients/1/" },
     { label: "Statistics", href: "/statistics/international-cup/1/", active: true }
   ];
-  var cleanText18 = (v) => String(v != null ? v : "").replace(/\s+/g, " ").trim();
-  var cleanOpts = (sel) => sel ? Array.from(sel.options).map((o) => ({ value: o.value, label: cleanText18(o.textContent), selected: o.selected })).filter((o) => o.value) : [];
-  var readMenuLabels = (menu) => menu ? Array.from(menu.querySelectorAll(".ui-menu-item-wrapper")).map((el2) => cleanText18(el2.textContent)).filter(Boolean) : [];
+  var cleanText21 = (v) => String(v != null ? v : "").replace(/\s+/g, " ").trim();
+  var cleanOpts2 = (sel) => sel ? Array.from(sel.options).map((o) => ({ value: o.value, label: cleanText21(o.textContent), selected: o.selected })).filter((o) => o.value) : [];
+  var readMenuLabels = (menu) => menu ? Array.from(menu.querySelectorAll(".ui-menu-item-wrapper")).map((el2) => cleanText21(el2.textContent)).filter(Boolean) : [];
   var readTourneyOpts = (root2) => {
-    const selectOpts = cleanOpts(root2.querySelector("#tourney_number"));
+    const selectOpts = cleanOpts2(root2.querySelector("#tourney_number"));
     const menuLabels = readMenuLabels(document.querySelector("#tourney_number-menu"));
     if (!selectOpts.length) return [];
     return selectOpts.map((opt, idx) => ({
@@ -41852,17 +43098,17 @@ order:initial
       label: menuLabels[idx] || opt.label
     })).filter((opt) => opt.label);
   };
-  var statsCache = {};
-  var fetchPlayerStats2 = (tourney, stat, season, teamIdx, onDone) => {
+  var statsCache2 = {};
+  var fetchPlayerStats3 = (tourney, stat, season, teamIdx, onDone) => {
     const seasonStr = season ? `${season}/` : "";
     const key = `${tourney}|${stat}|${season}|${teamIdx}`;
-    if (statsCache[key]) {
-      onDone(statsCache[key]);
+    if (statsCache2[key]) {
+      onDone(statsCache2[key]);
       return;
     }
     window.fetch(`/statistics/international-cup/${tourney}/players/${stat}/${seasonStr}`).then((r) => r.text()).then((html2) => {
       const rows = parsePlayerStatsHtml(html2, teamIdx);
-      statsCache[key] = rows;
+      statsCache2[key] = rows;
       onDone(rows);
     }).catch(() => onDone(null));
   };
@@ -41873,7 +43119,7 @@ order:initial
     injectTmPageLayoutStyles();
     const sourceRoot3 = document.querySelector(".main_center") || main2;
     const tourneyOpts = readTourneyOpts(sourceRoot3);
-    const seasonOpts = cleanOpts(sourceRoot3.querySelector("#stats_season"));
+    const seasonOpts = cleanOpts2(sourceRoot3.querySelector("#stats_season"));
     let activeTourney = (_d = (_c = (_a2 = tourneyOpts.find((o) => o.selected)) == null ? void 0 : _a2.value) != null ? _c : (_b = tourneyOpts[0]) == null ? void 0 : _b.value) != null ? _d : "1";
     let activeSeason = (_h = (_g = (_e = seasonOpts.find((o) => o.selected)) == null ? void 0 : _e.value) != null ? _g : (_f = seasonOpts[0]) == null ? void 0 : _f.value) != null ? _h : "";
     let browserWrap = null;
@@ -41884,7 +43130,7 @@ order:initial
         statDefs: PLAYER_STAT_DEFS,
         initialStat: "goals",
         initialTeam: 0,
-        fetchFn: (stat, team, cb) => fetchPlayerStats2(activeTourney, stat, activeSeason, team, cb),
+        fetchFn: (stat, team, cb) => fetchPlayerStats3(activeTourney, stat, activeSeason, team, cb),
         colLabel: PLAYER_COL_LABELS
       });
     };
@@ -42082,7 +43328,7 @@ order:initial
   };
 
   // src/components/national-teams/tm-national-teams-nt-save.js
-  var STYLE_ID56 = "tmvu-nt-save-style";
+  var STYLE_ID60 = "tmvu-nt-save-style";
   var SCAN_SEASON_COUNT = 13;
   var RESULT_COLUMNS = [
     { key: "name", label: "Player" },
@@ -42094,11 +43340,11 @@ order:initial
     { key: "reasons", label: "Reasons" },
     { key: "sources", label: "Sources" }
   ];
-  var cleanText19 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-  var lowerText = (value) => cleanText19(value).toLowerCase();
-  var escapeHtml26 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var cleanText22 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var lowerText = (value) => cleanText22(value).toLowerCase();
+  var escapeHtml27 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   function normalizeCountryCode(value) {
-    const raw = cleanText19(value);
+    const raw = cleanText22(value);
     if (!raw) return "";
     const bracketMatch = raw.match(/^\[([a-z]{2,3})\]$/i);
     if (bracketMatch) return lowerText(bracketMatch[1]);
@@ -42116,11 +43362,11 @@ order:initial
   function matchesTargetCountry(player2, targetCountryCode) {
     return resolvePlayerCountryCode(player2) === normalizeCountryCode(targetCountryCode);
   }
-  var buttonHtml11 = (opts) => TmUI.button(opts).outerHTML;
-  function injectStyles40() {
-    if (document.getElementById(STYLE_ID56)) return;
+  var buttonHtml12 = (opts) => TmUI.button(opts).outerHTML;
+  function injectStyles42() {
+    if (document.getElementById(STYLE_ID60)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID56;
+    style.id = STYLE_ID60;
     style.textContent = `
         .tmvu-nt-save-panel {
             display: flex;
@@ -42538,17 +43784,17 @@ order:initial
   function extractClubId3(anchor) {
     var _a2;
     if (!anchor) return "";
-    const attrId = cleanText19(anchor.getAttribute("club_link"));
+    const attrId = cleanText22(anchor.getAttribute("club_link"));
     if (attrId) return attrId;
-    const href = cleanText19(anchor.getAttribute("href"));
+    const href = cleanText22(anchor.getAttribute("href"));
     return ((_a2 = href.match(/\/club\/(\d+)\//)) == null ? void 0 : _a2[1]) || "";
   }
   function extractPlayerId2(anchor) {
     var _a2;
     if (!anchor) return "";
-    const attrId = cleanText19(anchor.getAttribute("player_link"));
+    const attrId = cleanText22(anchor.getAttribute("player_link"));
     if (attrId) return attrId;
-    const href = cleanText19(anchor.getAttribute("href"));
+    const href = cleanText22(anchor.getAttribute("href"));
     return ((_a2 = href.match(/\/players\/(\d+)\//)) == null ? void 0 : _a2[1]) || "";
   }
   function extractCountryCodeFromNode(node) {
@@ -42556,7 +43802,7 @@ order:initial
     if (!node) return "";
     const anchor = ((_a2 = node.matches) == null ? void 0 : _a2.call(node, 'a.country_link[href*="/national-teams/"], a[href*="/national-teams/"]')) ? node : (_b = node.querySelector) == null ? void 0 : _b.call(node, 'a.country_link[href*="/national-teams/"], a[href*="/national-teams/"]');
     if (anchor) {
-      const href = cleanText19(anchor.getAttribute("href"));
+      const href = cleanText22(anchor.getAttribute("href"));
       const hrefCode = normalizeCountryCode(href);
       if (hrefCode) return hrefCode;
       const classCode = normalizeCountryCode(anchor.innerHTML);
@@ -42593,9 +43839,9 @@ order:initial
   }
   function normalizeDivisionGroups(divisions = []) {
     return divisions.flatMap((item) => {
-      const division = cleanText19(item == null ? void 0 : item.division);
+      const division = cleanText22(item == null ? void 0 : item.division);
       const groups = Math.max(1, Number(item == null ? void 0 : item.groups) || 1);
-      const name = cleanText19(item == null ? void 0 : item.name) || `Division ${division}`;
+      const name = cleanText22(item == null ? void 0 : item.name) || `Division ${division}`;
       if (!division) return [];
       return Array.from({ length: groups }, (_, index) => ({
         division,
@@ -42712,7 +43958,7 @@ order:initial
       if (!hasBanned && !hasInactive) return;
       const existing = map.get(clubId2) || {
         clubId: clubId2,
-        clubName: cleanText19(clubAnchor.textContent) || `Club ${clubId2}`,
+        clubName: cleanText22(clubAnchor.textContent) || `Club ${clubId2}`,
         division: groupCtx.division,
         group: groupCtx.group,
         statuses: /* @__PURE__ */ new Set()
@@ -42753,7 +43999,7 @@ order:initial
         if (!passesRecommendation) return;
         console.log("[NT Save][Transfer History Pass]", {
           playerId,
-          playerName: cleanText19(playerAnchor.textContent),
+          playerName: cleanText22(playerAnchor.textContent),
           country: playerCountryCode,
           seasonScanned: season,
           transferType: type,
@@ -42766,9 +44012,9 @@ order:initial
         });
         items.push({
           playerId,
-          playerName: cleanText19(playerAnchor.textContent),
+          playerName: cleanText22(playerAnchor.textContent),
           clubId: clubId2,
-          clubName: cleanText19(clubAnchor.textContent),
+          clubName: cleanText22(clubAnchor.textContent),
           transferType: type,
           division: groupCtx.division,
           group: groupCtx.group,
@@ -42841,16 +44087,16 @@ order:initial
   }
   function buildCandidateRecord(player2, club, clubId2 = "", clubName2 = "") {
     return {
-      playerId: cleanText19(player2 == null ? void 0 : player2.id),
-      name: cleanText19(player2 == null ? void 0 : player2.name) || "Unknown player",
+      playerId: cleanText22(player2 == null ? void 0 : player2.id),
+      name: cleanText22(player2 == null ? void 0 : player2.name) || "Unknown player",
       country: resolvePlayerCountryCode(player2),
       age: Number(player2 == null ? void 0 : player2.age) || 0,
       months: Number(player2 == null ? void 0 : player2.month) || 0,
       asi: TmUtils.parseNum(player2 == null ? void 0 : player2.asi),
       r5: computeCandidateR5(player2),
       position: Array.isArray(player2 == null ? void 0 : player2.positions) && player2.positions.some((p) => p.preferred) ? player2.positions.filter((p) => p.preferred).map((p) => p.key).join(",") : "",
-      clubId: cleanText19(clubId2 || (player2 == null ? void 0 : player2.club_id) || (club == null ? void 0 : club.id)),
-      clubName: cleanText19(clubName2 || (player2 == null ? void 0 : player2.club_name) || (club == null ? void 0 : club.name)) || "Unknown club",
+      clubId: cleanText22(clubId2 || (player2 == null ? void 0 : player2.club_id) || (club == null ? void 0 : club.id)),
+      clubName: cleanText22(clubName2 || (player2 == null ? void 0 : player2.club_name) || (club == null ? void 0 : club.name)) || "Unknown club",
       clubCreated: lowerText(club == null ? void 0 : club.created),
       sources: [],
       reasons: []
@@ -42931,8 +44177,8 @@ order:initial
         <div class="tmvu-nt-save-summary">
             ${metrics.map(([label, value]) => `
                 <div class="tmvu-nt-save-metric">
-                    <div class="tmvu-nt-save-metric-label">${escapeHtml26(label)}</div>
-                    <div class="tmvu-nt-save-metric-value">${escapeHtml26(String(value))}</div>
+                    <div class="tmvu-nt-save-metric-label">${escapeHtml27(label)}</div>
+                    <div class="tmvu-nt-save-metric-value">${escapeHtml27(String(value))}</div>
                 </div>
             `).join("")}
         </div>
@@ -42942,7 +44188,7 @@ order:initial
     if (!reasons.length) return '<span class="tmvu-nt-save-tag is-muted">No reasons</span>';
     return reasons.map((reason) => {
       const danger = /inactive|banned/i.test(reason);
-      return `<span class="tmvu-nt-save-tag${danger ? " is-danger" : ""}">${escapeHtml26(reason)}</span>`;
+      return `<span class="tmvu-nt-save-tag${danger ? " is-danger" : ""}">${escapeHtml27(reason)}</span>`;
     }).join("");
   }
   function formatDuration(ms) {
@@ -43045,29 +44291,29 @@ order:initial
       render: (_value, item) => {
         var _a2;
         if (col.key === "name") {
-          return `<a href="/players/${escapeHtml26(item.playerId)}/" target="_blank" rel="noreferrer">${escapeHtml26(item.name)}</a>`;
+          return `<a href="/players/${escapeHtml27(item.playerId)}/" target="_blank" rel="noreferrer">${escapeHtml27(item.name)}</a>`;
         }
         if (col.key === "clubName") {
-          return item.clubId ? `<a href="/club/${escapeHtml26(item.clubId)}/" target="_blank" rel="noreferrer">${escapeHtml26(item.clubName)}</a>` : escapeHtml26(item.clubName);
+          return item.clubId ? `<a href="/club/${escapeHtml27(item.clubId)}/" target="_blank" rel="noreferrer">${escapeHtml27(item.clubName)}</a>` : escapeHtml27(item.clubName);
         }
-        if (col.key === "age") return escapeHtml26(`${item.age}.${item.months}`);
-        if (col.key === "asi") return escapeHtml26(String(item.asi || 0));
-        if (col.key === "r5") return item.r5 != null ? escapeHtml26(Number(item.r5).toFixed(2)) : "-";
-        if (col.key === "position") return escapeHtml26(item.position || "-");
+        if (col.key === "age") return escapeHtml27(`${item.age}.${item.months}`);
+        if (col.key === "asi") return escapeHtml27(String(item.asi || 0));
+        if (col.key === "r5") return item.r5 != null ? escapeHtml27(Number(item.r5).toFixed(2)) : "-";
+        if (col.key === "position") return escapeHtml27(item.position || "-");
         if (col.key === "reasons") {
           return `<div class="tmvu-nt-save-tags">${createReasonTags(item.reasons)}</div>`;
         }
         if (col.key === "sources") {
-          return `<div class="tmvu-nt-save-sources">${item.sources.map((source) => escapeHtml26(source)).join("<br>")}</div>`;
+          return `<div class="tmvu-nt-save-sources">${item.sources.map((source) => escapeHtml27(source)).join("<br>")}</div>`;
         }
-        return escapeHtml26(String((_a2 = item[col.key]) != null ? _a2 : ""));
+        return escapeHtml27(String((_a2 = item[col.key]) != null ? _a2 : ""));
       }
     }));
   }
   function updateResultsToolbar(state5, results) {
     var _a2;
     if (state5.resultsToolbarEl) {
-      state5.resultsToolbarEl.innerHTML = `Sorted by <strong>${escapeHtml26(((_a2 = RESULT_COLUMNS.find((col) => col.key === state5.sortKey)) == null ? void 0 : _a2.label) || "Player")}</strong> ${state5.sortDir === 1 ? "ascending" : "descending"}.`;
+      state5.resultsToolbarEl.innerHTML = `Sorted by <strong>${escapeHtml27(((_a2 = RESULT_COLUMNS.find((col) => col.key === state5.sortKey)) == null ? void 0 : _a2.label) || "Player")}</strong> ${state5.sortDir === 1 ? "ascending" : "descending"}.`;
     }
     if (state5.resultsCountEl) {
       state5.resultsCountEl.textContent = `${results.length} rows`;
@@ -43079,7 +44325,7 @@ order:initial
     syncExportButton(state5);
     if (!state5.resultsEl) return;
     if (!results.length) {
-      state5.resultsEl.innerHTML = TmUI.empty(`No NT save candidates were found for ${escapeHtml26(state5.countryCode.toUpperCase())}.`);
+      state5.resultsEl.innerHTML = TmUI.empty(`No NT save candidates were found for ${escapeHtml27(state5.countryCode.toUpperCase())}.`);
       state5.resultsToolbarEl = null;
       state5.resultsCountEl = null;
       return;
@@ -43116,7 +44362,7 @@ order:initial
   }
   function setStatus(state5, html2) {
     if (state5.statusEl) state5.statusEl.innerHTML = html2;
-    if (state5.miniStatusEl) state5.miniStatusEl.textContent = cleanText19(html2.replace(/<[^>]+>/g, " "));
+    if (state5.miniStatusEl) state5.miniStatusEl.textContent = cleanText22(html2.replace(/<[^>]+>/g, " "));
   }
   function setProgress(state5, { phase = "", current = 0, total = 0, note = "", unitLabel = "" } = {}) {
     var _a2, _b;
@@ -43165,13 +44411,13 @@ order:initial
             <div class="tmvu-nt-save-head">
                 <div>
                     <div class="tmvu-nt-save-kicker">National Teams</div>
-                    <h2 id="tmvu-nt-save-title">NT Save Scan \xB7 ${escapeHtml26(state5.countryCode.toUpperCase())}</h2>
+                    <h2 id="tmvu-nt-save-title">NT Save Scan \xB7 ${escapeHtml27(state5.countryCode.toUpperCase())}</h2>
                     <p>Scans the selected season and league range for transfers, inactive clubs, banned clubs and flagged squads.</p>
                 </div>
                 <div class="tmvu-nt-save-actions">
-                    ${buttonHtml11({ label: "Run Scan", color: "primary", size: "sm", attrs: { "data-nt-save-run": "1" } })}
-                    ${buttonHtml11({ label: "Export Excel CSV", color: "secondary", size: "sm", cls: "tmvu-nt-save-export", attrs: { "data-nt-save-export": "1" } })}
-                    ${buttonHtml11({ label: "Close", color: "secondary", size: "sm", attrs: { "data-nt-save-close": "1" } })}
+                    ${buttonHtml12({ label: "Run Scan", color: "primary", size: "sm", attrs: { "data-nt-save-run": "1" } })}
+                    ${buttonHtml12({ label: "Export Excel CSV", color: "secondary", size: "sm", cls: "tmvu-nt-save-export", attrs: { "data-nt-save-export": "1" } })}
+                    ${buttonHtml12({ label: "Close", color: "secondary", size: "sm", attrs: { "data-nt-save-close": "1" } })}
                 </div>
             </div>
             <div class="tmvu-nt-save-body">
@@ -43200,7 +44446,7 @@ order:initial
                     </div>
                     <div class="tmvu-nt-save-scope-note" data-nt-save-scope-note>Loading available league bounds...</div>
                 </div>
-                <div class="tmvu-nt-save-status" data-nt-save-status>Ready to scan ${escapeHtml26(state5.countryCode.toUpperCase())}.</div>
+                <div class="tmvu-nt-save-status" data-nt-save-status>Ready to scan ${escapeHtml27(state5.countryCode.toUpperCase())}.</div>
                 <div class="tmvu-nt-save-progress" data-nt-save-progress>
                     <div class="tmvu-nt-save-progress-top">
                         <div class="tmvu-nt-save-progress-label" data-nt-save-progress-phase>Idle</div>
@@ -43262,7 +44508,7 @@ order:initial
     return state5.tooltipCache.get(playerId);
   }
   async function getTooltipCandidateBatch(state5, playerIds = [], batchSize = 10) {
-    const uniqueIds = [...new Set(playerIds.map((id) => cleanText19(id)).filter(Boolean))];
+    const uniqueIds = [...new Set(playerIds.map((id) => cleanText22(id)).filter(Boolean))];
     const results = /* @__PURE__ */ new Map();
     for (let index = 0; index < uniqueIds.length; index += batchSize) {
       const batchIds = uniqueIds.slice(index, index + batchSize);
@@ -43284,7 +44530,7 @@ order:initial
     return state5.clubPageCache.get(clubId2);
   }
   async function getClubPageBatch(state5, clubIds = [], batchSize = 10) {
-    const uniqueIds = [...new Set(clubIds.map((id) => cleanText19(id)).filter(Boolean))];
+    const uniqueIds = [...new Set(clubIds.map((id) => cleanText22(id)).filter(Boolean))];
     const results = /* @__PURE__ */ new Map();
     for (let index = 0; index < uniqueIds.length; index += batchSize) {
       const batchIds = uniqueIds.slice(index, index + batchSize);
@@ -43309,7 +44555,7 @@ order:initial
     let completedBatches = 0;
     for (const groupCtx of divisionGroups) {
       state5.summary.groupsScanned += 1;
-      setStatus(state5, `<strong>Scanning</strong> ${escapeHtml26(groupCtx.name)} \xB7 Group ${escapeHtml26(groupCtx.group)} \xB7 current league status`);
+      setStatus(state5, `<strong>Scanning</strong> ${escapeHtml27(groupCtx.name)} \xB7 Group ${escapeHtml27(groupCtx.group)} \xB7 current league status`);
       setProgress(state5, {
         phase: "League scan",
         current: completedBatches,
@@ -43338,7 +44584,7 @@ order:initial
         const seasonBatch = seasons2.slice(batchStart, batchStart + 10);
         const firstSeason = seasonBatch[0];
         const lastSeason = seasonBatch[seasonBatch.length - 1];
-        setStatus(state5, `<strong>Scanning</strong> ${escapeHtml26(groupCtx.name)} \xB7 Group ${escapeHtml26(groupCtx.group)} \xB7 Seasons ${escapeHtml26(String(firstSeason))}-${escapeHtml26(String(lastSeason))} transfers`);
+        setStatus(state5, `<strong>Scanning</strong> ${escapeHtml27(groupCtx.name)} \xB7 Group ${escapeHtml27(groupCtx.group)} \xB7 Seasons ${escapeHtml27(String(firstSeason))}-${escapeHtml27(String(lastSeason))} transfers`);
         setProgress(state5, {
           phase: "Transfer history",
           current: completedBatches,
@@ -43413,7 +44659,7 @@ order:initial
         const club = tooltipData == null ? void 0 : tooltipData.club;
         if (!player2 || !matchesTargetCountry(player2, state5.countryCode)) return "";
         if (lowerText(club == null ? void 0 : club.created) === "inactive") return "";
-        return cleanText19((club == null ? void 0 : club.id) || (player2 == null ? void 0 : player2.club_id));
+        return cleanText22((club == null ? void 0 : club.id) || (player2 == null ? void 0 : player2.club_id));
       }).filter(Boolean);
       setStatus(state5, `<strong>Inspecting players</strong> ${batchStart + 1}-${Math.min(batchStart + batch.length, transferCandidates.length)}/${transferCandidates.length} \xB7 fetching club batch`);
       const clubPageMap = await getClubPageBatch(state5, clubIdsToCheck, 10);
@@ -43470,7 +44716,7 @@ order:initial
           continue;
         }
         const clubId2 = record.clubId;
-        const clubHtml = clubPageMap.get(cleanText19(clubId2)) || null;
+        const clubHtml = clubPageMap.get(cleanText22(clubId2)) || null;
         if (hasClubBannedBadge(clubHtml)) {
           record.reasons.push("club banned");
           const { changed } = upsertCandidate(state5.results, record);
@@ -43503,7 +44749,7 @@ order:initial
     const flaggedClubs = [...state5.flaggedClubs.values()];
     for (let index = 0; index < flaggedClubs.length; index++) {
       const flaggedClub = flaggedClubs[index];
-      setStatus(state5, `<strong>Inspecting clubs</strong> ${index + 1}/${flaggedClubs.length} \xB7 ${escapeHtml26(flaggedClub.clubName)}`);
+      setStatus(state5, `<strong>Inspecting clubs</strong> ${index + 1}/${flaggedClubs.length} \xB7 ${escapeHtml27(flaggedClub.clubName)}`);
       setProgress(state5, {
         phase: "Flagged club squads",
         current: index + 1,
@@ -43513,7 +44759,7 @@ order:initial
       const squadPlayers = await TmClubModel.fetchSquadRaw(flaggedClub.clubId) || [];
       const squadPlayersMissingCountry = squadPlayers.filter((squadPlayer) => {
         const countryCode = resolvePlayerCountryCode(squadPlayer);
-        return !countryCode && cleanText19(squadPlayer.id);
+        return !countryCode && cleanText22(squadPlayer.id);
       });
       const squadTooltipMap = await getTooltipCandidateBatch(
         state5,
@@ -43524,7 +44770,7 @@ order:initial
         let countryCode = resolvePlayerCountryCode(squadPlayer);
         let tooltipData = null;
         if (!countryCode) {
-          tooltipData = squadTooltipMap.get(cleanText19(squadPlayer.id)) || null;
+          tooltipData = squadTooltipMap.get(cleanText22(squadPlayer.id)) || null;
           countryCode = resolvePlayerCountryCode(tooltipData);
         }
         if (countryCode !== normalizeCountryCode(state5.countryCode)) continue;
@@ -43564,7 +44810,7 @@ order:initial
     state5.resultsEl.innerHTML = "";
     setProgress(state5, { phase: "Preparing", current: 0, total: 1, note: `Loading divisions for ${state5.countryCode.toUpperCase()}` });
     try {
-      setStatus(state5, `<strong>Preparing</strong> divisions for ${escapeHtml26(state5.countryCode.toUpperCase())}...`);
+      setStatus(state5, `<strong>Preparing</strong> divisions for ${escapeHtml27(state5.countryCode.toUpperCase())}...`);
       const divisionsData = await TmLeagueModel.fetchLeagueDivisions(state5.countryCode);
       const allDivisionGroups = normalizeDivisionGroups((divisionsData == null ? void 0 : divisionsData.divisions) || []);
       if (allDivisionGroups.length) {
@@ -43579,7 +44825,7 @@ order:initial
         return divisionNumber >= state5.scanScope.leagueFrom && divisionNumber <= state5.scanScope.leagueTo;
       });
       if (!divisionGroups.length) {
-        setStatus(state5, `<strong>Failed</strong> no leagues matched divisions ${escapeHtml26(String(state5.scanScope.leagueFrom))}-${escapeHtml26(String(state5.scanScope.leagueTo))} for ${escapeHtml26(state5.countryCode.toUpperCase())}.`);
+        setStatus(state5, `<strong>Failed</strong> no leagues matched divisions ${escapeHtml27(String(state5.scanScope.leagueFrom))}-${escapeHtml27(String(state5.scanScope.leagueTo))} for ${escapeHtml27(state5.countryCode.toUpperCase())}.`);
         setProgress(state5, { phase: "Failed", current: 0, total: 0, note: "No leagues matched the selected scope." });
         renderResults(state5);
         return;
@@ -43587,7 +44833,7 @@ order:initial
       const transferCandidates = await collectTransferPages(state5, divisionGroups);
       await processTransferCandidates(state5, transferCandidates);
       await processFlaggedClubs(state5);
-      setStatus(state5, `<strong>Done</strong> scan complete for ${escapeHtml26(state5.countryCode.toUpperCase())}. Found ${escapeHtml26(String(state5.results.size))} candidates.`);
+      setStatus(state5, `<strong>Done</strong> scan complete for ${escapeHtml27(state5.countryCode.toUpperCase())}. Found ${escapeHtml27(String(state5.results.size))} candidates.`);
       setProgress(state5, {
         phase: "Completed",
         current: state5.results.size,
@@ -43596,7 +44842,7 @@ order:initial
       });
       renderResults(state5);
     } catch (error) {
-      setStatus(state5, `<strong>Failed</strong> ${escapeHtml26((error == null ? void 0 : error.message) || "Unknown error")}`);
+      setStatus(state5, `<strong>Failed</strong> ${escapeHtml27((error == null ? void 0 : error.message) || "Unknown error")}`);
       setProgress(state5, { phase: "Failed", current: 0, total: 0, note: (error == null ? void 0 : error.message) || "Unknown error" });
       renderResults(state5);
     } finally {
@@ -43609,7 +44855,7 @@ order:initial
     mount({ navEl, countryCode = "", currentSeason: currentSeason4 = null } = {}) {
       var _a2, _b;
       if (!navEl || !countryCode) return null;
-      injectStyles40();
+      injectStyles42();
       const existingAction = navEl.querySelector(".tmvu-nt-save-action");
       if (existingAction) return existingAction;
       const existingPanel = navEl.querySelector(".tmvu-nt-save-panel");
@@ -43676,9 +44922,9 @@ order:initial
       panel.className = "tmvu-nt-save-panel";
       panel.innerHTML = `
             <div class="tmvu-nt-save-kicker">National Teams</div>
-            <div class="tmvu-nt-save-title">NT Save Finder \xB7 ${escapeHtml26(state5.countryCode.toUpperCase())}</div>
+            <div class="tmvu-nt-save-title">NT Save Finder \xB7 ${escapeHtml27(state5.countryCode.toUpperCase())}</div>
             <div class="tmvu-nt-save-copy">Scans league transfer history, inactive clubs, banned clubs and flagged league squads for players eligible for NT save.</div>
-            ${buttonHtml11({ label: "Find NT Save Players", color: "secondary", size: "sm", attrs: { "data-nt-save-open": "1" } })}
+            ${buttonHtml12({ label: "Find NT Save Players", color: "secondary", size: "sm", attrs: { "data-nt-save-open": "1" } })}
             <div class="tmvu-nt-save-mini" data-nt-save-mini>Idle</div>
         `;
       panel.onclick = (event) => {
@@ -43693,7 +44939,7 @@ order:initial
   };
 
   // src/components/national-teams/tm-national-teams-side-menu.js
-  var cleanText20 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var cleanText23 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var normalizePath = (value) => {
     const text = String(value || "").trim();
     if (!text) return "";
@@ -43717,7 +44963,7 @@ order:initial
       if (node.tagName === "HR") return [{ type: "separator" }];
       if (node.tagName !== "A") return [];
       const href = node.getAttribute("href") || "#";
-      const label = cleanText20(node.textContent);
+      const label = cleanText23(node.textContent);
       if (!label) return [];
       return [{
         type: "link",
@@ -43739,7 +44985,7 @@ order:initial
   };
   var hasElectionItem = (items = []) => items.some((item) => (item == null ? void 0 : item.type) === "link" && /election/i.test(item.label || ""));
   var getCanonicalNationalTeamsPath = (countryCode) => {
-    const code = cleanText20(countryCode).toLowerCase();
+    const code = cleanText23(countryCode).toLowerCase();
     return code ? `/national-teams/${code}/` : "";
   };
   var areMenusEquivalent = (leftItems = [], rightItems = []) => {
@@ -43825,14 +45071,14 @@ order:initial
   function initNationalTeamsRankingsPage(main2) {
     if (!main2 || !main2.isConnected) return;
     const sourceRoot3 = (document.querySelector(".main_center") || main2).cloneNode(true);
-    const STYLE_ID64 = "tmvu-national-teams-rankings-style";
-    const cleanText28 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-    const escapeHtml34 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-    const injectStyles48 = () => {
-      if (document.getElementById(STYLE_ID64)) return;
+    const STYLE_ID68 = "tmvu-national-teams-rankings-style";
+    const cleanText31 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const escapeHtml35 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const injectStyles50 = () => {
+      if (document.getElementById(STYLE_ID68)) return;
       injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID64;
+      style.id = STYLE_ID68;
       style.textContent = `
             .tmvu-nt-rankings-tabs {
                 margin-bottom: var(--tmu-space-sm);
@@ -43899,7 +45145,7 @@ order:initial
       box.querySelectorAll(".tabs [set_active]").forEach((tab) => {
         const id = tab.getAttribute("set_active") || "";
         if (!id) return;
-        labelById.set(id, cleanText28(tab.textContent) || "Tab");
+        labelById.set(id, cleanText31(tab.textContent) || "Tab");
       });
       return Array.from(box.querySelectorAll(".tab_container > div[id]")).map((panel, index) => {
         const table = panel.querySelector("table");
@@ -43915,9 +45161,9 @@ order:initial
       var _a2, _b;
       const box = sourceRoot3.querySelector(".column2_a > .box");
       if (!box) return null;
-      const title = cleanText28(((_a2 = box.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "National Team Rankings");
+      const title = cleanText31(((_a2 = box.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "National Team Rankings");
       const subHeader = box.querySelector(".box_sub_header");
-      const region = cleanText28(((_b = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _b.textContent) || "Region");
+      const region = cleanText31(((_b = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _b.textContent) || "Region");
       const changeNode = subHeader == null ? void 0 : subHeader.querySelector(".faux_link");
       const panels = parsePanels(box);
       return {
@@ -43934,7 +45180,7 @@ order:initial
         cardClass: "tmvu-nt-rankings-hero-card",
         slots: {
           kicker: "Rankings",
-          title: `${escapeHtml34(overview.region)} ${escapeHtml34(overview.title)}`,
+          title: `${escapeHtml35(overview.region)} ${escapeHtml35(overview.title)}`,
           actions: changeHtml
         }
       });
@@ -43975,7 +45221,7 @@ order:initial
       return wrap.firstElementChild || wrap;
     };
     const render16 = () => {
-      injectStyles48();
+      injectStyles50();
       const overview = parseOverview5();
       if (!overview || !overview.panels.length) return;
       main2.classList.add("tmvu-nt-rankings-page", "tmu-page-layout-2col", "tmu-page-density-regular");
@@ -44021,9 +45267,9 @@ order:initial
   };
 
   // src/pages/national-teams-fixtures.js
-  var STYLE_ID57 = "tmvu-national-teams-fixtures-style";
-  var cleanText21 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-  var escapeHtml27 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var STYLE_ID61 = "tmvu-national-teams-fixtures-style";
+  var cleanText24 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var escapeHtml28 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var normalizeFlagHtml2 = (value) => {
     var _a2;
     const html2 = String(value || "").trim();
@@ -44034,23 +45280,23 @@ order:initial
   };
   var parseFixturesResponse = (payload) => Object.entries(payload || {}).sort(([leftKey], [rightKey]) => leftKey.localeCompare(rightKey)).map(([monthKey, month]) => {
     const matches = Array.from((month == null ? void 0 : month.matches) || []).map((match) => ({
-      date: cleanText21((match == null ? void 0 : match.date) || ""),
+      date: cleanText24((match == null ? void 0 : match.date) || ""),
       matchId: String((match == null ? void 0 : match.id) || ""),
-      homeId: cleanText21((match == null ? void 0 : match.hometeam) || ""),
-      homeName: cleanText21((match == null ? void 0 : match.hometeamname) || ""),
+      homeId: cleanText24((match == null ? void 0 : match.hometeam) || ""),
+      homeName: cleanText24((match == null ? void 0 : match.hometeamname) || ""),
       homeHref: extractHrefFromHtml2(match == null ? void 0 : match.home_link),
       homeFlagHtml: normalizeFlagHtml2(match == null ? void 0 : match.home_flag),
-      awayId: cleanText21((match == null ? void 0 : match.awayteam) || ""),
-      awayName: cleanText21((match == null ? void 0 : match.awayteamname) || ""),
+      awayId: cleanText24((match == null ? void 0 : match.awayteam) || ""),
+      awayName: cleanText24((match == null ? void 0 : match.awayteamname) || ""),
       awayHref: extractHrefFromHtml2(match == null ? void 0 : match.away_link),
       awayFlagHtml: normalizeFlagHtml2(match == null ? void 0 : match.away_flag),
-      result: cleanText21((match == null ? void 0 : match.result) || wrapperText2(match == null ? void 0 : match.match_link) || "x-x"),
-      matchtype_name: cleanText21((match == null ? void 0 : match.matchtype_name) || (match == null ? void 0 : match.matchtype_sort) || "")
+      result: cleanText24((match == null ? void 0 : match.result) || wrapperText2(match == null ? void 0 : match.match_link) || "x-x"),
+      matchtype_name: cleanText24((match == null ? void 0 : match.matchtype_name) || (match == null ? void 0 : match.matchtype_sort) || "")
     })).filter((match) => match.matchId && match.homeName && match.awayName);
     if (!matches.length) return null;
     return {
       key: monthKey,
-      label: cleanText21((month == null ? void 0 : month.date_name) || `${(month == null ? void 0 : month.month) || "Month"} ${monthKey.slice(0, 4)}`),
+      label: cleanText24((month == null ? void 0 : month.date_name) || `${(month == null ? void 0 : month.month) || "Month"} ${monthKey.slice(0, 4)}`),
       active: Boolean(month == null ? void 0 : month.current_month),
       groups: TmFixturesList.fromMatches(matches)
     };
@@ -44060,7 +45306,7 @@ order:initial
     if (!html2) return "";
     const wrapper = document.createElement("div");
     wrapper.innerHTML = html2;
-    return cleanText21(wrapper.textContent || "");
+    return cleanText24(wrapper.textContent || "");
   };
   var extractHrefFromHtml2 = (value) => {
     var _a2;
@@ -44070,10 +45316,10 @@ order:initial
     wrapper.innerHTML = html2;
     return ((_a2 = wrapper.querySelector("a[href]")) == null ? void 0 : _a2.getAttribute("href")) || "#";
   };
-  var injectStyles41 = () => {
-    if (document.getElementById(STYLE_ID57)) return;
+  var injectStyles43 = () => {
+    if (document.getElementById(STYLE_ID61)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID57;
+    style.id = STYLE_ID61;
     style.textContent = `
         .tmvu-nt-fixtures-page {
             --tmu-page-sidebar-width: 200px;
@@ -44102,8 +45348,8 @@ order:initial
     const contentBox = sourceRoot3.querySelector(".column2_a > .box");
     if (!contentBox) return;
     injectTmPageLayoutStyles();
-    injectStyles41();
-    const title = cleanText21(((_a2 = contentBox.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "Fixtures");
+    injectStyles43();
+    const title = cleanText24(((_a2 = contentBox.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "Fixtures");
     main2.innerHTML = "";
     main2.classList.add("tmvu-nt-fixtures-page", "tmu-page-layout-2col", "tmu-page-density-regular");
     mountNationalTeamsSideMenu(main2, {
@@ -44118,7 +45364,7 @@ order:initial
     card.className = "tmu-card";
     card.innerHTML = `
         <div class="tmu-card-head">
-            <span class="tmvu-nt-fixtures-title">${escapeHtml27(title)}</span>
+            <span class="tmvu-nt-fixtures-title">${escapeHtml28(title)}</span>
         </div>
         <div class="tmu-card-body tmu-card-body-flush">
             <div data-ref="tabs"></div>
@@ -44172,7 +45418,7 @@ order:initial
   }
 
   // src/pages/national-teams-history.js
-  var STYLE_ID58 = "tmvu-national-teams-history-style";
+  var STYLE_ID62 = "tmvu-national-teams-history-style";
   var MONTH_INDEX = {
     january: 1,
     february: 2,
@@ -44187,8 +45433,8 @@ order:initial
     november: 11,
     december: 12
   };
-  var cleanText22 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-  var escapeHtml28 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var cleanText25 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var escapeHtml29 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var extractDay = (item) => {
     var _a2;
     const src = ((_a2 = item.querySelector(".match_date img")) == null ? void 0 : _a2.getAttribute("src")) || "";
@@ -44196,7 +45442,7 @@ order:initial
     return match ? Number(match[1]) : null;
   };
   var extractMonthMeta = (label) => {
-    const match = cleanText22(label).match(/^([A-Za-z]+)\s+(\d{4})$/);
+    const match = cleanText25(label).match(/^([A-Za-z]+)\s+(\d{4})$/);
     if (!match) return null;
     const month = MONTH_INDEX[match[1].toLowerCase()];
     const year = Number(match[2]);
@@ -44236,15 +45482,15 @@ order:initial
       matchId: ((_b = (_a2 = resultLink == null ? void 0 : resultLink.getAttribute("href")) == null ? void 0 : _a2.match(/\/matches\/(?:nt\/)?(\d+)\//i)) == null ? void 0 : _b[1]) || "",
       matchHref: (resultLink == null ? void 0 : resultLink.getAttribute("href")) || "",
       homeId: ((_d = (_c = homeNameLink == null ? void 0 : homeNameLink.getAttribute("href")) == null ? void 0 : _c.match(/\/national-teams\/([a-z]{2,3})\//i)) == null ? void 0 : _d[1]) || "",
-      homeName: cleanText22((homeNameLink == null ? void 0 : homeNameLink.textContent) || (homeTeam == null ? void 0 : homeTeam.textContent) || ""),
+      homeName: cleanText25((homeNameLink == null ? void 0 : homeNameLink.textContent) || (homeTeam == null ? void 0 : homeTeam.textContent) || ""),
       homeHref: (homeNameLink == null ? void 0 : homeNameLink.getAttribute("href")) || "",
       homeFlagHtml: (homeFlagLink == null ? void 0 : homeFlagLink.innerHTML) || "",
       awayId: ((_f = (_e = awayNameLink == null ? void 0 : awayNameLink.getAttribute("href")) == null ? void 0 : _e.match(/\/national-teams\/([a-z]{2,3})\//i)) == null ? void 0 : _f[1]) || "",
-      awayName: cleanText22((awayNameLink == null ? void 0 : awayNameLink.textContent) || (awayTeam == null ? void 0 : awayTeam.textContent) || ""),
+      awayName: cleanText25((awayNameLink == null ? void 0 : awayNameLink.textContent) || (awayTeam == null ? void 0 : awayTeam.textContent) || ""),
       awayHref: (awayNameLink == null ? void 0 : awayNameLink.getAttribute("href")) || "",
       awayFlagHtml: (awayFlagLink == null ? void 0 : awayFlagLink.innerHTML) || "",
-      result: cleanText22((resultLink == null ? void 0 : resultLink.textContent) || ""),
-      matchtype_name: cleanText22(((_g = item.querySelector(".matchtype")) == null ? void 0 : _g.textContent) || "")
+      result: cleanText25((resultLink == null ? void 0 : resultLink.textContent) || ""),
+      matchtype_name: cleanText25(((_g = item.querySelector(".matchtype")) == null ? void 0 : _g.textContent) || "")
     };
   }).filter((match) => match.matchId && match.homeName && match.awayName && match.date);
   var parseHistoryMonths = (contentBox) => {
@@ -44252,7 +45498,7 @@ order:initial
     const lists = Array.from(contentBox.querySelectorAll(".box_body ul.match_list"));
     lists.forEach((listEl) => {
       const header = findMonthHeader(listEl);
-      const label = cleanText22((header == null ? void 0 : header.textContent) || "");
+      const label = cleanText25((header == null ? void 0 : header.textContent) || "");
       const monthMeta = extractMonthMeta(label);
       if (!monthMeta) return;
       const matches = parseMonthMatches(listEl, monthMeta);
@@ -44266,10 +45512,10 @@ order:initial
     });
     return months.sort((left, right) => (right.sortValue || 0) - (left.sortValue || 0));
   };
-  var injectStyles42 = () => {
-    if (document.getElementById(STYLE_ID58)) return;
+  var injectStyles44 = () => {
+    if (document.getElementById(STYLE_ID62)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID58;
+    style.id = STYLE_ID62;
     style.textContent = `
         .tmvu-nt-history-page {
             --tmu-page-sidebar-width: 200px;
@@ -44320,8 +45566,8 @@ order:initial
     const contentBox = sourceRoot3.querySelector(".column2_a > .box");
     if (!contentBox) return;
     injectTmPageLayoutStyles();
-    injectStyles42();
-    const title = cleanText22(((_a2 = contentBox.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "History");
+    injectStyles44();
+    const title = cleanText25(((_a2 = contentBox.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "History");
     const months = parseHistoryMonths(contentBox);
     main2.innerHTML = "";
     main2.classList.add("tmvu-nt-history-page", "tmu-page-layout-2col", "tmu-page-density-regular");
@@ -44337,7 +45583,7 @@ order:initial
     card.className = "tmu-card";
     card.innerHTML = `
         <div class="tmu-card-head">
-            <span class="tmvu-nt-history-title">${escapeHtml28(title)}</span>
+            <span class="tmvu-nt-history-title">${escapeHtml29(title)}</span>
         </div>
         <div class="tmu-card-body tmu-card-body-flush">
             <div data-ref="panel" class="tmvu-nt-history-panel"></div>
@@ -44354,7 +45600,7 @@ order:initial
         <div class="tmvu-nt-history-stack">
             ${months.map((month) => `
                 <section class="tmvu-nt-history-month">
-                    <div class="tmvu-nt-history-month-title">${escapeHtml28(month.label)}</div>
+                    <div class="tmvu-nt-history-month-title">${escapeHtml29(month.label)}</div>
                     ${TmFixturesList.render(month.groups, { myClubId: countryCode, linkUpcoming: true, showType: true })}
                 </section>
             `).join("")}
@@ -44365,9 +45611,9 @@ order:initial
   }
 
   // src/pages/national-teams-statistics.js
-  var STYLE_ID59 = "tmvu-national-teams-statistics-style";
-  var cleanText23 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-  var escapeHtml29 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var STYLE_ID63 = "tmvu-national-teams-statistics-style";
+  var cleanText26 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var escapeHtml30 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var fetchDocument = async (path) => {
     const response = await window.fetch(path, { credentials: "same-origin" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -44384,7 +45630,7 @@ order:initial
     const headerCells = Array.from((headerRow == null ? void 0 : headerRow.querySelectorAll("th, td")) || []);
     if (!headerCells.length) return null;
     const headers = headerCells.map((cell, index) => {
-      const label = cleanText23(cell.textContent) || (index === 0 ? "Name" : `Col ${index + 1}`);
+      const label = cleanText26(cell.textContent) || (index === 0 ? "Name" : `Col ${index + 1}`);
       const key = index === 0 ? "player" : `col${index}`;
       const align = index === 0 ? "l" : "r";
       return {
@@ -44393,7 +45639,7 @@ order:initial
         align,
         sortable: true,
         sort: index === 0 ? ((a, b) => String(a.playerSort || "").localeCompare(String(b.playerSort || ""))) : ((a, b) => (Number(a[`sort${index}`]) || 0) - (Number(b[`sort${index}`]) || 0)),
-        render: index === 0 ? ((_, item) => item.playerHtml || escapeHtml29(item.playerSort || "")) : ((value) => escapeHtml29(value != null ? value : ""))
+        render: index === 0 ? ((_, item) => item.playerHtml || escapeHtml30(item.playerSort || "")) : ((value) => escapeHtml30(value != null ? value : ""))
       };
     });
     const bodyRows = Array.from(table.querySelectorAll("tbody tr")).filter((row) => row.querySelectorAll("td").length >= headerCells.length);
@@ -44401,15 +45647,15 @@ order:initial
       const cells = Array.from(row.querySelectorAll("td"));
       const playerCell = cells[0];
       const playerLink = playerCell == null ? void 0 : playerCell.querySelector('a[href*="/players/"]');
-      const playerHtml = playerLink ? `<a href="${playerLink.getAttribute("href") || "#"}" target="_blank" style="color:inherit;text-decoration:none">${escapeHtml29(cleanText23(playerLink.textContent))}</a>` : escapeHtml29(cleanText23((playerCell == null ? void 0 : playerCell.textContent) || ""));
+      const playerHtml = playerLink ? `<a href="${playerLink.getAttribute("href") || "#"}" target="_blank" style="color:inherit;text-decoration:none">${escapeHtml30(cleanText26(playerLink.textContent))}</a>` : escapeHtml30(cleanText26((playerCell == null ? void 0 : playerCell.textContent) || ""));
       const item = {
-        player: cleanText23((playerCell == null ? void 0 : playerCell.textContent) || ""),
-        playerSort: cleanText23((playerCell == null ? void 0 : playerCell.textContent) || ""),
+        player: cleanText26((playerCell == null ? void 0 : playerCell.textContent) || ""),
+        playerSort: cleanText26((playerCell == null ? void 0 : playerCell.textContent) || ""),
         playerHtml,
         _rowClass: /highlighted_row/.test(row.className || "") ? "tmu-psb-me" : ""
       };
       cells.forEach((cell, index) => {
-        const text = cleanText23(cell.textContent);
+        const text = cleanText26(cell.textContent);
         if (index === 0) return;
         item[`col${index}`] = text;
         item[`sort${index}`] = isNumericLike(text) ? Number(text.replace(",", ".")) : rowIndex;
@@ -44418,10 +45664,10 @@ order:initial
     });
     return { headers, items };
   };
-  var injectStyles43 = () => {
-    if (document.getElementById(STYLE_ID59)) return;
+  var injectStyles45 = () => {
+    if (document.getElementById(STYLE_ID63)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID59;
+    style.id = STYLE_ID63;
     style.textContent = `
         .tmvu-nt-statistics-page {
             --tmu-page-sidebar-width: 200px;
@@ -44452,7 +45698,7 @@ order:initial
     const init2 = async () => {
       var _a2, _b, _c, _d, _e;
       injectTmPageLayoutStyles();
-      injectStyles43();
+      injectStyles45();
       main2.innerHTML = TmUI.loading("Loading national team statistics...");
       const sourceRoot3 = document.querySelector(".main_center");
       let dataRoot = sourceRoot3;
@@ -44466,7 +45712,7 @@ order:initial
         main2.innerHTML = TmUI.error("Failed to load national team statistics.");
         return;
       }
-      const title = cleanText23(((_a2 = contentBox.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "Statistics");
+      const title = cleanText26(((_a2 = contentBox.querySelector(".box_head h2")) == null ? void 0 : _a2.textContent) || "Statistics");
       const tableData = parseStatisticsTable(contentBox);
       main2.innerHTML = "";
       main2.classList.add("tmvu-nt-statistics-page", "tmu-page-layout-2col", "tmu-page-density-regular");
@@ -44482,7 +45728,7 @@ order:initial
       card.className = "tmu-card";
       card.innerHTML = `
             <div class="tmu-card-head">
-                <span class="tmvu-nt-statistics-title">${escapeHtml29(title)}</span>
+                <span class="tmvu-nt-statistics-title">${escapeHtml30(title)}</span>
             </div>
             <div class="tmu-card-body tmu-card-body-flush">
                 <div class="tmvu-nt-statistics-wrap" data-ref="table"></div>
@@ -44516,15 +45762,15 @@ order:initial
   }
 
   // src/pages/national-teams-election.js
-  var STYLE_ID60 = "tmvu-national-teams-election-style";
-  var cleanText24 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var STYLE_ID64 = "tmvu-national-teams-election-style";
+  var cleanText27 = (value) => String(value || "").replace(/\s+/g, " ").trim();
   var toNumber2 = (value) => Number.parseInt(String(value || ""), 10);
-  var escapeHtml30 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var escapeHtml31 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var extractCountryCode = (root2) => {
     var _a2, _b, _c, _d;
     return ((_d = (_c = (_b = (_a2 = root2 == null ? void 0 : root2.querySelector('.content_menu a[href^="/national-teams/"]')) == null ? void 0 : _a2.getAttribute("href")) == null ? void 0 : _b.match(/\/national-teams\/([a-z]{2,3})\//i)) == null ? void 0 : _c[1]) == null ? void 0 : _d.toLowerCase()) || "";
   };
-  var makeFlagHtml = (suffix) => suffix ? `<ib class="flag-img-${escapeHtml30(String(suffix).toLowerCase())}"></ib>` : "";
+  var makeFlagHtml = (suffix) => suffix ? `<ib class="flag-img-${escapeHtml31(String(suffix).toLowerCase())}"></ib>` : "";
   var parseActionCall = (onclick, actionName) => {
     const pattern = actionName === "nomination_respond" ? /nomination_respond\(\s*['"]([^'"]+)['"]\s*,\s*(\d+)\s*,\s*(?:true|false)\s*\)/i : /election_vote\(\s*(\d+)\s*,\s*(?:true|false)\s*\)/i;
     const match = String(onclick || "").match(pattern);
@@ -44540,21 +45786,21 @@ order:initial
         const [id, label, countrySuffix] = rawValue;
         return {
           id: toNumber2(id),
-          label: cleanText24(label || id),
-          countrySuffix: cleanText24(countrySuffix || "")
+          label: cleanText27(label || id),
+          countrySuffix: cleanText27(countrySuffix || "")
         };
       }
       if (typeof rawValue === "object") {
         const id = toNumber2((_c = (_b = (_a2 = rawValue.value) != null ? _a2 : rawValue.id) != null ? _b : rawValue.club_id) != null ? _c : rawLabel);
         return {
           id,
-          label: cleanText24((_g = (_f = (_e = (_d = rawValue.label) != null ? _d : rawValue.name) != null ? _e : rawValue.club_name) != null ? _f : rawLabel) != null ? _g : id),
-          countrySuffix: cleanText24((_j = (_i = (_h = rawValue.country_suffix) != null ? _h : rawValue.country) != null ? _i : rawValue.flag) != null ? _j : "")
+          label: cleanText27((_g = (_f = (_e = (_d = rawValue.label) != null ? _d : rawValue.name) != null ? _e : rawValue.club_name) != null ? _f : rawLabel) != null ? _g : id),
+          countrySuffix: cleanText27((_j = (_i = (_h = rawValue.country_suffix) != null ? _h : rawValue.country) != null ? _i : rawValue.flag) != null ? _j : "")
         };
       }
       return {
         id: toNumber2(rawValue),
-        label: cleanText24(rawLabel != null ? rawLabel : rawValue),
+        label: cleanText27(rawLabel != null ? rawLabel : rawValue),
         countrySuffix: ""
       };
     };
@@ -44570,7 +45816,7 @@ order:initial
   };
   var showErrorModal = (message) => TmUI.modal({
     title: "National coach election",
-    message: escapeHtml30(message || "Request failed."),
+    message: escapeHtml31(message || "Request failed."),
     buttons: [{ label: "OK", value: "ok", style: "primary", size: "lg" }]
   });
   var handleNominationSelection = async (clubId2) => {
@@ -44582,7 +45828,7 @@ order:initial
     }
     const choice = await TmUI.modal({
       title: "Submit Nomination",
-      message: `Nominate <strong>${escapeHtml30(data.club_name || `Club #${clubId2}`)}</strong> for <strong>${makeFlagHtml(data.country_suffix)} ${escapeHtml30(data.country || "")}</strong>?`,
+      message: `Nominate <strong>${escapeHtml31(data.club_name || `Club #${clubId2}`)}</strong> for <strong>${makeFlagHtml(data.country_suffix)} ${escapeHtml31(data.country || "")}</strong>?`,
       buttons: [
         { label: "Nominate", value: "confirm", style: "primary", size: "lg" },
         { label: "Cancel", value: "cancel", style: "secondary", size: "lg" }
@@ -44596,7 +45842,7 @@ order:initial
     }
     await TmUI.modal({
       title: "Submit Nomination",
-      message: `${escapeHtml30(result.club_name || data.club_name || `Club #${clubId2}`)} was nominated successfully.`,
+      message: `${escapeHtml31(result.club_name || data.club_name || `Club #${clubId2}`)} was nominated successfully.`,
       buttons: [{ label: "OK", value: "ok", style: "primary", size: "lg" }]
     });
     refreshElectionPage();
@@ -44606,7 +45852,7 @@ order:initial
     const accept = response === 1;
     const choice = await TmUI.modal({
       title: "National coach election",
-      message: `${accept ? "Accept" : "Reject"} nomination for <strong>${escapeHtml30(country.toUpperCase())}</strong>?`,
+      message: `${accept ? "Accept" : "Reject"} nomination for <strong>${escapeHtml31(country.toUpperCase())}</strong>?`,
       buttons: [
         { label: accept ? "Accept" : "Reject", value: "confirm", style: accept ? "primary" : "danger", size: "lg" },
         { label: "Cancel", value: "cancel", style: "secondary", size: "lg" }
@@ -44634,7 +45880,7 @@ order:initial
     }
     const choice = await TmUI.modal({
       title: "Vote",
-      message: `Vote for <strong>${escapeHtml30(data.club_name || `Club #${clubId2}`)}</strong> ${makeFlagHtml(data.country)}?`,
+      message: `Vote for <strong>${escapeHtml31(data.club_name || `Club #${clubId2}`)}</strong> ${makeFlagHtml(data.country)}?`,
       buttons: [
         { label: "Vote", value: "confirm", style: "primary", size: "lg" },
         { label: "Cancel", value: "cancel", style: "secondary", size: "lg" }
@@ -44668,12 +45914,12 @@ order:initial
     for (const node of Array.from(clone.childNodes)) {
       if (node.nodeType === Node.ELEMENT_NODE && ["UL", "H3"].includes(node.nodeName)) break;
       if (node.nodeType === Node.TEXT_NODE || node.nodeType === Node.ELEMENT_NODE) {
-        const text = cleanText24(node.textContent || "");
+        const text = cleanText27(node.textContent || "");
         if (text) leadParts.push(text);
       }
     }
-    const leadText = cleanText24(leadParts.join(" "));
-    const leadList = Array.from(clone.querySelectorAll(":scope > ul:first-of-type > li")).map((li) => cleanText24(li.textContent)).filter(Boolean);
+    const leadText = cleanText27(leadParts.join(" "));
+    const leadList = Array.from(clone.querySelectorAll(":scope > ul:first-of-type > li")).map((li) => cleanText27(li.textContent)).filter(Boolean);
     if (leadText || leadList.length) {
       sections.push({
         title: "",
@@ -44683,9 +45929,9 @@ order:initial
     }
     Array.from(clone.querySelectorAll(":scope > h3")).forEach((heading) => {
       const list = heading.nextElementSibling;
-      const items = (list == null ? void 0 : list.tagName) === "UL" ? Array.from(list.querySelectorAll("li")).map((li) => cleanText24(li.textContent)).filter(Boolean) : [];
+      const items = (list == null ? void 0 : list.tagName) === "UL" ? Array.from(list.querySelectorAll("li")).map((li) => cleanText27(li.textContent)).filter(Boolean) : [];
       sections.push({
-        title: cleanText24(heading.textContent),
+        title: cleanText27(heading.textContent),
         lead: "",
         items
       });
@@ -44708,12 +45954,12 @@ order:initial
         rows: []
       };
     }
-    const formTitle = cleanText24(((_a2 = body.querySelector("h3")) == null ? void 0 : _a2.textContent) || "Submit Nomination");
+    const formTitle = cleanText27(((_a2 = body.querySelector("h3")) == null ? void 0 : _a2.textContent) || "Submit Nomination");
     const introNode = body.querySelector("p");
     const form = body.querySelector("form");
-    const label = cleanText24(((_b = form == null ? void 0 : form.querySelector("label")) == null ? void 0 : _b.textContent) || "Nominate club");
+    const label = cleanText27(((_b = form == null ? void 0 : form.querySelector("label")) == null ? void 0 : _b.textContent) || "Nominate club");
     const input = (form == null ? void 0 : form.querySelector("input")) || null;
-    const tableTitle = cleanText24(((_c = Array.from(body.querySelectorAll("h3"))[1]) == null ? void 0 : _c.textContent) || "Nominated clubs");
+    const tableTitle = cleanText27(((_c = Array.from(body.querySelectorAll("h3"))[1]) == null ? void 0 : _c.textContent) || "Nominated clubs");
     const tableRows = Array.from(body.querySelectorAll("table tbody tr")).slice(1).map((tr) => {
       const cells = Array.from(tr.querySelectorAll("td"));
       if (cells.length < 3) return null;
@@ -44721,13 +45967,13 @@ order:initial
       const clubFlag = cells[0].querySelector(".country_link");
       const nominatorLink = cells[1].querySelector('a[href*="/club/"]');
       const responseDot = cells[2].querySelector(".response");
-      const responseText = cleanText24(cells[2].textContent);
+      const responseText = cleanText27(cells[2].textContent);
       const responseState = (responseDot == null ? void 0 : responseDot.classList.contains("accepted")) ? "accepted" : (responseDot == null ? void 0 : responseDot.classList.contains("rejected")) ? "rejected" : "pending";
       return {
-        clubName: cleanText24((clubLink == null ? void 0 : clubLink.textContent) || cells[0].textContent),
+        clubName: cleanText27((clubLink == null ? void 0 : clubLink.textContent) || cells[0].textContent),
         clubHref: (clubLink == null ? void 0 : clubLink.getAttribute("href")) || "",
         clubFlagHtml: (clubFlag == null ? void 0 : clubFlag.outerHTML) || "",
-        nominatedBy: cleanText24((nominatorLink == null ? void 0 : nominatorLink.textContent) || cells[1].textContent),
+        nominatedBy: cleanText27((nominatorLink == null ? void 0 : nominatorLink.textContent) || cells[1].textContent),
         nominatedByHref: (nominatorLink == null ? void 0 : nominatorLink.getAttribute("href")) || "",
         responseText,
         responseState,
@@ -44737,7 +45983,7 @@ order:initial
           if (nomination) {
             return {
               kind: "nomination-response",
-              label: cleanText24(actionEl.textContent) || (nomination.response === 1 ? "Accept" : "Reject"),
+              label: cleanText27(actionEl.textContent) || (nomination.response === 1 ? "Accept" : "Reject"),
               country: nomination.country,
               response: nomination.response
             };
@@ -44746,7 +45992,7 @@ order:initial
           if (vote) {
             return {
               kind: "vote",
-              label: cleanText24(actionEl.textContent) || "Vote",
+              label: cleanText27(actionEl.textContent) || "Vote",
               clubId: vote.clubId
             };
           }
@@ -44797,15 +46043,15 @@ order:initial
   };
   var clubCellHtml = (row) => `
     <div class="tmvu-nt-election-club-cell">
-        <a class="tmvu-nt-election-link" href="${escapeHtml30(row.clubHref || "#")}">${escapeHtml30(row.clubName)}</a>
+        <a class="tmvu-nt-election-link" href="${escapeHtml31(row.clubHref || "#")}">${escapeHtml31(row.clubName)}</a>
         ${row.clubFlagHtml || ""}
     </div>
 `;
-  var nominatorCellHtml = (row) => row.nominatedByHref ? `<a class="tmvu-nt-election-link" href="${escapeHtml30(row.nominatedByHref)}">${escapeHtml30(row.nominatedBy)}</a>` : escapeHtml30(row.nominatedBy);
-  var injectStyles44 = () => {
-    if (document.getElementById(STYLE_ID60)) return;
+  var nominatorCellHtml = (row) => row.nominatedByHref ? `<a class="tmvu-nt-election-link" href="${escapeHtml31(row.nominatedByHref)}">${escapeHtml31(row.nominatedBy)}</a>` : escapeHtml31(row.nominatedBy);
+  var injectStyles46 = () => {
+    if (document.getElementById(STYLE_ID64)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID60;
+    style.id = STYLE_ID64;
     style.textContent = `
         .tmvu-nt-election-page {
             --tmu-page-rail-width: 320px;
@@ -44976,12 +46222,12 @@ order:initial
     const contentBox = sourceRoot3.querySelector(".column2_a > .box");
     if (!contentBox) return;
     injectTmPageLayoutStyles();
-    injectStyles44();
-    const countryCode = extractCountryCode(sourceRoot3) || cleanText24(((_a2 = window.SESSION) == null ? void 0 : _a2.country) || "").toLowerCase();
-    const title = cleanText24(((_b = contentBox.querySelector(".box_head h2")) == null ? void 0 : _b.textContent) || "National coach election");
+    injectStyles46();
+    const countryCode = extractCountryCode(sourceRoot3) || cleanText27(((_a2 = window.SESSION) == null ? void 0 : _a2.country) || "").toLowerCase();
+    const title = cleanText27(((_b = contentBox.querySelector(".box_head h2")) == null ? void 0 : _b.textContent) || "National coach election");
     const overview = parseElectionOverview(contentBox);
     const sideBox = sourceRoot3.querySelector(".column3_a > .box");
-    const sideTitle = cleanText24(((_c = sideBox == null ? void 0 : sideBox.querySelector(".box_head h2")) == null ? void 0 : _c.textContent) || "Info");
+    const sideTitle = cleanText27(((_c = sideBox == null ? void 0 : sideBox.querySelector(".box_head h2")) == null ? void 0 : _c.textContent) || "Info");
     const ruleSections = parseRulesSections(sideBox == null ? void 0 : sideBox.querySelector(".box_body"));
     main2.innerHTML = "";
     main2.classList.add("tmvu-nt-election-page", "tmu-page-layout-3rail", "tmu-page-density-regular");
@@ -44997,7 +46243,7 @@ order:initial
     card.className = "tmu-card";
     card.innerHTML = `
         <div class="tmu-card-head">
-            <span>${escapeHtml30(title)}</span>
+            <span>${escapeHtml31(title)}</span>
         </div>
         <div class="tmu-card-body tmvu-nt-election-content" data-ref="content"></div>
     `;
@@ -45019,7 +46265,7 @@ order:initial
     formSection.innerHTML = `
         <div>
             <div class="tmu-kicker">Election</div>
-            <h3>${escapeHtml30(overview.formTitle)}</h3>
+            <h3>${escapeHtml31(overview.formTitle)}</h3>
         </div>
         ${overview.introHtml ? `<div class="tmvu-nt-election-copy">${overview.introHtml}</div>` : ""}
         <div class="tmvu-nt-election-form-row" data-ref="form-row"></div>
@@ -45041,7 +46287,7 @@ order:initial
       });
       const input = autocomplete.inputEl;
       input.addEventListener("input", () => {
-        const query = cleanText24(input.value);
+        const query = cleanText27(input.value);
         window.clearTimeout(suggestTimer);
         if (!query) {
           autocomplete.setItems([]);
@@ -45076,7 +46322,7 @@ order:initial
       tableSection.innerHTML = `
             <div>
                 <div class="tmu-kicker">Nominations</div>
-                <h3>${escapeHtml30(overview.tableTitle)}</h3>
+                <h3>${escapeHtml31(overview.tableTitle)}</h3>
             </div>
             ${TmUI.empty("No nominated clubs found.", true)}
         `;
@@ -45084,7 +46330,7 @@ order:initial
       const tableHeading = document.createElement("div");
       tableHeading.innerHTML = `
             <div class="tmu-kicker">Nominations</div>
-            <h3>${escapeHtml30(overview.tableTitle)}</h3>
+            <h3>${escapeHtml31(overview.tableTitle)}</h3>
         `;
       tableSection.appendChild(tableHeading);
       tableSection.appendChild(TmUI.table({
@@ -45138,14 +46384,14 @@ order:initial
       infoCard.className = "tmu-card";
       const rulesHtml = ruleSections.map((section) => `
             <section class="tmvu-nt-election-rule-section">
-                ${section.title ? `<h3>${escapeHtml30(section.title)}</h3>` : ""}
-                ${section.lead ? `<p class="tmvu-nt-election-rule-lead">${escapeHtml30(section.lead)}</p>` : ""}
-                ${section.items.length ? `<ul class="tmvu-nt-election-rule-list">${section.items.map((item) => `<li>${escapeHtml30(item)}</li>`).join("")}</ul>` : ""}
+                ${section.title ? `<h3>${escapeHtml31(section.title)}</h3>` : ""}
+                ${section.lead ? `<p class="tmvu-nt-election-rule-lead">${escapeHtml31(section.lead)}</p>` : ""}
+                ${section.items.length ? `<ul class="tmvu-nt-election-rule-list">${section.items.map((item) => `<li>${escapeHtml31(item)}</li>`).join("")}</ul>` : ""}
             </section>
         `).join("");
       infoCard.innerHTML = `
             <div class="tmu-card-head">
-                <span>${escapeHtml30(sideTitle)}</span>
+                <span>${escapeHtml31(sideTitle)}</span>
             </div>
             <div class="tmu-card-body tmvu-nt-election-rail tmvu-nt-election-rules">${rulesHtml}</div>
         `;
@@ -45155,7 +46401,7 @@ order:initial
   }
 
   // src/pages/national-teams-region.js
-  var STYLE_ID61 = "tmvu-national-teams-region-style";
+  var STYLE_ID65 = "tmvu-national-teams-region-style";
   var NT_FIXTURES_CACHE = /* @__PURE__ */ new Map();
   var REGION_OPTIONS = [
     { value: "af", label: "Africa" },
@@ -45163,12 +46409,12 @@ order:initial
     { value: "ao", label: "Asia and Oceania" },
     { value: "eu", label: "Europe" }
   ];
-  var cleanText25 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-  var escapeHtml31 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  var injectStyles45 = () => {
-    if (document.getElementById(STYLE_ID61)) return;
+  var cleanText28 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var escapeHtml32 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var injectStyles47 = () => {
+    if (document.getElementById(STYLE_ID65)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID61;
+    style.id = STYLE_ID65;
     style.textContent = `
         .tsa-panel-league-name {
             font-size: var(--tmu-font-sm);
@@ -45230,7 +46476,7 @@ order:initial
     return ((_b = (_a2 = href.match(/\/national-teams\/([a-z]{2,3})\//i)) == null ? void 0 : _a2[1]) == null ? void 0 : _b.toLowerCase()) || "";
   };
   var parseScore2 = (value) => {
-    const match = cleanText25(value).match(/^(\d+)\s*[-:]\s*(\d+)$/);
+    const match = cleanText28(value).match(/^(\d+)\s*[-:]\s*(\d+)$/);
     if (!match) return null;
     return { home: Number(match[1]), away: Number(match[2]) };
   };
@@ -45239,11 +46485,11 @@ order:initial
     if (!html2) return "";
     const wrapper = document.createElement("div");
     wrapper.innerHTML = html2;
-    return cleanText25(wrapper.textContent || "");
+    return cleanText28(wrapper.textContent || "");
   };
-  var isEuropeWorldCupQualifiers = (title) => cleanText25(title).toLowerCase() === "europe wc qualifiers";
-  var isGroupStageTab = (tab) => cleanText25(tab == null ? void 0 : tab.label).toLowerCase() === "group stage" || cleanText25(tab == null ? void 0 : tab.key).toLowerCase() === "group_stage";
-  var isNtqMatchType = (value) => cleanText25(value).toUpperCase() === "NTQ";
+  var isEuropeWorldCupQualifiers = (title) => cleanText28(title).toLowerCase() === "europe wc qualifiers";
+  var isGroupStageTab = (tab) => cleanText28(tab == null ? void 0 : tab.label).toLowerCase() === "group stage" || cleanText28(tab == null ? void 0 : tab.key).toLowerCase() === "group_stage";
+  var isNtqMatchType = (value) => cleanText28(value).toUpperCase() === "NTQ";
   var buildEuropeWcLegendHtml = () => `
     <div class="tmvu-nt-region-legend">
         <div class="tmvu-nt-region-legend-item"><span class="tmvu-nt-region-legend-swatch" style="background:var(--tmu-success-fill-hover);border:1px solid var(--tmu-success);"></span>Group winners qualify directly</div>
@@ -45265,20 +46511,20 @@ order:initial
   var flattenFixturesPayload = (payload) => Object.values(payload || {}).flatMap((month) => Array.from((month == null ? void 0 : month.matches) || []));
   var parseNtqFixturesPayload = (payload) => flattenFixturesPayload(payload).map((match) => ({
     matchId: String((match == null ? void 0 : match.id) || ""),
-    homeId: extractCountryCode2(String((match == null ? void 0 : match.home_link) || "")) || cleanText25((match == null ? void 0 : match.hometeam) || "").toLowerCase(),
-    awayId: extractCountryCode2(String((match == null ? void 0 : match.away_link) || "")) || cleanText25((match == null ? void 0 : match.awayteam) || "").toLowerCase(),
-    homeName: cleanText25((match == null ? void 0 : match.hometeamname) || ""),
-    awayName: cleanText25((match == null ? void 0 : match.awayteamname) || ""),
-    result: cleanText25((match == null ? void 0 : match.result) || wrapperText3(match == null ? void 0 : match.match_link) || ""),
-    matchType: cleanText25((match == null ? void 0 : match.matchtype_sort) || (match == null ? void 0 : match.matchtype_name) || "")
+    homeId: extractCountryCode2(String((match == null ? void 0 : match.home_link) || "")) || cleanText28((match == null ? void 0 : match.hometeam) || "").toLowerCase(),
+    awayId: extractCountryCode2(String((match == null ? void 0 : match.away_link) || "")) || cleanText28((match == null ? void 0 : match.awayteam) || "").toLowerCase(),
+    homeName: cleanText28((match == null ? void 0 : match.hometeamname) || ""),
+    awayName: cleanText28((match == null ? void 0 : match.awayteamname) || ""),
+    result: cleanText28((match == null ? void 0 : match.result) || wrapperText3(match == null ? void 0 : match.match_link) || ""),
+    matchType: cleanText28((match == null ? void 0 : match.matchtype_sort) || (match == null ? void 0 : match.matchtype_name) || "")
   })).filter((match) => match.homeId && match.awayId && match.result && isNtqMatchType(match.matchType));
   var getFixtureDedupKey = (match) => {
     if (match.matchId) return `mid:${match.matchId}`;
     const teams = [match.homeId, match.awayId].sort().join(":");
-    return `pair:${teams}|${match.result}|${cleanText25(match.matchType).toUpperCase()}`;
+    return `pair:${teams}|${match.result}|${cleanText28(match.matchType).toUpperCase()}`;
   };
   var fetchTeamNtqFixtures = (countryCode) => {
-    const code = cleanText25(countryCode).toLowerCase();
+    const code = cleanText28(countryCode).toLowerCase();
     if (!code) return Promise.resolve([]);
     if (!NT_FIXTURES_CACHE.has(code)) {
       NT_FIXTURES_CACHE.set(code, TmNationalTeamsModel.fetchFixtures(code).then(parseNtqFixturesPayload).catch(() => []));
@@ -45366,7 +46612,7 @@ order:initial
         const table = (_a3 = heading.nextElementSibling) == null ? void 0 : _a3.querySelector("table.group_table");
         if (!table) return null;
         return {
-          title: cleanText25(heading.textContent),
+          title: cleanText28(heading.textContent),
           rows: Array.from(table.querySelectorAll("tbody tr")).slice(1).map((tr) => {
             const cells = tr.querySelectorAll("td");
             if (cells.length < 10) return null;
@@ -45374,17 +46620,17 @@ order:initial
             const flagLink = cells[2].querySelector('a[href*="/national-teams/"]');
             const flagEl = cells[2].querySelector('ib[class*="flag-img-"], img[class*="flag-img-"]');
             return {
-              rank: cleanText25(cells[0].textContent),
-              clubName: cleanText25((teamLink == null ? void 0 : teamLink.textContent) || cells[1].textContent),
+              rank: cleanText28(cells[0].textContent),
+              clubName: cleanText28((teamLink == null ? void 0 : teamLink.textContent) || cells[1].textContent),
               countryCode: extractCountryCode2((teamLink == null ? void 0 : teamLink.getAttribute("href")) || (flagLink == null ? void 0 : flagLink.getAttribute("href")) || ""),
-              nameHtml: `<span style="display:inline-flex;align-items:center;gap:var(--tmu-space-xs)">${(flagLink == null ? void 0 : flagLink.innerHTML) || (flagEl == null ? void 0 : flagEl.outerHTML) || ""}<a class="tsa-club-link" href="${(teamLink == null ? void 0 : teamLink.getAttribute("href")) || "#"}">${escapeHtml31(cleanText25((teamLink == null ? void 0 : teamLink.textContent) || cells[1].textContent))}</a></span>`,
-              gp: cleanText25(cells[3].textContent),
-              w: cleanText25(cells[4].textContent),
-              d: cleanText25(cells[5].textContent),
-              l: cleanText25(cells[6].textContent),
-              gf: cleanText25(cells[7].textContent),
-              ga: cleanText25(cells[8].textContent),
-              pts: cleanText25(cells[9].textContent),
+              nameHtml: `<span style="display:inline-flex;align-items:center;gap:var(--tmu-space-xs)">${(flagLink == null ? void 0 : flagLink.innerHTML) || (flagEl == null ? void 0 : flagEl.outerHTML) || ""}<a class="tsa-club-link" href="${(teamLink == null ? void 0 : teamLink.getAttribute("href")) || "#"}">${escapeHtml32(cleanText28((teamLink == null ? void 0 : teamLink.textContent) || cells[1].textContent))}</a></span>`,
+              gp: cleanText28(cells[3].textContent),
+              w: cleanText28(cells[4].textContent),
+              d: cleanText28(cells[5].textContent),
+              l: cleanText28(cells[6].textContent),
+              gf: cleanText28(cells[7].textContent),
+              ga: cleanText28(cells[8].textContent),
+              pts: cleanText28(cells[9].textContent),
               isMe: /highlighted_row/.test(tr.className || "")
             };
           }).filter(Boolean)
@@ -45395,7 +46641,7 @@ order:initial
       });
       return {
         key,
-        label: cleanText25(tab.textContent) || key,
+        label: cleanText28(tab.textContent) || key,
         active: tab.classList.contains("active_tab") || tab.hasAttribute("selected"),
         noteHtml,
         groups,
@@ -45413,7 +46659,7 @@ order:initial
     const currentLabel = ((_a2 = REGION_OPTIONS.find((option) => option.value === currentRegion)) == null ? void 0 : _a2.label) || "Unknown";
     const selectedRegion = await TmUI.modal({
       title: "Select Region",
-      message: `Current region: <strong>${escapeHtml31(currentLabel)}</strong>`,
+      message: `Current region: <strong>${escapeHtml32(currentLabel)}</strong>`,
       buttons: [
         ...REGION_OPTIONS.map((option) => ({
           label: option.label,
@@ -45436,14 +46682,14 @@ order:initial
     const contentBox = sourceRoot3.querySelector(".column2_a > .box");
     if (!contentBox) return;
     injectTmPageLayoutStyles();
-    injectStyles45();
+    injectStyles47();
     TmStandingsTable.injectStyles();
     const countryCode = ((_c = (_b = (_a2 = sourceRoot3.querySelector('.content_menu a[href^="/national-teams/"]')) == null ? void 0 : _a2.getAttribute("href")) == null ? void 0 : _b.match(/\/national-teams\/([a-z]{2,3})\//i)) == null ? void 0 : _c[1]) || "";
     const subHeader = contentBox.querySelector(".box_sub_header");
-    const title = cleanText25(((_d = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _d.textContent) || ((_e = contentBox.querySelector(".box_head h2")) == null ? void 0 : _e.textContent) || "Tournaments");
+    const title = cleanText28(((_d = subHeader == null ? void 0 : subHeader.querySelector(".large")) == null ? void 0 : _d.textContent) || ((_e = contentBox.querySelector(".box_head h2")) == null ? void 0 : _e.textContent) || "Tournaments");
     const tabs = parseTabs(contentBox);
     const sideBox = sourceRoot3.querySelector(".column3_a > .box");
-    const sideTitle = cleanText25(((_f = sideBox == null ? void 0 : sideBox.querySelector(".box_head h2")) == null ? void 0 : _f.textContent) || "Info");
+    const sideTitle = cleanText28(((_f = sideBox == null ? void 0 : sideBox.querySelector(".box_head h2")) == null ? void 0 : _f.textContent) || "Info");
     const sideBody = (_g = sideBox == null ? void 0 : sideBox.querySelector(".box_body")) == null ? void 0 : _g.cloneNode(true);
     (_h = sideBody == null ? void 0 : sideBody.querySelector(".box_shadow")) == null ? void 0 : _h.remove();
     main2.innerHTML = "";
@@ -45461,7 +46707,7 @@ order:initial
     card.className = "tmu-card";
     card.innerHTML = `
         <div class="tmu-card-head">
-            <span id="tsa-panel-league-name" class="tsa-panel-league-name">${escapeHtml31(title)}</span>
+            <span id="tsa-panel-league-name" class="tsa-panel-league-name">${escapeHtml32(title)}</span>
         </div>
         <div class="tmu-card-body tmu-card-body-flush">
             <div data-ref="tabs"></div>
@@ -45530,13 +46776,13 @@ order:initial
   }
 
   // src/pages/national-teams-squad.js
-  var STYLE_ID62 = "tmvu-national-teams-squad-style";
-  var cleanText26 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-  var escapeHtml32 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  var injectStyles46 = () => {
-    if (document.getElementById(STYLE_ID62)) return;
+  var STYLE_ID66 = "tmvu-national-teams-squad-style";
+  var cleanText29 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var escapeHtml33 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var injectStyles48 = () => {
+    if (document.getElementById(STYLE_ID66)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID62;
+    style.id = STYLE_ID66;
     style.textContent = `
         .tmvu-nt-squad-page {
             --tmu-page-sidebar-width: 200px;
@@ -45569,8 +46815,8 @@ order:initial
     if (!playerId || cells.length < 2) return null;
     return {
       playerId,
-      number: cleanText26(((_a2 = cells[0]) == null ? void 0 : _a2.textContent) || ""),
-      name: cleanText26((playerAnchor == null ? void 0 : playerAnchor.textContent) || ""),
+      number: cleanText29(((_a2 = cells[0]) == null ? void 0 : _a2.textContent) || ""),
+      name: cleanText29((playerAnchor == null ? void 0 : playerAnchor.textContent) || ""),
       href: (playerAnchor == null ? void 0 : playerAnchor.getAttribute("href")) || `/players/${playerId}/`
     };
   }).filter(Boolean);
@@ -45578,7 +46824,7 @@ order:initial
     const boxes = Array.from(root2.querySelectorAll(".column2_a > .box, .column2 > .box, .column3_a > .box, .column3 > .box"));
     const candidates = boxes.map((box) => {
       var _a2, _b;
-      const title = cleanText26(((_a2 = box.querySelector(".box_head h2, .box_sub_header .large")) == null ? void 0 : _a2.textContent) || "Squad");
+      const title = cleanText29(((_a2 = box.querySelector(".box_head h2, .box_sub_header .large")) == null ? void 0 : _a2.textContent) || "Squad");
       const bestTable = Array.from(box.querySelectorAll("table")).map((table) => ({ rows: parseTableRows(table) })).sort((left, right) => right.rows.length - left.rows.length)[0];
       return {
         title,
@@ -45622,7 +46868,7 @@ order:initial
     const sourceRoot3 = document.querySelector(".main_center") || main2;
     const squadSource = findSquadSource(sourceRoot3);
     injectTmPageLayoutStyles();
-    injectStyles46();
+    injectStyles48();
     TmPlayersTable.injectCSS();
     main2.innerHTML = "";
     main2.classList.add("tmvu-nt-squad-page", "tmu-page-layout-2col", "tmu-page-density-regular");
@@ -45638,7 +46884,7 @@ order:initial
     card.className = "tmu-card";
     card.innerHTML = `
         <div class="tmu-card-head">
-            <span class="tmvu-nt-squad-title">${escapeHtml32((squadSource == null ? void 0 : squadSource.title) || "Squad")}</span>
+            <span class="tmvu-nt-squad-title">${escapeHtml33((squadSource == null ? void 0 : squadSource.title) || "Squad")}</span>
         </div>
         <div class="tmu-card-body tmu-card-body-flush">
             <div data-ref="panel" class="tmvu-nt-squad-wrap"></div>
@@ -45671,7 +46917,7 @@ order:initial
           key: "no",
           label: "#",
           align: "r",
-          render: (_value, player2) => `<span class="tmu-tabular">${escapeHtml32(player2.no || "")}</span>`
+          render: (_value, player2) => `<span class="tmu-tabular">${escapeHtml33(player2.no || "")}</span>`
         }]
       });
     }).catch((error) => {
@@ -45685,11 +46931,11 @@ order:initial
     const routeMatch = window.location.pathname.match(/^\/national-teams\/(?:([a-z]{2,3})\/?)?$/i);
     if (!routeMatch) return;
     const sourceRoot3 = (document.querySelector(".main_center") || main2).cloneNode(true);
-    const STYLE_ID64 = "tmvu-national-teams-style";
+    const STYLE_ID68 = "tmvu-national-teams-style";
     const { R5_THRESHOLDS: R5_THRESHOLDS4 } = TmConst;
     const CURRENT_SEASON2 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
-    const cleanText28 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-    const escapeHtml34 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const cleanText31 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const escapeHtml35 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const metricHtml7 = (opts) => TmUI.metric(opts);
     const decodeHtmlEntities = (value) => {
       const text = String(value || "");
@@ -45698,11 +46944,11 @@ order:initial
       textarea.innerHTML = text;
       return textarea.value;
     };
-    const injectStyles48 = () => {
-      if (document.getElementById(STYLE_ID64)) return;
+    const injectStyles50 = () => {
+      if (document.getElementById(STYLE_ID68)) return;
       injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID64;
+      style.id = STYLE_ID68;
       style.textContent = `
             .tmvu-nt-page {
                 --tmu-page-main-track: minmax(0, 0.9fr);
@@ -45947,7 +47193,7 @@ order:initial
     };
     const parseFactTable = (table) => Array.from((table == null ? void 0 : table.querySelectorAll("tr")) || []).map((row) => {
       var _a2, _b;
-      const label = cleanText28(((_a2 = row.querySelector("th")) == null ? void 0 : _a2.textContent) || "");
+      const label = cleanText31(((_a2 = row.querySelector("th")) == null ? void 0 : _a2.textContent) || "");
       const valueCell = row.querySelector("td:last-child");
       const valueHtml = ((_b = valueCell == null ? void 0 : valueCell.innerHTML) == null ? void 0 : _b.trim()) || "";
       if (!label || !valueHtml) return null;
@@ -45973,7 +47219,7 @@ order:initial
       const logoSrc = ((_a2 = overviewTable == null ? void 0 : overviewTable.querySelector('img[src*="/pics/nt_logos/"]')) == null ? void 0 : _a2.getAttribute("src")) || "";
       const facts = parseFactTable(overviewTable);
       const sections = Array.from(box.querySelectorAll("h3")).map((heading) => {
-        const title = cleanText28(heading.textContent);
+        const title = cleanText31(heading.textContent);
         const body = heading.nextElementSibling;
         if (!body || !body.classList.contains("std")) return null;
         const factTable = body.querySelector("table.zebra:not(.group_table):not(.fixtures_table)");
@@ -45993,8 +47239,8 @@ order:initial
       const countryInfoSection = sections.find((section) => section.type === "facts");
       const uetaChampionsCup = (countryInfoSection == null ? void 0 : countryInfoSection.items.find((item) => /ueta champions cup spots/i.test(item.label))) || null;
       return {
-        countryName: cleanText28((countryNode == null ? void 0 : countryNode.textContent) || "National Team"),
-        countryHtml: (countryNode == null ? void 0 : countryNode.innerHTML) || escapeHtml34(cleanText28((countryNode == null ? void 0 : countryNode.textContent) || "National Team")),
+        countryName: cleanText31((countryNode == null ? void 0 : countryNode.textContent) || "National Team"),
+        countryHtml: (countryNode == null ? void 0 : countryNode.innerHTML) || escapeHtml35(cleanText31((countryNode == null ? void 0 : countryNode.textContent) || "National Team")),
         changeHtml: (changeLink == null ? void 0 : changeLink.outerHTML) || "",
         logoSrc,
         facts,
@@ -46009,7 +47255,7 @@ order:initial
         const flagHtml = flagEl ? flagEl.outerHTML : "";
         return {
           id: "",
-          name: cleanText28((teamAnchor == null ? void 0 : teamAnchor.textContent) || cell.textContent || ""),
+          name: cleanText31((teamAnchor == null ? void 0 : teamAnchor.textContent) || cell.textContent || ""),
           href: (teamAnchor == null ? void 0 : teamAnchor.getAttribute("href")) || "#",
           flagHtml
         };
@@ -46024,7 +47270,7 @@ order:initial
         const matchHref = ((_a2 = resultCell.querySelector("a")) == null ? void 0 : _a2.getAttribute("href")) || "";
         const ntM = matchHref.match(/\/matches\/(?:(nt)\/)?(\d+)\//);
         const matchId = ntM ? (ntM[1] || "") + ntM[2] : "";
-        const scoreText = cleanText28(resultCell.textContent || "vs") || "vs";
+        const scoreText = cleanText31(resultCell.textContent || "vs") || "vs";
         const scoreHref = ntM ? `/matches/${ntM[1] ? ntM[1] + "/" + ntM[2] : ntM[2]}/` : "";
         return {
           matchId,
@@ -46047,7 +47293,7 @@ order:initial
         const icon = row.children[0];
         const content = row.children[1];
         const subtle = content == null ? void 0 : content.querySelector(".subtle");
-        const season = cleanText28((subtle == null ? void 0 : subtle.textContent) || "");
+        const season = cleanText31((subtle == null ? void 0 : subtle.textContent) || "");
         if (subtle) subtle.remove();
         return {
           iconStyle: (icon == null ? void 0 : icon.getAttribute("style")) || "",
@@ -46068,8 +47314,8 @@ order:initial
         const playerId = playerAnchor.getAttribute("player_link") || ((_b = (_a3 = playerAnchor.getAttribute("href")) == null ? void 0 : _a3.match(/\/players\/(\d+)\//)) == null ? void 0 : _b[1]) || "";
         return {
           playerId: String(playerId),
-          number: cleanText28(cells[0].textContent),
-          name: decodeHtmlEntities(cleanText28(playerAnchor.textContent)),
+          number: cleanText31(cells[0].textContent),
+          name: decodeHtmlEntities(cleanText31(playerAnchor.textContent)),
           href: playerAnchor.getAttribute("href") || "#"
         };
       }).filter((row) => row && row.playerId);
@@ -46109,13 +47355,13 @@ order:initial
       const table = TmTable.table({
         items: players,
         headers: [
-          { key: "age", label: "Age", sortable: false, render: (value) => escapeHtml34(value) },
+          { key: "age", label: "Age", sortable: false, render: (value) => escapeHtml35(value) },
           { key: "posHtml", label: "Pos", sortable: false, render: (value) => value },
           {
             key: "name",
             label: "Name",
             sortable: false,
-            render: (_value, player2) => `<span class="tmvu-nt-squad-name"><a href="${player2.href}">${escapeHtml34(player2.name)}</a></span>`
+            render: (_value, player2) => `<span class="tmvu-nt-squad-name"><a href="${player2.href}">${escapeHtml35(player2.name)}</a></span>`
           },
           { key: "r5Html", label: "R5", sortable: false, render: (value) => value }
         ],
@@ -46152,10 +47398,10 @@ order:initial
           title: `<span class="tmvu-nt-country">${overview.countryHtml}</span>`,
           subtitle: '<span class="tmvu-nt-subcopy">Recent form, trophies, fixtures and senior squad in one place.</span>',
           actions: changeHtml,
-          side: overview.logoSrc ? `<img src="${overview.logoSrc}" alt="${escapeHtml34(overview.countryName)} logo">` : "",
+          side: overview.logoSrc ? `<img src="${overview.logoSrc}" alt="${escapeHtml35(overview.countryName)} logo">` : "",
           footer: `
                     <div class="tmvu-nt-stat-grid">
-                        ${quickFacts.map((item) => metricHtml7({ label: escapeHtml34(item.label), value: item.valueHtml, tone: "overlay", size: "sm" })).join("")}
+                        ${quickFacts.map((item) => metricHtml7({ label: escapeHtml35(item.label), value: item.valueHtml, tone: "overlay", size: "sm" })).join("")}
                     </div>
                 `
         }
@@ -46165,7 +47411,7 @@ order:initial
     const renderStandingsCard = (title, html2) => {
       const wrap = document.createElement("section");
       TmUI.render(wrap, `
-            <tm-card data-title="${escapeHtml34(title)}" data-icon="\u{1F3C1}">
+            <tm-card data-title="${escapeHtml35(title)}" data-icon="\u{1F3C1}">
                 <div class="tmvu-nt-standings-wrap">${html2}</div>
             </tm-card>
         `);
@@ -46185,7 +47431,7 @@ order:initial
         scoreText: row.scoreText
       }, { index, season: CURRENT_SEASON2 })).join("")}</div>` : TmUI.empty("No matches listed.", true);
       TmUI.render(wrap, `
-            <tm-card data-title="${escapeHtml34(title)}" data-icon="\u{1F4C5}" data-flush>
+            <tm-card data-title="${escapeHtml35(title)}" data-icon="\u{1F4C5}" data-flush>
                 ${rowsHtml}
             </tm-card>
         `);
@@ -46202,7 +47448,7 @@ order:initial
                                 <div class="tmvu-nt-trophy-icon" style="${item.iconStyle}"></div>
                                 <div>
                                     <div class="tmvu-nt-trophy-title">${item.titleHtml}</div>
-                                    ${item.season ? `<div class="tmvu-nt-trophy-season">${escapeHtml34(item.season)}</div>` : ""}
+                                    ${item.season ? `<div class="tmvu-nt-trophy-season">${escapeHtml35(item.season)}</div>` : ""}
                                 </div>
                             </div>
                         `).join("")}
@@ -46223,7 +47469,7 @@ order:initial
     };
     const render16 = () => {
       var _a2;
-      injectStyles48();
+      injectStyles50();
       TmMatchHoverCard.injectStyles();
       const overview = parseOverview5();
       if (!overview) return;
@@ -46235,7 +47481,7 @@ order:initial
         root: sourceRoot3,
         id: "tmvu-national-teams-nav",
         className: "tmvu-national-teams-nav tmu-page-sidebar-stack",
-        countryCode: routeMatch[1] || cleanText28(((_a2 = window.SESSION) == null ? void 0 : _a2.country) || ""),
+        countryCode: routeMatch[1] || cleanText31(((_a2 = window.SESSION) == null ? void 0 : _a2.country) || ""),
         currentSeason: CURRENT_SEASON2
       });
       const mainColumn5 = document.createElement("section");
@@ -46266,10 +47512,10 @@ order:initial
   // src/pages/support-pro.js
   function initSupportProPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID64 = "tmvu-spro-style";
+    const STYLE_ID68 = "tmvu-spro-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles48 = () => {
-      if (document.getElementById(STYLE_ID64)) return;
+    const injectStyles50 = () => {
+      if (document.getElementById(STYLE_ID68)) return;
       injectTmPageLayoutStyles();
       const rules = [
         // hero: single column
@@ -46292,7 +47538,7 @@ order:initial
         ".tmvu-spro-faq-a{color:var(--tmu-text-main);padding-left:var(--tmu-space-md);border-left:2px solid var(--tmu-border-success);font-size:var(--tmu-font-sm);line-height:1.7}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID64;
+      style.id = STYLE_ID68;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -46361,7 +47607,7 @@ order:initial
       const title = "Support";
       const boxBody = snap2.querySelector(".box_body");
       const navItems = col1 ? parseNav(col1.cloneNode(true)) : [];
-      injectStyles48();
+      injectStyles50();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-spro-hero",
@@ -47187,15 +48433,6 @@ order:initial
     }
   };
 
-  // src/components/shared/country-flag.js
-  var normalizeCountry = (country) => String(country || "").trim().toLowerCase();
-  var CountryFlag = {
-    render(country, cls = "") {
-      const code = normalizeCountry(country);
-      return code ? `<ib alt="flag of ${code}" class="flag-img-${code}${cls ? " " + cls : ""}"></ib>` : "";
-    }
-  };
-
   // src/components/player/history/tm-history-mod.js
   var CSS6 = `
 /* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
@@ -47992,7 +49229,7 @@ order:initial
       const bl = s6.away ? s6.returns || "Away" : "Send";
       bodyRows.push({
         cells: [
-          { content: `${s6.name} ${s6.surname}`, cls: "font-semibold", attrs: { style: "color:var(--tmu-text-strong);white-space:nowrap" } },
+          { content: s6.name || `${s6.firstname || ""} ${s6.lastname || ""}`.trim() || "\u2014", cls: "font-semibold", attrs: { style: "color:var(--tmu-text-strong);white-space:nowrap" } },
           ...skillCells,
           { content: `<tm-button data-variant="primary" data-size="xs" data-cls="${bc}" data-scout-id="${s6.id}" ${s6.away ? `title="${s6.returns || ""}"` : ""}>${bl}</tm-button>`, cls: "c" }
         ]
@@ -48710,11 +49947,11 @@ order:initial
   }
 
   // src/pages/players-styles.js
-  var STYLE_ID63 = "tmvu-players-page-style";
+  var STYLE_ID67 = "tmvu-players-page-style";
   var injectPlayersPageStyles = () => {
-    if (document.getElementById(STYLE_ID63)) return;
+    if (document.getElementById(STYLE_ID67)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID63;
+    style.id = STYLE_ID67;
     style.textContent = `
         .tmvu-players-shell {
             display: flex;
@@ -48941,7 +50178,7 @@ order:initial
     });
     return result;
   };
-  var escapeHtml33 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var escapeHtml34 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   var formatTiDelta = (value) => {
     const n = Number(value) || 0;
     if (!n) return "0";
@@ -49096,7 +50333,7 @@ order:initial
             var _a2, _b;
             const num = (_b = (_a2 = item.number) != null ? _a2 : item.no) != null ? _b : "";
             const reserves = item.b ? 1 : 0;
-            return `<span class="tmvu-players-no" onclick="pop_player_number(${item.id},${Number(num) || 0},&quot;${escapeHtml33(item.name)}&quot;,${reserves})" title="Change number">${escapeHtml33(String(num || ""))}</span>`;
+            return `<span class="tmvu-players-no" onclick="pop_player_number(${item.id},${Number(num) || 0},&quot;${escapeHtml34(item.name)}&quot;,${reserves})" title="Change number">${escapeHtml34(String(num || ""))}</span>`;
           }
         },
         {
@@ -49105,7 +50342,7 @@ order:initial
           width: "220px",
           defaultSortDir: 1,
           sort: (a, b) => String(a.name || "").localeCompare(String(b.name || "")),
-          render: (_, item) => `<div class="tmvu-players-name">${CountryFlag.render(item.country, "tmvu-players-flag")}<a href="/players/${escapeHtml33(item.id)}/">${escapeHtml33(item.name)}</a></div>`
+          render: (_, item) => `<div class="tmvu-players-name">${CountryFlag.render(item.country, "tmvu-players-flag")}<a href="/players/${escapeHtml34(item.id)}/">${escapeHtml34(item.name)}</a></div>`
         },
         {
           key: "ageMonths",
@@ -49114,7 +50351,7 @@ order:initial
           width: "60px",
           defaultSortDir: 1,
           sort: (a, b) => (Number(a.ageMonths) || 0) - (Number(b.ageMonths) || 0),
-          render: (_, item) => escapeHtml33(item.ageMonthsString)
+          render: (_, item) => escapeHtml34(item.ageMonthsString)
         },
         {
           key: "positions",
@@ -49148,8 +50385,8 @@ order:initial
             const value = Number(item.ti);
             if (!Number.isFinite(value)) return '<span class="tmvu-players-r5 is-pending">...</span>';
             const delta = Number(item.TI_change);
-            const deltaHtml = item.TI_change !== null && Number.isFinite(delta) ? `<span class="tmvu-players-delta ${delta > 0 ? "pos" : delta < 0 ? "neg" : "zero"}">${escapeHtml33(formatTiDelta(delta))}</span>` : "";
-            return `<span class="tmvu-players-r5-stack"><span class="tmvu-players-r5">${escapeHtml33(String(value))}</span>${deltaHtml}</span>`;
+            const deltaHtml = item.TI_change !== null && Number.isFinite(delta) ? `<span class="tmvu-players-delta ${delta > 0 ? "pos" : delta < 0 ? "neg" : "zero"}">${escapeHtml34(formatTiDelta(delta))}</span>` : "";
+            return `<span class="tmvu-players-r5-stack"><span class="tmvu-players-r5">${escapeHtml34(String(value))}</span>${deltaHtml}</span>`;
           }
         },
         {
@@ -49163,8 +50400,8 @@ order:initial
             const value = item.r5;
             if (value == null) return '<span class="tmvu-players-r5 is-pending">...</span>';
             const delta = Number(item.r5Change);
-            const deltaHtml = Number.isFinite(delta) && delta !== 0 ? `<span class="tmvu-players-delta ${delta > 0 ? "pos" : "neg"}">${escapeHtml33(`${delta > 0 ? "+" : ""}${delta.toFixed(2)}`)}</span>` : "";
-            return `<span class="tmvu-players-r5-stack"><span class="tmvu-players-r5">${escapeHtml33(TmUtils.formatR5(value))}</span>${deltaHtml}</span>`;
+            const deltaHtml = Number.isFinite(delta) && delta !== 0 ? `<span class="tmvu-players-delta ${delta > 0 ? "pos" : "neg"}">${escapeHtml34(`${delta > 0 ? "+" : ""}${delta.toFixed(2)}`)}</span>` : "";
+            return `<span class="tmvu-players-r5-stack"><span class="tmvu-players-r5">${escapeHtml34(TmUtils.formatR5(value))}</span>${deltaHtml}</span>`;
           }
         }
       ];
@@ -49235,11 +50472,11 @@ order:initial
         return;
       }
       if (mainSquad.loading && !mainSquad.players.length) {
-        sectionsHost.innerHTML = `<div class="tmvu-players-empty">${escapeHtml33(mainSquad.syncMessage || "Loading...")}</div>`;
+        sectionsHost.innerHTML = `<div class="tmvu-players-empty">${escapeHtml34(mainSquad.syncMessage || "Loading...")}</div>`;
         return;
       }
       if (mainSquad.loadError && !mainSquad.players.length) {
-        sectionsHost.innerHTML = `<div class="tmvu-players-empty">${escapeHtml33(mainSquad.loadError)}</div>`;
+        sectionsHost.innerHTML = `<div class="tmvu-players-empty">${escapeHtml34(mainSquad.loadError)}</div>`;
         return;
       }
       const visiblePlayers = mainSquad.players.filter((player2) => {
@@ -49257,7 +50494,7 @@ order:initial
         panel.className = "tmu-flat-panel tmvu-players-team-panel";
         const panelHead = document.createElement("div");
         panelHead.className = "tmu-card-head";
-        panelHead.innerHTML = `<span class="tmvu-players-team-title">${escapeHtml33(teamLabel)} <span class="tmvu-players-team-count">${players.length}</span></span>`;
+        panelHead.innerHTML = `<span class="tmvu-players-team-title">${escapeHtml34(teamLabel)} <span class="tmvu-players-team-count">${players.length}</span></span>`;
         panel.appendChild(panelHead);
         const body = document.createElement("div");
         body.className = "tmvu-players-panel-body";
@@ -49729,7 +50966,7 @@ order:initial
     ];
     const getColor4 = TmUtils.getColor;
     const htmlOf7 = (node) => (node == null ? void 0 : node.outerHTML) || "";
-    const buttonHtml12 = (opts) => htmlOf7(TmUI.button(opts));
+    const buttonHtml13 = (opts) => htmlOf7(TmUI.button(opts));
     const checkboxHtml2 = (opts) => htmlOf7(TmUI.checkbox(opts));
     const checkboxFieldHtml = (opts) => htmlOf7(TmUI.checkboxField(opts));
     const inputHtml4 = (opts) => htmlOf7(TmUI.input({ size: "full", density: "compact", tone: "overlay", grow: true, ...opts }));
@@ -49867,7 +51104,7 @@ order:initial
     const createDialog = () => {
       const ov = document.createElement("div");
       ov.className = "tmrc-overlay";
-      const issuesButton = buttonHtml12({
+      const issuesButton = buttonHtml13({
         id: "tmrc-issues-btn",
         label: "\u26A0 Sync Issues",
         title: "Players with incomplete sync",
@@ -49875,15 +51112,15 @@ order:initial
         size: "xs",
         attrs: { "data-tone": "warn" }
       });
-      const closeButton = buttonHtml12({
+      const closeButton = buttonHtml13({
         id: "tmrc-close",
         icon: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
         title: "Close",
         variant: "icon"
       });
-      const zoomInButton = buttonHtml12({ id: "tmrc-zoom-in", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>', title: "Zoom In", color: "secondary", size: "xs" });
-      const zoomOutButton = buttonHtml12({ id: "tmrc-zoom-out", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>', title: "Zoom Out", color: "secondary", size: "xs" });
-      const zoomResetButton = buttonHtml12({ id: "tmrc-zoom-reset", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.12"/></svg>', title: "Reset Zoom", color: "secondary", size: "xs" });
+      const zoomInButton = buttonHtml13({ id: "tmrc-zoom-in", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>', title: "Zoom In", color: "secondary", size: "xs" });
+      const zoomOutButton = buttonHtml13({ id: "tmrc-zoom-out", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>', title: "Zoom Out", color: "secondary", size: "xs" });
+      const zoomResetButton = buttonHtml13({ id: "tmrc-zoom-reset", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.12"/></svg>', title: "Reset Zoom", color: "secondary", size: "xs" });
       ov.innerHTML = `
             <div class="tmrc-modal">
                 <div class="tmrc-head">
@@ -49989,7 +51226,7 @@ order:initial
       const container = overlay.querySelector("#tmrc-filters");
       let h = '<span class="tmrc-filter-label">Position:</span>';
       POS_GROUPS.forEach((g) => {
-        h += buttonHtml12({
+        h += buttonHtml13({
           label: g.label,
           color: currentFilter === g.key ? "lime" : "secondary",
           size: "xs",
@@ -50038,8 +51275,8 @@ order:initial
       const searchLower = legendSearch.toLowerCase();
       const filteredLegend = searchLower ? allInLegend.filter((s6) => s6.name.toLowerCase().includes(searchLower)) : allInLegend;
       const filteredChecked = filteredLegend.filter((s6) => s6.visible).length;
-      const selectAllButton = buttonHtml12({ id: "tmrc-sel-all", label: "All", title: "Select All", color: "secondary", size: "xs" });
-      const selectNoneButton = buttonHtml12({ id: "tmrc-sel-none", label: "None", title: "Deselect All", color: "secondary", size: "xs" });
+      const selectAllButton = buttonHtml13({ id: "tmrc-sel-all", label: "All", title: "Select All", color: "secondary", size: "xs" });
+      const selectNoneButton = buttonHtml13({ id: "tmrc-sel-none", label: "None", title: "Deselect All", color: "secondary", size: "xs" });
       let h = `<div class="tmrc-legend-hdr">
             <span class="tmrc-legend-hdr-title">Players (${filteredChecked}/${filteredLegend.length}${searchLower ? " / " + totalCount : ""})</span>
             <div class="tmrc-legend-hdr-btns">
@@ -51620,7 +52857,7 @@ order:initial
 
   // src/layouts/app-shell.js
   var IMPORT_PATH = "/import/";
-  function cleanText27(value) {
+  function cleanText30(value) {
     return String(value || "").replace(/\s+/g, " ").trim();
   }
   function normalizeHref(href) {
@@ -51651,7 +52888,7 @@ order:initial
     var _a2, _b;
     const session = window.SESSION || {};
     const clubId2 = String(session.main_id || session.club_id || "").trim();
-    const clubName2 = cleanText27(
+    const clubName2 = cleanText30(
       session.main_name || session.clubname || session.club_name || ((_a2 = document.querySelector('a[href*="/club/"]')) == null ? void 0 : _a2.textContent) || "TrophyManager"
     );
     return {
@@ -51680,7 +52917,7 @@ order:initial
     if (topMenu) topMenu.style.display = "none";
     if (topMenuSub) topMenuSub.style.display = "none";
   }
-  function injectStyles47() {
+  function injectStyles49() {
     ensureTmTheme();
     if (document.getElementById("tmvu-shell-styles")) return;
     const style = document.createElement("style");
@@ -52219,11 +53456,19 @@ order:initial
       if (/^\/fixtures\/cup\/[a-z]{2,3}\/\d+\/?$/i.test(currentPath)) {
         initCupFixturesPage(main2);
       }
+      if (/^\/history\/cup\/[a-z]{2,3}(?:\/\d+)?\/?$/i.test(currentPath)) {
+        initCupHistoryPage(main2);
+      }
+      if (/^\/statistics\/cup\/[a-z]{2,3}\//i.test(currentPath)) {
+        initCupStatisticsPage(main2);
+      }
       if (/^\/cup\/?$/i.test(currentPath)) {
         initCupPage(main2);
+        return;
       }
       if (/^\/home\/?$/i.test(currentPath)) {
         initHomePage(main2);
+        return;
       }
       if (/^\/international-cup(?:\/\d+)?\/?$/i.test(currentPath)) {
         initInternationalCupPage(main2);
@@ -52322,7 +53567,7 @@ order:initial
     const currentPath = normalizeHref(window.location.pathname) || "/home/";
     const groups = collectNavGroups();
     replaceMainCenterClass();
-    injectStyles47();
+    injectStyles49();
     const clubInfo = getClubInfo();
     const openGroupId = getInitialOpenGroup();
     const headerFab = getHeaderFab(currentPath);
@@ -52359,6 +53604,7 @@ order:initial
     });
     pmController.bind();
     syncLayoutState();
+    window.TmPmController = pmController;
     const themeFab = document.createElement("button");
     themeFab.className = "tmvu-header-fab tmvu-theme-fab";
     themeFab.setAttribute("title", "Choose theme");

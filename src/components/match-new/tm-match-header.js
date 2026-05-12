@@ -202,6 +202,9 @@ export const TmMatchHeader = {
 
         el.appendChild(controls);
 
+        // Hide controls for upcoming matches — shown when match goes live
+        if (match.status === 'future') controls.style.display = 'none';
+
         // ── Refs ──────────────────────────────────────────────────────
         const scoreEl = headRow.querySelector('.mp-score');
         const minEl   = headRow.querySelector('.mp-minute');
@@ -211,7 +214,13 @@ export const TmMatchHeader = {
             const { h, a } = scoreAt(match, replayState.currentMinute, replayState.committedActionIndex);
             scoreEl.textContent = `${h} - ${a}`;
 
-            if (replayState.ended) {
+            if (match.status === 'future') {
+                const [yr, mo, dy] = (match.date || '').split('-');
+                const d = dy && mo && yr ? `${dy}.${mo}.${yr}` : (match.date || '');
+                const t = match.kickoffTime || '';
+                minEl.textContent = t ? `${d} · ${t}` : d;
+                minEl.classList.add('ended');
+            } else if (replayState.ended) {
                 minEl.textContent = 'FT';
                 minEl.classList.add('ended');
             } else {
@@ -247,6 +256,6 @@ export const TmMatchHeader = {
             awayTactic.update(deriveMentality('away'));
         };
 
-        return { el, update };
+        return { el, update, showControls() { controls.style.display = ''; } };
     },
 };

@@ -47,6 +47,7 @@ export function mountTacticsField(container, ctx) {
         getOccupiedFieldKeys, drag, save,
         readOnly = false,
         showMatchRatingRef = null,
+        eventsRef = null,
     } = ctx;
 
     // ── Tooltip delegation ───────────────────────────────────────────────
@@ -213,9 +214,24 @@ export function mountTacticsField(container, ctx) {
             const slotRoutine = (showMR || player.routine == null || player.routine <= 0) ? null : Number(player.routine).toFixed(1);
             const moodPenalty = showMR ? 0 : TmPosition.moodPenalty(player, posKey);
             const momBadge = showMR && player.mom ? '<span class="tmtc-slot-mom" title="Man of the Match">★</span>' : '';
+            let slotEventsHtml = '';
+            if (eventsRef?.value && player.id) {
+                const ev = eventsRef.value[String(player.id)];
+                if (ev) {
+                    let eh = '';
+                    if (ev.goals > 0)          eh += `⚽${ev.goals > 1 ? `×${ev.goals}` : ''}`;
+                    if (ev.assists > 0)        eh += `🅰${ev.assists > 1 ? `×${ev.assists}` : ''}`;
+                    if (ev.yellowRedCards > 0) eh += '🟨🟥';
+                    else if (ev.yellowCards > 0) eh += '🟨';
+                    if (ev.redCards > 0)       eh += '🟥';
+                    if (ev.injured)            eh += '<span style="color:#ff3c3c;font-size:9px;font-weight:800">✚</span>';
+                    if (eh) slotEventsHtml = `<span class="tmtc-slot-events">${eh}</span>`;
+                }
+            }
             slotEl.innerHTML = `
                 <span class="tmtc-slot-no"${slotNoColor ? ` style="color:${slotNoColor}"` : ''}>${escHtml(slotNoText)}</span>
                 <span class="tmtc-slot-name">${escHtml(player.lastname || player.name || '')}${player.captain ? '<span class="tmtc-capt-badge">C</span>' : ''}${playerStatusIconsHtml(player)}${momBadge}</span>
+                ${slotEventsHtml}
                 ${TmPosition.chip([posKey || ''])}
                 <span class="tmtc-slot-meta">
                     <span class="tmtc-slot-rec">${!showMR && slotRec != null ? TmStars.recommendation(slotRec, 'tmtc-rec-stars tmtc-rec-stars-sm') || '<span class="tmtc-slot-rec-empty">—</span>' : '<span class="tmtc-slot-rec-empty">—</span>'}</span>
@@ -333,6 +349,7 @@ export function mountTacticsFieldReadOnly(container, posPlayerMap, players = [],
     const players_by_id = Object.fromEntries(players.map(p => [String(p.id), p]));
     const { POSITION_MAP } = TmConst;
     const showMatchRatingRef = opts.showMatchRatingRef ?? { value: false };
+    const eventsRef = opts.eventsRef ?? null;
     const result = mountTacticsField(container, {
         readOnly: true,
         players_by_id,
@@ -348,6 +365,7 @@ export function mountTacticsFieldReadOnly(container, posPlayerMap, players = [],
         save:    () => {},
         refreshAll: () => {},
         showMatchRatingRef,
+        eventsRef,
     });
     return { ...result, showMatchRatingRef };
 }

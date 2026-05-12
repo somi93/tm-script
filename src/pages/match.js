@@ -14,6 +14,7 @@ import { TmMatchH2HNew }   from '../components/match-new/tm-match-h2h.js';
 import { TmMatchReportNew }   from '../components/match-new/tm-match-report.js';
 import { TmMatchLeagueNew }  from '../components/match-new/tm-match-league.js';
 import { TmMatchIntCupNew }  from '../components/match-new/tm-match-intcup.js';
+import { TmMatchCupNew }     from '../components/match-new/tm-match-cup.js';
 import { TmMatchTimeline }   from '../components/match-new/tm-match-timeline.js';
 import { TmMatchPostMatch }  from '../components/match-new/tm-match-postmatch.js';
 import { MENTALITY_MAP_LONG } from '../constants/match.js';
@@ -29,15 +30,15 @@ const injectShellStyles = () => {
     s.textContent = `
         .mp-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: var(--tmu-surface-overlay-strong);
+            background: var(--tmu-surface-panel, #001012);
             z-index: 10000; display: flex; align-items: flex-start; justify-content: center;
         }
         .mp-dialog {
-            background: var(--tmu-match-shell-bg, var(--tmu-surface-panel));
+            background: var(--tmu-match-shell-bg, var(--tmu-surface-panel, #001012));
             width: 100vw; height: 100vh;
             display: flex; flex-direction: column; overflow: hidden;
         }
-        .mp-body { flex: 1; display: flex; flex-direction: row; overflow: hidden; min-height: 0; padding: 8px; gap: 8px; background: var(--tmu-match-content-bg, transparent); }
+        .mp-body { flex: 1; display: flex; flex-direction: row; overflow: hidden; min-height: 0; padding: 8px; gap: 8px; background: var(--tmu-match-content-bg, var(--tmu-surface-panel, #001012)); }
         .mp-center { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; padding: 0 16px; }
         .mp-tab-content { flex: 1; overflow-y: auto; min-height: 0; }
         .mp-tabs.tmu-tabs,
@@ -274,7 +275,7 @@ const openPlayer = async (matchId) => {
         prevH = h; prevA = a;
     };
 
-    let activeTab = 'details';
+    let activeTab = isFuture ? 'lineups' : 'details';
     let reportInstance = null;
     let leagueInstance = null;
     let timelineInstance = null;
@@ -372,6 +373,8 @@ const openPlayer = async (matchId) => {
         } else if (key === 'league') {
             if (match.competition?.type === 'international_cup') {
                 leagueInstance = TmMatchIntCupNew.create(match, ctrl.getState());
+            } else if (match.competition?.type === 'cup') {
+                leagueInstance = TmMatchCupNew.create(match, ctrl.getState());
             } else {
                 leagueInstance = TmMatchLeagueNew.create(match, ctrl.getState());
             }
@@ -385,18 +388,20 @@ const openPlayer = async (matchId) => {
 
     dialog.appendChild(header.el);
 
+    const prematchHiddenTabs = new Set(['details', 'statistics', 'report', 'timeline']);
+    const allTabItems = [
+        { key: 'details',    label: 'Details'    },
+        { key: 'lineups',    label: 'Lineups'    },
+        { key: 'statistics', label: 'Statistics' },
+        { key: 'report',     label: 'Report'     },
+        { key: 'h2h',        label: 'H2H'        },
+        { key: 'league',     label: match.competition?.type === 'international_cup' ? (match.competition.name || 'Cup') : (match.competition?.type === 'cup' ? (match.competition.name || 'Cup') : 'League') },
+        { key: 'timeline',   label: 'Timeline'   },
+        { key: 'venue',      label: 'Venue'      },
+    ];
     const tabs = TmTabs.tabs({
-        items: [
-            { key: 'details',    label: 'Details'    },
-            { key: 'lineups',    label: 'Lineups'    },
-            { key: 'statistics', label: 'Statistics' },
-            { key: 'report',     label: 'Report'     },
-            { key: 'h2h',        label: 'H2H'        },
-            { key: 'league',     label: match.competition?.type === 'international_cup' ? (match.competition.name || 'Cup') : 'League' },
-            { key: 'timeline',   label: 'Timeline'   },
-            { key: 'venue',      label: 'Venue'      },
-        ],
-        active: 'details',
+        items: isFuture ? allTabItems.filter(t => !prematchHiddenTabs.has(t.key)) : allTabItems,
+        active: isFuture ? 'lineups' : 'details',
         stretch: true,
         cls: 'mp-tabs',
         onChange: (key) => {
@@ -434,6 +439,13 @@ const openPlayer = async (matchId) => {
     document.body.appendChild(overlay);
     document.body.style.overflow = 'hidden';
 
+    if (isFuture) {
+        body.style.display = 'none';
+        renderTab('lineups');
+        tabContent.style.display = '';
+    }
+
+    if (isFuture) unity.init = () => {}; // no-op for future
     if (!isFuture) unity.init();
 
     let canvasRO = null; // kept for close() compatibility
@@ -460,6 +472,41 @@ const openPlayer = async (matchId) => {
         : ctrl.getState();
     header.update(match, initState, maximumMinute);
     if (!isFuture) setTimeout(() => { if (!unity.isAvailable()) ctrl.play(); }, 800);
+
+    // ── Kickoff countdown (future matches) ────────────────────────────
+    if (isFuture && match.kickoff) {
+        const parseTimeOfDay = (str) => { const [h, m] = (str || '').split(':').map(Number); return ((h || 0) * 3600 + (m || 0) * 60); };
+        const kickoffMs = (match.kickoff + parseTimeOfDay(match.kickoffTime)) * 1000;
+        const msUntil   = kickoffMs - Date.now();
+        // Poll every 60s starting from kickoff; reopen once match is live
+        const pollInterval = 60_000;
+        const startAt = Math.max(0, msUntil);
+        let _pollTimer = null;
+        const poll = () => {
+            TmMatchModel.fetchMatchWithProfiles(matchId).then(fresh => {
+                if (!fresh || fresh.status === 'future') {
+                    _pollTimer = setTimeout(poll, pollInterval);
+                    return;
+                }
+                close();
+                openPlayer(matchId);
+            }).catch(() => { _pollTimer = setTimeout(poll, pollInterval); });
+        };
+        const _startTimer = setTimeout(() => {
+            header.showControls();
+            poll();
+        }, startAt);
+        // Clean up timers when overlay closes — patch the existing close ref
+        const _baseClose = close;
+        const closeWithTimers = () => { clearTimeout(_startTimer); clearTimeout(_pollTimer); _baseClose(); };
+        // replace references so onKey and overlay-click also clean up
+        document.removeEventListener('keydown', onKey);
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeWithTimers();
+            if (e.key === ' ') { e.preventDefault(); ctrl.toggle(); }
+        });
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) closeWithTimers(); });
+    }
 };
 
 // ── Page entry point ──────────────────────────────────────────────────────────

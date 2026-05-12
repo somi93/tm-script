@@ -35,7 +35,7 @@ export function initHomePage(main) {
             '.tmvu-home-tabs-host{display:flex;flex-direction:column;min-width:0}',
             '.tmvu-home-tabpanel{display:none;padding:var(--tmu-space-xl)}',
             '.tmvu-home-tabpanel.tmvu-tab-active{display:block}',
-            '.tmvu-home-list-item{display:block;padding:var(--tmu-space-md) var(--tmu-space-lg);border:1px solid var(--tmu-border-soft-alpha);border-radius:var(--tmu-space-md);background:var(--tmu-border-contrast);text-decoration:none}',
+            '.tmvu-home-list-item{display:block;width:100%;padding:var(--tmu-space-md) var(--tmu-space-lg);border:1px solid var(--tmu-border-soft-alpha);border-radius:var(--tmu-space-md);background:var(--tmu-border-contrast);text-decoration:none;text-align:left;font:inherit;cursor:pointer;box-sizing:border-box}',
             '.tmvu-home-list-item:hover{background:var(--tmu-surface-overlay-soft);border-color:var(--tmu-success-fill-soft)}',
             '.tmvu-home-list-title{font-size:var(--tmu-font-sm);font-weight:800;color:var(--tmu-text-strong);line-height:1.45}',
             '.tmvu-home-list-sub{margin-top:var(--tmu-space-xs);font-size:var(--tmu-font-xs);color:var(--tmu-text-muted);line-height:1.5}',
@@ -724,6 +724,8 @@ export function initHomePage(main) {
             if (!key || seen.has(key)) continue;
             seen.add(key);
             items.push({
+                id: clean(message?.id) || '',
+                conversationId: clean(message?.conversation_id) || '0',
                 senderName: clean(message?.sender_name) || 'Unknown sender',
                 subject: clean(message?.subject) || '(No subject)',
                 time: clean(message?.time),
@@ -890,13 +892,44 @@ export function initHomePage(main) {
             panel.innerHTML = TmUI.loading('Loading messages...', true);
 
             const payload = await TmMessagesModel.fetchPmMessages('inbox');
-            const items = normalizePmConversationItems(payload).map((item) => ({
-                title: item.subject,
-                sub: item.senderName,
-                time: item.time,
-                href: item.href,
-            }));
-            renderListPanel(panel, items, 'No recent conversations found.');
+            const pmItems = normalizePmConversationItems(payload);
+
+            if (!pmItems.length) {
+                panel.innerHTML = TmUI.empty(escapeHtml('No recent conversations found.'), true);
+                return;
+            }
+
+            panel.innerHTML = `
+                <div class="tmvu-home-list tmu-stack tmu-stack-density-tight">
+                    ${pmItems.map((item) => `
+                        <button type="button" class="tmvu-home-list-item tmvu-home-pm-item"
+                            data-pm-id="${escapeHtml(item.id)}"
+                            data-pm-conv-id="${escapeHtml(item.conversationId)}"
+                            data-pm-subject="${escapeHtml(item.subject)}">
+                            <div class="tmvu-home-list-title">${escapeHtml(item.subject)}</div>
+                            <div class="tmvu-home-list-sub">${escapeHtml(item.senderName)}${item.time ? ` • ${escapeHtml(item.time)}` : ''}</div>
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+
+            panel.querySelectorAll('.tmvu-home-pm-item').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    const ctrl = window.TmPmController;
+                    if (ctrl?.openDialog) {
+                        ctrl.openDialog({
+                            place: 'inbox',
+                            item: {
+                                id: btn.dataset.pmId,
+                                conversationId: btn.dataset.pmConvId || '0',
+                                subject: btn.dataset.pmSubject || '',
+                            },
+                        });
+                    } else {
+                        window.location.assign('/pm/');
+                    }
+                });
+            });
         };
 
         const renderReferralsPanel = async () => {

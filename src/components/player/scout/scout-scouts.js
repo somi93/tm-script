@@ -18,7 +18,7 @@ const buildTable = (scouts) => {
         const bl = s.away ? (s.returns || 'Away') : 'Send';
         bodyRows.push({
             cells: [
-                { content: `${s.name} ${s.surname}`, cls: 'font-semibold', attrs: { style: 'color:var(--tmu-text-strong);white-space:nowrap' } },
+                { content: s.name || `${s.firstname || ''} ${s.lastname || ''}`.trim() || '—', cls: 'font-semibold', attrs: { style: 'color:var(--tmu-text-strong);white-space:nowrap' } },
                 ...skillCells,
                 { content: `<tm-button data-variant="primary" data-size="xs" data-cls="${bc}" data-scout-id="${s.id}" ${s.away ? `title="${s.returns || ''}"` : ''}>${bl}</tm-button>`, cls: 'c' },
             ],

@@ -72,6 +72,11 @@ function injectStyles() {
             text-decoration: underline;
         }
 
+        .tmvu-standings-wrap td.std-pts {
+            font-weight: 700;
+            color: var(--tmu-text-strong);
+        }
+
         .tmvu-standings-group + .tmvu-standings-group {
             border-top: 1px solid var(--tmu-border-input-overlay);
         }
@@ -234,7 +239,7 @@ function buildHtml({ rows = [], liveZoneMap = {}, isFiltered = false, showForm =
             `<td class="std-right">${escapeHtml(row.l)}</td>`,
             `<td class="std-right">${escapeHtml(row.gf)}</td>`,
             `<td class="std-right">${escapeHtml(row.ga)}</td>`,
-            `<td class="std-right">${escapeHtml(row.pts)}</td>`,
+            `<td class="std-right std-pts">${escapeHtml(row.pts)}</td>`,
             ...(showForm ? [`<td class="std-right std-form-cell">${formHtml(row.form || [], row.playedCount || 0)}</td>`] : []),
         ];
 

@@ -80,6 +80,15 @@ function cleanText(value) {
     return String(value || '').replace(/\s+/g, ' ').trim();
 }
 
+const isPow2 = (n) => n > 0 && (n & (n - 1)) === 0;
+export const roundLabelFromCount = (n) => {
+    if (!isPow2(n)) return 'Qualification Round';
+    if (n === 1) return 'Final';
+    if (n === 2) return 'Semi-finals';
+    if (n === 4) return 'Quarter-finals';
+    return `Round of ${n * 2}`;
+};
+
 function htmlOf(node) {
     return node ? node.outerHTML : '';
 }
@@ -218,7 +227,7 @@ function buildFixtureGroups(data) {
     return Object.entries(data)
         .sort(([a], [b]) => a.localeCompare(b))
         .map(([, month]) => ({
-            label: month.date_name || month.month || 'Matches',
+            label: roundLabelFromCount((month.matches || []).length),
             matches: (month.matches || []).map(m => matchFromApi(m)),
         }))
         .filter(group => group.matches.length > 0);
@@ -288,15 +297,12 @@ export function mountCupPage(main, { mode = 'overview' } = {}) {
             const fixtureGroups = buildFixtureGroups(fixturesData);
             const history = parseHistoryPanel(sourceRoot);
 
-            const fixtureCard = isFixturesPage && fixtureGroups.length
-                ? TmTournamentCards.renderGroupedFixturesCard({
-                    title: overview.currentRoundLabel || overview.roundText || 'Fixtures',
-                    groups: fixtureGroups,
-                }, {
-                    season: currentSeason,
-                    icon: '📅',
-                })
-                : null;
+            const fixtureCards = isFixturesPage
+                ? fixtureGroups.map(g => TmTournamentCards.renderDrawCard(
+                    { title: g.label, rows: g.matches },
+                    { season: currentSeason, icon: '📅' }
+                ))
+                : [];
 
             TmTournamentPage.mount(main, {
                 pageClass: 'tmvu-cup-page tmu-page-layout-3rail tmu-page-density-regular',
@@ -307,7 +313,7 @@ export function mountCupPage(main, { mode = 'overview' } = {}) {
                 mainClass: 'tmvu-cup-main tmu-page-section-stack',
                 sideClass: 'tmvu-cup-side tmu-page-rail-stack',
                 mainNodes: isFixturesPage
-                    ? [renderOverviewCard(overview), fixtureCard]
+                    ? [renderOverviewCard(overview), ...fixtureCards]
                     : [renderOverviewCard(overview), ...drawSections.map(renderDrawCard)],
                 sideNodes: [routeRows.length ? renderRouteCard(routeRows, overview) : null, history ? renderHistoryCard(history) : null],
                 season: currentSeason,

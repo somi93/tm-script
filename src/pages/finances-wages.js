@@ -87,11 +87,15 @@ const injectStyles = () => {
             }
 
             .tmvu-fin-wages-table tbody tr {
-                background: #2d4315;
+                background: transparent;
             }
 
             .tmvu-fin-wages-table tbody tr:nth-child(even) {
-                background: #35501a;
+                background: var(--tmu-border-contrast);
+            }
+
+            .tmvu-fin-wages-table tbody tr:hover {
+                background: var(--tmu-surface-dark-mid);
             }
 
             .tmvu-fin-wages-table td,
@@ -120,7 +124,7 @@ const injectStyles = () => {
             }
 
             .tmvu-fin-wages-table tr.tmvu-fin-wages-total {
-                background: #41631f;
+                background: var(--tmu-surface-dark-strong);
             }
 
             .tmvu-fin-wages-table tr.tmvu-fin-wages-total td {

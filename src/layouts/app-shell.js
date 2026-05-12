@@ -24,6 +24,8 @@ import { initLeaguePage } from '../pages/league.js';
 import { initMatchPage } from '../pages/match.js';
 import { initCupPage } from '../pages/cup.js';
 import { initCupFixturesPage } from '../pages/cup-fixtures.js';
+import { initCupHistoryPage } from '../pages/cup-history.js';
+import { initCupStatisticsPage } from '../pages/cup-statistics.js';
 import { initHomePage } from '../pages/home.js';
 import { initInternationalCupPage } from '../pages/international-cup.js';
 import { initForumPage } from '../pages/forum.js';
@@ -670,11 +672,19 @@ function initCurrentPage() {
     if (/^\/fixtures\/cup\/[a-z]{2,3}\/\d+\/?$/i.test(currentPath)) {
         initCupFixturesPage(main);
     }
+    if (/^\/history\/cup\/[a-z]{2,3}(?:\/\d+)?\/?$/i.test(currentPath)) {
+        initCupHistoryPage(main);
+    }
+    if (/^\/statistics\/cup\/[a-z]{2,3}\//i.test(currentPath)) {
+        initCupStatisticsPage(main);
+    }
     if (/^\/cup\/?$/i.test(currentPath)) {
         initCupPage(main);
+        return;
     }
     if (/^\/home\/?$/i.test(currentPath)) {
         initHomePage(main);
+        return;
     }
     if (/^\/international-cup(?:\/\d+)?\/?$/i.test(currentPath)) {
         initInternationalCupPage(main);
@@ -821,8 +831,8 @@ export function initAppShellLayout() {
         initialFeedCount: clubInfo.newFeed || 0,
     });
     pmController.bind();
-
     syncLayoutState();
+    window.TmPmController = pmController;
 
     const themeFab = document.createElement('button');
     themeFab.className = 'tmvu-header-fab tmvu-theme-fab';

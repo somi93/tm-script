@@ -80,6 +80,10 @@ export function injectTmPlayerRowStyles() {
             flex-shrink: 0; font-size: 11px; color: #f5c518;
             line-height: 1; padding: 0 1px;
         }
+        .tm-pr-events {
+            flex-shrink: 0; display: flex; align-items: center; gap: 2px;
+            font-size: 11px; line-height: 1;
+        }
     `;
     document.head.appendChild(s);
 }
@@ -119,7 +123,7 @@ export const TmPlayerRow = {
      *   @param {string}  [opts.state]   — 'active' | 'bench' | 'off' | 'sub-in'  (default: 'active')
      * @returns {HTMLDivElement}
      */
-    build(player, { posKey, state = 'active', compact = false, showMatchRating = false } = {}) {
+    build(player, { posKey, state = 'active', compact = false, showMatchRating = false, matchEvents = null } = {}) {
         injectTmPlayerRowStyles();
 
         // Resolve the actual playing slot — explicit posKey or player.position (match ctx).
@@ -224,6 +228,25 @@ export const TmPlayerRow = {
                 mv.title = 'Man of the Match';
                 mv.textContent = '★';
                 el.appendChild(mv);
+            }
+        }
+
+        if (matchEvents) {
+            const ev = matchEvents[String(player.id ?? player.player_id ?? '')];
+            if (ev) {
+                let evHtml = '';
+                if (ev.goals > 0)          evHtml += `⚽${ev.goals > 1 ? `×${ev.goals}` : ''}`;
+                if (ev.assists > 0)        evHtml += `🅰${ev.assists > 1 ? `×${ev.assists}` : ''}`;
+                if (ev.yellowRedCards > 0) evHtml += '🟨🟥';
+                else if (ev.yellowCards > 0) evHtml += '🟨';
+                if (ev.redCards > 0)       evHtml += '🟥';
+                if (ev.injured)            evHtml += '<span style="color:#ff3c3c;font-size:10px;font-weight:800">✚</span>';
+                if (evHtml) {
+                    const evEl = document.createElement('span');
+                    evEl.className = 'tm-pr-events';
+                    evEl.innerHTML = evHtml;
+                    el.appendChild(evEl);
+                }
             }
         }
 

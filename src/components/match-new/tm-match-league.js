@@ -202,7 +202,13 @@ export const TmMatchLeagueNew = {
 
             const badgeWrap = el.querySelector('.rnd-league-min-badge');
             if (badgeWrap) {
-                if (minCutoff < Infinity) {
+                if (match.status === 'future') {
+                    const [yr, mo, dy] = (match.date || '').split('-');
+                    const d = dy && mo && yr ? `${dy}.${mo}.${yr}` : (match.date || '');
+                    const t = match.kickoffTime || '';
+                    badgeWrap.innerHTML = TmUI.badge({ label: t ? `${d} · ${t}` : d, size: 'md', shape: 'full' }, 'muted');
+                    badgeWrap.classList.add('visible');
+                } else if (minCutoff < Infinity) {
                     badgeWrap.innerHTML = TmUI.badge({ icon: '⏱', label: Math.floor(minCutoff) + "'", size: 'md', shape: 'full', weight: 'bold' }, 'live');
                     badgeWrap.classList.add('visible');
                 } else {

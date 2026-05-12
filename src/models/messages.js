@@ -36,4 +36,8 @@ export const TmMessagesModel = {
     sendPmMessage(opts) {
         return TmMessagesService.sendPmMessage(opts);
     },
+
+    suggestClubs(q, limit) {
+        return TmMessagesService.suggestClubs(q, limit);
+    },
 };

@@ -76,4 +76,8 @@ export const TmMessagesService = {
             club_id: clubId,
         });
     },
+
+    async suggestClubs(q, limit = 10) {
+        return _post('/ajax/suggest_clubs.ajax.php', { q_string: q, limit, settings: '{}' });
+    },
 };

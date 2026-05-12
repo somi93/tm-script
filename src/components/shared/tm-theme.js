@@ -157,7 +157,8 @@ const TMU_THEME_CSS = `
 --tmu-match-row-hover:var(--tmu-surface-tab-hover);
 --tmu-match-score-bg:rgba(255,255,255,.03);
 --tmu-match-score-hover-bg:var(--tmu-border-contrast);
---tmu-match-score-border:rgba(255,255,255,.05)
+--tmu-match-score-border:rgba(255,255,255,.05);
+--tmu-card-bg:#0a1614
 }
 `;
 
@@ -213,7 +214,8 @@ const TMU_THEME_DIFF_BLUE = `
 --tmu-live-fill:#1a0008;
 --tmu-accent-fill-soft:rgba(0,30,40,.7);
 --tmu-tabs-primary-active-border:#ff0046;
---tmu-tabs-secondary-active-border:#ff0046
+--tmu-tabs-secondary-active-border:#ff0046;
+--tmu-card-bg:#001e28
 }
 `;
 
@@ -286,7 +288,8 @@ const TMU_THEME_DIFF_PITCH = `
 --tmu-compare-home-grad-start:#12311d;
 --tmu-compare-home-grad-end:#8ecf47;
 --tmu-tabs-primary-active-border:#8ecf47;
---tmu-tabs-secondary-active-border:#8ecf47
+--tmu-tabs-secondary-active-border:#8ecf47;
+--tmu-card-bg:#0e2018
 }
 `;
 

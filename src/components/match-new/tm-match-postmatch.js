@@ -252,34 +252,50 @@ const STAT_ZERO = () => ({
  * Aggregate per-player stats from the normalized plays structure.
  * @param {object} match — normalized match
  * @param {number} [upToMinute=Infinity] — only include plays up to this minute
+ * @param {number} [committedClipIndex=Infinity] — for the current minute, only count clips up to this index
  * @returns {object} pid → statsObj
  */
-export function buildMatchPlayerStats(match, upToMinute = Infinity) {
+export function buildMatchPlayerStats(match, upToMinute = Infinity, committedClipIndex = Infinity) {
     const map = {};
     const ensure = pid => (map[pid] ??= STAT_ZERO());
-    for (const [minStr, playsArr] of Object.entries(match.plays || {})) {
-        if (Number(minStr) > upToMinute) continue;
-        for (const play of playsArr) {
+    const minuteKeys = Object.keys(match.plays || {}).map(Number).sort((a, b) => a - b);
+    for (const min of minuteKeys) {
+        if (min > upToMinute) break;
+        const isCurrent = (min === upToMinute) && Number.isFinite(committedClipIndex);
+        let ci = -1;
+        let minDone = false;
+        for (const play of (match.plays[String(min)] || [])) {
+            if (minDone) break;
             for (const clip of (play.clips || [])) {
+                if (isCurrent) {
+                    ci++;
+                    if (ci > committedClipIndex) { minDone = true; break; }
+                }
                 for (const act of (clip.actions || [])) {
                     const pid = String(act.by || '');
                     if (!pid) continue;
                     const s = ensure(pid);
+                    // Goals/SOT are only revealed once the NEXT clip commits (ball-trajectory clip)
+                    const goalRevealed = !isCurrent || (ci + 1 <= committedClipIndex);
                     switch (act.action) {
                         case 'shot':
                             s.shots++;
-                            if (act.onTarget) s.shotsOnTarget++;
-                            if (act.head) { s.shotsHead++; if (act.onTarget) s.shotsOnTargetHead++; }
-                            else          { s.shotsFoot++; if (act.onTarget) s.shotsOnTargetFoot++; }
-                            if (act.goal) {
-                                s.goals++;
-                                if (act.head) s.goalsHead++; else s.goalsFoot++;
-                                if (act.penalty) s.penaltiesScored++;
-                                if (act.freekick) s.freekickGoals++;
+                            if (act.head) s.shotsHead++; else s.shotsFoot++;
+                            if (act.onTarget && goalRevealed) {
+                                s.shotsOnTarget++;
+                                if (act.head) s.shotsOnTargetHead++; else s.shotsOnTargetFoot++;
+                                if (act.goal) {
+                                    s.goals++;
+                                    if (act.head) s.goalsHead++; else s.goalsFoot++;
+                                    if (act.penalty) s.penaltiesScored++;
+                                    if (act.freekick) s.freekickGoals++;
+                                }
                             }
                             if (act.penalty) s.penaltiesTaken++;
                             break;
-                        case 'assist':       s.assists++;             break;
+                        case 'assist':
+                            if (goalRevealed) s.assists++;
+                            break;
                         case 'keyPass':      s.keyPasses++;           break;
                         case 'pass':         act.success ? s.passesCompleted++ : s.passesFailed++;   break;
                         case 'cross':        act.success ? s.crossesCompleted++ : s.crossesFailed++; break;

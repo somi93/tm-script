@@ -25,7 +25,8 @@ const ensureStyles = () => {
     style.textContent = `
         .rnd-h2h-tooltip {
             position: absolute; z-index: 100;
-            background: var(--tmu-card-bg); border: 1px solid var(--tmu-border-soft-alpha);
+            background: var(--tmu-card-bg); 
+            border: 1px solid var(--tmu-border-soft-alpha);
             border-radius: var(--tmu-space-md); padding: var(--tmu-space-xl) var(--tmu-space-xxl);
             min-width: 520px; max-width: 600px;
             max-height: 75vh; overflow-y: auto;

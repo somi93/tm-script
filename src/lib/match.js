@@ -107,6 +107,7 @@ const createSide = () => ({
     playerIds: null,        // Set<string> — computed once from lineup on load
     tactics: createTactics(),
     lineup: [],             // Player.create() objects + match context fields
+    lineupOut: [],          // Players unavailable for this match (from lineup_out API field)
     // ── Derived (populated by deriveMatchData / generateTeamData) ──────
     goals: null,
     goalsAgainst: null,

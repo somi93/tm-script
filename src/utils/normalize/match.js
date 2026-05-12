@@ -229,6 +229,13 @@ export const normalizeRawMatch = (raw, playersById = new Map(), matchId = null) 
 
         // Player set for O(1) side lookup (key = string player_id)
         match[side].playerIds = new Set(Object.keys(rawLineup));
+
+        // Unavailable players (lineup_out)
+        const rawOut = md.lineup_out?.[side] || {};
+        match[side].lineupOut = Object.values(rawOut).map(p => ({
+            id:   String(p.id   || ''),
+            name: p.name || p.nameLast || '',
+        }));
     }
 
     // ── Engine data ───────────────────────────────────────────────────────

@@ -23,17 +23,20 @@ export const TmMatchField = {
         const col = document.createElement('div');
         col.className = 'mp-lu-tactics-col';
 
-        const { refresh, showMatchRatingRef } = mountTacticsFieldReadOnly(col, posPlayerMap, players);
+        const { refresh, showMatchRatingRef } = mountTacticsFieldReadOnly(col, posPlayerMap, players, { eventsRef: opts.eventsRef });
 
-        if (opts.onPlayerClick) {
-            col.addEventListener('click', e => {
-                const slot = e.target.closest('.tmtc-slot[data-player-id]');
-                if (!slot) return;
-                const pid = slot.dataset.playerId;
-                const player = players.find(p => String(p.id) === pid);
-                if (player) opts.onPlayerClick(player);
-            });
-        }
+        col.addEventListener('click', e => {
+            const slot = e.target.closest('.tmtc-slot[data-player-id]');
+            if (!slot) return;
+            const pid = slot.dataset.playerId;
+            const player = players.find(p => String(p.id) === pid);
+            if (!player) return;
+            if (e.ctrlKey && player.id) {
+                window.open(`/players/${player.id}/`, '_blank');
+                return;
+            }
+            if (opts.onPlayerClick) opts.onPlayerClick(player);
+        });
 
         return { el: col, refresh, showMatchRatingRef };
     },

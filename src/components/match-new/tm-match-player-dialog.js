@@ -205,7 +205,7 @@ export const TmMatchPlayerDialog = {
             `<div class="mpd-head">` +
                 `<span class="mpd-no">${player.no ?? ''}</span>` +
                 `${posChip}` +
-                `<span class="mpd-name">${name}${player.captain ? ' <span class="tmu-text-dim" style="font-size:10px">(C)</span>' : ''}</span>` +
+                `<span class="mpd-name">${player.id ? `<a href="/players/${player.id}/" target="_blank" style="color:inherit;text-decoration:none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${name}</a>` : name}${player.captain ? ' <span class="tmu-text-dim" style="font-size:10px">(C)</span>' : ''}</span>` +
                 `<span class="mpd-meta">` +
                     `${showRating && player.mom ? '<span title="Man of the Match" style="color:#f5c518">&#9733;</span>' : ''}` +
                     `${minsPlayed > 0 ? `<span>${minsPlayed}'</span>` : ''}` +

@@ -112,11 +112,15 @@ const injectStyles = () => {
             }
 
             .tmvu-fin-maint-table tbody tr {
-                background: #2d4315;
+                background: transparent;
             }
 
             .tmvu-fin-maint-table tbody tr:nth-child(even) {
-                background: #35501a;
+                background: var(--tmu-border-contrast);
+            }
+
+            .tmvu-fin-maint-table tbody tr:hover {
+                background: var(--tmu-surface-dark-mid);
             }
 
             .tmvu-fin-maint-table td,
@@ -145,7 +149,7 @@ const injectStyles = () => {
             }
 
             .tmvu-fin-maint-table tr.tmvu-fin-maint-total {
-                background: #41631f;
+                background: var(--tmu-surface-dark-strong);
             }
 
             .tmvu-fin-maint-table tr.tmvu-fin-maint-total td,

@@ -22,6 +22,9 @@ import { TmMatchField }           from './tm-match-field.js';
 import { mountTacticsSquadList }  from '../tactics/tm-tactics-squad-list.js';
 import { TmMatchPlayerDialog }    from './tm-match-player-dialog.js';
 import { buildMatchPlayerStats, buildMinutesPlayed } from './tm-match-postmatch.js';
+import { TmPlayerTooltip }        from '../player/tooltip/tm-player-tooltip.js';
+import { TmPlayerRow }            from '../shared/tm-player-row.js';
+import { TmPlayerService }        from '../../services/player.js';
 
 const STYLE_ID = 'mp-lineup-style';
 
@@ -67,6 +70,24 @@ function injectStyles() {
             display: flex; flex-direction: column;
             overflow-y: auto; padding: 0 4px;
         }
+
+        /* ── Unavailable subheader in squad list ── */
+        .mp-lu-unavailable-sep {
+            border-top: 2px solid var(--tmu-border-pill-active);
+            margin: 4px 0 0; padding: 3px 6px 1px;
+            font-size: 10px; font-weight: 700;
+            color: var(--tmu-text-faint); text-transform: uppercase; letter-spacing: 1px;
+        }
+        /* mimics .tmu-tbl tbody td (tight density = 4px padding, 1px border) */
+        .mp-lu-unavailable-cell {
+            padding: 4px;
+            border-bottom: 1px solid var(--tmu-border-faint);
+        }
+        /* wrap mimics <td> from .tmu-tbl tbody td (tight density: 4px padding, 1px border) */
+        .mp-lu-unavailable-cell {
+            padding: 4px;
+            border-bottom: 1px solid var(--tmu-border-faint);
+        }
     `;
     document.head.appendChild(s);
 }
@@ -74,7 +95,7 @@ function injectStyles() {
 // ── Pitch state derivation ────────────────────────────────────────────────────
 // Returns Map<pid, 'side:posKey'> representing who is currently on the pitch.
 
-function derivePitchState(match, currentMinute) {
+function derivePitchState(match, currentMinute, committedClipIndex = Infinity) {
     const playerSlot = new Map();  // pid → 'side:posKey'
     const slotPlayer = new Map();  // 'side:posKey' → pid
 
@@ -92,8 +113,16 @@ function derivePitchState(match, currentMinute) {
 
     for (const min of Object.keys(match.plays).map(Number).sort((a, b) => a - b)) {
         if (min > currentMinute) break;
+        const isCurrent = (min === currentMinute) && Number.isFinite(committedClipIndex);
+        let ci = -1;
+        let minDone = false;
         for (const play of match.plays[String(min)]) {
+            if (minDone) break;
             for (const clip of (play.clips || [])) {
+                if (isCurrent) {
+                    ci++;
+                    if (ci > committedClipIndex) { minDone = true; break; }
+                }
                 const outs = [], ins = [];
                 const posChanges = new Map();
                 const injured = [];
@@ -228,6 +257,7 @@ export const TmMatchLineup = {
             ...match.away.lineup.map(p => [String(p.id), p]),
         ]);
         let lastMinute = -1;
+        let lastClipIdx = -2;
         const handlePlayerClick = (player) => {
             const min = lastMinute < 0 ? 0 : lastMinute;
             const stats = buildMatchPlayerStats(match, min);
@@ -237,14 +267,15 @@ export const TmMatchLineup = {
         };
 
         const homePosMap = buildInitialPosMap(match.home.lineup);
-        const homeField = TmMatchField.create(homePosMap, match.home.lineup, { onPlayerClick: handlePlayerClick });
+        const eventsRef = { value: null };
+        const homeField = TmMatchField.create(homePosMap, match.home.lineup, { onPlayerClick: handlePlayerClick, eventsRef });
 
         const awayPosMap = buildInitialPosMap(match.away.lineup);
-        const awayField = TmMatchField.create(awayPosMap, match.away.lineup, { onPlayerClick: handlePlayerClick });
+        const awayField = TmMatchField.create(awayPosMap, match.away.lineup, { onPlayerClick: handlePlayerClick, eventsRef });
 
         // ── Lineups-tab instances (separate DOM, shared posMap) ───────────
-        const luHomeField = TmMatchField.create(homePosMap, match.home.lineup, { onPlayerClick: handlePlayerClick });
-        const luAwayField = TmMatchField.create(awayPosMap, match.away.lineup, { onPlayerClick: handlePlayerClick });
+        const luHomeField = TmMatchField.create(homePosMap, match.home.lineup, { onPlayerClick: handlePlayerClick, eventsRef });
+        const luAwayField = TmMatchField.create(awayPosMap, match.away.lineup, { onPlayerClick: handlePlayerClick, eventsRef });
 
         const starterHomePids = new Set(match.home.lineup.filter(p => POSITION_MAP[(p.position||'').toLowerCase()]).map(p => String(p.id)));
         const starterAwayPids = new Set(match.away.lineup.filter(p => POSITION_MAP[(p.position||'').toLowerCase()]).map(p => String(p.id)));
@@ -271,7 +302,12 @@ export const TmMatchLineup = {
                 const row = e.target.closest('.tm-pr[data-id]');
                 if (!row) return;
                 const player = allPlayersById.get(row.dataset.id);
-                if (player) handlePlayerClick(player);
+                if (!player) return;
+                if (e.ctrlKey && player.id) {
+                    window.open(`/players/${player.id}/`, '_blank');
+                    return;
+                }
+                handlePlayerClick(player);
             });
         };
         wireListClick(luHomeListEl);
@@ -279,25 +315,24 @@ export const TmMatchLineup = {
 
         function update(replayState) {
             const minute = replayState?.currentMinute ?? 0;
-            if (minute === lastMinute) return;
+            const clipIdx = replayState?.committedClipIndex ?? -1;
+            if (minute === lastMinute && clipIdx === lastClipIdx) return;
             lastMinute = minute;
+            lastClipIdx = clipIdx;
 
             const isFinished = minute >= (match.duration?.total ?? 95);
 
-            const playerSlot = derivePitchState(match, minute);
+            // ── Compute events up to current committed clip and push to all fields/lists ──
+            const stats = buildMatchPlayerStats(match, minute, clipIdx);
+            eventsRef.value = stats;
+            luHomeCtx.matchEvents = stats;
+            luAwayCtx.matchEvents = stats;
+
+            // ── Always recompute pitch state with clip-level precision ──
+            const playerSlot = derivePitchState(match, minute, clipIdx);
 
             rebuildPosMap(homePosMap, 'home', playerSlot, allPlayersById);
             rebuildPosMap(awayPosMap, 'away', playerSlot, allPlayersById);
-
-            homeField.showMatchRatingRef.value = isFinished;
-            awayField.showMatchRatingRef.value = isFinished;
-            luHomeField.showMatchRatingRef.value = isFinished;
-            luAwayField.showMatchRatingRef.value = isFinished;
-
-            homeField.refresh();
-            awayField.refresh();
-            luHomeField.refresh();
-            luAwayField.refresh();
 
             const homePitchPids = new Set([...playerSlot].filter(([, s]) => s.startsWith('home:')).map(([pid]) => pid));
             const awayPitchPids = new Set([...playerSlot].filter(([, s]) => s.startsWith('away:')).map(([pid]) => pid));
@@ -309,8 +344,17 @@ export const TmMatchLineup = {
                 ? (starterAwayPids.has(String(p.id)) ? 'active' : 'sub-in')
                 : (starterAwayPids.has(String(p.id)) ? 'off' : 'bench');
 
+            homeField.showMatchRatingRef.value = isFinished;
+            awayField.showMatchRatingRef.value = isFinished;
+            luHomeField.showMatchRatingRef.value = isFinished;
+            luAwayField.showMatchRatingRef.value = isFinished;
             luHomeCtx.showMatchRating = isFinished;
             luAwayCtx.showMatchRating = isFinished;
+
+            homeField.refresh();
+            awayField.refresh();
+            luHomeField.refresh();
+            luAwayField.refresh();
 
             luHomeSquad.refresh();
             luAwaySquad.refresh();
@@ -318,6 +362,49 @@ export const TmMatchLineup = {
 
         // Initial render at minute 0 (all starters on pitch)
         update(null);
+
+        // ── Unavailable players ───────────────────────────────
+        const appendUnavailable = (listEl, players) => {
+            if (!players.length) return;
+            const sep = document.createElement('div');
+            sep.className = 'mp-lu-unavailable-sep';
+            sep.textContent = 'Unavailable';
+            listEl.appendChild(sep);
+            players.forEach(p => {
+                const fullPlayer = allPlayersById.get(p.id);
+                const playerObj = fullPlayer || { id: p.id, name: p.name, no: '', positions: [] };
+                let row = TmPlayerRow.build(playerObj, { state: 'bench', compact: true });
+
+                // Wrap in cell mimic: td-equivalent padding + border-bottom
+                const cell = document.createElement('div');
+                cell.className = 'mp-lu-unavailable-cell';
+                cell.appendChild(row);
+                listEl.appendChild(cell);
+
+                // For players not in the lineup, fetch full data eagerly so position+R5 show immediately
+                if (!fullPlayer) {
+                    TmPlayerService.fetchPlayerTooltip(p.id).then(fetched => {
+                        if (!fetched) return;
+                        const newRow = TmPlayerRow.build(fetched, { state: 'bench', compact: true });
+                        newRow.addEventListener('mouseenter', () => TmPlayerTooltip.show(newRow, fetched));
+                        newRow.addEventListener('mouseleave', () => TmPlayerTooltip.hide());
+                        newRow.addEventListener('click', e => {
+                            if (e.ctrlKey && fetched.id) window.open(`/players/${fetched.id}/`, '_blank');
+                        });
+                        cell.replaceChild(newRow, row);
+                        row = newRow;
+                    });
+                } else {
+                    row.addEventListener('mouseenter', () => TmPlayerTooltip.show(row, fullPlayer));
+                    row.addEventListener('mouseleave', () => TmPlayerTooltip.hide());
+                    row.addEventListener('click', e => {
+                        if (e.ctrlKey && fullPlayer.id) window.open(`/players/${fullPlayer.id}/`, '_blank');
+                    });
+                }
+            });
+        };
+        appendUnavailable(luHomeListEl, match.home.lineupOut || []);
+        appendUnavailable(luAwayListEl, match.away.lineupOut || []);
 
         return {
             homePanel: { el: homePanel }, awayPanel: { el: awayPanel },

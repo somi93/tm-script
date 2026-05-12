@@ -61,6 +61,11 @@ const injectStyles = () => {
         .mp-icup-tip.in { opacity:1; }
         .mp-icup-standings-host { overflow-x:auto; }
         .mp-icup-day-header { font-size:var(--tmu-font-xs); font-weight:700; color:var(--tmu-text-faint); text-transform:uppercase; letter-spacing:1.5px; padding:var(--tmu-space-sm) var(--tmu-space-md); border-bottom:1px solid var(--tmu-border-soft-alpha); margin-top:var(--tmu-space-sm); }
+        .mp-icup-group { border-top:2px solid var(--tmu-border-soft-alpha); }
+        .mp-icup-group + .mp-icup-group { margin-top:0; }
+        .mp-icup-group-header { font-size:var(--tmu-font-xs); font-weight:800; color:var(--tmu-text-faint); text-transform:uppercase; letter-spacing:2px; padding:var(--tmu-space-sm) var(--tmu-space-xl); background:var(--tmu-surface-dark-soft); }
+        .mp-icup-group-ours { border-top-color:var(--tmu-accent); }
+        .mp-icup-group-ours .mp-icup-group-header { color:var(--tmu-accent); }
     `;
     document.head.appendChild(s);
 };
@@ -118,9 +123,9 @@ export const TmMatchIntCupNew = {
         let lastMin   = initialMin;
         let isGroup   = false;
         // rowMap keyed by matchId
-        // { matchId, mData: null|object, mDataResolved: bool, rowEl, statusEl, scoreEl }
+        // { matchId, mData: null|object, mDataResolved: bool, rowEl, statusEl, scoreEl, nodeIndex }
         const rowMap = {};
-        let standingsHost = null;
+        let standingsHosts = {}; // nodeIndex → Element (group stage only)
 
         // ── Tooltip state ──────────────────────────────────────────────────────
         let _tip=null, _showT=null, _hideT=null;
@@ -145,6 +150,11 @@ export const TmMatchIntCupNew = {
         };
 
         const computeStatus = (mData, minCutoff) => {
+            if (mData.status === 'future') {
+                const time = mData.kickoffTime || '';
+                return { statusText: time || '–', statusCls: '', homeGoals: null, awayGoals: null };
+            }
+
             const itemKickoff = mData.kickoff ? mData.kickoff + parseTimeOfDay(mData.kickoffTime) : null;
             const virtualNow  = toVirtualNow(minCutoff);
 
@@ -169,10 +179,20 @@ export const TmMatchIntCupNew = {
         };
 
         // ── Render update (called every replay tick) ───────────────────────────
+        const fmtKickoff = () => {
+            const [yr, mo, dy] = (match.date || '').split('-');
+            const d = dy && mo && yr ? `${dy}.${mo}.${yr}` : (match.date || '');
+            const t = match.kickoffTime || '';
+            return t ? `${d} · ${t}` : d;
+        };
+
         const renderUpdate = (minCutoff) => {
             const badge = el.querySelector('.mp-icup-badge');
             if (badge) {
-                if (minCutoff < Infinity) {
+                if (match.status === 'future') {
+                    badge.innerHTML = TmUI.badge({ label: fmtKickoff(), size: 'md', shape: 'full' }, 'muted');
+                    badge.classList.add('on');
+                } else if (minCutoff < Infinity) {
                     badge.innerHTML = TmUI.badge({ icon: '⏱', label: Math.floor(minCutoff)+"'", size: 'md', shape: 'full', weight: 'bold' }, 'live');
                     badge.classList.add('on');
                 } else {
@@ -194,7 +214,7 @@ export const TmMatchIntCupNew = {
                 }
             }
 
-            if (isGroup && standingsHost) renderStandings(minCutoff);
+            if (isGroup && Object.keys(standingsHosts).length) renderStandings(minCutoff);
         };
 
         // ── Group standings ────────────────────────────────────────────────────
@@ -208,32 +228,39 @@ export const TmMatchIntCupNew = {
         };
 
         const renderStandings = (minCutoff) => {
-            const table = {};
-            const ensure = (id, name) => { if (!table[id]) table[id] = { id, name, p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 }; };
+            for (const [grpKey, host] of Object.entries(standingsHosts)) {
+                const table = {};
+                const ensure = (id, name) => { if (!table[id]) table[id] = { id, name, p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 }; };
 
-            for (const entry of Object.values(rowMap)) {
-                if (!entry.mDataResolved || !entry.mData) continue;
-                const mData  = entry.mData;
-                const homeId = String(mData.home.club.id);
-                const awayId = String(mData.away.club.id);
-                ensure(homeId, mData.home.club.name);
-                ensure(awayId, mData.away.club.name);
+                for (const entry of Object.values(rowMap)) {
+                    if (!entry.mDataResolved || !entry.mData || entry.groupRoot !== grpKey) continue;
+                    const mData  = entry.mData;
+                    if (mData.status === 'future') {
+                        // Register team in table but don't apply result
+                        ensure(String(mData.home.club.id), mData.home.club.name);
+                        ensure(String(mData.away.club.id), mData.away.club.name);
+                        continue;
+                    }
+                    const homeId = String(mData.home.club.id);
+                    const awayId = String(mData.away.club.id);
+                    ensure(homeId, mData.home.club.name);
+                    ensure(awayId, mData.away.club.name);
+                    const st = computeStatus(mData, minCutoff);
+                    if (st.homeGoals != null) applyResult(table, homeId, awayId, st.homeGoals, st.awayGoals);
+                }
 
-                const st = computeStatus(mData, minCutoff);
-                if (st.homeGoals != null) applyResult(table, homeId, awayId, st.homeGoals, st.awayGoals);
+                const sorted = Object.values(table)
+                    .map(r => ({ ...r, gd: r.gf - r.ga }))
+                    .sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
+
+                host.innerHTML = TmStandingsTable.buildHtml({
+                    rows: sorted.map((r, i) => ({
+                        rank: i + 1, clubId: r.id, clubName: r.name,
+                        gp: r.p, w: r.w, d: r.d, l: r.l, gf: r.gf, ga: r.ga, pts: r.pts,
+                        isMe: r.id === myHomeId || r.id === myAwayId, zone: '', rankDelta: 0,
+                    })),
+                });
             }
-
-            const sorted = Object.values(table)
-                .map(r => ({ ...r, gd: r.gf - r.ga }))
-                .sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
-
-            standingsHost.innerHTML = TmStandingsTable.buildHtml({
-                rows: sorted.map((r, i) => ({
-                    rank: i + 1, clubId: r.id, clubName: r.name,
-                    gp: r.p, w: r.w, d: r.d, l: r.l, gf: r.gf, ga: r.ga, pts: r.pts,
-                    isMe: r.id === myHomeId || r.id === myAwayId, zone: '', rankDelta: 0,
-                })),
-            });
         };
 
         // ── Wire click + tooltip for an inflated row ───────────────────────────
@@ -283,7 +310,7 @@ export const TmMatchIntCupNew = {
             });
         };
 
-        // ── Build DOM — fetch all, group by kickoff date into Match Days ────────
+        // ── Build DOM ─────────────────────────────────────────────────────────
         const buildDOM = (matchIds, title, groupStage, initialMin) => {
             isGroup = groupStage;
             el.innerHTML = TmUI.loading('Loading matches…');
@@ -293,20 +320,6 @@ export const TmMatchIntCupNew = {
                     .then(mData => { if (mData) rowMap[id] = { matchId: id, mData, mDataResolved: true, rowEl: null, statusEl: null, scoreEl: null, nodeIndex }; })
                     .catch(() => {})
             )).then(() => {
-                // Group entries by HTML node index (= tournament round order: first leg, second leg, …)
-                const byRound = {};
-                matchIds.forEach(({ id, nodeIndex }) => {
-                    const entry = rowMap[id];
-                    if (!entry) return;
-                    (byRound[nodeIndex] = byRound[nodeIndex] || []).push(entry);
-                });
-                const matchDays = Object.keys(byRound).map(Number).sort((a, b) => a - b).map((nodeIndex, i) => ({
-                    label:   `Match Day ${i + 1}`,
-                    entries: byRound[nodeIndex].sort((a, b) =>
-                        (a.mData.kickoff || 0) - (b.mData.kickoff || 0)
-                    ),
-                }));
-
                 const rowsHtml = (entries) => entries.map(({ matchId, mData }) => {
                     const homeId = String(mData.home.club.id);
                     const awayId = String(mData.away.club.id);
@@ -317,10 +330,6 @@ export const TmMatchIntCupNew = {
                     );
                 }).join('');
 
-                const daysHtml = matchDays.map(md =>
-                    `<div class="mp-icup-day-header">${esc(md.label)}</div>${rowsHtml(md.entries)}`
-                ).join('');
-
                 let html = `<div class="mp-icup-wrap">
                     <div class="mp-icup-header">
                         <span class="mp-icup-title">${esc(title)}</span>
@@ -328,23 +337,109 @@ export const TmMatchIntCupNew = {
                     </div>`;
 
                 if (isGroup) {
-                    html += `<div class="mp-icup-cols">
-                        <div class="mp-icup-col-matches">
-                            <div class="mp-icup-col-title">Matches</div>
-                            ${daysHtml}
-                        </div>
-                        <div class="mp-icup-col-standings">
-                            <div class="mp-icup-col-title">Group Table</div>
-                            <div class="mp-icup-standings-host"></div>
-                        </div>
-                    </div>`;
+                    // Union-Find: teams that played each other belong to the same group
+                    const _uf = {};
+                    const _find = (x) => { if (!_uf[x]) _uf[x] = x; return _uf[x] === x ? x : (_uf[x] = _find(_uf[x])); };
+                    const _union = (x, y) => { _uf[_find(x)] = _find(y); };
+                    for (const entry of Object.values(rowMap)) {
+                        if (!entry.mData) continue;
+                        _union(String(entry.mData.home.club.id), String(entry.mData.away.club.id));
+                    }
+
+                    // Attach groupRoot and bucket by root
+                    const byGroupRoot = {};
+                    for (const entry of Object.values(rowMap)) {
+                        if (!entry.mData) continue;
+                        const root = _find(String(entry.mData.home.club.id));
+                        entry.groupRoot = root;
+                        (byGroupRoot[root] = byGroupRoot[root] || []).push(entry);
+                    }
+
+                    // Our group = the one containing our teams
+                    const ourGroupRoot = _find(myHomeId) || _find(myAwayId);
+
+                    // Sort: our group first, then by min club id for stability
+                    const groupRoots = Object.keys(byGroupRoot).sort((a, b) => {
+                        if (a === ourGroupRoot) return -1;
+                        if (b === ourGroupRoot) return 1;
+                        const minA = Math.min(...byGroupRoot[a].map(e => Number(e.mData.home.club.id) || 0));
+                        const minB = Math.min(...byGroupRoot[b].map(e => Number(e.mData.home.club.id) || 0));
+                        return minA - minB;
+                    });
+
+                    // Find which round index our match belongs to (within our group's days)
+                    const ourEntry = rowMap[myMatchId];
+                    const ourKickoffDay = ourEntry?.mData?.kickoff ? Math.floor(ourEntry.mData.kickoff / 86400) : null;
+                    const ourGroupDays = (() => {
+                        const d = {};
+                        (byGroupRoot[ourGroupRoot] || []).forEach(e => {
+                            if (!e.mData?.kickoff) return;
+                            d[Math.floor(e.mData.kickoff / 86400)] = true;
+                        });
+                        return Object.keys(d).map(Number).sort((a, b) => a - b);
+                    })();
+                    const ourRoundIdx = ourKickoffDay !== null
+                        ? Math.max(0, ourGroupDays.indexOf(ourKickoffDay))
+                        : ourGroupDays.length - 1;
+
+                    const LABELS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                    groupRoots.forEach((root, idx) => {
+                        const isOurGroup = (root === ourGroupRoot);
+                        const grpLabel   = `Group ${LABELS[idx] || (idx + 1)}`;
+                        const entries    = byGroupRoot[root];
+
+                        // Sub-group by kickoff day
+                        const byDay = {};
+                        entries.forEach(entry => {
+                            const day = entry.mData.kickoff ? Math.floor(entry.mData.kickoff / 86400) : 0;
+                            (byDay[day] = byDay[day] || []).push(entry);
+                        });
+                        const days = Object.keys(byDay).map(Number).sort((a, b) => a - b);
+
+                        // Show only the round matching our match's round index
+                        const targetDayKey = days[ourRoundIdx] ?? days[days.length - 1];
+                        const dayEntries   = (byDay[targetDayKey] || []).sort((a, b) => (a.mData.kickoff || 0) - (b.mData.kickoff || 0));
+                        const daysHtml     = `<div class="mp-icup-day-header">Match Day ${ourRoundIdx + 1}</div>${rowsHtml(dayEntries)}`;
+
+                        html += `<div class="mp-icup-group${isOurGroup ? ' mp-icup-group-ours' : ''}">
+                            <div class="mp-icup-group-header">${esc(grpLabel)}</div>
+                            <div class="mp-icup-cols">
+                                <div class="mp-icup-col-matches">
+                                    <div class="mp-icup-col-title">Matches</div>
+                                    ${daysHtml}
+                                </div>
+                                <div class="mp-icup-col-standings">
+                                    <div class="mp-icup-col-title">Standings</div>
+                                    <div class="mp-icup-standings-host" data-grp="${esc(root)}"></div>
+                                </div>
+                            </div>
+                        </div>`;
+                    });
                 } else {
+                    // Knockout / qualification — group by node index (round)
+                    const byRound = {};
+                    matchIds.forEach(({ id, nodeIndex }) => {
+                        const entry = rowMap[id];
+                        if (!entry) return;
+                        (byRound[nodeIndex] = byRound[nodeIndex] || []).push(entry);
+                    });
+                    const matchDays = Object.keys(byRound).map(Number).sort((a, b) => a - b).map((nodeIndex, i) => ({
+                        label:   `Match Day ${i + 1}`,
+                        entries: byRound[nodeIndex].sort((a, b) => (a.mData.kickoff || 0) - (b.mData.kickoff || 0)),
+                    }));
+                    const daysHtml = matchDays.map(md =>
+                        `<div class="mp-icup-day-header">${esc(md.label)}</div>${rowsHtml(md.entries)}`
+                    ).join('');
                     html += `<div class="mp-icup-days">${daysHtml}</div>`;
                 }
                 html += '</div>';
                 el.innerHTML = html;
 
-                standingsHost = el.querySelector('.mp-icup-standings-host');
+                // Collect per-group standings hosts (keyed by groupRoot string)
+                standingsHosts = {};
+                el.querySelectorAll('.mp-icup-standings-host[data-grp]').forEach(host => {
+                    standingsHosts[host.getAttribute('data-grp')] = host;
+                });
 
                 // Wire status badges and tooltips onto each rendered row
                 for (const entry of Object.values(rowMap)) {
