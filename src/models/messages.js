@@ -13,6 +13,10 @@ export const TmMessagesModel = {
         return TmMessagesService.fetchDetailedUserFeed(opts);
     },
 
+    fetchClubFeed(opts) {
+        return TmMessagesService.fetchClubFeed(opts);
+    },
+
     fetchFeedNames(opts) {
         return TmMessagesService.fetchFeedNames(opts);
     },

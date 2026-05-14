@@ -33,6 +33,19 @@ export const TmMessagesService = {
         return _post('/ajax/feed_get.ajax.php', payload);
     },
 
+    async fetchClubFeed({ clubId, lastPost = '' } = {}) {
+        const payload = {
+            type: 'get_feed',
+            feed_id: '0',
+            'filters[buddies]': false,
+            'filters[league]': false,
+            'filters[personal]': clubId,
+            only_system_posts: false,
+        };
+        if (lastPost) payload.last_post = lastPost;
+        return _post('/ajax/feed_get.ajax.php', payload);
+    },
+
     async fetchFeedNames({ playerIds = [], clubIds = [] } = {}) {
         return _post('/ajax/feed_get.ajax.php', {
             type: 'club_names',

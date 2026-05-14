@@ -12,6 +12,7 @@ import { TmTabsMod } from '../components/player/tabs/tm-tabs-mod.js';
 import { TmPlayerModel, refreshPlayerSkills } from '../models/player.js';
 import { runSyncPipeline } from '../workflows/player-history/sync-pipeline.js';
 import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
+import { TmPlayerCompare } from '../components/player/compare/tm-player-compare.js';
 
 export function initPlayerPage(main) {
     if (!main || !main.isConnected) {
@@ -162,6 +163,10 @@ export function initPlayerPage(main) {
 
         if (rerenderSkills) TmSkillsGrid.reRender();
         else TmSkillsGrid.mount({ player });
+
+        const mainRail = ensurePlayerLayout()?.mainRail;
+        const compareSlot = ensureRailSlot(mainRail, 'tmpc-trigger-slot');
+        TmPlayerCompare.mountButton(compareSlot, { player });
     };
 
     const applyTooltip = (data) => {
@@ -169,6 +174,7 @@ export function initPlayerPage(main) {
         if (data.retired) return;
 
         player = data;
+        window.tmCompareOpen = () => TmPlayerCompare.open(player);
 
         renderPlayerChrome();
 

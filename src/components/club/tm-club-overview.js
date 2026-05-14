@@ -4,6 +4,8 @@ import { TmButton } from '../shared/tm-button.js';
 import { TmAlert } from '../shared/tm-alert.js';
 import { TmModal } from '../shared/tm-modal.js';
 import { TmInput } from '../shared/tm-input.js';
+import { TmSectionCard } from '../shared/tm-section-card.js';
+import { createSocialFeedController } from '../shared/tm-social-feed.js';
 import { TmClubModel } from '../../models/club-buddy.js';
 import { TmMessagesModel } from '../../models/messages.js';
 
@@ -451,7 +453,9 @@ function parseOverview(mainColumn, secondaryColumn) {
     const trophies = parseTrophies(trophyBox);
 
     const clubHref = clubNameLink?.getAttribute('href') || '#';
-    const clubId = window.location.pathname.match(/\/club\/(\d+)/)?.[1] || null;
+    const clubId = window.location.pathname.match(/\/club\/(\d+)/)?.[1]
+        || (clubHref || '').match(/\/club\/(\d+)/)?.[1]
+        || null;
 
     const showToolbox = secondaryColumn && Array.from(secondaryColumn.querySelectorAll('.box')).some(b => b.querySelector('.box_head h2')?.textContent.trim().toLowerCase() === 'toolbox');
 
@@ -764,10 +768,27 @@ export const TmClubOverview = {
         mainColumn.innerHTML = '';
         mountClubBox(mainColumn, data);
 
-        if (data.feedRoot) {
-            const feedHost = document.createElement('div');
+        if (data.clubId) {
+            const feedHost = document.createElement('section');
             mainColumn.appendChild(feedHost);
-            TmNativeFeed.mountStandaloneFeed(feedHost, data.feedRoot, { title: 'Feed' });
+            TmSectionCard.mount(feedHost, {
+                title: 'Feed',
+                titleMode: 'body',
+                flush: true,
+                bodyHtml: '<div data-club-feed-mount="1"></div>',
+            });
+            const feedMount = feedHost.querySelector('[data-club-feed-mount]');
+            if (feedMount) {
+                const feedController = createSocialFeedController({
+                    mount: feedMount,
+                    getFeedRoot: () => data.feedRoot,
+                    fetchFeedPayload: ({ lastPost }) =>
+                        TmMessagesModel.fetchClubFeed({ clubId: data.clubId, lastPost }),
+                    emptyCopy: 'No feed items found for this club.',
+                    loadingCopy: 'Loading club feed...',
+                });
+                void feedController.render();
+            }
         }
 
         if (secondaryColumn) {

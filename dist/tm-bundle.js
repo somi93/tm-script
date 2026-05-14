@@ -1501,988 +1501,19 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
     }
   };
 
-  // src/constants/skills.js
-  var skills_exports = {};
-  __export(skills_exports, {
-    ASI_WEIGHT_GK: () => ASI_WEIGHT_GK,
-    ASI_WEIGHT_OUTFIELD: () => ASI_WEIGHT_OUTFIELD,
-    COLOR_LEVELS: () => COLOR_LEVELS,
-    GRAPH_KEYS_GK: () => GRAPH_KEYS_GK,
-    GRAPH_KEYS_OUT: () => GRAPH_KEYS_OUT,
-    POS_MULTIPLIERS: () => POS_MULTIPLIERS,
-    R5_THRESHOLDS: () => R5_THRESHOLDS,
-    REC_THRESHOLDS: () => REC_THRESHOLDS,
-    RTN_THRESHOLDS: () => RTN_THRESHOLDS,
-    SKILL_DEFS: () => SKILL_DEFS,
-    SKILL_DEFS_GK: () => SKILL_DEFS_GK,
-    SKILL_DEFS_OUT: () => SKILL_DEFS_OUT,
-    SKILL_EFFICIENCY_BRACKETS: () => SKILL_EFFICIENCY_BRACKETS,
-    SKILL_KEYS_ALL: () => SKILL_KEYS_ALL,
-    SKILL_KEYS_GK: () => SKILL_KEYS_GK,
-    SKILL_KEYS_GK_WEIGHT: () => SKILL_KEYS_GK_WEIGHT,
-    SKILL_KEYS_OUT: () => SKILL_KEYS_OUT,
-    SKILL_LABELS: () => SKILL_LABELS,
-    SKILL_LABELS_GK: () => SKILL_LABELS_GK,
-    SKILL_LABELS_OUT: () => SKILL_LABELS_OUT,
-    SKILL_NAMES_GK: () => SKILL_NAMES_GK,
-    SKILL_NAMES_GK_SHORT: () => SKILL_NAMES_GK_SHORT,
-    SKILL_NAMES_OUT: () => SKILL_NAMES_OUT,
-    TI_THRESHOLDS: () => TI_THRESHOLDS,
-    WEIGHT_R5: () => WEIGHT_R5,
-    WEIGHT_RB: () => WEIGHT_RB
-  });
-  var WEIGHT_R5 = [
-    [0.41029304, 0.18048062, 0.56730138, 1.06344654, 1.02312672, 0.40831256, 0.58235457, 0.12717479, 0.05454137, 0.0908983, 0.42381693, 0.04626272, 0.02199046, 0],
-    [0.42126371, 0.18293193, 0.60567629, 0.91904794, 0.89070915, 0.40038476, 0.56146633, 0.15053902, 0.15955429, 0.15682932, 0.42109742, 0.09460329, 0.03589655, 0],
-    [0.23412419, 0.32032289, 0.62194779, 0.63162534, 0.63143081, 0.45218831, 0.47370658, 0.55054737, 0.17744915, 0.39932519, 0.26915814, 0.16413124, 0.07404301, 0],
-    [0.27276905, 0.26814289, 0.61104798, 0.39865092, 0.42862643, 0.43582015, 0.46617076, 0.44931076, 0.25175412, 0.46446692, 0.2998635, 0.43843061, 0.21494592, 0],
-    [0.2521926, 0.25112993, 0.56090649, 0.18230261, 0.1837649, 0.45928749, 0.53498118, 0.59461481, 0.09851189, 0.6160195, 0.31243959, 0.65402884, 0.29982016, 0],
-    [0.28155678, 0.24090675, 0.60680245, 0.19068879, 0.20018012, 0.45148647, 0.48230007, 0.42982389, 0.26268609, 0.57933805, 0.31712419, 0.65824985, 0.29885649, 0],
-    [0.22029884, 0.2922969, 0.63248227, 0.09904394, 0.10043602, 0.47469498, 0.52919791, 0.7755588, 0.10531819, 0.71048302, 0.27667115, 0.56813972, 0.21537826, 0],
-    [0.21151292, 0.3580471, 0.88688492, 0.14391236, 0.13769621, 0.46586605, 0.34446036, 0.51377701, 0.59723919, 0.75126119, 0.16550722, 0.29966502, 0.12417045, 0],
-    [0.3547978, 0.14887553, 0.4327338, 23928e-8, 21111e-8, 0.46931131, 0.57731335, 0.41686333, 0.05607604, 0.62121195, 0.45370457, 1.03660702, 0.43205492, 0],
-    [0.45462811, 0.30278232, 0.45462811, 0.90925623, 0.45462811, 0.90925623, 0.45462811, 0.45462811, 0.30278232, 0.15139116, 0.15139116]
-  ];
-  var WEIGHT_RB = [
-    [0.10493615, 0.05208547, 0.07934211, 0.14448971, 0.13159554, 0.06553072, 0.07778375, 0.06669303, 0.05158306, 0.02753168, 0.1205517, 0.01350989, 0.02549169, 0.0388755],
-    [0.07715535, 0.04943315, 0.11627229, 0.11638685, 0.12893778, 0.07747251, 0.06370799, 0.03830611, 0.10361093, 0.06253997, 0.09128094, 0.0131411, 0.02449199, 0.03726305],
-    [0.08219824, 0.08668831, 0.07434242, 0.09661001, 0.08894242, 0.08998026, 0.09281287, 0.08868309, 0.04753574, 0.06042619, 0.05396986, 0.05059984, 0.05660203, 0.03060871],
-    [0.06744248, 0.06641401, 0.09977251, 0.08253749, 0.09709316, 0.09241026, 0.08513703, 0.06127851, 0.1027552, 0.07985941, 0.0461896, 0.0392727, 0.05285911, 0.02697852],
-    [0.07304213, 0.08174111, 0.07248656, 0.08482334, 0.07078726, 0.09568392, 0.09464529, 0.09580381, 0.04746231, 0.07093008, 0.04595281, 0.05955544, 0.07161249, 0.03547345],
-    [0.06527363, 0.0641027, 0.09701305, 0.07406706, 0.08563595, 0.09648566, 0.08651209, 0.06357183, 0.10819222, 0.07386495, 0.03245554, 0.05430668, 0.06572005, 0.03279859],
-    [0.07842736, 0.07744888, 0.0720115, 0.06734457, 0.05002348, 0.08350204, 0.08207655, 0.11181914, 0.03756112, 0.07486004, 0.06533972, 0.07457344, 0.09781475, 0.02719742],
-    [0.06545375, 0.06145378, 0.10503536, 0.06421508, 0.07627526, 0.09232981, 0.07763931, 0.07001035, 0.11307331, 0.07298351, 0.04248486, 0.06462713, 0.07038293, 0.02403557],
-    [0.07738289, 0.05022488, 0.07790481, 0.01356516, 0.01038191, 0.06495444, 0.07721954, 0.07701905, 0.02680715, 0.07759692, 0.12701687, 0.15378395, 0.12808992, 0.03805251],
-    [0.07466384, 0.07466384, 0.07466384, 0.14932769, 0.10452938, 0.14932769, 0.10452938, 0.10344411, 0.0751261, 0.04492581, 0.04479831]
-  ];
-  var COLOR_LEVELS = [
-    { color: "#ff4c4c" },
-    { color: "#ff8c00" },
-    { color: "#ffd700" },
-    { color: "#90ee90" },
-    { color: "#00cfcf" },
-    { color: "#5b9bff" },
-    { color: "#cc88ff" }
-  ];
-  var R5_THRESHOLDS = [110, 100, 90, 80, 70, 60, 0];
-  var TI_THRESHOLDS = [12, 9, 6, 4, 2, 1, -Infinity];
-  var REC_THRESHOLDS = [5.5, 5, 4, 3, 2, 1, 0];
-  var RTN_THRESHOLDS = [90, 60, 40, 30, 20, 10, 0];
-  var POS_MULTIPLIERS = [0.3, 0.3, 0.9, 0.6, 1.5, 0.9, 0.9, 0.6, 0.3];
-  var ASI_WEIGHT_OUTFIELD = 26353376e4;
-  var ASI_WEIGHT_GK = 48717927500;
-  var SKILL_DEFS = [
-    // shared (isGK + isOutfield) — must stay at the top; indices 0-2 match both weight matrices
-    { name: "Strength", key: "strength", isGK: true, isOutfield: true, category: "Physical", id: 0, color: "#22cc22" },
-    { name: "Stamina", key: "stamina", isGK: true, isOutfield: true, category: "Physical", id: 1, color: "#00bcd4" },
-    { name: "Pace", key: "pace", isGK: true, isOutfield: true, category: "Physical", id: 2, color: "#8bc34a" },
-    // outfield-only (indices 3-13 after filter)
-    { name: "Marking", key: "marking", isOutfield: true, category: "Tactical", id: 3, color: "#f44336" },
-    { name: "Tackling", key: "tackling", isOutfield: true, category: "Tactical", id: 4, color: "#26a69a" },
-    { name: "Workrate", key: "workrate", isOutfield: true, category: "Tactical", id: 5, color: "#3f51b5" },
-    { name: "Positioning", key: "positioning", isOutfield: true, category: "Tactical", id: 6, color: "#9c27b0" },
-    { name: "Passing", key: "passing", isOutfield: true, category: "Technical", id: 7, color: "#e91e63" },
-    { name: "Crossing", key: "crossing", isOutfield: true, category: "Technical", id: 8, color: "#2196f3" },
-    { name: "Technique", key: "technique", isOutfield: true, category: "Technical", id: 9, color: "#ff4081" },
-    { name: "Heading", key: "heading", isOutfield: true, category: "Physical", id: 10, color: "#757575" },
-    { name: "Finishing", key: "finishing", isOutfield: true, category: "Technical", id: 11, color: "#4caf50" },
-    { name: "Longshots", key: "longshots", isOutfield: true, category: "Technical", id: 12, color: "#00e5ff" },
-    { name: "Set Pieces", key: "set_pieces", isOutfield: true, category: "Technical", id: 13, color: "#607d8b" },
-    // GK-only (indices 3-10 after filter)
-    { name: "Handling", key: "handling", isGK: true, category: "Technical", id: 3, color: "#f44336" },
-    { name: "One on ones", key: "oneonones", isGK: true, category: "Tactical", key2: "one_on_ones", id: 4, color: "#26a69a" },
-    { name: "Reflexes", key: "reflexes", isGK: true, category: "Technical", id: 5, color: "#3f51b5" },
-    { name: "Aerial Ability", key: "arialability", isGK: true, category: "Tactical", key2: "aerial_ability", id: 6, color: "#9c27b0" },
-    { name: "Jumping", key: "jumping", isGK: true, category: "Physical", id: 7, color: "#e91e63" },
-    { name: "Communication", key: "communication", isGK: true, category: "Tactical", id: 8, color: "#2196f3" },
-    { name: "Kicking", key: "kicking", isGK: true, category: "Technical", id: 9, color: "#ff4081" },
-    { name: "Throwing", key: "throwing", isGK: true, category: "Technical", id: 10, color: "#757575" }
-  ];
-  var SKILL_DEFS_OUT = SKILL_DEFS.filter((s6) => s6.isOutfield);
-  var SKILL_DEFS_GK = SKILL_DEFS.filter((s6) => s6.isGK);
-  var SKILL_KEYS_OUT = ["str", "sta", "pac", "mar", "tac", "wor", "pos", "pas", "cro", "tec", "hea", "fin", "lon", "set"];
-  var SKILL_KEYS_GK = ["str", "sta", "pac", "han", "one", "ref", "ari", "jum", "com", "kic", "thr"];
-  var SKILL_KEYS_ALL = [...SKILL_KEYS_OUT, ...SKILL_KEYS_GK.filter((s6) => !SKILL_KEYS_OUT.includes(s6))];
-  var SKILL_LABELS = {
-    str: "Str",
-    sta: "Sta",
-    pac: "Pac",
-    mar: "Mar",
-    tac: "Tac",
-    wor: "Wor",
-    pos: "Pos",
-    pas: "Pas",
-    cro: "Cro",
-    tec: "Tec",
-    hea: "Hea",
-    fin: "Fin",
-    lon: "Lon",
-    set: "Set",
-    han: "Han",
-    one: "One",
-    ref: "Ref",
-    ari: "Aer",
-    jum: "Jum",
-    com: "Com",
-    kic: "Kic",
-    thr: "Thr"
-  };
-  var SKILL_LABELS_OUT = SKILL_KEYS_OUT.map((k) => SKILL_LABELS[k]);
-  var SKILL_LABELS_GK = ["str", "pac", "jum", "sta", "one", "ref", "ari", "com", "kic", "thr", "han"].map((k) => SKILL_LABELS[k]);
-  var SKILL_KEYS_GK_WEIGHT = ["str", "pac", "jum", "sta", "one", "ref", "ari", "com", "kic", "thr", "han"];
-  var SKILL_NAMES_GK_SHORT = SKILL_KEYS_GK.map((k) => SKILL_LABELS[k]);
-  var SKILL_NAMES_OUT = SKILL_DEFS_OUT.map((s6) => s6.name);
-  var SKILL_NAMES_GK = SKILL_DEFS_GK.map((s6) => s6.name);
-  var GRAPH_KEYS_OUT = SKILL_DEFS_OUT.map((s6) => s6.key);
-  var GRAPH_KEYS_GK = ["strength", "pace", "jumping", "stamina", "one_on_ones", "reflexes", "aerial_ability", "communication", "kicking", "throwing", "handling"];
-  var SKILL_EFFICIENCY_BRACKETS = [[18, 0.04], [15, 0.05], [5, 0.1], [0, 0.15]];
-
-  // src/constants/player.js
-  var player_exports = {};
-  __export(player_exports, {
-    AGE_THRESHOLDS: () => AGE_THRESHOLDS,
-    BENCH_LABELS: () => BENCH_LABELS,
-    BENCH_SLOTS: () => BENCH_SLOTS,
-    FIELD_ZONES: () => FIELD_ZONES,
-    MIN_WAGE_FOR_TI: () => MIN_WAGE_FOR_TI,
-    POSITION_MAP: () => POSITION_MAP,
-    POSKEY_TO_ZONE: () => POSKEY_TO_ZONE,
-    SPECIAL_SLOTS: () => SPECIAL_SLOTS,
-    WAGE_RATE: () => WAGE_RATE
-  });
-  var POSITION_MAP = {
-    gk: { id: 9, position: "GK", main: true, row: 0, col: 2, ordering: 0, section: "gk", color: "var(--tmu-success-strong)" },
-    dl: { id: 1, position: "DL", main: true, row: 1, col: 0, ordering: 2, section: "def", color: "var(--tmu-info-dark)" },
-    dcl: { id: 0, position: "DCL", main: false, row: 1, col: 1, ordering: 1, section: "def", color: "var(--tmu-info-dark)" },
-    dc: { id: 0, position: "DC", main: true, row: 1, col: 2, ordering: 1, section: "def", color: "var(--tmu-info-dark)" },
-    dcr: { id: 0, position: "DCR", main: false, row: 1, col: 3, ordering: 1, section: "def", color: "var(--tmu-info-dark)" },
-    dr: { id: 1, position: "DR", main: true, row: 1, col: 4, ordering: 2, section: "def", color: "var(--tmu-info-dark)" },
-    dml: { id: 3, position: "DML", main: true, row: 2, col: 0, ordering: 4, section: "wing", color: "var(--tmu-warning)" },
-    dmcl: { id: 2, position: "DMCL", main: false, row: 2, col: 1, ordering: 3, section: "mid", color: "var(--tmu-warning)" },
-    dmc: { id: 2, position: "DMC", main: true, row: 2, col: 2, ordering: 3, section: "mid", color: "var(--tmu-warning)" },
-    dmcr: { id: 2, position: "DMCR", main: false, row: 2, col: 3, ordering: 3, section: "mid", color: "var(--tmu-warning)" },
-    dmr: { id: 3, position: "DMR", main: true, row: 2, col: 4, ordering: 4, section: "wing", color: "var(--tmu-warning)" },
-    ml: { id: 5, position: "ML", main: true, row: 3, col: 0, ordering: 6, section: "wing", color: "var(--tmu-warning)" },
-    mcl: { id: 4, position: "MCL", main: false, row: 3, col: 1, ordering: 5, section: "mid", color: "var(--tmu-warning)" },
-    mc: { id: 4, position: "MC", main: true, row: 3, col: 2, ordering: 5, section: "mid", color: "var(--tmu-warning)" },
-    mcr: { id: 4, position: "MCR", main: false, row: 3, col: 3, ordering: 5, section: "mid", color: "var(--tmu-warning)" },
-    mr: { id: 5, position: "MR", main: true, row: 3, col: 4, ordering: 6, section: "wing", color: "var(--tmu-warning)" },
-    oml: { id: 7, position: "OML", main: true, row: 4, col: 0, ordering: 7, section: "wing", color: "var(--tmu-warning-soft)" },
-    omcl: { id: 6, position: "OMCL", main: false, row: 4, col: 1, ordering: 8, section: "mid", color: "var(--tmu-warning-soft)" },
-    omc: { id: 6, position: "OMC", main: true, row: 4, col: 2, ordering: 8, section: "mid", color: "var(--tmu-warning-soft)" },
-    omcr: { id: 6, position: "OMCR", main: false, row: 4, col: 3, ordering: 8, section: "mid", color: "var(--tmu-warning-soft)" },
-    omr: { id: 7, position: "OMR", main: true, row: 4, col: 4, ordering: 7, section: "wing", color: "var(--tmu-warning-soft)" },
-    fcl: { id: 8, position: "FCL", main: false, row: 5, col: 1, ordering: 9, section: "fwd", color: "var(--tmu-danger-deep)" },
-    fc: { id: 8, position: "FC", main: true, row: 5, col: 2, ordering: 9, section: "fwd", color: "var(--tmu-danger-deep)" },
-    fcr: { id: 8, position: "FCR", main: false, row: 5, col: 3, ordering: 9, section: "fwd", color: "var(--tmu-danger-deep)" }
-  };
-  var FIELD_ZONES = [
-    { key: "fwd", row: 5, cols: [null, "fcl", "fc", "fcr", null] },
-    { key: "om", row: 4, cols: ["oml", "omcl", "omc", "omcr", "omr"] },
-    { key: "mid", row: 3, cols: ["ml", "mcl", "mc", "mcr", "mr"] },
-    { key: "dm", row: 2, cols: ["dml", "dmcl", "dmc", "dmcr", "dmr"] },
-    { key: "def", row: 1, cols: ["dl", "dcl", "dc", "dcr", "dr"] },
-    { key: "gk", row: 0, cols: [null, null, "gk", null, null] }
-  ];
-  var POSKEY_TO_ZONE = Object.fromEntries(
-    FIELD_ZONES.flatMap((z) => z.cols.filter(Boolean).map((pk) => [pk, z.key]))
-  );
-  var BENCH_SLOTS = ["sub1", "sub2", "sub3", "sub4", "sub5"];
-  var SPECIAL_SLOTS = ["captain", "corner", "penalty", "freekick"];
-  var BENCH_LABELS = {
-    sub1: "GK",
-    sub2: "DEF",
-    sub3: "MID",
-    sub4: "Wing",
-    sub5: "FWD",
-    captain: "Captain",
-    corner: "Corners",
-    penalty: "Penalty",
-    freekick: "Free Kick"
-  };
-  var AGE_THRESHOLDS = [30, 28, 26, 24, 22, 20, 0];
-  var WAGE_RATE = 15.8079;
-  var MIN_WAGE_FOR_TI = 3e4;
-
-  // src/constants/match.js
-  var match_exports = {};
-  __export(match_exports, {
-    ATTACK_STYLES: () => ATTACK_STYLES,
-    CROSS_VIDS: () => CROSS_VIDS,
-    DEFWIN_VIDS: () => DEFWIN_VIDS,
-    FINISH_VIDS: () => FINISH_VIDS,
-    FOCUS_MAP: () => FOCUS_MAP,
-    MENTALITY_MAP: () => MENTALITY_MAP,
-    MENTALITY_MAP_LONG: () => MENTALITY_MAP_LONG,
-    PASS_VIDS: () => PASS_VIDS,
-    RUN_DUEL_VIDS: () => RUN_DUEL_VIDS,
-    SKIP_PREFIXES: () => SKIP_PREFIXES,
-    STYLE_MAP: () => STYLE_MAP,
-    STYLE_MAP_SHORT: () => STYLE_MAP_SHORT,
-    STYLE_ORDER: () => STYLE_ORDER
-  });
-  var PASS_VIDS = /^(short|preshort|through|longball|gkthrow|gkkick)/;
-  var CROSS_VIDS = /^(wing(?!start)|cornerkick|freekick)/;
-  var DEFWIN_VIDS = /^defwin/;
-  var FINISH_VIDS = /^(finish|finishlong|header|acrobat)/;
-  var RUN_DUEL_VIDS = /^finrun/;
-  var ATTACK_STYLES = [
-    { key: "cou", label: "Direct" },
-    { key: "kco", label: "Direct" },
-    { key: "klo", label: "Long Balls" },
-    { key: "sho", label: "Short Passing" },
-    { key: "thr", label: "Through Balls" },
-    { key: "lon", label: "Long Balls" },
-    { key: "win", label: "Wings" },
-    { key: "doe", label: "Corners" },
-    { key: "dire", label: "Free Kicks" }
-  ];
-  var STYLE_ORDER = ["Direct", "Short Passing", "Through Balls", "Long Balls", "Wings", "Corners", "Free Kicks", "Penalties"];
-  var SKIP_PREFIXES = /* @__PURE__ */ new Set(["card", "cod", "inj"]);
-  var STYLE_MAP = { 1: "Balanced", 2: "Direct", 3: "Wings", 4: "Short Passing", 5: "Long Balls", 6: "Through Balls" };
-  var STYLE_MAP_SHORT = { 1: "Balanced", 2: "Direct", 3: "Wings", 4: "Short", 5: "Long", 6: "Through" };
-  var MENTALITY_MAP = { 1: "V.Def", 2: "Def", 3: "Sl.Def", 4: "Normal", 5: "Sl.Att", 6: "Att", 7: "V.Att" };
-  var MENTALITY_MAP_LONG = { 1: "Very Defensive", 2: "Defensive", 3: "Slightly Defensive", 4: "Normal", 5: "Slightly Attacking", 6: "Attacking", 7: "Very Attacking" };
-  var FOCUS_MAP = { 1: "Balanced", 2: "Left", 3: "Central", 4: "Right" };
-
-  // src/constants/stats.js
-  var stats_exports = {};
-  __export(stats_exports, {
-    PLAYER_STAT_COLS: () => PLAYER_STAT_COLS,
-    PLAYER_STAT_ZERO: () => PLAYER_STAT_ZERO
-  });
-  var PLAYER_STAT_COLS = [
-    // ── Goals & Shooting ──────────────────────────────────────────────────
-    {
-      key: "goals",
-      abbr: "G",
-      title: "Goals",
-      icon: "\u26BD",
-      section: "shooting",
-      outfieldOrder: 1,
-      gkOrder: 2,
-      matchOrder: 6,
-      lineupIcon: true
-    },
-    {
-      key: "assists",
-      abbr: "A",
-      title: "Assists",
-      icon: "\u{1F45F}",
-      section: "passing",
-      outfieldOrder: 1,
-      gkOrder: 1,
-      matchOrder: 7,
-      lineupIcon: true
-    },
-    {
-      key: "keyPasses",
-      abbr: "KP",
-      title: "Key Passes",
-      icon: "\u{1F511}",
-      section: "passing",
-      outfieldOrder: 2,
-      gkOrder: 2
-    },
-    {
-      key: "shots",
-      abbr: "Sh",
-      title: "Shots / Saves",
-      icon: "\u{1F3AF}",
-      section: "shooting",
-      outfieldOrder: 2,
-      matchOrder: 5,
-      gkKey: "saves",
-      gkAbbr: "Sv"
-    },
-    {
-      key: "saves",
-      title: "Saves",
-      icon: "\u{1F9E4}",
-      section: "shooting",
-      gkOrder: 1
-    },
-    {
-      key: "shotsOnTarget",
-      abbr: "SoT",
-      title: "Shots on Target",
-      icon: "\u2705",
-      section: "shooting",
-      outfieldOrder: 3
-    },
-    {
-      key: "goalsFoot",
-      title: "Foot Goals",
-      icon: "\u{1F9B6}",
-      section: "shooting",
-      outfieldOrder: 4
-    },
-    {
-      key: "goalsHead",
-      title: "Head Goals",
-      icon: "\u{1F5E3}\uFE0F",
-      section: "shooting",
-      outfieldOrder: 5
-    },
-    // ── Passing (computed card entries) ───────────────────────────────────
-    {
-      key: "__passAcc",
-      title: "Pass %",
-      icon: "\u{1F4E8}",
-      section: "passing",
-      outfieldOrder: 3,
-      gkOrder: 3
-    },
-    {
-      key: "__crossAcc",
-      title: "Cross %",
-      icon: "\u2197\uFE0F",
-      section: "passing",
-      outfieldOrder: 4,
-      gkOrder: 4
-    },
-    {
-      key: "__totalPass",
-      title: "Total",
-      icon: "\u{1F4C8}",
-      section: "passing",
-      outfieldOrder: 5,
-      gkOrder: 5
-    },
-    // ── Passing (table columns) ───────────────────────────────────────────
-    {
-      key: "passesCompleted",
-      abbr: "SP",
-      title: "Successful Passes",
-      matchOrder: 1
-    },
-    {
-      key: "passesFailed",
-      abbr: "UP",
-      title: "Unsuccessful Passes",
-      warn: true,
-      matchOrder: 2
-    },
-    {
-      key: "crossesCompleted",
-      abbr: "SC",
-      title: "Successful Crosses",
-      matchOrder: 3
-    },
-    {
-      key: "crossesFailed",
-      abbr: "UC",
-      title: "Unsuccessful Crosses",
-      warn: true,
-      matchOrder: 4
-    },
-    // ── Defending & Duels ─────────────────────────────────────────────────
-    {
-      key: "interceptions",
-      abbr: "INT",
-      title: "Interceptions",
-      icon: "\u{1F441}\uFE0F",
-      section: "defending",
-      outfieldOrder: 1,
-      gkOrder: 1
-    },
-    {
-      key: "tackles",
-      abbr: "TKL",
-      title: "Tackles",
-      icon: "\u{1F9B5}",
-      section: "defending",
-      outfieldOrder: 2,
-      gkOrder: 2
-    },
-    {
-      key: "headerClearances",
-      abbr: "HC",
-      title: "Header Clearances",
-      icon: "\u{1F5E3}\uFE0F",
-      section: "defending",
-      outfieldOrder: 3,
-      gkOrder: 3
-    },
-    {
-      key: "tackleFails",
-      abbr: "TF",
-      title: "Tackle Fails",
-      icon: "\u274C",
-      section: "defending",
-      outfieldOrder: 4,
-      gkOrder: 4,
-      warn: true
-    },
-    {
-      key: "duelsWon",
-      abbr: "DW",
-      title: "Duels Won",
-      matchOrder: 8
-    },
-    {
-      key: "duelsLost",
-      abbr: "DL",
-      title: "Duels Lost",
-      warn: true,
-      matchOrder: 9
-    },
-    {
-      key: "fouls",
-      abbr: "Fls",
-      title: "Fouls Committed",
-      icon: "\u26A0\uFE0F",
-      section: "defending",
-      outfieldOrder: 5,
-      gkOrder: 5,
-      warn: true
-    },
-    {
-      key: "yellowCards",
-      abbr: "\u{1F7E8}",
-      title: "Yellow Cards",
-      yc: true,
-      lineupIcon: true
-    },
-    {
-      key: "yellowRedCards",
-      abbr: "\u{1F7E8}\u{1F7E5}",
-      title: "Yellow-Red Cards",
-      lineupIcon: true
-    },
-    {
-      key: "redCards",
-      abbr: "\u{1F7E5}",
-      title: "Red Cards",
-      rc: true,
-      lineupIcon: true
-    },
-    // ── Lineup-only status flags ───────────────────────────────────────────
-    {
-      key: "injured",
-      title: "Injured",
-      icon: "\u271A",
-      iconStyle: "color:var(--tmu-danger);font-size:var(--tmu-font-sm);font-weight:800",
-      lineupIcon: true,
-      lineupBool: true
-    },
-    {
-      key: "subIn",
-      title: "Subbed In",
-      icon: "\u{1F53C}",
-      lineupIcon: true,
-      lineupBool: true
-    },
-    {
-      key: "subOut",
-      title: "Subbed Out",
-      icon: "\u{1F53D}",
-      lineupIcon: true,
-      lineupBool: true
-    }
-  ];
-  var PLAYER_STAT_ZERO = {
-    passesCompleted: 0,
-    passesFailed: 0,
-    crossesCompleted: 0,
-    crossesFailed: 0,
-    shots: 0,
-    shotsOnTarget: 0,
-    shotsOffTarget: 0,
-    shotsFoot: 0,
-    shotsOnTargetFoot: 0,
-    goalsFoot: 0,
-    shotsHead: 0,
-    shotsOnTargetHead: 0,
-    goalsHead: 0,
-    saves: 0,
-    goals: 0,
-    assists: 0,
-    keyPasses: 0,
-    duelsWon: 0,
-    duelsLost: 0,
-    interceptions: 0,
-    tackles: 0,
-    headerClearances: 0,
-    tackleFails: 0,
-    fouls: 0,
-    yellowCards: 0,
-    yellowRedCards: 0,
-    redCards: 0,
-    setpieceTakes: 0,
-    freekickGoals: 0,
-    penaltiesTaken: 0,
-    penaltiesScored: 0,
-    subIn: false,
-    subOut: false,
-    injured: false
-  };
-
-  // src/constants/training.js
-  var training_exports = {};
-  __export(training_exports, {
-    ROUTINE_AGE_MIN: () => ROUTINE_AGE_MIN,
-    ROUTINE_CAP: () => ROUTINE_CAP,
-    ROUTINE_DECAY: () => ROUTINE_DECAY,
-    ROUTINE_SCALE: () => ROUTINE_SCALE,
-    SMOOTH_WEIGHT: () => SMOOTH_WEIGHT,
-    STD_FOCUS: () => STD_FOCUS,
-    TRAINING_CUSTOM: () => TRAINING_CUSTOM,
-    TRAINING_GROUPS_GK: () => TRAINING_GROUPS_GK,
-    TRAINING_GROUPS_OUT: () => TRAINING_GROUPS_OUT,
-    TRAINING_LABELS: () => TRAINING_LABELS,
-    TRAINING_NAMES: () => TRAINING_NAMES,
-    _SEASON_DAYS: () => _SEASON_DAYS,
-    _TRAINING1: () => _TRAINING1
-  });
-  var _TRAINING1 = /* @__PURE__ */ new Date("2023-01-16T23:00:00Z");
-  var _SEASON_DAYS = 84;
-  var ROUTINE_CAP = 40;
-  var ROUTINE_DECAY = 0.1;
-  var SMOOTH_WEIGHT = 0.5;
-  var STD_FOCUS = { "1": 3, "2": 0, "3": 1, "4": 5, "5": 4, "6": 2 };
-  var TRAINING_GROUPS_OUT = [[0, 5, 1], [3, 4], [8, 2], [7, 9, 13], [10, 6], [11, 12]];
-  var TRAINING_GROUPS_GK = [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]];
-  var TRAINING_NAMES = { "1": "Technical", "2": "Fitness", "3": "Tactical", "4": "Finishing", "5": "Defending", "6": "Wings" };
-  var TRAINING_LABELS = ["Str/Wor/Sta", "Mar/Tac", "Cro/Pac", "Pas/Tec/Set", "Hea/Pos", "Fin/Lon"];
-  var TRAINING_CUSTOM = [
-    { label: "Strength/Workrate/Stamina", color: "var(--tmu-success)" },
-    { label: "Marking/Tackling", color: "var(--tmu-info-strong)" },
-    { label: "Crossing/Pace", color: "var(--tmu-warning)" },
-    { label: "Passing/Technique/Set Pieces", color: "var(--tmu-warning-soft)" },
-    { label: "Heading/Positioning", color: "var(--tmu-purple)" },
-    { label: "Finishing/Long Shots", color: "var(--tmu-danger)" }
-  ];
-  var ROUTINE_SCALE = 4.2;
-  var ROUTINE_AGE_MIN = 15;
-
-  // src/constants/app.js
-  var app_exports = {};
-  __export(app_exports, {
-    GAMEPLAY: () => GAMEPLAY,
-    POLL_INTERVAL_MS: () => POLL_INTERVAL_MS
-  });
-  var POLL_INTERVAL_MS = 6e4;
-  var GAMEPLAY = {
-    HOME_ADVANTAGE: 0.04
-    // ~4% home advantage applied in match prediction
-  };
-
-  // src/lib/tm-constants.js
-  var TmConst = {
-    ...skills_exports,
-    ...player_exports,
-    ...match_exports,
-    ...stats_exports,
-    ...training_exports,
-    ...app_exports
-  };
-
-  // src/lib/tm-position.js
-  var ensureChipCSS = /* @__PURE__ */ (() => {
-    let done = false;
-    return () => {
-      if (done || typeof document === "undefined") return;
-      done = true;
-      const s6 = document.createElement("style");
-      s6.id = "tm-pos-chip-styles";
-      s6.textContent = `.tm-pos-chip{display:inline-block;padding:0 var(--tmu-space-sm);border-radius:var(--tmu-space-xs);font-size:var(--tmu-font-xs);font-weight:700;letter-spacing:.3px;line-height:16px;text-align:center;min-width:28px;text-transform:uppercase;}`;
-      document.head.appendChild(s6);
-    };
-  })();
-  var MAP = TmConst.POSITION_MAP;
-  var FILTER_GROUPS = { 9: "gk", 0: "de", 1: "de", 2: "dm", 3: "dm", 4: "mf", 5: "mf", 6: "om", 7: "om", 8: "fw" };
-  var GROUP_COLORS = {
-    9: "var(--tmu-success-strong)",
-    // GK
-    0: "var(--tmu-info-dark)",
-    1: "var(--tmu-info-dark)",
-    // DC, DLR
-    2: "var(--tmu-warning)",
-    3: "var(--tmu-warning)",
-    // DMC, DMLR
-    4: "var(--tmu-warning)",
-    5: "var(--tmu-warning)",
-    // MC, MLR
-    6: "var(--tmu-warning)",
-    7: "var(--tmu-warning)",
-    // OMC, OMLR
-    8: "var(--tmu-danger-deep)"
-    // F
-  };
-  var GROUP_LABELS = {
-    9: "GK",
-    0: "DC",
-    1: "DLR",
-    2: "DMC",
-    3: "DMLR",
-    4: "MC",
-    5: "MLR",
-    6: "OMC",
-    7: "OMLR",
-    8: "F"
-  };
-  var norm = (pos) => (pos || "").replace(/sub/i, "").trim().toLowerCase().split(/[\/,]/)[0];
-  var TmPosition = {
-    /**
-     * Display label for a position string.
-     * e.g. "subdc" → "DC",  "dl" → "DL",  null → "?"
-     */
-    label(pos) {
-      if (!pos) return "?";
-      const cleaned = pos.replace(/sub/i, "").trim().toUpperCase().split(/[\/,]/)[0];
-      return cleaned || "SUB";
-    },
-    /**
-     * Stat group classification: 'gk' | 'def' | 'mid' | 'att'
-     * Used for grouping players in stats tables.
-     */
-    group(pos) {
-      const p = norm(pos);
-      if (p === "gk") return "gk";
-      if (/^d/.test(p) || p === "lb" || p === "rb" || p === "sw") return "def";
-      if (/^(fc|st|cf|lw|rw|lf|rf|fw)/.test(p)) return "att";
-      return "mid";
-    },
-    /**
-     * Chip variant key for TmUI.chip(): 'gk' | 'd' | 'm' | 'f'
-     */
-    variant(pos) {
-      const p = norm(pos);
-      if (p === "gk") return "gk";
-      if (/^d/.test(p)) return "d";
-      if (/^f/.test(p) || /^(fc|st|cf|lw|rw)/.test(p)) return "f";
-      return "m";
-    },
-    /**
-     * Filter group for a POSITION_MAP id number.
-     * e.g. 9 → 'gk', 4 → 'mf', 8 → 'fw'
-     */
-    filterGroup(id) {
-      var _a2;
-      return (_a2 = FILTER_GROUPS[id]) != null ? _a2 : "mf";
-    },
-    /**
-     * Group color for a POSITION_MAP id number (charts, legends).
-     * e.g. 9 → success token, 8 → danger token
-     */
-    groupColor(id) {
-      var _a2;
-      return (_a2 = GROUP_COLORS[id]) != null ? _a2 : "var(--tmu-text-disabled)";
-    },
-    /**
-     * Short group label for a POSITION_MAP id number.
-     * e.g. 9 → 'GK', 1 → 'DLR', 8 → 'F'
-     */
-    groupLabel(id) {
-      var _a2;
-      return (_a2 = GROUP_LABELS[id]) != null ? _a2 : "?";
-    },
-    /**
-     * Render a position chip — identical layout to the squad table.
-     * @param {Array<{position:string,color:string}> | Array<string>} positions
-     * @param {string} [cls] CSS class for the outer chip span
-     */
-    chip(positions, cls = "tm-pos-chip", { attrs = {} } = {}) {
-      ensureChipCSS();
-      if (!positions || Array.isArray(positions) && !positions.length) return "-";
-      const arr = Array.isArray(positions) ? positions : [positions];
-      const items = arr.map((pp) => {
-        var _a2, _b, _c, _d;
-        if (typeof pp === "string") {
-          const key = norm(pp);
-          const entry = (_a2 = MAP[key]) != null ? _a2 : MAP[key.replace(/[lrc]$/, "")];
-          return { label: (_b = entry == null ? void 0 : entry.position) != null ? _b : key.replace(/sub/i, "").toUpperCase(), color: (_c = entry == null ? void 0 : entry.color) != null ? _c : "var(--tmu-text-disabled)" };
-        }
-        return { label: pp.position, color: (_d = pp.color) != null ? _d : "var(--tmu-text-disabled)" };
-      });
-      if (!items.length) return "-";
-      const firstColor = items[0].color;
-      const inner = items.map((it) => `<span style="color:${it.color}">${it.label}</span>`).join('<span style="color:var(--tmu-text-faint)">, </span>');
-      const attrStr = Object.entries(attrs).map(([k, v]) => ` ${k}="${String(v).replace(/"/g, "&quot;")}"`).join("");
-      return TmUI.positionChip(firstColor, inner, cls, attrStr);
-    },
-    /**
-     * Mood penalty for placing a player in a given posKey.
-     * Returns 0-4 (0 = natural position, 4 = maximum unhappiness).
-     */
-    moodPenalty(player2, posKey) {
-      var _a2, _b;
-      const LINE_PEN = {
-        1: { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4 },
-        2: { 1: 1, 2: 0, 3: 1, 4: 2, 5: 3 },
-        3: { 1: 2, 2: 1, 3: 0, 4: 1, 5: 2 },
-        4: { 1: 3, 2: 2, 3: 1, 4: 0, 5: 1 },
-        5: { 1: 4, 2: 3, 3: 2, 4: 1, 5: 0 }
-      };
-      const placed = MAP[String(posKey || "").toLowerCase()];
-      if (!placed) return 0;
-      const favs = Array.isArray(player2 == null ? void 0 : player2.positions) ? player2.positions.filter((p) => p.preferred) : [];
-      if (!favs.length) return 0;
-      if (placed.row === 0) return favs.some((p) => p.row === 0) ? 0 : 4;
-      if (favs.some((p) => p.row === 0)) return 4;
-      const side = (c) => c === 0 ? "L" : c === 4 ? "R" : "C";
-      const ps = side(placed.col);
-      let best = 4;
-      for (const fav of favs) {
-        const fs = side(fav.col);
-        let pen = fs !== ps ? fs === "C" || ps === "C" ? 2 : 1 : 0;
-        pen += (_b = (_a2 = LINE_PEN[placed.row]) == null ? void 0 : _a2[fav.row]) != null ? _b : 4;
-        best = Math.min(best, Math.min(pen, 4));
-      }
-      return best;
-    }
-  };
-
-  // src/lib/tm-utils.js
-  var { COLOR_LEVELS: COLOR_LEVELS2 } = TmConst;
-  var getColor = (value, thresholds) => {
-    for (let i = 0; i < thresholds.length; i++) {
-      if (value >= thresholds[i]) return COLOR_LEVELS2[i].color;
-    }
-    return COLOR_LEVELS2[COLOR_LEVELS2.length - 1].color;
-  };
-  var parseNum = (v, fallback = 0) => {
-    if (typeof v === "number") return Number.isFinite(v) ? v : fallback;
-    return parseInt(String(v != null ? v : "").replace(/[^0-9]/g, ""), 10) || fallback;
-  };
-  var ageToMonths = (k) => {
-    const [y, m] = k.split(".").map(Number);
-    return y * 12 + m;
-  };
-  var monthsToAge = (m) => `${Math.floor(m / 12)}.${m % 12}`;
-  var classifyPosition = (pos) => TmPosition.group(pos || "");
-  var posLabel = (pos) => TmPosition.label(pos);
-  var fix2 = (v) => (Math.round(v * 100) / 100).toFixed(2);
-  var formatR5 = (v, fallback = "-") => {
-    const n = Number(v);
-    return Number.isFinite(n) ? n.toFixed(2) : fallback;
-  };
-  var fmtCoins = (n) => {
-    if (n == null || isNaN(n) || n === 0) return "-";
-    if (n >= 1e9) return (n / 1e9).toFixed(2) + "B";
-    if (n >= 1e6) return (n / 1e6).toFixed(1) + "M";
-    if (n >= 1e3) return (n / 1e3).toFixed(0) + "k";
-    return String(Math.round(n));
-  };
-  var ratingColor = (r) => {
-    if (!r || r === 0) return "var(--tmu-text-dim)";
-    const v = Number(r);
-    if (v >= 9) return "#00c040";
-    if (v >= 8.5) return "#00dd50";
-    if (v >= 8) return "#22e855";
-    if (v >= 7.5) return "#44ee55";
-    if (v >= 7) return "#66dd44";
-    if (v >= 6.5) return "#88cc33";
-    if (v >= 6) return "#99bb22";
-    if (v >= 5.5) return "#aacc00";
-    if (v >= 5) return "#bbcc00";
-    if (v >= 4.5) return "#dd9900";
-    if (v >= 4) return "#ee7733";
-    if (v >= 3.5) return "#ee5533";
-    if (v >= 3) return "#dd3333";
-    if (v >= 2) return "#cc2222";
-    return "#bb1111";
-  };
-  var toggleSort = (clickedKey, currentKey, currentDir, defaultDir = -1) => {
-    if (clickedKey === currentKey) return { key: currentKey, dir: currentDir * -1 };
-    return { key: clickedKey, dir: defaultDir };
-  };
-  var skillColor = (v) => {
-    const n = parseInt(v);
-    if (!n || n <= 0) return "#2a3a28";
-    if (n >= 20) return "#d4af37";
-    if (n >= 19) return "#c0c0c0";
-    if (n >= 16) return "#66dd44";
-    if (n >= 12) return "#cccc00";
-    if (n >= 8) return "#ee9900";
-    return "#ee6633";
-  };
-  var skillEff = (lvl) => {
-    if (lvl >= 20) return 0;
-    const bracket = TmConst.SKILL_EFFICIENCY_BRACKETS.find(([min]) => lvl >= min);
-    return bracket ? bracket[1] : 0.15;
-  };
-  var getMainContainer = (root2 = document) => root2.querySelector(".tmvu-main");
-  var extractFaceUrl = (appearance, fallback = null) => {
-    var _a2;
-    const src = ((_a2 = String(appearance || "").match(/src=['"]([^'"]+)['"]/i)) == null ? void 0 : _a2[1]) || fallback;
-    if (!src) return null;
-    return String(src).replace(/([?&])w=\d+(&?)/i, (_match, prefix, suffix) => {
-      if (prefix === "?" && suffix) return "?";
-      return suffix ? prefix : "";
-    }).replace(/[?&]$/, "");
-  };
-  var parseSkillValue = (value) => {
-    if (typeof value === "number") return Number.isFinite(value) ? value : null;
-    const text = String(value || "");
-    const attrMatch = text.match(/(?:title|alt)=['"]?(\d+(?:\.\d+)?)/i);
-    if (attrMatch) return Number(attrMatch[1]);
-    if (/star/i.test(text)) {
-      if (/silver/i.test(text)) return 19;
-      return 20;
-    }
-    const numericMatch = text.match(/\d+(?:\.\d+)?/);
-    return numericMatch ? Number(numericMatch[0]) : null;
-  };
-  var skillValue = (skill) => {
-    var _a2;
-    return typeof skill === "object" && skill !== null ? Number((_a2 = skill.value) != null ? _a2 : 0) : Number(skill);
-  };
-  var sortAgeKeys = (keys) => Array.from(new Set(keys || [])).sort((a, b) => {
-    const [ay, am] = String(a).split(".").map(Number);
-    const [by, bm] = String(b).split(".").map(Number);
-    return ay * 12 + am - (by * 12 + bm);
-  });
-  var applyTooltipSkills = (player2, tooltipSkills) => {
-    if (!Array.isArray(player2 == null ? void 0 : player2.skills) || !Array.isArray(tooltipSkills)) return player2;
-    const tooltipMap = /* @__PURE__ */ new Map();
-    for (const skill of tooltipSkills) {
-      if (!(skill == null ? void 0 : skill.key)) continue;
-      tooltipMap.set(skill.key, parseSkillValue(skill.value));
-    }
-    player2.skills = player2.skills.map((skill) => {
-      var _a2, _b;
-      return {
-        ...skill,
-        value: (_b = tooltipMap.get(skill.key)) != null ? _b : skill.key2 ? (_a2 = tooltipMap.get(skill.key2)) != null ? _a2 : null : null
-      };
-    }).filter((skill) => skill.value != null);
-    return player2;
-  };
-  var applyPlayerPositions = (player2, favposition = "", allPositions = false) => {
-    if (!Array.isArray(player2 == null ? void 0 : player2.positions)) return player2;
-    const preferredKeys = new Set(String(favposition || "").split(",").map((value) => value.trim().toLowerCase().replace(/\s+/g, "")).filter(Boolean));
-    player2.positions = player2.positions.filter((position) => allPositions || (player2.isGK ? position.key === "gk" : position.key !== "gk")).map((position) => ({
-      ...position,
-      preferred: preferredKeys.has(String(position.key || "").toLowerCase())
-    }));
-    return player2;
-  };
-  var r5Color = /* @__PURE__ */ (() => {
-    const cache = /* @__PURE__ */ new Map();
-    const hsl2rgb = (h, s6, l) => {
-      s6 /= 100;
-      l /= 100;
-      const c = (1 - Math.abs(2 * l - 1)) * s6;
-      const x = c * (1 - Math.abs(h / 60 % 2 - 1));
-      const m = l - c / 2;
-      let r, g, b;
-      if (h < 60) {
-        r = c;
-        g = x;
-        b = 0;
-      } else if (h < 120) {
-        r = x;
-        g = c;
-        b = 0;
-      } else {
-        r = 0;
-        g = c;
-        b = x;
-      }
-      return "#" + [r + m, g + m, b + m].map((v) => Math.round(v * 255).toString(16).padStart(2, "0")).join("");
-    };
-    const topColors = {
-      95: "#8db024",
-      96: "#7aad22",
-      97: "#68a820",
-      98: "#57a31e",
-      99: "#479e1c",
-      100: "#38991a",
-      101: "#2e9418",
-      102: "#258e16",
-      103: "#1d8814",
-      104: "#168212",
-      105: "#107c10",
-      106: "#0c720e",
-      107: "#09680c",
-      108: "#075e0a",
-      109: "#055408",
-      110: "#044a07",
-      111: "#034106",
-      112: "#033905",
-      113: "#023204",
-      114: "#022c04",
-      115: "#022603",
-      116: "#012103",
-      117: "#011d02",
-      118: "#011902"
-    };
-    const tiers = [
-      [25, 50, 0, 10, 65, 68, 28, 32],
-      [50, 70, 10, 25, 68, 72, 34, 40],
-      [70, 80, 25, 42, 72, 75, 42, 46],
-      [80, 90, 42, 58, 75, 78, 46, 48],
-      [90, 95, 58, 78, 78, 80, 48, 46]
-    ];
-    return (v) => {
-      if (!v) return "var(--tmu-text-dim)";
-      const rounded = Math.round(v);
-      if (cache.has(rounded)) return cache.get(rounded);
-      let color;
-      if (rounded >= 95) {
-        color = topColors[Math.min(118, rounded)] || topColors[118];
-      } else {
-        const clamped = Math.max(25, Math.min(95, v));
-        let hue = 0, sat = 65, lit = 28;
-        for (const [from, to, h0, h1, s0, s1, l0, l1] of tiers) {
-          if (clamped <= to) {
-            const t = (clamped - from) / (to - from);
-            hue = h0 + t * (h1 - h0);
-            sat = s0 + t * (s1 - s0);
-            lit = l0 + t * (l1 - l0);
-            break;
-          }
-        }
-        color = hsl2rgb(hue, sat, lit);
-      }
-      cache.set(rounded, color);
-      return color;
-    };
-  })();
-  var getOwnClubIds = () => {
-    const s6 = window.SESSION;
-    if (!s6) return [];
-    const ids = [];
-    if (s6.main_id) ids.push(String(s6.main_id));
-    if (s6.b_team) ids.push(String(s6.b_team));
-    return ids;
-  };
-  var applySquadSkills = (player2, postPlayer) => {
-    if (!Array.isArray(player2 == null ? void 0 : player2.skills)) return player2;
-    const remap = { set_pieces: "setpieces", arialability: "aerial" };
-    player2.skills = player2.skills.map((skill) => {
-      var _a2, _b, _c, _d;
-      const postKey = (_a2 = remap[skill.key]) != null ? _a2 : skill.key;
-      const value = (_d = postPlayer[postKey]) != null ? _d : skill.key2 ? (_c = postPlayer[(_b = remap[skill.key2]) != null ? _b : skill.key2]) != null ? _c : null : null;
-      return { ...skill, value: value != null ? Number(value) : null };
-    }).filter((skill) => skill.value != null && skill.value !== 0);
-    return player2;
-  };
-  var escHtml = (v) => String(v != null ? v : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  var TmUtils = { getColor, parseNum, ageToMonths, monthsToAge, classifyPosition, posLabel, fix2, formatR5, fmtCoins, ratingColor, r5Color, toggleSort, skillColor, skillEff, getMainContainer, extractFaceUrl, skillValue, sortAgeKeys, applyTooltipSkills, applyPlayerPositions, applySquadSkills, getOwnClubIds, escHtml };
-
   // src/components/shared/tm-skill.js
   var TmSkill = {
-    /**
-     * Returns an HTML string for a colored skill value with optional decimal superscript.
-     *   — null/undefined → muted dash
-     *   — floor ≥ 20    → gold ★
-     *   — floor ≥ 19    → silver ★ + decimal superscript
-     *   — otherwise     → colored integer + decimal superscript
-     *
-     * @param {number|null} val
-     * @returns {string} HTML string
-     */
     skillBadge(val) {
-      if (val == null) return '<span style="color:var(--tmu-text-disabled-strong)">\u2014</span>';
-      const floor = Math.floor(val);
-      const frac = val - floor;
-      const fracStr = frac > 5e-3 ? `<sup style="font-size:var(--tmu-font-2xs);opacity:.75">.${Math.round(frac * 100).toString().padStart(2, "0")}</sup>` : "";
-      if (floor >= 20) return '<span style="color:var(--tmu-metal-gold);font-size:var(--tmu-font-sm)">\u2605</span>';
-      if (floor >= 19) return `<span style="color:var(--tmu-metal-silver);font-size:var(--tmu-font-sm)">\u2605${fracStr}</span>`;
-      return `<span style="color:${TmUtils.skillColor(floor)}">${floor}${fracStr}</span>`;
+      if (val == null) return '<span class="muted">&mdash;</span>';
+      if (val >= 20) return '<span class="gold" style="font-size:var(--tmu-font-sm)">\u2605</span>';
+      if (val >= 19) {
+        const frac = val - Math.floor(val);
+        const suffix = frac > 5e-3 ? `<span style="font-size:var(--tmu-font-xs);opacity:.75">.${Math.round(frac * 100).toString().padStart(2, "0")}</span>` : "";
+        return `<span class="silver" style="font-size:var(--tmu-font-sm)">\u2605</span>${suffix}`;
+      }
+      const clr = val >= 16 ? "lime" : val >= 12 ? "yellow" : val >= 8 ? "orange" : "red";
+      const r = Math.round(val * 100) / 100;
+      return `<span class="${clr}">${Number.isInteger(r) ? r : r.toFixed(2)}</span>`;
     }
   };
 
@@ -2828,8 +1859,8 @@ button.tmu-list-item { background: transparent; cursor: pointer; font-family: in
       return new Promise((resolve) => {
         const overlay = document.createElement("div");
         overlay.id = "tmu-modal-overlay";
-        const esc4 = (s6) => (s6 || "").replace(/"/g, "&quot;");
-        overlay.innerHTML = `<div class="tmu-modal"><div class="tmu-modal-icon">${icon || ""}</div><div class="tmu-modal-title">${title}</div><div class="tmu-prompt-field">${inputHtml({ id: "tmu-prompt-input", type: "text", placeholder: esc4(placeholder), value: esc4(defaultValue) })}</div><div class="tmu-modal-btns">` + buttonHtml2({ style: "primary", label: "\u{1F4BE} Save", attrs: { "data-val": "ok" } }) + buttonHtml2({ style: "danger", label: "Cancel", attrs: { "data-val": "cancel" } }) + `</div></div>`;
+        const esc5 = (s6) => (s6 || "").replace(/"/g, "&quot;");
+        overlay.innerHTML = `<div class="tmu-modal"><div class="tmu-modal-icon">${icon || ""}</div><div class="tmu-modal-title">${title}</div><div class="tmu-prompt-field">${inputHtml({ id: "tmu-prompt-input", type: "text", placeholder: esc5(placeholder), value: esc5(defaultValue) })}</div><div class="tmu-modal-btns">` + buttonHtml2({ style: "primary", label: "\u{1F4BE} Save", attrs: { "data-val": "ok" } }) + buttonHtml2({ style: "danger", label: "Cancel", attrs: { "data-val": "cancel" } }) + `</div></div>`;
         const getVal = () => overlay.querySelector("#tmu-prompt-input").value.trim();
         const closeWith = (val) => {
           overlay.remove();
@@ -3917,6 +2948,18 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       if (lastPost) payload.last_post = lastPost;
       return _post("/ajax/feed_get.ajax.php", payload);
     },
+    async fetchClubFeed({ clubId: clubId2, lastPost = "" } = {}) {
+      const payload = {
+        type: "get_feed",
+        feed_id: "0",
+        "filters[buddies]": false,
+        "filters[league]": false,
+        "filters[personal]": clubId2,
+        only_system_posts: false
+      };
+      if (lastPost) payload.last_post = lastPost;
+      return _post("/ajax/feed_get.ajax.php", payload);
+    },
     async fetchFeedNames({ playerIds = [], clubIds = [] } = {}) {
       return _post("/ajax/feed_get.ajax.php", {
         type: "club_names",
@@ -3970,6 +3013,9 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     },
     fetchDetailedUserFeed(opts) {
       return TmMessagesService.fetchDetailedUserFeed(opts);
+    },
+    fetchClubFeed(opts) {
+      return TmMessagesService.fetchClubFeed(opts);
     },
     fetchFeedNames(opts) {
       return TmMessagesService.fetchFeedNames(opts);
@@ -6017,6 +5063,968 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     });
   }
   var TmBidsSideMenu = { mount: mount2 };
+
+  // src/constants/skills.js
+  var skills_exports = {};
+  __export(skills_exports, {
+    ASI_WEIGHT_GK: () => ASI_WEIGHT_GK,
+    ASI_WEIGHT_OUTFIELD: () => ASI_WEIGHT_OUTFIELD,
+    COLOR_LEVELS: () => COLOR_LEVELS,
+    GRAPH_KEYS_GK: () => GRAPH_KEYS_GK,
+    GRAPH_KEYS_OUT: () => GRAPH_KEYS_OUT,
+    POS_MULTIPLIERS: () => POS_MULTIPLIERS,
+    R5_THRESHOLDS: () => R5_THRESHOLDS,
+    REC_THRESHOLDS: () => REC_THRESHOLDS,
+    RTN_THRESHOLDS: () => RTN_THRESHOLDS,
+    SKILL_DEFS: () => SKILL_DEFS,
+    SKILL_DEFS_GK: () => SKILL_DEFS_GK,
+    SKILL_DEFS_OUT: () => SKILL_DEFS_OUT,
+    SKILL_EFFICIENCY_BRACKETS: () => SKILL_EFFICIENCY_BRACKETS,
+    SKILL_KEYS_ALL: () => SKILL_KEYS_ALL,
+    SKILL_KEYS_GK: () => SKILL_KEYS_GK,
+    SKILL_KEYS_GK_WEIGHT: () => SKILL_KEYS_GK_WEIGHT,
+    SKILL_KEYS_OUT: () => SKILL_KEYS_OUT,
+    SKILL_LABELS: () => SKILL_LABELS,
+    SKILL_LABELS_GK: () => SKILL_LABELS_GK,
+    SKILL_LABELS_OUT: () => SKILL_LABELS_OUT,
+    SKILL_NAMES_GK: () => SKILL_NAMES_GK,
+    SKILL_NAMES_GK_SHORT: () => SKILL_NAMES_GK_SHORT,
+    SKILL_NAMES_OUT: () => SKILL_NAMES_OUT,
+    TI_THRESHOLDS: () => TI_THRESHOLDS,
+    WEIGHT_R5: () => WEIGHT_R5,
+    WEIGHT_RB: () => WEIGHT_RB
+  });
+  var WEIGHT_R5 = [
+    [0.41029304, 0.18048062, 0.56730138, 1.06344654, 1.02312672, 0.40831256, 0.58235457, 0.12717479, 0.05454137, 0.0908983, 0.42381693, 0.04626272, 0.02199046, 0],
+    [0.42126371, 0.18293193, 0.60567629, 0.91904794, 0.89070915, 0.40038476, 0.56146633, 0.15053902, 0.15955429, 0.15682932, 0.42109742, 0.09460329, 0.03589655, 0],
+    [0.23412419, 0.32032289, 0.62194779, 0.63162534, 0.63143081, 0.45218831, 0.47370658, 0.55054737, 0.17744915, 0.39932519, 0.26915814, 0.16413124, 0.07404301, 0],
+    [0.27276905, 0.26814289, 0.61104798, 0.39865092, 0.42862643, 0.43582015, 0.46617076, 0.44931076, 0.25175412, 0.46446692, 0.2998635, 0.43843061, 0.21494592, 0],
+    [0.2521926, 0.25112993, 0.56090649, 0.18230261, 0.1837649, 0.45928749, 0.53498118, 0.59461481, 0.09851189, 0.6160195, 0.31243959, 0.65402884, 0.29982016, 0],
+    [0.28155678, 0.24090675, 0.60680245, 0.19068879, 0.20018012, 0.45148647, 0.48230007, 0.42982389, 0.26268609, 0.57933805, 0.31712419, 0.65824985, 0.29885649, 0],
+    [0.22029884, 0.2922969, 0.63248227, 0.09904394, 0.10043602, 0.47469498, 0.52919791, 0.7755588, 0.10531819, 0.71048302, 0.27667115, 0.56813972, 0.21537826, 0],
+    [0.21151292, 0.3580471, 0.88688492, 0.14391236, 0.13769621, 0.46586605, 0.34446036, 0.51377701, 0.59723919, 0.75126119, 0.16550722, 0.29966502, 0.12417045, 0],
+    [0.3547978, 0.14887553, 0.4327338, 23928e-8, 21111e-8, 0.46931131, 0.57731335, 0.41686333, 0.05607604, 0.62121195, 0.45370457, 1.03660702, 0.43205492, 0],
+    [0.45462811, 0.30278232, 0.45462811, 0.90925623, 0.45462811, 0.90925623, 0.45462811, 0.45462811, 0.30278232, 0.15139116, 0.15139116]
+  ];
+  var WEIGHT_RB = [
+    [0.10493615, 0.05208547, 0.07934211, 0.14448971, 0.13159554, 0.06553072, 0.07778375, 0.06669303, 0.05158306, 0.02753168, 0.1205517, 0.01350989, 0.02549169, 0.0388755],
+    [0.07715535, 0.04943315, 0.11627229, 0.11638685, 0.12893778, 0.07747251, 0.06370799, 0.03830611, 0.10361093, 0.06253997, 0.09128094, 0.0131411, 0.02449199, 0.03726305],
+    [0.08219824, 0.08668831, 0.07434242, 0.09661001, 0.08894242, 0.08998026, 0.09281287, 0.08868309, 0.04753574, 0.06042619, 0.05396986, 0.05059984, 0.05660203, 0.03060871],
+    [0.06744248, 0.06641401, 0.09977251, 0.08253749, 0.09709316, 0.09241026, 0.08513703, 0.06127851, 0.1027552, 0.07985941, 0.0461896, 0.0392727, 0.05285911, 0.02697852],
+    [0.07304213, 0.08174111, 0.07248656, 0.08482334, 0.07078726, 0.09568392, 0.09464529, 0.09580381, 0.04746231, 0.07093008, 0.04595281, 0.05955544, 0.07161249, 0.03547345],
+    [0.06527363, 0.0641027, 0.09701305, 0.07406706, 0.08563595, 0.09648566, 0.08651209, 0.06357183, 0.10819222, 0.07386495, 0.03245554, 0.05430668, 0.06572005, 0.03279859],
+    [0.07842736, 0.07744888, 0.0720115, 0.06734457, 0.05002348, 0.08350204, 0.08207655, 0.11181914, 0.03756112, 0.07486004, 0.06533972, 0.07457344, 0.09781475, 0.02719742],
+    [0.06545375, 0.06145378, 0.10503536, 0.06421508, 0.07627526, 0.09232981, 0.07763931, 0.07001035, 0.11307331, 0.07298351, 0.04248486, 0.06462713, 0.07038293, 0.02403557],
+    [0.07738289, 0.05022488, 0.07790481, 0.01356516, 0.01038191, 0.06495444, 0.07721954, 0.07701905, 0.02680715, 0.07759692, 0.12701687, 0.15378395, 0.12808992, 0.03805251],
+    [0.07466384, 0.07466384, 0.07466384, 0.14932769, 0.10452938, 0.14932769, 0.10452938, 0.10344411, 0.0751261, 0.04492581, 0.04479831]
+  ];
+  var COLOR_LEVELS = [
+    { color: "#ff4c4c" },
+    { color: "#ff8c00" },
+    { color: "#ffd700" },
+    { color: "#90ee90" },
+    { color: "#00cfcf" },
+    { color: "#5b9bff" },
+    { color: "#cc88ff" }
+  ];
+  var R5_THRESHOLDS = [110, 100, 90, 80, 70, 60, 0];
+  var TI_THRESHOLDS = [12, 9, 6, 4, 2, 1, -Infinity];
+  var REC_THRESHOLDS = [5.5, 5, 4, 3, 2, 1, 0];
+  var RTN_THRESHOLDS = [90, 60, 40, 30, 20, 10, 0];
+  var POS_MULTIPLIERS = [0.3, 0.3, 0.9, 0.6, 1.5, 0.9, 0.9, 0.6, 0.3];
+  var ASI_WEIGHT_OUTFIELD = 26353376e4;
+  var ASI_WEIGHT_GK = 48717927500;
+  var SKILL_DEFS = [
+    // shared (isGK + isOutfield) — must stay at the top; indices 0-2 match both weight matrices
+    { name: "Strength", key: "strength", isGK: true, isOutfield: true, category: "Physical", id: 0, color: "#22cc22" },
+    { name: "Stamina", key: "stamina", isGK: true, isOutfield: true, category: "Physical", id: 1, color: "#00bcd4" },
+    { name: "Pace", key: "pace", isGK: true, isOutfield: true, category: "Physical", id: 2, color: "#8bc34a" },
+    // outfield-only (indices 3-13 after filter)
+    { name: "Marking", key: "marking", isOutfield: true, category: "Tactical", id: 3, color: "#f44336" },
+    { name: "Tackling", key: "tackling", isOutfield: true, category: "Tactical", id: 4, color: "#26a69a" },
+    { name: "Workrate", key: "workrate", isOutfield: true, category: "Tactical", id: 5, color: "#3f51b5" },
+    { name: "Positioning", key: "positioning", isOutfield: true, category: "Tactical", id: 6, color: "#9c27b0" },
+    { name: "Passing", key: "passing", isOutfield: true, category: "Technical", id: 7, color: "#e91e63" },
+    { name: "Crossing", key: "crossing", isOutfield: true, category: "Technical", id: 8, color: "#2196f3" },
+    { name: "Technique", key: "technique", isOutfield: true, category: "Technical", id: 9, color: "#ff4081" },
+    { name: "Heading", key: "heading", isOutfield: true, category: "Physical", id: 10, color: "#757575" },
+    { name: "Finishing", key: "finishing", isOutfield: true, category: "Technical", id: 11, color: "#4caf50" },
+    { name: "Longshots", key: "longshots", isOutfield: true, category: "Technical", id: 12, color: "#00e5ff" },
+    { name: "Set Pieces", key: "set_pieces", isOutfield: true, category: "Technical", id: 13, color: "#607d8b" },
+    // GK-only (indices 3-10 after filter)
+    { name: "Handling", key: "handling", isGK: true, category: "Technical", id: 3, color: "#f44336" },
+    { name: "One on ones", key: "oneonones", isGK: true, category: "Tactical", key2: "one_on_ones", id: 4, color: "#26a69a" },
+    { name: "Reflexes", key: "reflexes", isGK: true, category: "Technical", id: 5, color: "#3f51b5" },
+    { name: "Aerial Ability", key: "arialability", isGK: true, category: "Tactical", key2: "aerial_ability", id: 6, color: "#9c27b0" },
+    { name: "Jumping", key: "jumping", isGK: true, category: "Physical", id: 7, color: "#e91e63" },
+    { name: "Communication", key: "communication", isGK: true, category: "Tactical", id: 8, color: "#2196f3" },
+    { name: "Kicking", key: "kicking", isGK: true, category: "Technical", id: 9, color: "#ff4081" },
+    { name: "Throwing", key: "throwing", isGK: true, category: "Technical", id: 10, color: "#757575" }
+  ];
+  var SKILL_DEFS_OUT = SKILL_DEFS.filter((s6) => s6.isOutfield);
+  var SKILL_DEFS_GK = SKILL_DEFS.filter((s6) => s6.isGK);
+  var SKILL_KEYS_OUT = ["str", "sta", "pac", "mar", "tac", "wor", "pos", "pas", "cro", "tec", "hea", "fin", "lon", "set"];
+  var SKILL_KEYS_GK = ["str", "sta", "pac", "han", "one", "ref", "ari", "jum", "com", "kic", "thr"];
+  var SKILL_KEYS_ALL = [...SKILL_KEYS_OUT, ...SKILL_KEYS_GK.filter((s6) => !SKILL_KEYS_OUT.includes(s6))];
+  var SKILL_LABELS = {
+    str: "Str",
+    sta: "Sta",
+    pac: "Pac",
+    mar: "Mar",
+    tac: "Tac",
+    wor: "Wor",
+    pos: "Pos",
+    pas: "Pas",
+    cro: "Cro",
+    tec: "Tec",
+    hea: "Hea",
+    fin: "Fin",
+    lon: "Lon",
+    set: "Set",
+    han: "Han",
+    one: "One",
+    ref: "Ref",
+    ari: "Aer",
+    jum: "Jum",
+    com: "Com",
+    kic: "Kic",
+    thr: "Thr"
+  };
+  var SKILL_LABELS_OUT = SKILL_KEYS_OUT.map((k) => SKILL_LABELS[k]);
+  var SKILL_LABELS_GK = ["str", "pac", "jum", "sta", "one", "ref", "ari", "com", "kic", "thr", "han"].map((k) => SKILL_LABELS[k]);
+  var SKILL_KEYS_GK_WEIGHT = ["str", "pac", "jum", "sta", "one", "ref", "ari", "com", "kic", "thr", "han"];
+  var SKILL_NAMES_GK_SHORT = SKILL_KEYS_GK.map((k) => SKILL_LABELS[k]);
+  var SKILL_NAMES_OUT = SKILL_DEFS_OUT.map((s6) => s6.name);
+  var SKILL_NAMES_GK = SKILL_DEFS_GK.map((s6) => s6.name);
+  var GRAPH_KEYS_OUT = SKILL_DEFS_OUT.map((s6) => s6.key);
+  var GRAPH_KEYS_GK = ["strength", "pace", "jumping", "stamina", "one_on_ones", "reflexes", "aerial_ability", "communication", "kicking", "throwing", "handling"];
+  var SKILL_EFFICIENCY_BRACKETS = [[18, 0.04], [15, 0.05], [5, 0.1], [0, 0.15]];
+
+  // src/constants/player.js
+  var player_exports = {};
+  __export(player_exports, {
+    AGE_THRESHOLDS: () => AGE_THRESHOLDS,
+    BENCH_LABELS: () => BENCH_LABELS,
+    BENCH_SLOTS: () => BENCH_SLOTS,
+    FIELD_ZONES: () => FIELD_ZONES,
+    MIN_WAGE_FOR_TI: () => MIN_WAGE_FOR_TI,
+    POSITION_MAP: () => POSITION_MAP,
+    POSKEY_TO_ZONE: () => POSKEY_TO_ZONE,
+    SPECIAL_SLOTS: () => SPECIAL_SLOTS,
+    WAGE_RATE: () => WAGE_RATE
+  });
+  var POSITION_MAP = {
+    gk: { id: 9, position: "GK", main: true, row: 0, col: 2, ordering: 0, section: "gk", color: "var(--tmu-success-strong)" },
+    dl: { id: 1, position: "DL", main: true, row: 1, col: 0, ordering: 2, section: "def", color: "var(--tmu-info-dark)" },
+    dcl: { id: 0, position: "DCL", main: false, row: 1, col: 1, ordering: 1, section: "def", color: "var(--tmu-info-dark)" },
+    dc: { id: 0, position: "DC", main: true, row: 1, col: 2, ordering: 1, section: "def", color: "var(--tmu-info-dark)" },
+    dcr: { id: 0, position: "DCR", main: false, row: 1, col: 3, ordering: 1, section: "def", color: "var(--tmu-info-dark)" },
+    dr: { id: 1, position: "DR", main: true, row: 1, col: 4, ordering: 2, section: "def", color: "var(--tmu-info-dark)" },
+    dml: { id: 3, position: "DML", main: true, row: 2, col: 0, ordering: 4, section: "wing", color: "var(--tmu-warning)" },
+    dmcl: { id: 2, position: "DMCL", main: false, row: 2, col: 1, ordering: 3, section: "mid", color: "var(--tmu-warning)" },
+    dmc: { id: 2, position: "DMC", main: true, row: 2, col: 2, ordering: 3, section: "mid", color: "var(--tmu-warning)" },
+    dmcr: { id: 2, position: "DMCR", main: false, row: 2, col: 3, ordering: 3, section: "mid", color: "var(--tmu-warning)" },
+    dmr: { id: 3, position: "DMR", main: true, row: 2, col: 4, ordering: 4, section: "wing", color: "var(--tmu-warning)" },
+    ml: { id: 5, position: "ML", main: true, row: 3, col: 0, ordering: 6, section: "wing", color: "var(--tmu-warning)" },
+    mcl: { id: 4, position: "MCL", main: false, row: 3, col: 1, ordering: 5, section: "mid", color: "var(--tmu-warning)" },
+    mc: { id: 4, position: "MC", main: true, row: 3, col: 2, ordering: 5, section: "mid", color: "var(--tmu-warning)" },
+    mcr: { id: 4, position: "MCR", main: false, row: 3, col: 3, ordering: 5, section: "mid", color: "var(--tmu-warning)" },
+    mr: { id: 5, position: "MR", main: true, row: 3, col: 4, ordering: 6, section: "wing", color: "var(--tmu-warning)" },
+    oml: { id: 7, position: "OML", main: true, row: 4, col: 0, ordering: 7, section: "wing", color: "var(--tmu-warning-soft)" },
+    omcl: { id: 6, position: "OMCL", main: false, row: 4, col: 1, ordering: 8, section: "mid", color: "var(--tmu-warning-soft)" },
+    omc: { id: 6, position: "OMC", main: true, row: 4, col: 2, ordering: 8, section: "mid", color: "var(--tmu-warning-soft)" },
+    omcr: { id: 6, position: "OMCR", main: false, row: 4, col: 3, ordering: 8, section: "mid", color: "var(--tmu-warning-soft)" },
+    omr: { id: 7, position: "OMR", main: true, row: 4, col: 4, ordering: 7, section: "wing", color: "var(--tmu-warning-soft)" },
+    fcl: { id: 8, position: "FCL", main: false, row: 5, col: 1, ordering: 9, section: "fwd", color: "var(--tmu-danger-deep)" },
+    fc: { id: 8, position: "FC", main: true, row: 5, col: 2, ordering: 9, section: "fwd", color: "var(--tmu-danger-deep)" },
+    fcr: { id: 8, position: "FCR", main: false, row: 5, col: 3, ordering: 9, section: "fwd", color: "var(--tmu-danger-deep)" }
+  };
+  var FIELD_ZONES = [
+    { key: "fwd", row: 5, cols: [null, "fcl", "fc", "fcr", null] },
+    { key: "om", row: 4, cols: ["oml", "omcl", "omc", "omcr", "omr"] },
+    { key: "mid", row: 3, cols: ["ml", "mcl", "mc", "mcr", "mr"] },
+    { key: "dm", row: 2, cols: ["dml", "dmcl", "dmc", "dmcr", "dmr"] },
+    { key: "def", row: 1, cols: ["dl", "dcl", "dc", "dcr", "dr"] },
+    { key: "gk", row: 0, cols: [null, null, "gk", null, null] }
+  ];
+  var POSKEY_TO_ZONE = Object.fromEntries(
+    FIELD_ZONES.flatMap((z) => z.cols.filter(Boolean).map((pk) => [pk, z.key]))
+  );
+  var BENCH_SLOTS = ["sub1", "sub2", "sub3", "sub4", "sub5"];
+  var SPECIAL_SLOTS = ["captain", "corner", "penalty", "freekick"];
+  var BENCH_LABELS = {
+    sub1: "GK",
+    sub2: "DEF",
+    sub3: "MID",
+    sub4: "Wing",
+    sub5: "FWD",
+    captain: "Captain",
+    corner: "Corners",
+    penalty: "Penalty",
+    freekick: "Free Kick"
+  };
+  var AGE_THRESHOLDS = [30, 28, 26, 24, 22, 20, 0];
+  var WAGE_RATE = 15.8079;
+  var MIN_WAGE_FOR_TI = 3e4;
+
+  // src/constants/match.js
+  var match_exports = {};
+  __export(match_exports, {
+    ATTACK_STYLES: () => ATTACK_STYLES,
+    CROSS_VIDS: () => CROSS_VIDS,
+    DEFWIN_VIDS: () => DEFWIN_VIDS,
+    FINISH_VIDS: () => FINISH_VIDS,
+    FOCUS_MAP: () => FOCUS_MAP,
+    MENTALITY_MAP: () => MENTALITY_MAP,
+    MENTALITY_MAP_LONG: () => MENTALITY_MAP_LONG,
+    PASS_VIDS: () => PASS_VIDS,
+    RUN_DUEL_VIDS: () => RUN_DUEL_VIDS,
+    SKIP_PREFIXES: () => SKIP_PREFIXES,
+    STYLE_MAP: () => STYLE_MAP,
+    STYLE_MAP_SHORT: () => STYLE_MAP_SHORT,
+    STYLE_ORDER: () => STYLE_ORDER
+  });
+  var PASS_VIDS = /^(short|preshort|through|longball|gkthrow|gkkick)/;
+  var CROSS_VIDS = /^(wing(?!start)|cornerkick|freekick)/;
+  var DEFWIN_VIDS = /^defwin/;
+  var FINISH_VIDS = /^(finish|finishlong|header|acrobat)/;
+  var RUN_DUEL_VIDS = /^finrun/;
+  var ATTACK_STYLES = [
+    { key: "cou", label: "Direct" },
+    { key: "kco", label: "Direct" },
+    { key: "klo", label: "Long Balls" },
+    { key: "sho", label: "Short Passing" },
+    { key: "thr", label: "Through Balls" },
+    { key: "lon", label: "Long Balls" },
+    { key: "win", label: "Wings" },
+    { key: "doe", label: "Corners" },
+    { key: "dire", label: "Free Kicks" }
+  ];
+  var STYLE_ORDER = ["Direct", "Short Passing", "Through Balls", "Long Balls", "Wings", "Corners", "Free Kicks", "Penalties"];
+  var SKIP_PREFIXES = /* @__PURE__ */ new Set(["card", "cod", "inj"]);
+  var STYLE_MAP = { 1: "Balanced", 2: "Direct", 3: "Wings", 4: "Short Passing", 5: "Long Balls", 6: "Through Balls" };
+  var STYLE_MAP_SHORT = { 1: "Balanced", 2: "Direct", 3: "Wings", 4: "Short", 5: "Long", 6: "Through" };
+  var MENTALITY_MAP = { 1: "V.Def", 2: "Def", 3: "Sl.Def", 4: "Normal", 5: "Sl.Att", 6: "Att", 7: "V.Att" };
+  var MENTALITY_MAP_LONG = { 1: "Very Defensive", 2: "Defensive", 3: "Slightly Defensive", 4: "Normal", 5: "Slightly Attacking", 6: "Attacking", 7: "Very Attacking" };
+  var FOCUS_MAP = { 1: "Balanced", 2: "Left", 3: "Central", 4: "Right" };
+
+  // src/constants/stats.js
+  var stats_exports = {};
+  __export(stats_exports, {
+    PLAYER_STAT_COLS: () => PLAYER_STAT_COLS,
+    PLAYER_STAT_ZERO: () => PLAYER_STAT_ZERO
+  });
+  var PLAYER_STAT_COLS = [
+    // ── Goals & Shooting ──────────────────────────────────────────────────
+    {
+      key: "goals",
+      abbr: "G",
+      title: "Goals",
+      icon: "\u26BD",
+      section: "shooting",
+      outfieldOrder: 1,
+      gkOrder: 2,
+      matchOrder: 6,
+      lineupIcon: true
+    },
+    {
+      key: "assists",
+      abbr: "A",
+      title: "Assists",
+      icon: "\u{1F45F}",
+      section: "passing",
+      outfieldOrder: 1,
+      gkOrder: 1,
+      matchOrder: 7,
+      lineupIcon: true
+    },
+    {
+      key: "keyPasses",
+      abbr: "KP",
+      title: "Key Passes",
+      icon: "\u{1F511}",
+      section: "passing",
+      outfieldOrder: 2,
+      gkOrder: 2
+    },
+    {
+      key: "shots",
+      abbr: "Sh",
+      title: "Shots / Saves",
+      icon: "\u{1F3AF}",
+      section: "shooting",
+      outfieldOrder: 2,
+      matchOrder: 5,
+      gkKey: "saves",
+      gkAbbr: "Sv"
+    },
+    {
+      key: "saves",
+      title: "Saves",
+      icon: "\u{1F9E4}",
+      section: "shooting",
+      gkOrder: 1
+    },
+    {
+      key: "shotsOnTarget",
+      abbr: "SoT",
+      title: "Shots on Target",
+      icon: "\u2705",
+      section: "shooting",
+      outfieldOrder: 3
+    },
+    {
+      key: "goalsFoot",
+      title: "Foot Goals",
+      icon: "\u{1F9B6}",
+      section: "shooting",
+      outfieldOrder: 4
+    },
+    {
+      key: "goalsHead",
+      title: "Head Goals",
+      icon: "\u{1F5E3}\uFE0F",
+      section: "shooting",
+      outfieldOrder: 5
+    },
+    // ── Passing (computed card entries) ───────────────────────────────────
+    {
+      key: "__passAcc",
+      title: "Pass %",
+      icon: "\u{1F4E8}",
+      section: "passing",
+      outfieldOrder: 3,
+      gkOrder: 3
+    },
+    {
+      key: "__crossAcc",
+      title: "Cross %",
+      icon: "\u2197\uFE0F",
+      section: "passing",
+      outfieldOrder: 4,
+      gkOrder: 4
+    },
+    {
+      key: "__totalPass",
+      title: "Total",
+      icon: "\u{1F4C8}",
+      section: "passing",
+      outfieldOrder: 5,
+      gkOrder: 5
+    },
+    // ── Passing (table columns) ───────────────────────────────────────────
+    {
+      key: "passesCompleted",
+      abbr: "SP",
+      title: "Successful Passes",
+      matchOrder: 1
+    },
+    {
+      key: "passesFailed",
+      abbr: "UP",
+      title: "Unsuccessful Passes",
+      warn: true,
+      matchOrder: 2
+    },
+    {
+      key: "crossesCompleted",
+      abbr: "SC",
+      title: "Successful Crosses",
+      matchOrder: 3
+    },
+    {
+      key: "crossesFailed",
+      abbr: "UC",
+      title: "Unsuccessful Crosses",
+      warn: true,
+      matchOrder: 4
+    },
+    // ── Defending & Duels ─────────────────────────────────────────────────
+    {
+      key: "interceptions",
+      abbr: "INT",
+      title: "Interceptions",
+      icon: "\u{1F441}\uFE0F",
+      section: "defending",
+      outfieldOrder: 1,
+      gkOrder: 1
+    },
+    {
+      key: "tackles",
+      abbr: "TKL",
+      title: "Tackles",
+      icon: "\u{1F9B5}",
+      section: "defending",
+      outfieldOrder: 2,
+      gkOrder: 2
+    },
+    {
+      key: "headerClearances",
+      abbr: "HC",
+      title: "Header Clearances",
+      icon: "\u{1F5E3}\uFE0F",
+      section: "defending",
+      outfieldOrder: 3,
+      gkOrder: 3
+    },
+    {
+      key: "tackleFails",
+      abbr: "TF",
+      title: "Tackle Fails",
+      icon: "\u274C",
+      section: "defending",
+      outfieldOrder: 4,
+      gkOrder: 4,
+      warn: true
+    },
+    {
+      key: "duelsWon",
+      abbr: "DW",
+      title: "Duels Won",
+      matchOrder: 8
+    },
+    {
+      key: "duelsLost",
+      abbr: "DL",
+      title: "Duels Lost",
+      warn: true,
+      matchOrder: 9
+    },
+    {
+      key: "fouls",
+      abbr: "Fls",
+      title: "Fouls Committed",
+      icon: "\u26A0\uFE0F",
+      section: "defending",
+      outfieldOrder: 5,
+      gkOrder: 5,
+      warn: true
+    },
+    {
+      key: "yellowCards",
+      abbr: "\u{1F7E8}",
+      title: "Yellow Cards",
+      yc: true,
+      lineupIcon: true
+    },
+    {
+      key: "yellowRedCards",
+      abbr: "\u{1F7E8}\u{1F7E5}",
+      title: "Yellow-Red Cards",
+      lineupIcon: true
+    },
+    {
+      key: "redCards",
+      abbr: "\u{1F7E5}",
+      title: "Red Cards",
+      rc: true,
+      lineupIcon: true
+    },
+    // ── Lineup-only status flags ───────────────────────────────────────────
+    {
+      key: "injured",
+      title: "Injured",
+      icon: "\u271A",
+      iconStyle: "color:var(--tmu-danger);font-size:var(--tmu-font-sm);font-weight:800",
+      lineupIcon: true,
+      lineupBool: true
+    },
+    {
+      key: "subIn",
+      title: "Subbed In",
+      icon: "\u{1F53C}",
+      lineupIcon: true,
+      lineupBool: true
+    },
+    {
+      key: "subOut",
+      title: "Subbed Out",
+      icon: "\u{1F53D}",
+      lineupIcon: true,
+      lineupBool: true
+    }
+  ];
+  var PLAYER_STAT_ZERO = {
+    passesCompleted: 0,
+    passesFailed: 0,
+    crossesCompleted: 0,
+    crossesFailed: 0,
+    shots: 0,
+    shotsOnTarget: 0,
+    shotsOffTarget: 0,
+    shotsFoot: 0,
+    shotsOnTargetFoot: 0,
+    goalsFoot: 0,
+    shotsHead: 0,
+    shotsOnTargetHead: 0,
+    goalsHead: 0,
+    saves: 0,
+    goals: 0,
+    assists: 0,
+    keyPasses: 0,
+    duelsWon: 0,
+    duelsLost: 0,
+    interceptions: 0,
+    tackles: 0,
+    headerClearances: 0,
+    tackleFails: 0,
+    fouls: 0,
+    yellowCards: 0,
+    yellowRedCards: 0,
+    redCards: 0,
+    setpieceTakes: 0,
+    freekickGoals: 0,
+    penaltiesTaken: 0,
+    penaltiesScored: 0,
+    subIn: false,
+    subOut: false,
+    injured: false
+  };
+
+  // src/constants/training.js
+  var training_exports = {};
+  __export(training_exports, {
+    ROUTINE_AGE_MIN: () => ROUTINE_AGE_MIN,
+    ROUTINE_CAP: () => ROUTINE_CAP,
+    ROUTINE_DECAY: () => ROUTINE_DECAY,
+    ROUTINE_SCALE: () => ROUTINE_SCALE,
+    SMOOTH_WEIGHT: () => SMOOTH_WEIGHT,
+    STD_FOCUS: () => STD_FOCUS,
+    TRAINING_CUSTOM: () => TRAINING_CUSTOM,
+    TRAINING_GROUPS_GK: () => TRAINING_GROUPS_GK,
+    TRAINING_GROUPS_OUT: () => TRAINING_GROUPS_OUT,
+    TRAINING_LABELS: () => TRAINING_LABELS,
+    TRAINING_NAMES: () => TRAINING_NAMES,
+    _SEASON_DAYS: () => _SEASON_DAYS,
+    _TRAINING1: () => _TRAINING1
+  });
+  var _TRAINING1 = /* @__PURE__ */ new Date("2023-01-16T23:00:00Z");
+  var _SEASON_DAYS = 84;
+  var ROUTINE_CAP = 40;
+  var ROUTINE_DECAY = 0.1;
+  var SMOOTH_WEIGHT = 0.5;
+  var STD_FOCUS = { "1": 3, "2": 0, "3": 1, "4": 5, "5": 4, "6": 2 };
+  var TRAINING_GROUPS_OUT = [[0, 5, 1], [3, 4], [8, 2], [7, 9, 13], [10, 6], [11, 12]];
+  var TRAINING_GROUPS_GK = [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]];
+  var TRAINING_NAMES = { "1": "Technical", "2": "Fitness", "3": "Tactical", "4": "Finishing", "5": "Defending", "6": "Wings" };
+  var TRAINING_LABELS = ["Str/Wor/Sta", "Mar/Tac", "Cro/Pac", "Pas/Tec/Set", "Hea/Pos", "Fin/Lon"];
+  var TRAINING_CUSTOM = [
+    { label: "Strength/Workrate/Stamina", color: "var(--tmu-success)" },
+    { label: "Marking/Tackling", color: "var(--tmu-info-strong)" },
+    { label: "Crossing/Pace", color: "var(--tmu-warning)" },
+    { label: "Passing/Technique/Set Pieces", color: "var(--tmu-warning-soft)" },
+    { label: "Heading/Positioning", color: "var(--tmu-purple)" },
+    { label: "Finishing/Long Shots", color: "var(--tmu-danger)" }
+  ];
+  var ROUTINE_SCALE = 4.2;
+  var ROUTINE_AGE_MIN = 15;
+
+  // src/constants/app.js
+  var app_exports = {};
+  __export(app_exports, {
+    GAMEPLAY: () => GAMEPLAY,
+    POLL_INTERVAL_MS: () => POLL_INTERVAL_MS
+  });
+  var POLL_INTERVAL_MS = 6e4;
+  var GAMEPLAY = {
+    HOME_ADVANTAGE: 0.04
+    // ~4% home advantage applied in match prediction
+  };
+
+  // src/lib/tm-constants.js
+  var TmConst = {
+    ...skills_exports,
+    ...player_exports,
+    ...match_exports,
+    ...stats_exports,
+    ...training_exports,
+    ...app_exports
+  };
+
+  // src/lib/tm-position.js
+  var ensureChipCSS = /* @__PURE__ */ (() => {
+    let done = false;
+    return () => {
+      if (done || typeof document === "undefined") return;
+      done = true;
+      const s6 = document.createElement("style");
+      s6.id = "tm-pos-chip-styles";
+      s6.textContent = `.tm-pos-chip{display:inline-block;padding:0 var(--tmu-space-sm);border-radius:var(--tmu-space-xs);font-size:var(--tmu-font-xs);font-weight:700;letter-spacing:.3px;line-height:16px;text-align:center;min-width:28px;text-transform:uppercase;}`;
+      document.head.appendChild(s6);
+    };
+  })();
+  var MAP = TmConst.POSITION_MAP;
+  var FILTER_GROUPS = { 9: "gk", 0: "de", 1: "de", 2: "dm", 3: "dm", 4: "mf", 5: "mf", 6: "om", 7: "om", 8: "fw" };
+  var GROUP_COLORS = {
+    9: "var(--tmu-success-strong)",
+    // GK
+    0: "var(--tmu-info-dark)",
+    1: "var(--tmu-info-dark)",
+    // DC, DLR
+    2: "var(--tmu-warning)",
+    3: "var(--tmu-warning)",
+    // DMC, DMLR
+    4: "var(--tmu-warning)",
+    5: "var(--tmu-warning)",
+    // MC, MLR
+    6: "var(--tmu-warning)",
+    7: "var(--tmu-warning)",
+    // OMC, OMLR
+    8: "var(--tmu-danger-deep)"
+    // F
+  };
+  var GROUP_LABELS = {
+    9: "GK",
+    0: "DC",
+    1: "DLR",
+    2: "DMC",
+    3: "DMLR",
+    4: "MC",
+    5: "MLR",
+    6: "OMC",
+    7: "OMLR",
+    8: "F"
+  };
+  var norm = (pos) => (pos || "").replace(/sub/i, "").trim().toLowerCase().split(/[\/,]/)[0];
+  var TmPosition = {
+    /**
+     * Display label for a position string.
+     * e.g. "subdc" → "DC",  "dl" → "DL",  null → "?"
+     */
+    label(pos) {
+      if (!pos) return "?";
+      const cleaned = pos.replace(/sub/i, "").trim().toUpperCase().split(/[\/,]/)[0];
+      return cleaned || "SUB";
+    },
+    /**
+     * Stat group classification: 'gk' | 'def' | 'mid' | 'att'
+     * Used for grouping players in stats tables.
+     */
+    group(pos) {
+      const p = norm(pos);
+      if (p === "gk") return "gk";
+      if (/^d/.test(p) || p === "lb" || p === "rb" || p === "sw") return "def";
+      if (/^(fc|st|cf|lw|rw|lf|rf|fw)/.test(p)) return "att";
+      return "mid";
+    },
+    /**
+     * Chip variant key for TmUI.chip(): 'gk' | 'd' | 'm' | 'f'
+     */
+    variant(pos) {
+      const p = norm(pos);
+      if (p === "gk") return "gk";
+      if (/^d/.test(p)) return "d";
+      if (/^f/.test(p) || /^(fc|st|cf|lw|rw)/.test(p)) return "f";
+      return "m";
+    },
+    /**
+     * Filter group for a POSITION_MAP id number.
+     * e.g. 9 → 'gk', 4 → 'mf', 8 → 'fw'
+     */
+    filterGroup(id) {
+      var _a2;
+      return (_a2 = FILTER_GROUPS[id]) != null ? _a2 : "mf";
+    },
+    /**
+     * Group color for a POSITION_MAP id number (charts, legends).
+     * e.g. 9 → success token, 8 → danger token
+     */
+    groupColor(id) {
+      var _a2;
+      return (_a2 = GROUP_COLORS[id]) != null ? _a2 : "var(--tmu-text-disabled)";
+    },
+    /**
+     * Short group label for a POSITION_MAP id number.
+     * e.g. 9 → 'GK', 1 → 'DLR', 8 → 'F'
+     */
+    groupLabel(id) {
+      var _a2;
+      return (_a2 = GROUP_LABELS[id]) != null ? _a2 : "?";
+    },
+    /**
+     * Render a position chip — identical layout to the squad table.
+     * @param {Array<{position:string,color:string}> | Array<string>} positions
+     * @param {string} [cls] CSS class for the outer chip span
+     */
+    chip(positions, cls = "tm-pos-chip", { attrs = {} } = {}) {
+      ensureChipCSS();
+      if (!positions || Array.isArray(positions) && !positions.length) return "-";
+      const arr = Array.isArray(positions) ? positions : [positions];
+      const items = arr.map((pp) => {
+        var _a2, _b, _c, _d;
+        if (typeof pp === "string") {
+          const key = norm(pp);
+          const entry = (_a2 = MAP[key]) != null ? _a2 : MAP[key.replace(/[lrc]$/, "")];
+          return { label: (_b = entry == null ? void 0 : entry.position) != null ? _b : key.replace(/sub/i, "").toUpperCase(), color: (_c = entry == null ? void 0 : entry.color) != null ? _c : "var(--tmu-text-disabled)" };
+        }
+        return { label: pp.position, color: (_d = pp.color) != null ? _d : "var(--tmu-text-disabled)" };
+      });
+      if (!items.length) return "-";
+      const firstColor = items[0].color;
+      const inner = items.map((it) => `<span style="color:${it.color}">${it.label}</span>`).join('<span style="color:var(--tmu-text-faint)">, </span>');
+      const attrStr = Object.entries(attrs).map(([k, v]) => ` ${k}="${String(v).replace(/"/g, "&quot;")}"`).join("");
+      return TmUI.positionChip(firstColor, inner, cls, attrStr);
+    },
+    /**
+     * Mood penalty for placing a player in a given posKey.
+     * Returns 0-4 (0 = natural position, 4 = maximum unhappiness).
+     */
+    moodPenalty(player2, posKey) {
+      var _a2, _b;
+      const LINE_PEN = {
+        1: { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4 },
+        2: { 1: 1, 2: 0, 3: 1, 4: 2, 5: 3 },
+        3: { 1: 2, 2: 1, 3: 0, 4: 1, 5: 2 },
+        4: { 1: 3, 2: 2, 3: 1, 4: 0, 5: 1 },
+        5: { 1: 4, 2: 3, 3: 2, 4: 1, 5: 0 }
+      };
+      const placed = MAP[String(posKey || "").toLowerCase()];
+      if (!placed) return 0;
+      const favs = Array.isArray(player2 == null ? void 0 : player2.positions) ? player2.positions.filter((p) => p.preferred) : [];
+      if (!favs.length) return 0;
+      if (placed.row === 0) return favs.some((p) => p.row === 0) ? 0 : 4;
+      if (favs.some((p) => p.row === 0)) return 4;
+      const side = (c) => c === 0 ? "L" : c === 4 ? "R" : "C";
+      const ps = side(placed.col);
+      let best = 4;
+      for (const fav of favs) {
+        const fs = side(fav.col);
+        let pen = fs !== ps ? fs === "C" || ps === "C" ? 2 : 1 : 0;
+        pen += (_b = (_a2 = LINE_PEN[placed.row]) == null ? void 0 : _a2[fav.row]) != null ? _b : 4;
+        best = Math.min(best, Math.min(pen, 4));
+      }
+      return best;
+    }
+  };
+
+  // src/lib/tm-utils.js
+  var { COLOR_LEVELS: COLOR_LEVELS2 } = TmConst;
+  var getColor = (value, thresholds) => {
+    for (let i = 0; i < thresholds.length; i++) {
+      if (value >= thresholds[i]) return COLOR_LEVELS2[i].color;
+    }
+    return COLOR_LEVELS2[COLOR_LEVELS2.length - 1].color;
+  };
+  var parseNum = (v, fallback = 0) => {
+    if (typeof v === "number") return Number.isFinite(v) ? v : fallback;
+    return parseInt(String(v != null ? v : "").replace(/[^0-9]/g, ""), 10) || fallback;
+  };
+  var ageToMonths = (k) => {
+    const [y, m] = k.split(".").map(Number);
+    return y * 12 + m;
+  };
+  var monthsToAge = (m) => `${Math.floor(m / 12)}.${m % 12}`;
+  var classifyPosition = (pos) => TmPosition.group(pos || "");
+  var posLabel = (pos) => TmPosition.label(pos);
+  var fix2 = (v) => (Math.round(v * 100) / 100).toFixed(2);
+  var formatR5 = (v, fallback = "-") => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n.toFixed(2) : fallback;
+  };
+  var fmtCoins = (n) => {
+    if (n == null || isNaN(n) || n === 0) return "-";
+    if (n >= 1e9) return (n / 1e9).toFixed(2) + "B";
+    if (n >= 1e6) return (n / 1e6).toFixed(1) + "M";
+    if (n >= 1e3) return (n / 1e3).toFixed(0) + "k";
+    return String(Math.round(n));
+  };
+  var ratingColor = (r) => {
+    if (!r || r === 0) return "var(--tmu-text-dim)";
+    const v = Number(r);
+    if (v >= 9) return "#00c040";
+    if (v >= 8.5) return "#00dd50";
+    if (v >= 8) return "#22e855";
+    if (v >= 7.5) return "#44ee55";
+    if (v >= 7) return "#66dd44";
+    if (v >= 6.5) return "#88cc33";
+    if (v >= 6) return "#99bb22";
+    if (v >= 5.5) return "#aacc00";
+    if (v >= 5) return "#bbcc00";
+    if (v >= 4.5) return "#dd9900";
+    if (v >= 4) return "#ee7733";
+    if (v >= 3.5) return "#ee5533";
+    if (v >= 3) return "#dd3333";
+    if (v >= 2) return "#cc2222";
+    return "#bb1111";
+  };
+  var toggleSort = (clickedKey, currentKey, currentDir, defaultDir = -1) => {
+    if (clickedKey === currentKey) return { key: currentKey, dir: currentDir * -1 };
+    return { key: clickedKey, dir: defaultDir };
+  };
+  var skillColor = (v) => {
+    const n = parseInt(v);
+    if (!n || n <= 0) return "#2a3a28";
+    if (n >= 20) return "#d4af37";
+    if (n >= 19) return "#c0c0c0";
+    if (n >= 16) return "#66dd44";
+    if (n >= 12) return "#cccc00";
+    if (n >= 8) return "#ee9900";
+    return "#ee6633";
+  };
+  var skillEff = (lvl) => {
+    if (lvl >= 20) return 0;
+    const bracket = TmConst.SKILL_EFFICIENCY_BRACKETS.find(([min]) => lvl >= min);
+    return bracket ? bracket[1] : 0.15;
+  };
+  var getMainContainer = (root2 = document) => root2.querySelector(".tmvu-main");
+  var extractFaceUrl = (appearance, fallback = null) => {
+    var _a2;
+    const src = ((_a2 = String(appearance || "").match(/src=['"]([^'"]+)['"]/i)) == null ? void 0 : _a2[1]) || fallback;
+    if (!src) return null;
+    return String(src).replace(/([?&])w=\d+(&?)/i, (_match, prefix, suffix) => {
+      if (prefix === "?" && suffix) return "?";
+      return suffix ? prefix : "";
+    }).replace(/[?&]$/, "");
+  };
+  var parseSkillValue = (value) => {
+    if (typeof value === "number") return Number.isFinite(value) ? value : null;
+    const text = String(value || "");
+    const attrMatch = text.match(/(?:title|alt)=['"]?(\d+(?:\.\d+)?)/i);
+    if (attrMatch) return Number(attrMatch[1]);
+    if (/star/i.test(text)) {
+      if (/silver/i.test(text)) return 19;
+      return 20;
+    }
+    const numericMatch = text.match(/\d+(?:\.\d+)?/);
+    return numericMatch ? Number(numericMatch[0]) : null;
+  };
+  var skillValue = (skill) => {
+    var _a2;
+    return typeof skill === "object" && skill !== null ? Number((_a2 = skill.value) != null ? _a2 : 0) : Number(skill);
+  };
+  var sortAgeKeys = (keys) => Array.from(new Set(keys || [])).sort((a, b) => {
+    const [ay, am] = String(a).split(".").map(Number);
+    const [by, bm] = String(b).split(".").map(Number);
+    return ay * 12 + am - (by * 12 + bm);
+  });
+  var applyTooltipSkills = (player2, tooltipSkills) => {
+    if (!Array.isArray(player2 == null ? void 0 : player2.skills) || !Array.isArray(tooltipSkills)) return player2;
+    const tooltipMap = /* @__PURE__ */ new Map();
+    for (const skill of tooltipSkills) {
+      if (!(skill == null ? void 0 : skill.key)) continue;
+      tooltipMap.set(skill.key, parseSkillValue(skill.value));
+    }
+    player2.skills = player2.skills.map((skill) => {
+      var _a2, _b;
+      return {
+        ...skill,
+        value: (_b = tooltipMap.get(skill.key)) != null ? _b : skill.key2 ? (_a2 = tooltipMap.get(skill.key2)) != null ? _a2 : null : null
+      };
+    }).filter((skill) => skill.value != null);
+    return player2;
+  };
+  var applyPlayerPositions = (player2, favposition = "", allPositions = false) => {
+    if (!Array.isArray(player2 == null ? void 0 : player2.positions)) return player2;
+    const preferredKeys = new Set(String(favposition || "").split(",").map((value) => value.trim().toLowerCase().replace(/\s+/g, "")).filter(Boolean));
+    player2.positions = player2.positions.filter((position) => allPositions || (player2.isGK ? position.key === "gk" : position.key !== "gk")).map((position) => ({
+      ...position,
+      preferred: preferredKeys.has(String(position.key || "").toLowerCase())
+    }));
+    return player2;
+  };
+  var r5Color = /* @__PURE__ */ (() => {
+    const cache = /* @__PURE__ */ new Map();
+    const hsl2rgb = (h, s6, l) => {
+      s6 /= 100;
+      l /= 100;
+      const c = (1 - Math.abs(2 * l - 1)) * s6;
+      const x = c * (1 - Math.abs(h / 60 % 2 - 1));
+      const m = l - c / 2;
+      let r, g, b;
+      if (h < 60) {
+        r = c;
+        g = x;
+        b = 0;
+      } else if (h < 120) {
+        r = x;
+        g = c;
+        b = 0;
+      } else {
+        r = 0;
+        g = c;
+        b = x;
+      }
+      return "#" + [r + m, g + m, b + m].map((v) => Math.round(v * 255).toString(16).padStart(2, "0")).join("");
+    };
+    const topColors = {
+      95: "#8db024",
+      96: "#7aad22",
+      97: "#68a820",
+      98: "#57a31e",
+      99: "#479e1c",
+      100: "#38991a",
+      101: "#2e9418",
+      102: "#258e16",
+      103: "#1d8814",
+      104: "#168212",
+      105: "#107c10",
+      106: "#0c720e",
+      107: "#09680c",
+      108: "#075e0a",
+      109: "#055408",
+      110: "#044a07",
+      111: "#034106",
+      112: "#033905",
+      113: "#023204",
+      114: "#022c04",
+      115: "#022603",
+      116: "#012103",
+      117: "#011d02",
+      118: "#011902"
+    };
+    const tiers = [
+      [25, 50, 0, 10, 65, 68, 28, 32],
+      [50, 70, 10, 25, 68, 72, 34, 40],
+      [70, 80, 25, 42, 72, 75, 42, 46],
+      [80, 90, 42, 58, 75, 78, 46, 48],
+      [90, 95, 58, 78, 78, 80, 48, 46]
+    ];
+    return (v) => {
+      if (!v) return "var(--tmu-text-dim)";
+      const rounded = Math.round(v);
+      if (cache.has(rounded)) return cache.get(rounded);
+      let color;
+      if (rounded >= 95) {
+        color = topColors[Math.min(118, rounded)] || topColors[118];
+      } else {
+        const clamped = Math.max(25, Math.min(95, v));
+        let hue = 0, sat = 65, lit = 28;
+        for (const [from, to, h0, h1, s0, s1, l0, l1] of tiers) {
+          if (clamped <= to) {
+            const t = (clamped - from) / (to - from);
+            hue = h0 + t * (h1 - h0);
+            sat = s0 + t * (s1 - s0);
+            lit = l0 + t * (l1 - l0);
+            break;
+          }
+        }
+        color = hsl2rgb(hue, sat, lit);
+      }
+      cache.set(rounded, color);
+      return color;
+    };
+  })();
+  var getOwnClubIds = () => {
+    const s6 = window.SESSION;
+    if (!s6) return [];
+    const ids = [];
+    if (s6.main_id) ids.push(String(s6.main_id));
+    if (s6.b_team) ids.push(String(s6.b_team));
+    return ids;
+  };
+  var applySquadSkills = (player2, postPlayer) => {
+    if (!Array.isArray(player2 == null ? void 0 : player2.skills)) return player2;
+    const remap = { set_pieces: "setpieces", arialability: "aerial" };
+    player2.skills = player2.skills.map((skill) => {
+      var _a2, _b, _c, _d;
+      const postKey = (_a2 = remap[skill.key]) != null ? _a2 : skill.key;
+      const value = (_d = postPlayer[postKey]) != null ? _d : skill.key2 ? (_c = postPlayer[(_b = remap[skill.key2]) != null ? _b : skill.key2]) != null ? _c : null : null;
+      return { ...skill, value: value != null ? Number(value) : null };
+    }).filter((skill) => skill.value != null && skill.value !== 0);
+    return player2;
+  };
+  var escHtml = (v) => String(v != null ? v : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  var TmUtils = { getColor, parseNum, ageToMonths, monthsToAge, classifyPosition, posLabel, fix2, formatR5, fmtCoins, ratingColor, r5Color, toggleSort, skillColor, skillEff, getMainContainer, extractFaceUrl, skillValue, sortAgeKeys, applyTooltipSkills, applyPlayerPositions, applySquadSkills, getOwnClubIds, escHtml };
 
   // src/lib/tm-player-age.js
   var TmPlayerAge = {
@@ -17444,6 +17452,54 @@ order:initial
     boot2(main2, sourceRoot3);
   }
 
+  // src/services/sponsors.js
+  var TmSponsorsService = {
+    /**
+     * Check current sponsor state.
+     * Returns raw data.data payload: { sponsor, fees: { days, payouts } }
+     * @returns {Promise<object|null>}
+     */
+    checkSponsor() {
+      return _post("/ajax/sponsor.ajax.php", { action: "check_sponsor" }).then((res) => {
+        var _a2;
+        return (_a2 = res == null ? void 0 : res.data) != null ? _a2 : null;
+      });
+    },
+    /**
+     * Sign a sponsor deal and reload.
+     * @param {1|2|3} type - 1=10day, 2=20day, 3=30day
+     * @returns {Promise<void>}
+     */
+    signSponsor(type) {
+      return _post("/ajax/sponsor.ajax.php", { action: "sign_sponsor", type }).then(() => {
+        location.reload();
+      });
+    }
+  };
+
+  // src/models/sponsors.js
+  var TmSponsorsModel = {
+    /**
+     * Normalize the response.data payload from check_sponsor.
+     * @param {object|null} data
+     * @returns {{ hasSponsor: boolean, offers: Array<{type:number, days:number, payout:number, imageSrc:string}> }|null}
+     */
+    normalize(data) {
+      if (!data) return null;
+      const hasSponsor = !!data.sponsor;
+      const fees = data.fees || {};
+      const days = fees.days || [];
+      const payouts = fees.payouts || [];
+      const offers = [1, 2, 3].map((i) => ({
+        type: i,
+        days: Number(days[i]) || 0,
+        payout: Math.round(Number(payouts[i]) || 0),
+        imageSrc: `/pics/spoon/${9 + i}.png`
+      })).filter((o) => o.days > 0);
+      return { hasSponsor, offers };
+    }
+  };
+
   // src/pages/sponsors.js
   var STYLE_ID35 = "tmvu-sponsors-style";
   var refreshTimer = 0;
@@ -17750,6 +17806,21 @@ order:initial
                 overflow: hidden;
                 opacity: 0;
                 pointer-events: none;
+            }
+
+            .tmvu-sponsors-deal-list {
+                display: flex;
+                flex-direction: column;
+                gap: var(--tmu-space-md);
+            }
+
+            .tmvu-sponsors-deal-sign {
+                min-width: 80px;
+            }
+
+            .tmvu-sponsors-deal-sign:disabled {
+                opacity: .45;
+                cursor: not-allowed;
             }
         `;
     document.head.appendChild(style);
@@ -18115,6 +18186,67 @@ order:initial
   mainCol.className = "tmvu-sponsors-main tmu-page-section-stack";
   var sideCol = document.createElement("aside");
   sideCol.className = "tmvu-sponsors-side tmu-page-rail-stack";
+  var dealPickerEl = null;
+  var signingInProgress = false;
+  var renderDealPickerCard = (offers) => {
+    const card = createCard("Sign a New Sponsor Deal", "\u{1F91D}");
+    card.classList.add("tmvu-sponsors-fullwidth");
+    const stack = document.createElement("div");
+    stack.className = "tmvu-sponsors-deal-list";
+    offers.forEach((offer) => {
+      const item = document.createElement("article");
+      item.className = "tmvu-sponsors-offer";
+      item.innerHTML = `
+            <div class="tmvu-sponsors-offer-top">
+                <img class="tmvu-sponsors-offer-image" src="${escapeHtml18(offer.imageSrc)}" alt="Sponsor">
+            </div>
+            <div class="tmvu-sponsors-offer-body">
+                <div>
+                    <div class="tmvu-sponsors-offer-label">Contract Duration</div>
+                    <div class="tmvu-sponsors-offer-title">${escapeHtml18(String(offer.days))} day contract</div>
+                </div>
+                <div class="tmvu-sponsors-offer-amount">${escapeHtml18(offer.payout.toLocaleString())}</div>
+            </div>
+        `;
+      const actionRow = document.createElement("div");
+      actionRow.className = "tmvu-sponsors-action-row";
+      const signBtn = TmUI.button({
+        label: "Sign",
+        color: "primary",
+        size: "sm",
+        cls: "tmvu-sponsors-deal-sign",
+        onClick: async () => {
+          if (signingInProgress) return;
+          signingInProgress = true;
+          card.querySelectorAll(".tmvu-sponsors-deal-sign").forEach((btn4) => {
+            btn4.disabled = true;
+          });
+          await TmSponsorsService.signSponsor(offer.type);
+        }
+      });
+      actionRow.appendChild(signBtn);
+      item.appendChild(actionRow);
+      stack.appendChild(item);
+    });
+    card.appendChild(stack);
+    return card;
+  };
+  var showDealPicker = (offers) => {
+    if (dealPickerEl == null ? void 0 : dealPickerEl.isConnected) dealPickerEl.remove();
+    dealPickerEl = null;
+    if (!(offers == null ? void 0 : offers.length)) return;
+    dealPickerEl = renderDealPickerCard(offers);
+    const heroEl = mainCol.children[0];
+    mainCol.insertBefore(dealPickerEl, (heroEl == null ? void 0 : heroEl.nextSibling) || null);
+  };
+  var loadSponsorState = async () => {
+    const raw = await TmSponsorsService.checkSponsor();
+    const state5 = TmSponsorsModel.normalize(raw);
+    if (!state5) return;
+    if (!state5.hasSponsor) {
+      showDealPicker(state5.offers);
+    }
+  };
   function renderPage3() {
     const state5 = getViewState();
     const hero = renderHero5();
@@ -18156,6 +18288,7 @@ order:initial
     bindObservers();
     renderPage3();
     queueSponsorRefresh();
+    void loadSponsorState();
   };
   function initSponsorsPage(main2) {
     const sourceRoot3 = document.querySelector(".main_center");
@@ -24012,6 +24145,994 @@ order:initial
     mountStandaloneFeed
   };
 
+  // src/utils/home-feed.js
+  var clean = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var escapeHtml21 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var normalizeFeedTime = (value) => clean(String(value || "").replace(/\s*\+\d+\s*$/g, ""));
+  var extractFeedPlayerIds2 = (text) => Array.from(String(text || "").matchAll(/\[player=(\d+)\]/g), (match) => clean(match[1])).filter(Boolean);
+  var extractFeedClubIds2 = (item) => {
+    var _a2;
+    const textIds = Array.from(String((item == null ? void 0 : item.text) || "").matchAll(/@(\d+)/g), (match) => clean(match[1]));
+    const attributeIds = Array.isArray((_a2 = item == null ? void 0 : item.attributes) == null ? void 0 : _a2.club_ids) ? item.attributes.club_ids.map(clean) : [];
+    return [...textIds, ...attributeIds].filter(Boolean);
+  };
+  var normalizeFeedNames2 = (payload) => {
+    const players = Array.isArray(payload == null ? void 0 : payload.players) ? payload.players : [];
+    const clubs = Array.isArray(payload == null ? void 0 : payload.clubs) ? payload.clubs : [];
+    const playerMap = /* @__PURE__ */ new Map();
+    const clubMap = /* @__PURE__ */ new Map();
+    players.forEach((player2) => {
+      const id = clean(player2 == null ? void 0 : player2.id);
+      if (!id) return;
+      playerMap.set(id, clean(player2 == null ? void 0 : player2.name) || `#${id}`);
+    });
+    clubs.forEach((club) => {
+      const id = clean((club == null ? void 0 : club.id) || (club == null ? void 0 : club.club_id));
+      const name = clean((club == null ? void 0 : club.name) || (club == null ? void 0 : club.club_name));
+      if (!id || !name) return;
+      clubMap.set(id, name);
+    });
+    return { playerMap, clubMap };
+  };
+  var resolveFeedLinkTarget2 = (target) => {
+    const raw = clean(target);
+    if (!raw) return "";
+    if (raw.startsWith("/")) return raw;
+    if (/^league;/i.test(raw)) return "/league/";
+    return "";
+  };
+  var buildFeedLinkHtml2 = (target, label) => {
+    const safeLabel = escapeHtml21(clean(label) || target);
+    const href = resolveFeedLinkTarget2(target);
+    if (!href) return safeLabel;
+    return `<a href="${escapeHtml21(href)}">${safeLabel}</a>`;
+  };
+  var formatFeedMoney2 = (value) => {
+    const amount = Number(value);
+    if (!Number.isFinite(amount)) return escapeHtml21(String(value || ""));
+    return escapeHtml21(amount.toLocaleString("en-US"));
+  };
+  var renderFeedFlagHtml = (country) => {
+    const normalized = clean(country).toLowerCase();
+    if (!normalized) return "";
+    if (typeof window !== "undefined" && typeof window.get_flag === "function") {
+      return window.get_flag(normalized);
+    }
+    return `<span class="tmvu-feed-flag-fallback">${escapeHtml21(normalized.toUpperCase())}</span>`;
+  };
+  var renderPotentialStarsHtml = (value) => {
+    const raw = Number(value);
+    const normalized = Number.isFinite(raw) ? Math.max(0, Math.min(10, raw)) : 0;
+    const fullStars = Math.max(0, Math.min(5, Math.floor(normalized / 2)));
+    let html2 = '<span class="tmvu-feed-stars" aria-label="Potential">';
+    for (let index = 0; index < fullStars; index += 1) html2 += '<span class="tmvu-feed-stars-full">\u2605</span>';
+    for (let index = fullStars; index < 5; index += 1) html2 += '<span class="tmvu-feed-stars-empty">\u2605</span>';
+    html2 += "</span>";
+    return html2;
+  };
+  var replaceFeedClubMentions = (content, clubMap, storeReplacement) => content.replace(/(^|[^\w])([@#])(\d+)\b/g, (match, prefix, _marker, clubId2) => {
+    const id = clean(clubId2);
+    const label = clubMap.get(id) || `#${id}`;
+    const linkHtml = `<a href="/club/${escapeHtml21(id)}/">${escapeHtml21(label)}</a>`;
+    return `${prefix}${storeReplacement(linkHtml)}`;
+  });
+  var renderFeedTextHtml2 = (text, { playerMap = /* @__PURE__ */ new Map(), clubMap = /* @__PURE__ */ new Map() } = {}) => {
+    const replacements = [];
+    let content = String(text || "");
+    const storeReplacement = (html3) => {
+      const token = `__TM_HOME_FEED_TOKEN_${replacements.length}__`;
+      replacements.push({ token, html: html3 });
+      return token;
+    };
+    content = content.replace(/\[link=([^\]]+)\]([\s\S]*?)\[\/link\]/g, (_, target, label) => storeReplacement(buildFeedLinkHtml2(target, label)));
+    content = content.replace(/\[player=(\d+)\]/g, (_, playerId) => {
+      const id = clean(playerId);
+      const label = playerMap.get(id) || `#${id}`;
+      return storeReplacement(`<a href="/players/${escapeHtml21(id)}/">${escapeHtml21(label)}</a>`);
+    });
+    content = content.replace(/\[potential_stars=(\d+)\]/g, (_, stars) => storeReplacement(renderPotentialStarsHtml(stars)));
+    content = content.replace(/\[flag=([a-z]{2})\]/ig, (_, country) => storeReplacement(renderFeedFlagHtml(country)));
+    content = content.replace(/\[money=(\d+)\]/g, (_, amount) => storeReplacement(formatFeedMoney2(amount)));
+    content = replaceFeedClubMentions(content, clubMap, storeReplacement);
+    let html2 = escapeHtml21(content).replace(/\n/g, "<br>");
+    replacements.forEach((entry) => {
+      html2 = html2.replaceAll(entry.token, entry.html);
+    });
+    return html2;
+  };
+  var getDetailedFeedItems = (payload) => Array.isArray(payload == null ? void 0 : payload.feed) ? payload.feed : [];
+  var collectDetailedFeedNameIds = (items) => {
+    const flatItems = items.flatMap((item) => [item, ...Array.isArray(item == null ? void 0 : item.sub_entries) ? item.sub_entries : []]);
+    const playerIds = [...new Set(flatItems.flatMap((item) => extractFeedPlayerIds2(item == null ? void 0 : item.text)))];
+    const clubIds = [...new Set([
+      ...flatItems.flatMap((item) => extractFeedClubIds2(item)),
+      ...flatItems.flatMap((item) => Array.from(String((item == null ? void 0 : item.text) || "").matchAll(/#(\d+)/g), (match) => clean(match[1]))),
+      ...flatItems.flatMap((item) => Array.isArray(item == null ? void 0 : item.comments) ? item.comments.map((comment) => clean(comment == null ? void 0 : comment.club_id)) : [])
+    ].filter(Boolean))];
+    return { playerIds, clubIds };
+  };
+  var wrapFeedHtmlBlock = (html2) => /^<div[\s>]/i.test(String(html2 || "").trim()) ? html2 : `<div>${html2}</div>`;
+  var getClubNameFromMaps = (clubId2, clubMap) => {
+    const id = clean(clubId2);
+    if (!id) return "";
+    return clubMap.get(id) || `#${id}`;
+  };
+  var getClubLogoFromId = (clubId2) => {
+    const id = clean(clubId2);
+    return id ? `/pics/club_logos/${id}.png` : "";
+  };
+  var buildApiFeedComment = (comment, nameMaps) => {
+    const clubId2 = clean(comment == null ? void 0 : comment.club_id);
+    const timeText = normalizeFeedTime((comment == null ? void 0 : comment.time) || "");
+    const contentHtml = wrapFeedHtmlBlock(renderFeedTextHtml2(comment == null ? void 0 : comment.text, nameMaps));
+    return {
+      authorName: getClubNameFromMaps(clubId2, nameMaps.clubMap),
+      authorHref: clubId2 ? `/club/${clubId2}/` : "",
+      authorLogoSrc: getClubLogoFromId(clubId2),
+      authorLogoFallbackSrc: "",
+      time: timeText,
+      bodyHtml: `<div class="tmvu-home-feed-comment-body">${timeText ? `<div class="tmvu-home-feed-comment-time" style="float: right;">${escapeHtml21(timeText)}</div>` : ""}${contentHtml}</div>`
+    };
+  };
+  var buildHomeFeedModel = async ({ payload, nativePostMap = /* @__PURE__ */ new Map(), fetchFeedNames }) => {
+    var _a2;
+    const items = getDetailedFeedItems(payload);
+    if (!items.length) return null;
+    const { playerIds, clubIds } = collectDetailedFeedNameIds(items);
+    const payloadClubIds = Array.isArray(payload == null ? void 0 : payload.ids) ? payload.ids.map(clean).filter(Boolean) : [];
+    const resolvedClubIds = [.../* @__PURE__ */ new Set([...clubIds, ...payloadClubIds])];
+    const namesPayload = playerIds.length || resolvedClubIds.length ? await fetchFeedNames({ playerIds, clubIds: resolvedClubIds }) : null;
+    const nameMaps = normalizeFeedNames2(namesPayload);
+    const buildPost = (item, { isSimilarPost = false } = {}) => {
+      var _a3, _b;
+      const postId = clean(item == null ? void 0 : item.id);
+      const nativePost = nativePostMap.get(postId) || null;
+      const clubId2 = clean((_b = (_a3 = item == null ? void 0 : item.attributes) == null ? void 0 : _a3.club_ids) == null ? void 0 : _b[0]);
+      const comments = Array.isArray(item == null ? void 0 : item.comments) ? item.comments.map((comment) => buildApiFeedComment(comment, nameMaps)) : (nativePost == null ? void 0 : nativePost.comments) || [];
+      const similarEntries = Array.isArray(item == null ? void 0 : item.sub_entries) ? item.sub_entries.map((entry) => buildPost(entry, { isSimilarPost: true })) : [];
+      return {
+        id: postId,
+        authorName: (nativePost == null ? void 0 : nativePost.authorName) || getClubNameFromMaps(clubId2, nameMaps.clubMap),
+        authorHref: (nativePost == null ? void 0 : nativePost.authorHref) || (clubId2 ? `/club/${clubId2}/` : ""),
+        authorLogoSrc: (nativePost == null ? void 0 : nativePost.authorLogoSrc) || getClubLogoFromId(clubId2),
+        authorLogoFallbackSrc: (nativePost == null ? void 0 : nativePost.authorLogoFallbackSrc) || "",
+        time: normalizeFeedTime((item == null ? void 0 : item.time) || (item == null ? void 0 : item.full_time) || (nativePost == null ? void 0 : nativePost.time) || ""),
+        bodyHtml: renderFeedTextHtml2(item == null ? void 0 : item.text, nameMaps) || (nativePost == null ? void 0 : nativePost.bodyHtml) || "",
+        likeText: (nativePost == null ? void 0 : nativePost.likeText) || "",
+        commentText: (nativePost == null ? void 0 : nativePost.commentText) || "",
+        totalCommentCount: Math.max(Array.isArray(item == null ? void 0 : item.comments) ? item.comments.length : 0, (nativePost == null ? void 0 : nativePost.totalCommentCount) || 0),
+        hiddenCommentsAction: (nativePost == null ? void 0 : nativePost.hiddenCommentsAction) || null,
+        likeCount: Number(item == null ? void 0 : item.likes) || (nativePost == null ? void 0 : nativePost.likeCount) || 0,
+        likeSummaryEl: (nativePost == null ? void 0 : nativePost.likeSummaryEl) || null,
+        comments,
+        isSimilarPost,
+        similarEntries,
+        sourceEl: (nativePost == null ? void 0 : nativePost.sourceEl) || null
+      };
+    };
+    return {
+      kind: "api",
+      topPosts: items.map((item) => buildPost(item)),
+      lastPost: clean((_a2 = items[items.length - 1]) == null ? void 0 : _a2.id),
+      canLoadMore: items.length > 0
+    };
+  };
+
+  // src/utils/home-feed-native.js
+  var clean2 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var escapeHtml22 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var normalizeFeedTime2 = (value) => clean2(String(value || "").replace(/\s*\+\d+\s*$/g, ""));
+  var isNativeFeedPostVisible = (postEl, feedRoot) => {
+    var _a2, _b, _c;
+    let node = postEl;
+    while (node && node !== feedRoot) {
+      if (node !== postEl) {
+        if ((_a2 = node.classList) == null ? void 0 : _a2.contains("hide")) return false;
+        const style = ((_b = node.getAttribute) == null ? void 0 : _b.call(node, "style")) || "";
+        if (/display\s*:\s*none/i.test(style)) return false;
+      }
+      node = node.parentElement;
+    }
+    return !((_c = postEl.classList) == null ? void 0 : _c.contains("hide"));
+  };
+  var extractClubIdFromHref = (href) => {
+    var _a2;
+    return ((_a2 = String(href || "").match(/\/club\/(\d+)/i)) == null ? void 0 : _a2[1]) || "";
+  };
+  var getClubLogoFromId2 = (clubId2) => {
+    const id = clean2(clubId2);
+    return id ? `/pics/club_logos/${id}.png` : "";
+  };
+  var getClubLogoFromHref = (href) => {
+    const clubId2 = extractClubIdFromHref(href);
+    return getClubLogoFromId2(clubId2);
+  };
+  var normalizeFeedLogoSrc = (src) => String(src || "").replace(/_25(\.png(?:\?[^\s"']*)?)$/i, "$1");
+  var resolvePreferredFeedLogo = (rawSrc, clubId2 = "") => {
+    const normalizedSrc = normalizeFeedLogoSrc(rawSrc);
+    const preferredClubLogo = getClubLogoFromId2(clubId2);
+    if (/\/logos_nonpro\//i.test(normalizedSrc) && preferredClubLogo) {
+      return {
+        src: preferredClubLogo,
+        fallbackSrc: normalizedSrc
+      };
+    }
+    return {
+      src: normalizedSrc || preferredClubLogo,
+      fallbackSrc: ""
+    };
+  };
+  var findFeedCommentAuthorAnchor = (commentEl) => (commentEl == null ? void 0 : commentEl.querySelector(".comment_name a, .comment_author a")) || null;
+  var findFeedCommentLogo = (commentEl) => (commentEl == null ? void 0 : commentEl.querySelector('.comment_name img, .comment_author img, img.club_logo, img[src*="club_logos"]')) || null;
+  var findHiddenCommentsAction = (postEl) => (postEl == null ? void 0 : postEl.querySelector(
+    ".hidden_comments_link .faux_link, .hidden_comments_link [onclick], .hidden_comments_link a[href], .hidden_comments_link, .comments_header .faux_link, .comments_header [onclick], .comments_header a[href], .comments_count [onclick], .comments_count a[href], .comments_count"
+  )) || null;
+  var getFeedTotalCommentCount = (postEl) => {
+    var _a2, _b, _c;
+    const directCount = ((_a2 = postEl == null ? void 0 : postEl.querySelectorAll(".comments .comment_holder .comment_text, .comments .comment .comment_text")) == null ? void 0 : _a2.length) || 0;
+    const summaryText = clean2(((_b = postEl == null ? void 0 : postEl.querySelector(".hidden_comments_link, .comments_header, .comments_count")) == null ? void 0 : _b.textContent) || "");
+    const summaryCount = Number(((_c = summaryText.match(/(\d+)/)) == null ? void 0 : _c[1]) || 0);
+    return Math.max(directCount, summaryCount, 0);
+  };
+  var getFeedCommentBodyHtml = (commentEl) => {
+    var _a2;
+    const bodySource = commentEl == null ? void 0 : commentEl.querySelector(".comment_text");
+    if (!bodySource) {
+      return `<div class="tmvu-home-feed-comment-body"><div>${escapeHtml22(clean2((commentEl == null ? void 0 : commentEl.textContent) || ""))}</div></div>`;
+    }
+    const bodyClone = bodySource.cloneNode(true);
+    const timeNode = bodyClone.querySelector(".comment_time");
+    const timeText = normalizeFeedTime2(((_a2 = commentEl == null ? void 0 : commentEl.querySelector(".comment_time")) == null ? void 0 : _a2.textContent) || (timeNode == null ? void 0 : timeNode.textContent) || "");
+    if (timeNode) timeNode.remove();
+    const contentHtml = bodyClone.innerHTML.trim();
+    const wrappedContent = /^<div[\s>]/i.test(contentHtml) ? contentHtml : `<div>${contentHtml}</div>`;
+    return `<div class="tmvu-home-feed-comment-body">${timeText ? `<div class="tmvu-home-feed-comment-time" style="float: right;">${escapeHtml22(timeText)}</div>` : ""}${wrappedContent}</div>`;
+  };
+  var parseFeedComments = (postEl) => Array.from(postEl.querySelectorAll(".comments .comment_holder, .comments .comment")).filter((commentEl) => commentEl.querySelector(".comment_text")).map((commentEl) => {
+    var _a2, _b;
+    const authorAnchor = findFeedCommentAuthorAnchor(commentEl);
+    const authorHref = (authorAnchor == null ? void 0 : authorAnchor.getAttribute("href")) || "";
+    const clubId2 = extractClubIdFromHref(authorHref);
+    const preferredLogo = resolvePreferredFeedLogo(((_a2 = findFeedCommentLogo(commentEl)) == null ? void 0 : _a2.getAttribute("src")) || "", clubId2);
+    return {
+      authorName: clean2((authorAnchor == null ? void 0 : authorAnchor.textContent) || ""),
+      authorHref,
+      authorLogoSrc: preferredLogo.src || getClubLogoFromHref(authorHref),
+      authorLogoFallbackSrc: preferredLogo.fallbackSrc || "",
+      time: normalizeFeedTime2(((_b = commentEl.querySelector(".comment_time")) == null ? void 0 : _b.textContent) || ""),
+      bodyHtml: getFeedCommentBodyHtml(commentEl)
+    };
+  });
+  var parsePositiveCount = (value) => {
+    const match = String(value || "").match(/\+\s*(\d+)/);
+    return match ? Number(match[1]) || 0 : 0;
+  };
+  var findFeedLikeSummaryAction = (postEl) => (postEl == null ? void 0 : postEl.querySelector(".feed_like .faux_link, .feed_like [onclick], .feed_like a[href]")) || null;
+  var findFeedAuthorAnchor = (postEl) => (postEl == null ? void 0 : postEl.querySelector(".post_profile_name a, .post_profile a[href], .post_profile_name, .post_profile")) || null;
+  var findFeedBodyClubAnchor = (postEl) => (postEl == null ? void 0 : postEl.querySelector('.post_full_text a[href*="/club/"], .post_text a[href*="/club/"]')) || null;
+  var findFeedProfileLogo = (postEl) => (postEl == null ? void 0 : postEl.querySelector(".post_profile img, .post_profile_image img, .post_profile_pic img, img.club_logo")) || null;
+  var getFeedBodyHtml = (postEl) => {
+    const bodySource = postEl == null ? void 0 : postEl.querySelector(".post_full_text, .post_text");
+    if (!bodySource) return "";
+    const bodyClone = bodySource.cloneNode(true);
+    bodyClone.querySelectorAll(".post_time, .post_profile_name, .post_profile, .feed_like, .hover_options").forEach((node) => node.remove());
+    return bodyClone.innerHTML || "";
+  };
+  var getFeedAuthorName = (postEl) => {
+    var _a2, _b, _c, _d;
+    const anchor = findFeedAuthorAnchor(postEl);
+    const bodyAnchor = findFeedBodyClubAnchor(postEl);
+    const logo = findFeedProfileLogo(postEl);
+    const directText = clean2((anchor == null ? void 0 : anchor.textContent) || "");
+    if (directText) return directText;
+    const bodyAnchorText = clean2((bodyAnchor == null ? void 0 : bodyAnchor.textContent) || "");
+    if (bodyAnchorText) return bodyAnchorText;
+    const titleText = clean2(((_a2 = anchor == null ? void 0 : anchor.getAttribute) == null ? void 0 : _a2.call(anchor, "title")) || "");
+    if (titleText) return titleText;
+    const imgAlt = clean2(((_b = logo == null ? void 0 : logo.getAttribute) == null ? void 0 : _b.call(logo, "alt")) || "");
+    if (imgAlt) return imgAlt;
+    const imgTitle = clean2(((_c = logo == null ? void 0 : logo.getAttribute) == null ? void 0 : _c.call(logo, "title")) || "");
+    if (imgTitle) return imgTitle;
+    const bodyText = clean2(((_d = postEl == null ? void 0 : postEl.querySelector(".post_full_text, .post_text")) == null ? void 0 : _d.textContent) || "");
+    const mentionMatch = bodyText.match(/^@([^\n]+?)\s(?:has|put|played|signed|won|lost|drew|sold|bought)\b/i);
+    if (mentionMatch == null ? void 0 : mentionMatch[1]) return clean2(mentionMatch[1]);
+    return "";
+  };
+  var getFeedAuthorHref = (postEl) => {
+    var _a2, _b, _c, _d;
+    return ((_b = (_a2 = findFeedAuthorAnchor(postEl)) == null ? void 0 : _a2.getAttribute) == null ? void 0 : _b.call(_a2, "href")) || ((_d = (_c = findFeedBodyClubAnchor(postEl)) == null ? void 0 : _c.getAttribute) == null ? void 0 : _d.call(_c, "href")) || "";
+  };
+  var parseNativeFeedPost = (postEl) => {
+    var _a2, _b, _c, _d, _e;
+    const postId = clean2(postEl.id || "").replace(/^feed_post/, "");
+    const authorHref = getFeedAuthorHref(postEl);
+    const preferredLogo = resolvePreferredFeedLogo(((_a2 = findFeedProfileLogo(postEl)) == null ? void 0 : _a2.getAttribute("src")) || "", extractClubIdFromHref(authorHref));
+    return {
+      id: postId,
+      authorName: getFeedAuthorName(postEl),
+      authorHref,
+      authorLogoSrc: preferredLogo.src,
+      authorLogoFallbackSrc: preferredLogo.fallbackSrc || "",
+      time: normalizeFeedTime2(((_b = postEl.querySelector(".post_time")) == null ? void 0 : _b.textContent) || ""),
+      bodyHtml: getFeedBodyHtml(postEl),
+      likeText: clean2(((_c = postEl.querySelector(".feed_like")) == null ? void 0 : _c.textContent) || ""),
+      commentText: clean2(((_d = postEl.querySelector(".hidden_comments_link, .comments_header, .comments_count")) == null ? void 0 : _d.textContent) || ""),
+      totalCommentCount: getFeedTotalCommentCount(postEl),
+      hiddenCommentsAction: findHiddenCommentsAction(postEl),
+      likeCount: parsePositiveCount(((_e = postEl.querySelector(".feed_like")) == null ? void 0 : _e.textContent) || ""),
+      likeSummaryEl: findFeedLikeSummaryAction(postEl),
+      comments: parseFeedComments(postEl),
+      isSimilarPost: false,
+      sourceEl: postEl
+    };
+  };
+  var queryVisibleNativeFeedPosts = (feedRoot) => Array.from((feedRoot == null ? void 0 : feedRoot.querySelectorAll('.feed_post[id^="feed_post"]')) || []).filter((postEl) => isNativeFeedPostVisible(postEl, feedRoot));
+  var findNativeHomeFeedAction = (postEl, action) => {
+    if (action === "like") return postEl.querySelector('.hover_options .like_icon[onclick*="feed_post_like"]');
+    if (action === "comment") return Array.from(postEl.querySelectorAll(".hover_options .faux_link")).find((element) => clean2(element.textContent).toLowerCase() === "comment");
+    if (action === "reply") return Array.from(postEl.querySelectorAll(".hover_options .faux_link")).find((element) => clean2(element.textContent).toLowerCase() === "reply to author");
+    if (action === "link") return postEl.querySelector('.post_option[onclick*="feed_pop_link_post"]');
+    if (action === "mute") return postEl.querySelector('.post_option.mute[onclick*="feed_post_mute"], .post_option.unmute[onclick*="feed_post_mute"]');
+    return null;
+  };
+  var findNativeHomeFeedCommentControls = (postEl) => {
+    const nativeBox = postEl == null ? void 0 : postEl.querySelector(".feed_comment_box");
+    if (!nativeBox) return null;
+    const textarea = nativeBox.querySelector('textarea, textarea[id^="comment"]');
+    const submitInner = nativeBox.querySelector('.button_border, button, input[type="submit"], input[type="button"]');
+    const submitButton = (submitInner == null ? void 0 : submitInner.closest(".button")) || submitInner;
+    return { nativeBox, textarea, submitButton };
+  };
+  var buildNativeHomeFeedPostMap = (feedRoot) => new Map(queryVisibleNativeFeedPosts(feedRoot).map((postEl) => {
+    const post = parseNativeFeedPost(postEl);
+    return [post.id, post];
+  }));
+
+  // src/components/shared/tm-social-feed.js
+  var STYLE_ID43 = "tmvu-social-feed-style";
+  var clean3 = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  var escapeHtml23 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var buttonHtml8 = ({ cls = "", attrs = {}, shape = "full", size = "sm", color = "secondary", ...opts } = {}) => TmUI.button({
+    cls,
+    attrs,
+    shape,
+    size,
+    color,
+    ...opts
+  }).outerHTML;
+  var injectStyles29 = () => {
+    if (document.getElementById(STYLE_ID43)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_ID43;
+    style.textContent = [
+      ".tmvu-social-feed-source.tmvu-social-feed-source--hidden>:not([data-tmvu-social-feed-mount]){display:none!important}",
+      ".tmvu-home-feed{display:flex;flex-direction:column;gap:var(--tmu-space-lg)}",
+      ".tmvu-home-feed-post{display:flex;gap:var(--tmu-space-xl);padding:var(--tmu-space-xl) var(--tmu-space-xl) var(--tmu-space-lg);border-radius:var(--tmu-space-lg);border:1px solid var(--tmu-border-soft-alpha);background:linear-gradient(180deg, var(--tmu-border-contrast), transparent),var(--tmu-surface-dark-mid);box-shadow:inset 0 1px 0 var(--tmu-border-contrast)}",
+      ".tmvu-home-feed-post--similar{margin-left:var(--tmu-space-xl);padding-left:var(--tmu-space-xl);position:relative}",
+      '.tmvu-home-feed-post--similar::before{content:"";position:absolute;left:var(--tmu-space-sm);top:var(--tmu-space-md);bottom:var(--tmu-space-md);width:2px;border-radius:999px;background:var(--tmu-success-fill-soft)}',
+      ".tmvu-home-feed-side{flex-shrink:0;width:116px;display:flex;flex-direction:column;align-items:center;gap:var(--tmu-space-sm);text-align:center}",
+      ".tmvu-home-feed-side-logo{width:76px;height:76px;border-radius:var(--tmu-space-lg);overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--tmu-surface-panel);border:1px solid var(--tmu-border-input-overlay);box-shadow:0 8px 18px var(--tmu-shadow-elev)}",
+      ".tmvu-home-feed-side-logo img{max-width:72px;max-height:72px;width:auto;height:auto;object-fit:contain;display:block}",
+      ".tmvu-home-feed-side-fallback{font-size:var(--tmu-font-3xl);opacity:.35}",
+      ".tmvu-home-feed-side-name{font-size:var(--tmu-font-sm);font-weight:800;color:var(--tmu-text-strong);text-decoration:none;line-height:1.35;word-break:break-word}",
+      ".tmvu-home-feed-side-name:hover{color:var(--tmu-text-inverse)}",
+      ".tmvu-home-feed-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:var(--tmu-space-md)}",
+      ".tmvu-home-feed-time{display:block;float:right;font-size:var(--tmu-font-xs);color:var(--tmu-text-dim);white-space:nowrap;font-variant-numeric:tabular-nums}",
+      ".tmvu-home-feed-body{font-size:var(--tmu-font-md);color:var(--tmu-text-strong);line-height:1.72;word-break:break-word}",
+      ".tmvu-home-feed-body a{color:var(--tmu-accent);text-decoration:none}",
+      ".tmvu-home-feed-body a:hover{text-decoration:underline}",
+      ".tmvu-feed-stars{display:inline-flex;align-items:center;gap:0;vertical-align:baseline}",
+      ".tmvu-feed-stars-full{color:var(--tmu-warning)}",
+      ".tmvu-feed-stars-empty{color:var(--tmu-border-embedded)}",
+      ".tmvu-home-feed-meta{display:flex;align-items:center;justify-content:flex-start;gap:var(--tmu-space-md);padding-bottom:0;color:var(--tmu-text-dim)}",
+      ".tmvu-home-feed-meta-left{display:flex;align-items:center;gap:var(--tmu-space-md);flex-wrap:wrap}",
+      ".tmvu-home-feed-like-count,.tmvu-home-feed-comment-count{display:inline-flex;align-items:center;gap:var(--tmu-space-sm);min-height:24px;padding:0 var(--tmu-space-md);border-radius:999px;border:1px solid var(--tmu-border-input-overlay);background:var(--tmu-surface-tab-active);color:var(--tmu-text-strong);font-size:var(--tmu-font-xs);font-weight:800;line-height:1;letter-spacing:.01em}",
+      '.tmvu-home-feed-like-count::before{content:"\u2665";font-size:var(--tmu-font-xs);color:var(--tmu-success)}',
+      '.tmvu-home-feed-comment-count::before{content:"\u{1F4AC}";font-size:var(--tmu-font-xs);opacity:.9}',
+      ".tmvu-home-feed-like-count{cursor:pointer;transition:background .12s,border-color .12s,color .12s;background:var(--tmu-surface-tab-active);border:none}",
+      ".tmvu-home-feed-like-count:hover{background:var(--tmu-surface-tab-hover);color:var(--tmu-text-strong)}",
+      ".tmvu-home-feed-like-count:disabled{opacity:.55;cursor:default}",
+      ".tmvu-home-feed-comment-count{border:none}",
+      ".tmvu-home-feed-comment-count.tmvu-home-feed-comment-count--action{cursor:pointer;transition:background .12s,color .12s}",
+      ".tmvu-home-feed-comment-count.tmvu-home-feed-comment-count--action:hover{background:var(--tmu-surface-tab-hover);color:var(--tmu-text-strong)}",
+      ".tmvu-home-feed-actions{display:flex;gap:var(--tmu-space-sm);align-items:center;padding-top:0;flex-wrap:wrap}",
+      ".tmvu-home-feed-action{appearance:none;min-height:28px;padding:0 var(--tmu-space-md);border-radius:999px;border:1px solid var(--tmu-border-input-overlay);background:var(--tmu-surface-tab-active);color:var(--tmu-text-main);cursor:pointer;font:inherit;font-size:var(--tmu-font-xs);font-weight:800;line-height:1;text-decoration:none;display:inline-flex;align-items:center;box-shadow:inset 0 1px 0 var(--tmu-border-contrast)}",
+      ".tmvu-home-feed-action:hover{background:var(--tmu-surface-tab-hover);color:var(--tmu-text-strong);border-color:var(--tmu-border-success)}",
+      ".tmvu-home-feed-action:disabled{opacity:.45;cursor:default}",
+      ".tmvu-home-feed-similar{display:flex;justify-content:flex-end;padding:var(--tmu-space-md) 0 0 var(--tmu-space-xl);margin-top:var(--tmu-space-md);border-top:1px solid var(--tmu-border-contrast)}",
+      ".tmvu-home-feed-similar-btn{appearance:none;background:transparent;border:none;color:var(--tmu-accent);cursor:pointer;font:inherit;font-size:var(--tmu-font-sm);font-weight:800;line-height:1.2;padding:0;display:inline-flex;align-items:center;gap:var(--tmu-space-sm)}",
+      ".tmvu-home-feed-similar-btn:hover{color:var(--tmu-text-strong)}",
+      ".tmvu-home-feed-composer{margin-top:var(--tmu-space-md);padding-top:var(--tmu-space-md);border-top:1px solid var(--tmu-border-contrast)}",
+      ".tmvu-home-feed-composer[hidden]{display:none!important}",
+      ".tmvu-home-feed-composer-input{width:100%;min-height:84px;box-sizing:border-box;background:var(--tmu-surface-overlay);border:1px solid var(--tmu-border-input-overlay);border-radius:var(--tmu-space-md);color:var(--tmu-text-main);padding:var(--tmu-space-md) var(--tmu-space-md);font:inherit;font-size:var(--tmu-font-sm);line-height:1.45;resize:vertical}",
+      ".tmvu-home-feed-composer-input::placeholder{color:var(--tmu-text-faint)}",
+      ".tmvu-home-feed-composer-actions{display:flex;justify-content:flex-end;gap:var(--tmu-space-sm);margin-top:var(--tmu-space-sm)}",
+      ".tmvu-home-feed-composer-btn{appearance:none;border:1px solid var(--tmu-border-input-overlay);background:var(--tmu-surface-overlay);border-radius:999px;color:var(--tmu-text-main);cursor:pointer;font:inherit;font-size:var(--tmu-font-xs);font-weight:700;line-height:1;padding:var(--tmu-space-sm) var(--tmu-space-md)}",
+      ".tmvu-home-feed-composer-btn:hover{background:var(--tmu-surface-tab-hover);border-color:var(--tmu-border-success);color:var(--tmu-text-strong)}",
+      '.tmvu-home-feed-composer-btn[data-role="submit"]{background:var(--tmu-surface-tab-active);color:var(--tmu-text-strong)}',
+      ".tmvu-home-feed-comments{display:flex;flex-direction:column;gap:var(--tmu-space-md);margin-top:var(--tmu-space-lg);padding-top:var(--tmu-space-md);border-top:1px solid var(--tmu-border-contrast)}",
+      ".tmvu-home-feed-more-comments{display:flex;align-items:center;gap:var(--tmu-space-md);padding:var(--tmu-space-md) var(--tmu-space-md);border-radius:var(--tmu-space-md);background:var(--tmu-surface-overlay);border:1px dashed var(--tmu-border-contrast);color:var(--tmu-text-main);cursor:pointer}",
+      ".tmvu-home-feed-more-comments:hover{background:var(--tmu-surface-tab-hover);border-color:var(--tmu-border-success)}",
+      ".tmvu-home-feed-more-comments-badge{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:42px;border-radius:var(--tmu-space-sm);background:var(--tmu-surface-panel);border:1px solid var(--tmu-border-input-overlay);font-size:var(--tmu-font-lg);color:var(--tmu-text-muted)}",
+      ".tmvu-home-feed-more-comments-copy{display:flex;flex-direction:column;gap:var(--tmu-space-xs);min-width:0}",
+      ".tmvu-home-feed-more-comments-title{font-size:var(--tmu-font-sm);font-weight:800;color:var(--tmu-text-strong)}",
+      ".tmvu-home-feed-comment{display:flex;align-items:flex-start;gap:var(--tmu-space-md);padding:var(--tmu-space-md) var(--tmu-space-lg);border-radius:var(--tmu-space-md);background:var(--tmu-surface-overlay);border:1px solid var(--tmu-border-contrast)}",
+      ".tmvu-home-feed-comment-logo{flex:0 0 42px;width:42px;height:42px;border-radius:var(--tmu-space-sm);overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--tmu-surface-panel);border:1px solid var(--tmu-border-input-overlay)}",
+      ".tmvu-home-feed-comment-logo img{max-width:42px;max-height:42px;width:auto;height:auto;object-fit:contain;display:block}",
+      ".tmvu-home-feed-comment-content{flex:1 1 auto;min-width:0}",
+      ".tmvu-home-feed-comment-body{font-size:var(--tmu-font-sm);line-height:1.62;color:var(--tmu-text-main)}",
+      ".tmvu-home-feed-comment-time{display:block;float:right;font-size:var(--tmu-font-xs);color:var(--tmu-text-faint);margin-left:var(--tmu-space-sm)}",
+      ".tmvu-home-feed-flag-fallback{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:12px;padding:0 var(--tmu-space-xs);border-radius:var(--tmu-space-xs);background:var(--tmu-surface-overlay);font-size:var(--tmu-font-2xs);font-weight:800;line-height:1;color:var(--tmu-text-strong);vertical-align:middle}",
+      ".tmvu-home-feed-likes-overlay{position:fixed;inset:0;z-index:200000;background:var(--tmu-shadow-panel);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:var(--tmu-space-xl)}",
+      ".tmvu-home-feed-likes-dialog{width:min(520px,100%);max-height:min(72vh,760px);display:flex;flex-direction:column;gap:var(--tmu-space-lg);padding:var(--tmu-space-xl);border-radius:var(--tmu-space-lg);border:1px solid var(--tmu-border-success);background:linear-gradient(160deg,var(--tmu-surface-card) 0%,var(--tmu-surface-dark-muted) 100%);box-shadow:0 20px 60px var(--tmu-shadow-panel)}",
+      ".tmvu-home-feed-likes-head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--tmu-space-md)}",
+      ".tmvu-home-feed-likes-title{font-size:var(--tmu-font-md);font-weight:800;color:var(--tmu-text-strong)}",
+      ".tmvu-home-feed-likes-subtitle{margin-top:var(--tmu-space-xs);font-size:var(--tmu-font-xs);color:var(--tmu-text-muted)}",
+      ".tmvu-home-feed-likes-close{appearance:none;border:1px solid var(--tmu-border-success);background:var(--tmu-surface-tab-active);border-radius:999px;color:var(--tmu-text-strong);cursor:pointer;font:inherit;font-size:var(--tmu-font-xs);font-weight:700;line-height:1;padding:var(--tmu-space-sm) var(--tmu-space-md)}",
+      ".tmvu-home-feed-likes-close:hover{background:var(--tmu-surface-tab-hover)}",
+      ".tmvu-home-feed-likes-body{overflow:auto;padding-right:var(--tmu-space-xs)}",
+      ".tmvu-home-feed-likes-list{display:flex;flex-direction:column;gap:var(--tmu-space-sm)}",
+      ".tmvu-home-feed-likes-item{display:flex;align-items:center;gap:var(--tmu-space-md);padding:var(--tmu-space-md) var(--tmu-space-md);border-radius:var(--tmu-space-md);border:1px solid var(--tmu-border-contrast);background:var(--tmu-surface-overlay);text-decoration:none}",
+      ".tmvu-home-feed-likes-item:hover{background:var(--tmu-surface-tab-hover);border-color:var(--tmu-border-success)}",
+      ".tmvu-home-feed-likes-item-logo{flex:0 0 40px;width:40px;height:40px;border-radius:var(--tmu-space-sm);overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--tmu-surface-panel);border:1px solid var(--tmu-border-input-overlay)}",
+      ".tmvu-home-feed-likes-item-logo img{max-width:40px;max-height:40px;width:auto;height:auto;object-fit:contain;display:block}",
+      ".tmvu-home-feed-likes-item-copy{min-width:0;display:flex;flex-direction:column;gap:var(--tmu-space-xs)}",
+      ".tmvu-home-feed-likes-item-name{display:flex;align-items:center;gap:var(--tmu-space-sm);font-size:var(--tmu-font-sm);font-weight:800;color:var(--tmu-text-strong)}",
+      ".tmvu-home-feed-likes-item-meta{font-size:var(--tmu-font-xs);color:var(--tmu-text-dim)}",
+      ".tmvu-home-feed-load-more{display:flex;justify-content:center;padding-top:var(--tmu-space-md)}",
+      ".tmvu-home-feed-load-more-btn{appearance:none;min-width:190px;padding:var(--tmu-space-md) var(--tmu-space-lg);border-radius:999px;border:1px solid var(--tmu-border-success);background:var(--tmu-surface-tab-active);color:var(--tmu-text-strong);cursor:pointer;font:inherit;font-size:var(--tmu-font-sm);font-weight:800;line-height:1.1}",
+      ".tmvu-home-feed-load-more-btn:hover{background:var(--tmu-surface-tab-hover);border-color:var(--tmu-border-success)}",
+      ".tmvu-home-feed-load-more-btn:disabled{opacity:.6;cursor:default}",
+      "@media (max-width: 760px){.tmvu-home-feed-post{flex-direction:column;padding:var(--tmu-space-lg)}.tmvu-home-feed-side{width:100%;flex-direction:row;justify-content:flex-start;text-align:left}.tmvu-home-feed-side-logo{width:64px;height:64px}}"
+    ].join("");
+    document.head.appendChild(style);
+  };
+  var renderFlag3 = (country) => {
+    const normalized = clean3(country).toLowerCase();
+    if (typeof window.get_flag === "function" && normalized) return window.get_flag(normalized);
+    if (!normalized) return "";
+    return `<span class="tmvu-home-feed-flag-fallback">${escapeHtml23(normalized.toUpperCase())}</span>`;
+  };
+  var formatFeedLikeTime = (unixTime) => {
+    const value = Number(unixTime);
+    if (!Number.isFinite(value) || value <= 0) return "";
+    try {
+      return new Date(value * 1e3).toLocaleString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    } catch (_) {
+      return "";
+    }
+  };
+  var renderFeedLogo = (src, fallbackSrc = "") => {
+    const primary = escapeHtml23(src || "");
+    const fallback = escapeHtml23(fallbackSrc || "");
+    if (!primary) return '<span class="tmvu-home-feed-side-fallback">\u26BD</span>';
+    if (!fallback || fallback === primary) return `<img src="${primary}" alt="">`;
+    return `<img src="${primary}" data-fallback-src="${fallback}" onerror="if(this.dataset.fallbackSrc&&this.src!==this.dataset.fallbackSrc){this.src=this.dataset.fallbackSrc;this.removeAttribute('data-fallback-src');return;}this.onerror=null;this.style.display='none'" alt="">`;
+  };
+  var renderFeedDialogLogo = (clubId2) => {
+    const id = clean3(clubId2);
+    if (!id) return '<span class="tmvu-home-feed-side-fallback">\u26BD</span>';
+    return `<img src="/pics/club_logos/${escapeHtml23(id)}.png" onerror="this.onerror=null;this.style.display='none';this.insertAdjacentHTML('afterend','<span class=&quot;tmvu-home-feed-side-fallback&quot;>\u26BD</span>')" alt="">`;
+  };
+  var normalizeFeedLikes = (payload) => {
+    const likes = Array.isArray(payload == null ? void 0 : payload.likes) ? payload.likes : [];
+    const clubs = (payload == null ? void 0 : payload.clubs) && typeof payload.clubs === "object" ? payload.clubs : {};
+    return likes.map((like) => {
+      const clubId2 = clean3(like == null ? void 0 : like.club_id);
+      const clubInfo = clubs[clubId2] || {};
+      const timeValue = Number(like == null ? void 0 : like.time) || 0;
+      return {
+        clubId: clubId2,
+        clubName: clean3((like == null ? void 0 : like.club_name) || (clubInfo == null ? void 0 : clubInfo.club_name)) || `#${clubId2}`,
+        managerName: clean3(clubInfo == null ? void 0 : clubInfo.manager_name),
+        country: clean3(clubInfo == null ? void 0 : clubInfo.country).toLowerCase(),
+        timeValue,
+        timeText: formatFeedLikeTime(timeValue),
+        href: clubId2 ? `/club/${clubId2}/` : ""
+      };
+    }).sort((left, right) => left.timeValue - right.timeValue);
+  };
+  var showFeedLikesDialog = async (post) => {
+    var _a2;
+    const postId = clean3(post == null ? void 0 : post.id);
+    if (!postId) return;
+    (_a2 = document.getElementById("tmvu-home-feed-likes-overlay")) == null ? void 0 : _a2.remove();
+    const overlay = document.createElement("div");
+    overlay.id = "tmvu-home-feed-likes-overlay";
+    overlay.className = "tmvu-home-feed-likes-overlay";
+    overlay.innerHTML = `
+        <div class="tmvu-home-feed-likes-dialog" role="dialog" aria-modal="true" aria-labelledby="tmvu-home-feed-likes-title">
+            <div class="tmvu-home-feed-likes-head">
+                <div>
+                    <div id="tmvu-home-feed-likes-title" class="tmvu-home-feed-likes-title">Likes</div>
+                    <div class="tmvu-home-feed-likes-subtitle">Loading clubs who liked this post...</div>
+                </div>
+                ${buttonHtml8({ label: "Close", cls: "tmvu-home-feed-likes-close", attrs: { "data-feed-likes-close": true } })}
+            </div>
+            <div class="tmvu-home-feed-likes-body" data-feed-likes-body>
+                ${TmUI.loading("Loading likes...", true)}
+            </div>
+        </div>
+    `;
+    const closeDialog = () => {
+      document.removeEventListener("keydown", onKeyDown);
+      overlay.remove();
+    };
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") closeDialog();
+    };
+    overlay.addEventListener("click", (event) => {
+      if (event.target === overlay || event.target.closest("[data-feed-likes-close]")) closeDialog();
+    });
+    document.addEventListener("keydown", onKeyDown);
+    document.body.appendChild(overlay);
+    const body = overlay.querySelector("[data-feed-likes-body]");
+    const subtitle = overlay.querySelector(".tmvu-home-feed-likes-subtitle");
+    const likes = normalizeFeedLikes(await TmMessagesModel.fetchFeedLikes(postId));
+    subtitle.textContent = likes.length ? `${likes.length} club${likes.length === 1 ? "" : "s"} liked this post` : "No likes found for this post";
+    if (!likes.length) {
+      body.innerHTML = TmUI.empty("No likes returned by the feed endpoint.", true);
+      return;
+    }
+    body.innerHTML = `
+        <div class="tmvu-home-feed-likes-list">
+            ${likes.map((like) => `
+                <a class="tmvu-home-feed-likes-item" href="${escapeHtml23(like.href || "#")}">
+                    <div class="tmvu-home-feed-likes-item-logo">${renderFeedDialogLogo(like.clubId)}</div>
+                    <div class="tmvu-home-feed-likes-item-copy">
+                        <div class="tmvu-home-feed-likes-item-name">${like.country ? `${renderFlag3(like.country)} ` : ""}${escapeHtml23(like.clubName)}</div>
+                        <div class="tmvu-home-feed-likes-item-meta">${escapeHtml23([like.managerName, like.timeText].filter(Boolean).join(" \u2022 "))}</div>
+                    </div>
+                </a>
+            `).join("")}
+        </div>
+    `;
+  };
+  var triggerNativeClick2 = (element) => {
+    if (!element) return false;
+    try {
+      element.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
+      return true;
+    } catch (_) {
+      try {
+        element.click();
+        return true;
+      } catch (_2) {
+        return false;
+      }
+    }
+  };
+  var parseNativeActionArgs2 = (onclickValue) => {
+    const match = String(onclickValue || "").match(/([A-Za-z0-9_]+)\((.*)\)/);
+    if (!match) return null;
+    const rawArgs = match[2].trim();
+    if (!rawArgs) return { fnName: match[1], args: [] };
+    return {
+      fnName: match[1],
+      args: rawArgs.split(",").map((part) => part.trim()).map((part) => {
+        if (part === "true") return true;
+        if (part === "false") return false;
+        if (/^['"].*['"]$/.test(part)) return part.slice(1, -1);
+        const numeric = Number(part);
+        return Number.isNaN(numeric) ? part : numeric;
+      })
+    };
+  };
+  var runNativeActionByOnclick2 = (element) => {
+    const onclickValue = element == null ? void 0 : element.getAttribute("onclick");
+    if (!onclickValue) return false;
+    const parsed = parseNativeActionArgs2(onclickValue);
+    if (!parsed) return false;
+    const fn = window[parsed.fnName];
+    if (typeof fn !== "function") return triggerNativeClick2(element);
+    try {
+      fn(...parsed.args);
+      return true;
+    } catch (_) {
+      return triggerNativeClick2(element);
+    }
+  };
+  var setNativeCommentValue = (textarea, value) => {
+    if (!textarea) return;
+    textarea.value = value;
+    textarea.dispatchEvent(new Event("input", { bubbles: true }));
+    textarea.dispatchEvent(new Event("change", { bubbles: true }));
+    textarea.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true }));
+  };
+  var formatCommentCountLabel = (count) => `${count} comment${count === 1 ? "" : "s"}`;
+  var formatLikeCountLabel = (count) => `${count} like${count === 1 ? "" : "s"}`;
+  var createFeedRenderer = ({ getMount, getFeedRoot, emptyCopy, onLoadMore }) => {
+    const state5 = {
+      expandedFeedPostIds: /* @__PURE__ */ new Set(),
+      expandedSimilarFeedPostIds: /* @__PURE__ */ new Set(),
+      currentModel: null,
+      currentFeedRoot: null
+    };
+    const getRenderablePosts = (feedRoot, feedModel = null) => {
+      if ((feedModel == null ? void 0 : feedModel.kind) === "api") {
+        return feedModel.topPosts.flatMap((post) => state5.expandedSimilarFeedPostIds.has(post.id) ? [post, ...post.similarEntries || []] : [post]);
+      }
+      if (Array.isArray(feedModel == null ? void 0 : feedModel.topPosts)) return feedModel.topPosts;
+      return queryVisibleNativeFeedPosts(feedRoot);
+    };
+    const getSimilarStoriesLabel = (post) => {
+      const similarCount = Array.isArray(post == null ? void 0 : post.similarEntries) ? post.similarEntries.length : 0;
+      if (!similarCount) return "";
+      return state5.expandedSimilarFeedPostIds.has(post.id) ? "Hide similar stories" : `Show ${similarCount} similar stories`;
+    };
+    const getCommentSummaryLabel = (post) => {
+      const totalCount = Number(post == null ? void 0 : post.totalCommentCount) || 0;
+      return totalCount ? formatCommentCountLabel(totalCount) : "";
+    };
+    const getRemainingCommentCopy = (post, visibleCommentCount) => {
+      const loadedCount = Array.isArray(post == null ? void 0 : post.comments) ? post.comments.length : 0;
+      const hiddenLoadedCount = Math.max(loadedCount - visibleCommentCount, 0);
+      const hiddenNativeCount = Math.max((Number(post == null ? void 0 : post.totalCommentCount) || 0) - loadedCount, 0);
+      if (hiddenLoadedCount > 0) return { title: `Show ${hiddenLoadedCount} more loaded comments` };
+      if (hiddenNativeCount > 0) return { title: `Open full thread (${hiddenNativeCount} more on TM)` };
+      return null;
+    };
+    const renderCurrent = () => {
+      if (state5.currentModel) {
+        renderCards(state5.currentFeedRoot || (getFeedRoot == null ? void 0 : getFeedRoot()) || null, state5.currentModel);
+        return;
+      }
+      renderCards(state5.currentFeedRoot || (getFeedRoot == null ? void 0 : getFeedRoot()) || null, null);
+    };
+    const mountFeedComposer = (targetEl, postEl, mode = "comment") => {
+      if (!targetEl || !postEl) return;
+      const controls = findNativeHomeFeedCommentControls(postEl);
+      if (!(controls == null ? void 0 : controls.textarea) || !(controls == null ? void 0 : controls.submitButton)) {
+        targetEl.hidden = true;
+        targetEl.innerHTML = "";
+        return;
+      }
+      targetEl.innerHTML = `
+            <textarea class="tmvu-home-feed-composer-input" data-role="input" placeholder="${mode === "reply" ? "Write a reply..." : "Write a comment..."}"></textarea>
+            <div class="tmvu-home-feed-composer-actions">
+                ${buttonHtml8({ label: "Cancel", cls: "tmvu-home-feed-composer-btn", attrs: { "data-role": "cancel" } })}
+                ${buttonHtml8({ label: mode === "reply" ? "Reply" : "Comment", cls: "tmvu-home-feed-composer-btn", attrs: { "data-role": "submit" } })}
+            </div>
+        `;
+      targetEl.hidden = false;
+      targetEl.__tmFeedComposerControls = controls;
+      const input = targetEl.querySelector('[data-role="input"]');
+      targetEl.onclick = (event) => {
+        const cancelButton = event.target.closest('[data-role="cancel"]');
+        if (cancelButton && targetEl.contains(cancelButton)) {
+          targetEl.hidden = true;
+          targetEl.innerHTML = "";
+          return;
+        }
+        const submitButton = event.target.closest('[data-role="submit"]');
+        if (!submitButton || !targetEl.contains(submitButton)) return;
+        const value = clean3((input == null ? void 0 : input.value) || "");
+        if (!value) {
+          input == null ? void 0 : input.focus();
+          return;
+        }
+        const composerControls = targetEl.__tmFeedComposerControls;
+        if (!(composerControls == null ? void 0 : composerControls.textarea) || !(composerControls == null ? void 0 : composerControls.submitButton)) return;
+        setNativeCommentValue(composerControls.textarea, value);
+        triggerNativeClick2(composerControls.submitButton);
+        targetEl.hidden = true;
+        targetEl.innerHTML = "";
+        setTimeout(renderCurrent, 500);
+        setTimeout(renderCurrent, 1200);
+      };
+      if (input) {
+        try {
+          input.focus({ preventScroll: true });
+        } catch (_) {
+          input.focus();
+        }
+      }
+    };
+    const handleFeedComposerAction = (post, action, composerEl) => {
+      const nativeAction = findNativeHomeFeedAction(post.sourceEl, action);
+      if (!nativeAction) return false;
+      triggerNativeClick2(nativeAction);
+      requestAnimationFrame(() => mountFeedComposer(composerEl, post.sourceEl, action));
+      return true;
+    };
+    const renderCards = (feedRoot, feedModel = null) => {
+      const mount8 = getMount();
+      if (!mount8) return;
+      const posts = getRenderablePosts(feedRoot, feedModel);
+      state5.currentFeedRoot = feedRoot;
+      state5.currentModel = feedModel;
+      if (!posts.length) {
+        mount8.innerHTML = TmUI.empty(escapeHtml23(emptyCopy), true);
+        return;
+      }
+      mount8.innerHTML = `
+            <div class="tmvu-home-feed">
+                ${posts.map((post) => {
+        const isExpanded = state5.expandedFeedPostIds.has(post.id);
+        const renderedComments = isExpanded ? post.comments : post.comments.slice(0, 3);
+        const remainingCommentCopy = getRemainingCommentCopy(post, renderedComments.length);
+        const commentSummaryLabel = getCommentSummaryLabel(post);
+        const hasCommentSummaryAction = Boolean(remainingCommentCopy || post.hiddenCommentsAction || post.comments.length > 3);
+        const similarStoriesLabel = getSimilarStoriesLabel(post);
+        return `
+                        <article class="tmvu-home-feed-post${post.isSimilarPost ? " tmvu-home-feed-post--similar" : ""}" data-feed-post-id="${escapeHtml23(post.id)}">
+                            <div class="tmvu-home-feed-side">
+                                <div class="tmvu-home-feed-side-logo">${renderFeedLogo(post.authorLogoSrc, post.authorLogoFallbackSrc)}</div>
+                                ${post.authorName ? post.authorHref ? `<a class="tmvu-home-feed-side-name" href="${escapeHtml23(post.authorHref)}">${escapeHtml23(post.authorName)}</a>` : `<div class="tmvu-home-feed-side-name">${escapeHtml23(post.authorName)}</div>` : ""}
+                            </div>
+                            <div class="tmvu-home-feed-main">
+                                <div>${post.time ? `<div class="tmvu-home-feed-time" style="float:right;">${escapeHtml23(post.time)}</div>` : ""}<div class="tmvu-home-feed-body">${post.bodyHtml || ""}</div></div>
+                                <div class="tmvu-home-feed-meta">
+                                    <div class="tmvu-home-feed-meta-left">
+                                        ${post.likeCount > 0 ? `<button type="button" class="tmvu-home-feed-like-count" data-feed-like-summary title="Show likes">${escapeHtml23(formatLikeCountLabel(post.likeCount))}</button>` : ""}
+                                        ${commentSummaryLabel ? hasCommentSummaryAction ? `<button type="button" class="tmvu-home-feed-comment-count tmvu-home-feed-comment-count--action" data-feed-comment-summary title="Open comments">${escapeHtml23(commentSummaryLabel)}</button>` : `<span class="tmvu-home-feed-comment-count">${escapeHtml23(commentSummaryLabel)}</span>` : ""}
+                                    </div>
+                                </div>
+                                <div class="tmvu-home-feed-actions">
+                                    ${buttonHtml8({ label: "Like", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "like" } })}
+                                    ${buttonHtml8({ label: "Comment", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "comment" } })}
+                                    ${buttonHtml8({ label: "Reply", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "reply" } })}
+                                    ${buttonHtml8({ label: "Link", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "link" } })}
+                                    ${buttonHtml8({ label: "Mute", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "mute" } })}
+                                </div>
+                                <div class="tmvu-home-feed-composer" data-feed-composer hidden></div>
+                                ${post.totalCommentCount > 0 || post.comments.length ? `
+                                    <div class="tmvu-home-feed-comments">
+                                        ${remainingCommentCopy ? `
+                                            <button type="button" class="tmvu-home-feed-more-comments" data-feed-more-comments>
+                                                <span class="tmvu-home-feed-more-comments-badge">+</span>
+                                                <span class="tmvu-home-feed-more-comments-copy">
+                                                    <span class="tmvu-home-feed-more-comments-title">${escapeHtml23(remainingCommentCopy.title)}</span>
+                                                </span>
+                                            </button>
+                                        ` : ""}
+                                        ${renderedComments.map((comment) => `
+                                            <div class="tmvu-home-feed-comment">
+                                                <div class="tmvu-home-feed-comment-logo">${renderFeedLogo(comment.authorLogoSrc, comment.authorLogoFallbackSrc)}</div>
+                                                <div class="tmvu-home-feed-comment-content">${comment.bodyHtml}</div>
+                                            </div>
+                                        `).join("")}
+                                    </div>
+                                ` : ""}
+                                ${similarStoriesLabel ? `
+                                    <div class="tmvu-home-feed-similar">
+                                        ${buttonHtml8({ label: similarStoriesLabel, cls: "tmvu-home-feed-similar-btn", color: "secondary", attrs: { "data-feed-similar-stories": true } })}
+                                    </div>
+                                ` : ""}
+                            </div>
+                        </article>
+                    `;
+      }).join("")}
+                ${(feedModel == null ? void 0 : feedModel.kind) === "api" && ((feedModel == null ? void 0 : feedModel.canLoadMore) || (feedModel == null ? void 0 : feedModel.isLoadingMore)) ? `
+                    <div class="tmvu-home-feed-load-more">
+                        ${buttonHtml8({
+        label: (feedModel == null ? void 0 : feedModel.isLoadingMore) ? "Loading more..." : "Load older feed posts",
+        cls: "tmvu-home-feed-load-more-btn",
+        attrs: {
+          "data-feed-load-more": true,
+          disabled: Boolean(feedModel == null ? void 0 : feedModel.isLoadingMore)
+        }
+      })}
+                    </div>
+                ` : ""}
+            </div>
+        `;
+      const openCommentThread = (post) => {
+        var _a2, _b;
+        if (!post) return;
+        if (post.comments.length > 3 && !state5.expandedFeedPostIds.has(post.id)) {
+          state5.expandedFeedPostIds.add(post.id);
+          renderCurrent();
+          return;
+        }
+        state5.expandedFeedPostIds.add(post.id);
+        const nativeTarget = ((_b = (_a2 = post.hiddenCommentsAction) == null ? void 0 : _a2.matches) == null ? void 0 : _b.call(_a2, ".hidden_comments_link, .comments_header, .comments_count")) ? post.hiddenCommentsAction.querySelector(".faux_link, [onclick], a[href]") || post.hiddenCommentsAction : post.hiddenCommentsAction;
+        if (!nativeTarget) {
+          renderCurrent();
+          return;
+        }
+        if (!runNativeActionByOnclick2(nativeTarget)) triggerNativeClick2(nativeTarget);
+        setTimeout(renderCurrent, 500);
+        setTimeout(renderCurrent, 1200);
+      };
+      const postsById = new Map(posts.map((entry) => [entry.id, entry]));
+      mount8.querySelectorAll("[data-feed-post-id]").forEach((postNode) => {
+        const postId = postNode.getAttribute("data-feed-post-id");
+        const post = postId ? postsById.get(postId) : null;
+        if (!post) return;
+        postNode.querySelectorAll("[data-feed-action]").forEach((button) => {
+          const action = button.getAttribute("data-feed-action");
+          const nativeAction = post.sourceEl ? findNativeHomeFeedAction(post.sourceEl, action) : null;
+          button.disabled = !nativeAction;
+        });
+      });
+      mount8.onclick = (event) => {
+        const loadMoreButton = event.target.closest("[data-feed-load-more]");
+        if (loadMoreButton && mount8.contains(loadMoreButton)) {
+          event.preventDefault();
+          if (!loadMoreButton.disabled) onLoadMore == null ? void 0 : onLoadMore();
+          return;
+        }
+        const postNode = event.target.closest("[data-feed-post-id]");
+        if (!postNode || !mount8.contains(postNode)) return;
+        const postId = postNode.getAttribute("data-feed-post-id");
+        const post = postId ? postsById.get(postId) : null;
+        if (!post) return;
+        if (event.target.closest("[data-feed-like-summary]")) {
+          showFeedLikesDialog(post);
+          return;
+        }
+        if (event.target.closest("[data-feed-comment-summary], [data-feed-more-comments]")) {
+          openCommentThread(post);
+          return;
+        }
+        if (event.target.closest("[data-feed-similar-stories]")) {
+          event.preventDefault();
+          if (state5.expandedSimilarFeedPostIds.has(post.id)) state5.expandedSimilarFeedPostIds.delete(post.id);
+          else state5.expandedSimilarFeedPostIds.add(post.id);
+          renderCurrent();
+          return;
+        }
+        const actionButton2 = event.target.closest("[data-feed-action]");
+        if (!actionButton2 || actionButton2.disabled) return;
+        const action = actionButton2.getAttribute("data-feed-action");
+        const nativeAction = post.sourceEl ? findNativeHomeFeedAction(post.sourceEl, action) : null;
+        if (!nativeAction) return;
+        if (action === "comment" || action === "reply") {
+          const composerEl = postNode.querySelector("[data-feed-composer]");
+          handleFeedComposerAction(post, action, composerEl);
+          return;
+        }
+        if (action === "link" || action === "mute") runNativeActionByOnclick2(nativeAction);
+        else triggerNativeClick2(nativeAction);
+      };
+    };
+    return {
+      renderModel(feedModel, feedRoot = (getFeedRoot == null ? void 0 : getFeedRoot()) || state5.currentFeedRoot || null) {
+        renderCards(feedRoot, feedModel);
+      },
+      renderPosts(posts, options = {}) {
+        renderCards(options.feedRoot || (getFeedRoot == null ? void 0 : getFeedRoot()) || state5.currentFeedRoot || null, {
+          kind: options.kind || "api",
+          topPosts: Array.isArray(posts) ? posts : [],
+          lastPost: options.lastPost || "",
+          canLoadMore: Boolean(options.canLoadMore),
+          isLoadingMore: Boolean(options.isLoadingMore)
+        });
+      },
+      renderNative(feedRoot = (getFeedRoot == null ? void 0 : getFeedRoot()) || state5.currentFeedRoot || null) {
+        renderCards(feedRoot, null);
+      },
+      renderCurrent
+    };
+  };
+  var createSocialFeedComponent = ({
+    mount: mount8,
+    getFeedRoot,
+    emptyCopy = "No feed posts loaded.",
+    loadingCopy = "Loading feed...",
+    onLoadMore = null
+  } = {}) => {
+    injectStyles29();
+    let hostMount = mount8;
+    const renderer = createFeedRenderer({
+      getMount: () => hostMount,
+      getFeedRoot,
+      emptyCopy,
+      onLoadMore: async () => {
+        if (typeof onLoadMore === "function") await onLoadMore();
+      }
+    });
+    return {
+      setMount(nextMount) {
+        hostMount = nextMount;
+      },
+      renderLoading(copy = loadingCopy) {
+        if (!hostMount) return;
+        hostMount.innerHTML = TmUI.loading(escapeHtml23(copy), true);
+      },
+      renderEmpty(copy = emptyCopy) {
+        if (!hostMount) return;
+        hostMount.innerHTML = TmUI.empty(escapeHtml23(copy), true);
+      },
+      ...renderer
+    };
+  };
+  var createSocialFeedController = ({
+    mount: mount8,
+    getFeedRoot,
+    fetchFeedPayload,
+    emptyCopy = "No feed posts loaded.",
+    loadingCopy = "Loading feed..."
+  } = {}) => {
+    injectStyles29();
+    const apiFeedState = {
+      topPosts: [],
+      lastPost: "",
+      canLoadMore: false,
+      isLoadingMore: false
+    };
+    const getApiFeedStateModel = () => apiFeedState.topPosts.length ? {
+      kind: "api",
+      topPosts: apiFeedState.topPosts,
+      lastPost: apiFeedState.lastPost,
+      canLoadMore: apiFeedState.canLoadMore,
+      isLoadingMore: apiFeedState.isLoadingMore
+    } : null;
+    const mergeApiFeedPosts = (existingPosts, nextPosts) => {
+      const merged = /* @__PURE__ */ new Map();
+      existingPosts.forEach((post) => merged.set(post.id, post));
+      nextPosts.forEach((post) => {
+        if (!merged.has(post.id)) merged.set(post.id, post);
+      });
+      return Array.from(merged.values());
+    };
+    const component = createSocialFeedComponent({
+      mount: mount8,
+      getFeedRoot,
+      emptyCopy,
+      loadingCopy,
+      onLoadMore: async () => {
+        if (apiFeedState.isLoadingMore || !apiFeedState.canLoadMore) return;
+        apiFeedState.isLoadingMore = true;
+        component.renderModel(getApiFeedStateModel());
+        await loadApiFeedPage({ lastPost: apiFeedState.lastPost });
+        apiFeedState.isLoadingMore = false;
+        component.renderModel(getApiFeedStateModel());
+      }
+    });
+    const fetchApiFeedModel = async ({ lastPost = "" } = {}) => {
+      const feedRoot = (getFeedRoot == null ? void 0 : getFeedRoot()) || null;
+      const payload = await fetchFeedPayload({ lastPost, feedRoot });
+      return buildHomeFeedModel({
+        payload,
+        nativePostMap: buildNativeHomeFeedPostMap(feedRoot),
+        fetchFeedNames: TmMessagesModel.fetchFeedNames.bind(TmMessagesModel)
+      });
+    };
+    const loadApiFeedPage = async ({ reset = false, lastPost = "" } = {}) => {
+      var _a2;
+      const apiFeedModel = await fetchApiFeedModel({ lastPost });
+      if (!((_a2 = apiFeedModel == null ? void 0 : apiFeedModel.topPosts) == null ? void 0 : _a2.length)) {
+        if (reset) {
+          apiFeedState.topPosts = [];
+          apiFeedState.lastPost = "";
+        }
+        apiFeedState.canLoadMore = false;
+        return null;
+      }
+      apiFeedState.topPosts = reset ? apiFeedModel.topPosts : mergeApiFeedPosts(apiFeedState.topPosts, apiFeedModel.topPosts);
+      apiFeedState.lastPost = apiFeedModel.lastPost || apiFeedState.lastPost;
+      apiFeedState.canLoadMore = Boolean(apiFeedModel.lastPost) && apiFeedModel.lastPost !== lastPost;
+      return getApiFeedStateModel();
+    };
+    return {
+      async render() {
+        var _a2;
+        if (!mount8) return false;
+        const feedRoot = (getFeedRoot == null ? void 0 : getFeedRoot()) || null;
+        component.renderLoading();
+        const apiFeedModel = await loadApiFeedPage({ reset: true });
+        if ((_a2 = apiFeedModel == null ? void 0 : apiFeedModel.topPosts) == null ? void 0 : _a2.length) {
+          component.renderModel(apiFeedModel);
+          return true;
+        }
+        if (feedRoot && queryVisibleNativeFeedPosts(feedRoot).length) {
+          component.renderNative(feedRoot);
+          return true;
+        }
+        component.renderEmpty();
+        return false;
+      }
+    };
+  };
+
   // src/models/club-buddy.js
   var TmClubModel2 = {
     fetchBuddies() {
@@ -24026,11 +25147,11 @@ order:initial
   };
 
   // src/components/club/tm-club-overview.js
-  var STYLE_ID43 = "tmvu-club-overview-style";
-  function injectStyles29() {
-    if (document.getElementById(STYLE_ID43)) return;
+  var STYLE_ID44 = "tmvu-club-overview-style";
+  function injectStyles30() {
+    if (document.getElementById(STYLE_ID44)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID43;
+    style.id = STYLE_ID44;
     style.textContent = `
         .tmvu-main.tmvu-club-layout {
             align-items: flex-start;
@@ -24369,7 +25490,7 @@ order:initial
   function cleanText17(value) {
     return String(value || "").replace(/\s+/g, " ").trim();
   }
-  function escapeHtml21(value) {
+  function escapeHtml24(value) {
     return String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
   function normalizeFoundedText(text) {
@@ -24437,7 +25558,7 @@ order:initial
     };
   }
   function parseOverview3(mainColumn5, secondaryColumn) {
-    var _a2, _b, _c, _d;
+    var _a2, _b, _c, _d, _e;
     const boxes = Array.from(mainColumn5.querySelectorAll(":scope > .box"));
     const overviewBox = boxes.find((box) => !box.querySelector("#feed")) || boxes[0] || null;
     const feedRoot = mainColumn5.querySelector("#feed") || null;
@@ -24452,7 +25573,7 @@ order:initial
     const infoBlock = extractInfoBlock(overviewBox);
     const trophies = parseTrophies(trophyBox);
     const clubHref = (clubNameLink == null ? void 0 : clubNameLink.getAttribute("href")) || "#";
-    const clubId2 = ((_c = window.location.pathname.match(/\/club\/(\d+)/)) == null ? void 0 : _c[1]) || null;
+    const clubId2 = ((_c = window.location.pathname.match(/\/club\/(\d+)/)) == null ? void 0 : _c[1]) || ((_d = (clubHref || "").match(/\/club\/(\d+)/)) == null ? void 0 : _d[1]) || null;
     const showToolbox = secondaryColumn && Array.from(secondaryColumn.querySelectorAll(".box")).some((b) => {
       var _a3;
       return ((_a3 = b.querySelector(".box_head h2")) == null ? void 0 : _a3.textContent.trim().toLowerCase()) === "toolbox";
@@ -24462,7 +25583,7 @@ order:initial
       clubId: clubId2,
       showToolbox,
       clubName: cleanText17((clubNameLink == null ? void 0 : clubNameLink.textContent) || "Club"),
-      statusHtml: ((_d = topMeta == null ? void 0 : topMeta.querySelector(".large")) == null ? void 0 : _d.innerHTML) || "",
+      statusHtml: ((_e = topMeta == null ? void 0 : topMeta.querySelector(".large")) == null ? void 0 : _e.innerHTML) || "",
       competitionHtml: (competitionLine == null ? void 0 : competitionLine.innerHTML) || "",
       changeClubHref,
       founded,
@@ -24485,8 +25606,8 @@ order:initial
             <tr>
                 <td>${player2.firstCellHtml}</td>
                 <td>${player2.starsHtml}</td>
-                <td class="align_center">${escapeHtml21(player2.rating)}</td>
-                <td class="align_center">${escapeHtml21(player2.goals)}</td>
+                <td class="align_center">${escapeHtml24(player2.rating)}</td>
+                <td class="align_center">${escapeHtml24(player2.goals)}</td>
             </tr>
         `).join("")
     });
@@ -24501,8 +25622,8 @@ order:initial
         <div class="tmco-trophy${item.small ? " small" : ""}">
             <div class="tmco-trophy-icon" style="${item.iconStyle}"></div>
             <div>
-                <div class="tmco-trophy-title">${escapeHtml21(item.title)}</div>
-                ${item.season ? `<div class="tmco-trophy-sub">${escapeHtml21(item.season)}</div>` : ""}
+                <div class="tmco-trophy-title">${escapeHtml24(item.title)}</div>
+                ${item.season ? `<div class="tmco-trophy-sub">${escapeHtml24(item.season)}</div>` : ""}
             </div>
         </div>
     `).join("");
@@ -24516,7 +25637,7 @@ order:initial
                 ${data.changeClubHref ? `<a class="tmco-club-action" href="${data.changeClubHref}">Change</a>` : ""}
                 <div class="tmco-club-name">
                     <img class="tmco-wing" src="/pics/club_wing_left.gif" alt="">
-                    <a href="${data.clubHref}">${escapeHtml21(data.clubName)}</a>
+                    <a href="${data.clubHref}">${escapeHtml24(data.clubName)}</a>
                     ${data.statusHtml.replace(/^[\s\S]*?<a[^>]*club_link[^>]*>.*?<\/a>/i, "").replace(/<img src="\/pics\/club_wing_right\.gif">/i, "")}
                     <img class="tmco-wing" src="/pics/club_wing_right.gif" alt="">
                 </div>
@@ -24525,11 +25646,11 @@ order:initial
             <div class="tmco-logo-stage">
                 <div class="tmco-logo-shell">
                     <div class="tmco-logo-card">
-                        ${data.logoSrc ? `<img src="${data.logoSrc}" alt="${escapeHtml21(data.logoAlt)}">` : ""}
+                        ${data.logoSrc ? `<img src="${data.logoSrc}" alt="${escapeHtml24(data.logoAlt)}">` : ""}
                     </div>
                 </div>
             </div>
-            ${data.founded ? `<div class="tmco-founded"><span>${escapeHtml21(data.founded)}</span></div>` : ""}
+            ${data.founded ? `<div class="tmco-founded"><span>${escapeHtml24(data.founded)}</span></div>` : ""}
             ${buildPlayersTableHtml(data.players)}
             <div class="tmco-info-block">
                 ${data.infoChangeHref ? `<a class="tmco-info-link" href="${data.infoChangeHref}">Change info</a>` : ""}
@@ -24591,7 +25712,7 @@ order:initial
     const svgBuddyRemove = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="23" y1="11" x2="17" y2="11"></line></svg>`;
     const btnHtml2 = (svgContent, text) => `<div style="display: flex; align-items: center; justify-content: center; gap: var(--tmu-space-sm);">
         ${svgContent}
-        <span>${escapeHtml21(text)}</span>
+        <span>${escapeHtml24(text)}</span>
     </div>`;
     const openComposer = () => {
       const wrap = document.createElement("div");
@@ -24714,7 +25835,7 @@ order:initial
   var TmClubOverview = {
     mount({ mainColumn: mainColumn5, secondaryColumn }) {
       if (!mainColumn5) return;
-      injectStyles29();
+      injectStyles30();
       TmNativeFeed.injectStyles();
       console.log("Mounting club overview with columns:", { mainColumn: mainColumn5, secondaryColumn });
       const nativeMain = document.querySelector(".column2_a");
@@ -24723,10 +25844,26 @@ order:initial
       mainColumn5.classList.add("tmco-main");
       mainColumn5.innerHTML = "";
       mountClubBox(mainColumn5, data);
-      if (data.feedRoot) {
-        const feedHost = document.createElement("div");
+      if (data.clubId) {
+        const feedHost = document.createElement("section");
         mainColumn5.appendChild(feedHost);
-        TmNativeFeed.mountStandaloneFeed(feedHost, data.feedRoot, { title: "Feed" });
+        TmSectionCard.mount(feedHost, {
+          title: "Feed",
+          titleMode: "body",
+          flush: true,
+          bodyHtml: '<div data-club-feed-mount="1"></div>'
+        });
+        const feedMount = feedHost.querySelector("[data-club-feed-mount]");
+        if (feedMount) {
+          const feedController = createSocialFeedController({
+            mount: feedMount,
+            getFeedRoot: () => data.feedRoot,
+            fetchFeedPayload: ({ lastPost }) => TmMessagesModel.fetchClubFeed({ clubId: data.clubId, lastPost }),
+            emptyCopy: "No feed items found for this club.",
+            loadingCopy: "Loading club feed..."
+          });
+          void feedController.render();
+        }
       }
       if (secondaryColumn) {
         secondaryColumn.classList.add("tmco-side");
@@ -26125,7 +27262,7 @@ order:initial
 
   // src/components/stats/tm-stats-bars-section.js
   var _fix23 = (v) => (Math.round(v * 100) / 100).toFixed(2);
-  var escapeHtml22 = (s6) => String(s6).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  var escapeHtml25 = (s6) => String(s6).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   var TmStatsBarsSection = {
     render({ bars, advLeft, advRight, leftTone = "for", rightTone = "against", tf = "total", mCount = 1, leftLabel = null, rightLabel = null }) {
       const bNum = (v) => tf === "average" ? Number(_fix23(v / mCount)) : v;
@@ -26151,9 +27288,9 @@ order:initial
       html2 += bar("Red Cards", bars.red[0], bars.red[1]);
       html2 += bar("Free Kicks", bars.freekicks[0], bars.freekicks[1]);
       html2 += bar("Penalties", bars.penalties[0], bars.penalties[1]);
-      html2 += `<div class="tsa-section-title">${leftLabel ? escapeHtml22(leftLabel) + " Attacking Styles" : "Our Attacking Styles"}</div>`;
+      html2 += `<div class="tsa-section-title">${leftLabel ? escapeHtml25(leftLabel) + " Attacking Styles" : "Our Attacking Styles"}</div>`;
       html2 += '<div data-tsbs="left"></div>';
-      html2 += `<div class="tsa-section-title">${rightLabel ? escapeHtml22(rightLabel) + " Attacking Styles" : "Opponent Attacking Styles"}</div>`;
+      html2 += `<div class="tsa-section-title">${rightLabel ? escapeHtml25(rightLabel) + " Attacking Styles" : "Opponent Attacking Styles"}</div>`;
       html2 += '<div data-tsbs="right"></div>';
       const mountAdvTables = (container, { onTable } = {}) => {
         const phL = container.querySelector('[data-tsbs="left"]');
@@ -28306,7 +29443,7 @@ order:initial
         `;
     document.head.appendChild(_s2);
   }
-  var buttonHtml8 = (opts) => TmUI.button(opts).outerHTML;
+  var buttonHtml9 = (opts) => TmUI.button(opts).outerHTML;
   var createAutocomplete = (opts) => TmUI.autocomplete({ tone: "overlay", density: "comfy", size: "full", grow: true, ...opts });
   var createFlag = (suffix) => {
     if (!suffix) return null;
@@ -28332,7 +29469,7 @@ order:initial
             <div class="tsa-ld-box" id="tsa-ld-box">
                 <div class="tsa-ld-header">
                     <span class="tsa-ld-title">Change League</span>
-                    ${buttonHtml8({ id: "tsa-ld-close", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>', variant: "icon", color: "secondary", size: "xs" })}
+                    ${buttonHtml9({ id: "tsa-ld-close", icon: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>', variant: "icon", color: "secondary", size: "xs" })}
                 </div>
                 <div class="tsa-ld-body" id="tsa-ld-body">
                     ${TmUI.loading("Loading leagues...")}
@@ -28370,7 +29507,7 @@ order:initial
                     <div id="tsa-ld-group-ac"></div>
                 </div>
                 <div class="tsa-ld-footer">
-                    ${buttonHtml8({ id: "tsa-ld-go", label: "Go", color: "primary", disabled: true })}
+                    ${buttonHtml9({ id: "tsa-ld-go", label: "Go", color: "primary", disabled: true })}
                 </div>
             </div>`;
     let selCountry = null, selDivision = null, selGroup = null, divisionData = null;
@@ -28547,7 +29684,7 @@ order:initial
         `;
     document.head.appendChild(_s2);
   }
-  var buttonHtml9 = ({ label, slot, cls = "", active = false, ...opts }) => TmButton.button({
+  var buttonHtml10 = ({ label, slot, cls = "", active = false, ...opts }) => TmButton.button({
     color: "primary",
     size: "sm",
     label,
@@ -28635,8 +29772,8 @@ order:initial
     container.innerHTML = `
         <div class="tsa-stats-bar">
             <div>
-                ${buttonHtml9({ cls: "tsa-stat-mode-btn", label: "Players", active: isPlayers, attrs: { "data-mode": "players" } })}
-                ${buttonHtml9({ cls: "tsa-stat-mode-btn", label: "Clubs", active: !isPlayers, attrs: { "data-mode": "clubs" } })}
+                ${buttonHtml10({ cls: "tsa-stat-mode-btn", label: "Players", active: isPlayers, attrs: { "data-mode": "players" } })}
+                ${buttonHtml10({ cls: "tsa-stat-mode-btn", label: "Clubs", active: !isPlayers, attrs: { "data-mode": "clubs" } })}
             </div>
         </div>
         <div id="tsa-stats-content-inner"></div>
@@ -28668,7 +29805,7 @@ order:initial
     inner.innerHTML = `
         <div class="tsa-stats-bar">
             <div class="tsa-stat-btns">
-                ${CLUB_STAT_DEFS.map(([k, v]) => buttonHtml9({ cls: "tsa-stat-btn", label: v, active: curStat === k, attrs: { "data-stat": k } })).join("")}
+                ${CLUB_STAT_DEFS.map(([k, v]) => buttonHtml10({ cls: "tsa-stat-btn", label: v, active: curStat === k, attrs: { "data-stat": k } })).join("")}
             </div>
         </div>
         <div id="tsa-stats-table-wrap">${TmUI.loading("Loading\u2026")}</div>
@@ -28712,7 +29849,7 @@ order:initial
   var TmLeagueStats = { renderPlayerStatsTab };
 
   // src/components/league/tm-league-transfers.js
-  var buttonHtml10 = ({ label, slot, cls = "", active = false, ...opts }) => TmButton.button({
+  var buttonHtml11 = ({ label, slot, cls = "", active = false, ...opts }) => TmButton.button({
     color: "primary",
     size: "sm",
     label,
@@ -28850,9 +29987,9 @@ order:initial
       container.innerHTML = `
             <div class="tsa-stats-bar">
                 <div>
-                    ${buttonHtml10({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "bought", slot: `Bought <span class="tsa-tr-count">${data.bought.length}</span>` })}
-                    ${buttonHtml10({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "sold", slot: `Sold <span class="tsa-tr-count">${data.sold.length}</span>` })}
-                    ${buttonHtml10({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "teams", slot: "Teams" })}
+                    ${buttonHtml11({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "bought", slot: `Bought <span class="tsa-tr-count">${data.bought.length}</span>` })}
+                    ${buttonHtml11({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "sold", slot: `Sold <span class="tsa-tr-count">${data.sold.length}</span>` })}
+                    ${buttonHtml11({ cls: "tsa-stat-mode-btn", active: s6.transfersView === "teams", slot: "Teams" })}
                 </div>
             </div>
             <div id="tsa-tr-bought-wrap" style="display:${s6.transfersView === "bought" ? "" : "none"}"></div>
@@ -29622,994 +30759,6 @@ order:initial
   };
   var TmLeagueStyles = { inject: inject2 };
 
-  // src/utils/home-feed.js
-  var clean = (value) => String(value || "").replace(/\s+/g, " ").trim();
-  var escapeHtml23 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  var normalizeFeedTime = (value) => clean(String(value || "").replace(/\s*\+\d+\s*$/g, ""));
-  var extractFeedPlayerIds2 = (text) => Array.from(String(text || "").matchAll(/\[player=(\d+)\]/g), (match) => clean(match[1])).filter(Boolean);
-  var extractFeedClubIds2 = (item) => {
-    var _a2;
-    const textIds = Array.from(String((item == null ? void 0 : item.text) || "").matchAll(/@(\d+)/g), (match) => clean(match[1]));
-    const attributeIds = Array.isArray((_a2 = item == null ? void 0 : item.attributes) == null ? void 0 : _a2.club_ids) ? item.attributes.club_ids.map(clean) : [];
-    return [...textIds, ...attributeIds].filter(Boolean);
-  };
-  var normalizeFeedNames2 = (payload) => {
-    const players = Array.isArray(payload == null ? void 0 : payload.players) ? payload.players : [];
-    const clubs = Array.isArray(payload == null ? void 0 : payload.clubs) ? payload.clubs : [];
-    const playerMap = /* @__PURE__ */ new Map();
-    const clubMap = /* @__PURE__ */ new Map();
-    players.forEach((player2) => {
-      const id = clean(player2 == null ? void 0 : player2.id);
-      if (!id) return;
-      playerMap.set(id, clean(player2 == null ? void 0 : player2.name) || `#${id}`);
-    });
-    clubs.forEach((club) => {
-      const id = clean((club == null ? void 0 : club.id) || (club == null ? void 0 : club.club_id));
-      const name = clean((club == null ? void 0 : club.name) || (club == null ? void 0 : club.club_name));
-      if (!id || !name) return;
-      clubMap.set(id, name);
-    });
-    return { playerMap, clubMap };
-  };
-  var resolveFeedLinkTarget2 = (target) => {
-    const raw = clean(target);
-    if (!raw) return "";
-    if (raw.startsWith("/")) return raw;
-    if (/^league;/i.test(raw)) return "/league/";
-    return "";
-  };
-  var buildFeedLinkHtml2 = (target, label) => {
-    const safeLabel = escapeHtml23(clean(label) || target);
-    const href = resolveFeedLinkTarget2(target);
-    if (!href) return safeLabel;
-    return `<a href="${escapeHtml23(href)}">${safeLabel}</a>`;
-  };
-  var formatFeedMoney2 = (value) => {
-    const amount = Number(value);
-    if (!Number.isFinite(amount)) return escapeHtml23(String(value || ""));
-    return escapeHtml23(amount.toLocaleString("en-US"));
-  };
-  var renderFeedFlagHtml = (country) => {
-    const normalized = clean(country).toLowerCase();
-    if (!normalized) return "";
-    if (typeof window !== "undefined" && typeof window.get_flag === "function") {
-      return window.get_flag(normalized);
-    }
-    return `<span class="tmvu-feed-flag-fallback">${escapeHtml23(normalized.toUpperCase())}</span>`;
-  };
-  var renderPotentialStarsHtml = (value) => {
-    const raw = Number(value);
-    const normalized = Number.isFinite(raw) ? Math.max(0, Math.min(10, raw)) : 0;
-    const fullStars = Math.max(0, Math.min(5, Math.floor(normalized / 2)));
-    let html2 = '<span class="tmvu-feed-stars" aria-label="Potential">';
-    for (let index = 0; index < fullStars; index += 1) html2 += '<span class="tmvu-feed-stars-full">\u2605</span>';
-    for (let index = fullStars; index < 5; index += 1) html2 += '<span class="tmvu-feed-stars-empty">\u2605</span>';
-    html2 += "</span>";
-    return html2;
-  };
-  var replaceFeedClubMentions = (content, clubMap, storeReplacement) => content.replace(/(^|[^\w])([@#])(\d+)\b/g, (match, prefix, _marker, clubId2) => {
-    const id = clean(clubId2);
-    const label = clubMap.get(id) || `#${id}`;
-    const linkHtml = `<a href="/club/${escapeHtml23(id)}/">${escapeHtml23(label)}</a>`;
-    return `${prefix}${storeReplacement(linkHtml)}`;
-  });
-  var renderFeedTextHtml2 = (text, { playerMap = /* @__PURE__ */ new Map(), clubMap = /* @__PURE__ */ new Map() } = {}) => {
-    const replacements = [];
-    let content = String(text || "");
-    const storeReplacement = (html3) => {
-      const token = `__TM_HOME_FEED_TOKEN_${replacements.length}__`;
-      replacements.push({ token, html: html3 });
-      return token;
-    };
-    content = content.replace(/\[link=([^\]]+)\]([\s\S]*?)\[\/link\]/g, (_, target, label) => storeReplacement(buildFeedLinkHtml2(target, label)));
-    content = content.replace(/\[player=(\d+)\]/g, (_, playerId) => {
-      const id = clean(playerId);
-      const label = playerMap.get(id) || `#${id}`;
-      return storeReplacement(`<a href="/players/${escapeHtml23(id)}/">${escapeHtml23(label)}</a>`);
-    });
-    content = content.replace(/\[potential_stars=(\d+)\]/g, (_, stars) => storeReplacement(renderPotentialStarsHtml(stars)));
-    content = content.replace(/\[flag=([a-z]{2})\]/ig, (_, country) => storeReplacement(renderFeedFlagHtml(country)));
-    content = content.replace(/\[money=(\d+)\]/g, (_, amount) => storeReplacement(formatFeedMoney2(amount)));
-    content = replaceFeedClubMentions(content, clubMap, storeReplacement);
-    let html2 = escapeHtml23(content).replace(/\n/g, "<br>");
-    replacements.forEach((entry) => {
-      html2 = html2.replaceAll(entry.token, entry.html);
-    });
-    return html2;
-  };
-  var getDetailedFeedItems = (payload) => Array.isArray(payload == null ? void 0 : payload.feed) ? payload.feed : [];
-  var collectDetailedFeedNameIds = (items) => {
-    const flatItems = items.flatMap((item) => [item, ...Array.isArray(item == null ? void 0 : item.sub_entries) ? item.sub_entries : []]);
-    const playerIds = [...new Set(flatItems.flatMap((item) => extractFeedPlayerIds2(item == null ? void 0 : item.text)))];
-    const clubIds = [...new Set([
-      ...flatItems.flatMap((item) => extractFeedClubIds2(item)),
-      ...flatItems.flatMap((item) => Array.from(String((item == null ? void 0 : item.text) || "").matchAll(/#(\d+)/g), (match) => clean(match[1]))),
-      ...flatItems.flatMap((item) => Array.isArray(item == null ? void 0 : item.comments) ? item.comments.map((comment) => clean(comment == null ? void 0 : comment.club_id)) : [])
-    ].filter(Boolean))];
-    return { playerIds, clubIds };
-  };
-  var wrapFeedHtmlBlock = (html2) => /^<div[\s>]/i.test(String(html2 || "").trim()) ? html2 : `<div>${html2}</div>`;
-  var getClubNameFromMaps = (clubId2, clubMap) => {
-    const id = clean(clubId2);
-    if (!id) return "";
-    return clubMap.get(id) || `#${id}`;
-  };
-  var getClubLogoFromId = (clubId2) => {
-    const id = clean(clubId2);
-    return id ? `/pics/club_logos/${id}.png` : "";
-  };
-  var buildApiFeedComment = (comment, nameMaps) => {
-    const clubId2 = clean(comment == null ? void 0 : comment.club_id);
-    const timeText = normalizeFeedTime((comment == null ? void 0 : comment.time) || "");
-    const contentHtml = wrapFeedHtmlBlock(renderFeedTextHtml2(comment == null ? void 0 : comment.text, nameMaps));
-    return {
-      authorName: getClubNameFromMaps(clubId2, nameMaps.clubMap),
-      authorHref: clubId2 ? `/club/${clubId2}/` : "",
-      authorLogoSrc: getClubLogoFromId(clubId2),
-      authorLogoFallbackSrc: "",
-      time: timeText,
-      bodyHtml: `<div class="tmvu-home-feed-comment-body">${timeText ? `<div class="tmvu-home-feed-comment-time" style="float: right;">${escapeHtml23(timeText)}</div>` : ""}${contentHtml}</div>`
-    };
-  };
-  var buildHomeFeedModel = async ({ payload, nativePostMap = /* @__PURE__ */ new Map(), fetchFeedNames }) => {
-    var _a2;
-    const items = getDetailedFeedItems(payload);
-    if (!items.length) return null;
-    const { playerIds, clubIds } = collectDetailedFeedNameIds(items);
-    const payloadClubIds = Array.isArray(payload == null ? void 0 : payload.ids) ? payload.ids.map(clean).filter(Boolean) : [];
-    const resolvedClubIds = [.../* @__PURE__ */ new Set([...clubIds, ...payloadClubIds])];
-    const namesPayload = playerIds.length || resolvedClubIds.length ? await fetchFeedNames({ playerIds, clubIds: resolvedClubIds }) : null;
-    const nameMaps = normalizeFeedNames2(namesPayload);
-    const buildPost = (item, { isSimilarPost = false } = {}) => {
-      var _a3, _b;
-      const postId = clean(item == null ? void 0 : item.id);
-      const nativePost = nativePostMap.get(postId) || null;
-      const clubId2 = clean((_b = (_a3 = item == null ? void 0 : item.attributes) == null ? void 0 : _a3.club_ids) == null ? void 0 : _b[0]);
-      const comments = Array.isArray(item == null ? void 0 : item.comments) ? item.comments.map((comment) => buildApiFeedComment(comment, nameMaps)) : (nativePost == null ? void 0 : nativePost.comments) || [];
-      const similarEntries = Array.isArray(item == null ? void 0 : item.sub_entries) ? item.sub_entries.map((entry) => buildPost(entry, { isSimilarPost: true })) : [];
-      return {
-        id: postId,
-        authorName: (nativePost == null ? void 0 : nativePost.authorName) || getClubNameFromMaps(clubId2, nameMaps.clubMap),
-        authorHref: (nativePost == null ? void 0 : nativePost.authorHref) || (clubId2 ? `/club/${clubId2}/` : ""),
-        authorLogoSrc: (nativePost == null ? void 0 : nativePost.authorLogoSrc) || getClubLogoFromId(clubId2),
-        authorLogoFallbackSrc: (nativePost == null ? void 0 : nativePost.authorLogoFallbackSrc) || "",
-        time: normalizeFeedTime((item == null ? void 0 : item.time) || (item == null ? void 0 : item.full_time) || (nativePost == null ? void 0 : nativePost.time) || ""),
-        bodyHtml: renderFeedTextHtml2(item == null ? void 0 : item.text, nameMaps) || (nativePost == null ? void 0 : nativePost.bodyHtml) || "",
-        likeText: (nativePost == null ? void 0 : nativePost.likeText) || "",
-        commentText: (nativePost == null ? void 0 : nativePost.commentText) || "",
-        totalCommentCount: Math.max(Array.isArray(item == null ? void 0 : item.comments) ? item.comments.length : 0, (nativePost == null ? void 0 : nativePost.totalCommentCount) || 0),
-        hiddenCommentsAction: (nativePost == null ? void 0 : nativePost.hiddenCommentsAction) || null,
-        likeCount: Number(item == null ? void 0 : item.likes) || (nativePost == null ? void 0 : nativePost.likeCount) || 0,
-        likeSummaryEl: (nativePost == null ? void 0 : nativePost.likeSummaryEl) || null,
-        comments,
-        isSimilarPost,
-        similarEntries,
-        sourceEl: (nativePost == null ? void 0 : nativePost.sourceEl) || null
-      };
-    };
-    return {
-      kind: "api",
-      topPosts: items.map((item) => buildPost(item)),
-      lastPost: clean((_a2 = items[items.length - 1]) == null ? void 0 : _a2.id),
-      canLoadMore: items.length > 0
-    };
-  };
-
-  // src/utils/home-feed-native.js
-  var clean2 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-  var escapeHtml24 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  var normalizeFeedTime2 = (value) => clean2(String(value || "").replace(/\s*\+\d+\s*$/g, ""));
-  var isNativeFeedPostVisible = (postEl, feedRoot) => {
-    var _a2, _b, _c;
-    let node = postEl;
-    while (node && node !== feedRoot) {
-      if (node !== postEl) {
-        if ((_a2 = node.classList) == null ? void 0 : _a2.contains("hide")) return false;
-        const style = ((_b = node.getAttribute) == null ? void 0 : _b.call(node, "style")) || "";
-        if (/display\s*:\s*none/i.test(style)) return false;
-      }
-      node = node.parentElement;
-    }
-    return !((_c = postEl.classList) == null ? void 0 : _c.contains("hide"));
-  };
-  var extractClubIdFromHref = (href) => {
-    var _a2;
-    return ((_a2 = String(href || "").match(/\/club\/(\d+)/i)) == null ? void 0 : _a2[1]) || "";
-  };
-  var getClubLogoFromId2 = (clubId2) => {
-    const id = clean2(clubId2);
-    return id ? `/pics/club_logos/${id}.png` : "";
-  };
-  var getClubLogoFromHref = (href) => {
-    const clubId2 = extractClubIdFromHref(href);
-    return getClubLogoFromId2(clubId2);
-  };
-  var normalizeFeedLogoSrc = (src) => String(src || "").replace(/_25(\.png(?:\?[^\s"']*)?)$/i, "$1");
-  var resolvePreferredFeedLogo = (rawSrc, clubId2 = "") => {
-    const normalizedSrc = normalizeFeedLogoSrc(rawSrc);
-    const preferredClubLogo = getClubLogoFromId2(clubId2);
-    if (/\/logos_nonpro\//i.test(normalizedSrc) && preferredClubLogo) {
-      return {
-        src: preferredClubLogo,
-        fallbackSrc: normalizedSrc
-      };
-    }
-    return {
-      src: normalizedSrc || preferredClubLogo,
-      fallbackSrc: ""
-    };
-  };
-  var findFeedCommentAuthorAnchor = (commentEl) => (commentEl == null ? void 0 : commentEl.querySelector(".comment_name a, .comment_author a")) || null;
-  var findFeedCommentLogo = (commentEl) => (commentEl == null ? void 0 : commentEl.querySelector('.comment_name img, .comment_author img, img.club_logo, img[src*="club_logos"]')) || null;
-  var findHiddenCommentsAction = (postEl) => (postEl == null ? void 0 : postEl.querySelector(
-    ".hidden_comments_link .faux_link, .hidden_comments_link [onclick], .hidden_comments_link a[href], .hidden_comments_link, .comments_header .faux_link, .comments_header [onclick], .comments_header a[href], .comments_count [onclick], .comments_count a[href], .comments_count"
-  )) || null;
-  var getFeedTotalCommentCount = (postEl) => {
-    var _a2, _b, _c;
-    const directCount = ((_a2 = postEl == null ? void 0 : postEl.querySelectorAll(".comments .comment_holder .comment_text, .comments .comment .comment_text")) == null ? void 0 : _a2.length) || 0;
-    const summaryText = clean2(((_b = postEl == null ? void 0 : postEl.querySelector(".hidden_comments_link, .comments_header, .comments_count")) == null ? void 0 : _b.textContent) || "");
-    const summaryCount = Number(((_c = summaryText.match(/(\d+)/)) == null ? void 0 : _c[1]) || 0);
-    return Math.max(directCount, summaryCount, 0);
-  };
-  var getFeedCommentBodyHtml = (commentEl) => {
-    var _a2;
-    const bodySource = commentEl == null ? void 0 : commentEl.querySelector(".comment_text");
-    if (!bodySource) {
-      return `<div class="tmvu-home-feed-comment-body"><div>${escapeHtml24(clean2((commentEl == null ? void 0 : commentEl.textContent) || ""))}</div></div>`;
-    }
-    const bodyClone = bodySource.cloneNode(true);
-    const timeNode = bodyClone.querySelector(".comment_time");
-    const timeText = normalizeFeedTime2(((_a2 = commentEl == null ? void 0 : commentEl.querySelector(".comment_time")) == null ? void 0 : _a2.textContent) || (timeNode == null ? void 0 : timeNode.textContent) || "");
-    if (timeNode) timeNode.remove();
-    const contentHtml = bodyClone.innerHTML.trim();
-    const wrappedContent = /^<div[\s>]/i.test(contentHtml) ? contentHtml : `<div>${contentHtml}</div>`;
-    return `<div class="tmvu-home-feed-comment-body">${timeText ? `<div class="tmvu-home-feed-comment-time" style="float: right;">${escapeHtml24(timeText)}</div>` : ""}${wrappedContent}</div>`;
-  };
-  var parseFeedComments = (postEl) => Array.from(postEl.querySelectorAll(".comments .comment_holder, .comments .comment")).filter((commentEl) => commentEl.querySelector(".comment_text")).map((commentEl) => {
-    var _a2, _b;
-    const authorAnchor = findFeedCommentAuthorAnchor(commentEl);
-    const authorHref = (authorAnchor == null ? void 0 : authorAnchor.getAttribute("href")) || "";
-    const clubId2 = extractClubIdFromHref(authorHref);
-    const preferredLogo = resolvePreferredFeedLogo(((_a2 = findFeedCommentLogo(commentEl)) == null ? void 0 : _a2.getAttribute("src")) || "", clubId2);
-    return {
-      authorName: clean2((authorAnchor == null ? void 0 : authorAnchor.textContent) || ""),
-      authorHref,
-      authorLogoSrc: preferredLogo.src || getClubLogoFromHref(authorHref),
-      authorLogoFallbackSrc: preferredLogo.fallbackSrc || "",
-      time: normalizeFeedTime2(((_b = commentEl.querySelector(".comment_time")) == null ? void 0 : _b.textContent) || ""),
-      bodyHtml: getFeedCommentBodyHtml(commentEl)
-    };
-  });
-  var parsePositiveCount = (value) => {
-    const match = String(value || "").match(/\+\s*(\d+)/);
-    return match ? Number(match[1]) || 0 : 0;
-  };
-  var findFeedLikeSummaryAction = (postEl) => (postEl == null ? void 0 : postEl.querySelector(".feed_like .faux_link, .feed_like [onclick], .feed_like a[href]")) || null;
-  var findFeedAuthorAnchor = (postEl) => (postEl == null ? void 0 : postEl.querySelector(".post_profile_name a, .post_profile a[href], .post_profile_name, .post_profile")) || null;
-  var findFeedBodyClubAnchor = (postEl) => (postEl == null ? void 0 : postEl.querySelector('.post_full_text a[href*="/club/"], .post_text a[href*="/club/"]')) || null;
-  var findFeedProfileLogo = (postEl) => (postEl == null ? void 0 : postEl.querySelector(".post_profile img, .post_profile_image img, .post_profile_pic img, img.club_logo")) || null;
-  var getFeedBodyHtml = (postEl) => {
-    const bodySource = postEl == null ? void 0 : postEl.querySelector(".post_full_text, .post_text");
-    if (!bodySource) return "";
-    const bodyClone = bodySource.cloneNode(true);
-    bodyClone.querySelectorAll(".post_time, .post_profile_name, .post_profile, .feed_like, .hover_options").forEach((node) => node.remove());
-    return bodyClone.innerHTML || "";
-  };
-  var getFeedAuthorName = (postEl) => {
-    var _a2, _b, _c, _d;
-    const anchor = findFeedAuthorAnchor(postEl);
-    const bodyAnchor = findFeedBodyClubAnchor(postEl);
-    const logo = findFeedProfileLogo(postEl);
-    const directText = clean2((anchor == null ? void 0 : anchor.textContent) || "");
-    if (directText) return directText;
-    const bodyAnchorText = clean2((bodyAnchor == null ? void 0 : bodyAnchor.textContent) || "");
-    if (bodyAnchorText) return bodyAnchorText;
-    const titleText = clean2(((_a2 = anchor == null ? void 0 : anchor.getAttribute) == null ? void 0 : _a2.call(anchor, "title")) || "");
-    if (titleText) return titleText;
-    const imgAlt = clean2(((_b = logo == null ? void 0 : logo.getAttribute) == null ? void 0 : _b.call(logo, "alt")) || "");
-    if (imgAlt) return imgAlt;
-    const imgTitle = clean2(((_c = logo == null ? void 0 : logo.getAttribute) == null ? void 0 : _c.call(logo, "title")) || "");
-    if (imgTitle) return imgTitle;
-    const bodyText = clean2(((_d = postEl == null ? void 0 : postEl.querySelector(".post_full_text, .post_text")) == null ? void 0 : _d.textContent) || "");
-    const mentionMatch = bodyText.match(/^@([^\n]+?)\s(?:has|put|played|signed|won|lost|drew|sold|bought)\b/i);
-    if (mentionMatch == null ? void 0 : mentionMatch[1]) return clean2(mentionMatch[1]);
-    return "";
-  };
-  var getFeedAuthorHref = (postEl) => {
-    var _a2, _b, _c, _d;
-    return ((_b = (_a2 = findFeedAuthorAnchor(postEl)) == null ? void 0 : _a2.getAttribute) == null ? void 0 : _b.call(_a2, "href")) || ((_d = (_c = findFeedBodyClubAnchor(postEl)) == null ? void 0 : _c.getAttribute) == null ? void 0 : _d.call(_c, "href")) || "";
-  };
-  var parseNativeFeedPost = (postEl) => {
-    var _a2, _b, _c, _d, _e;
-    const postId = clean2(postEl.id || "").replace(/^feed_post/, "");
-    const authorHref = getFeedAuthorHref(postEl);
-    const preferredLogo = resolvePreferredFeedLogo(((_a2 = findFeedProfileLogo(postEl)) == null ? void 0 : _a2.getAttribute("src")) || "", extractClubIdFromHref(authorHref));
-    return {
-      id: postId,
-      authorName: getFeedAuthorName(postEl),
-      authorHref,
-      authorLogoSrc: preferredLogo.src,
-      authorLogoFallbackSrc: preferredLogo.fallbackSrc || "",
-      time: normalizeFeedTime2(((_b = postEl.querySelector(".post_time")) == null ? void 0 : _b.textContent) || ""),
-      bodyHtml: getFeedBodyHtml(postEl),
-      likeText: clean2(((_c = postEl.querySelector(".feed_like")) == null ? void 0 : _c.textContent) || ""),
-      commentText: clean2(((_d = postEl.querySelector(".hidden_comments_link, .comments_header, .comments_count")) == null ? void 0 : _d.textContent) || ""),
-      totalCommentCount: getFeedTotalCommentCount(postEl),
-      hiddenCommentsAction: findHiddenCommentsAction(postEl),
-      likeCount: parsePositiveCount(((_e = postEl.querySelector(".feed_like")) == null ? void 0 : _e.textContent) || ""),
-      likeSummaryEl: findFeedLikeSummaryAction(postEl),
-      comments: parseFeedComments(postEl),
-      isSimilarPost: false,
-      sourceEl: postEl
-    };
-  };
-  var queryVisibleNativeFeedPosts = (feedRoot) => Array.from((feedRoot == null ? void 0 : feedRoot.querySelectorAll('.feed_post[id^="feed_post"]')) || []).filter((postEl) => isNativeFeedPostVisible(postEl, feedRoot));
-  var findNativeHomeFeedAction = (postEl, action) => {
-    if (action === "like") return postEl.querySelector('.hover_options .like_icon[onclick*="feed_post_like"]');
-    if (action === "comment") return Array.from(postEl.querySelectorAll(".hover_options .faux_link")).find((element) => clean2(element.textContent).toLowerCase() === "comment");
-    if (action === "reply") return Array.from(postEl.querySelectorAll(".hover_options .faux_link")).find((element) => clean2(element.textContent).toLowerCase() === "reply to author");
-    if (action === "link") return postEl.querySelector('.post_option[onclick*="feed_pop_link_post"]');
-    if (action === "mute") return postEl.querySelector('.post_option.mute[onclick*="feed_post_mute"], .post_option.unmute[onclick*="feed_post_mute"]');
-    return null;
-  };
-  var findNativeHomeFeedCommentControls = (postEl) => {
-    const nativeBox = postEl == null ? void 0 : postEl.querySelector(".feed_comment_box");
-    if (!nativeBox) return null;
-    const textarea = nativeBox.querySelector('textarea, textarea[id^="comment"]');
-    const submitInner = nativeBox.querySelector('.button_border, button, input[type="submit"], input[type="button"]');
-    const submitButton = (submitInner == null ? void 0 : submitInner.closest(".button")) || submitInner;
-    return { nativeBox, textarea, submitButton };
-  };
-  var buildNativeHomeFeedPostMap = (feedRoot) => new Map(queryVisibleNativeFeedPosts(feedRoot).map((postEl) => {
-    const post = parseNativeFeedPost(postEl);
-    return [post.id, post];
-  }));
-
-  // src/components/shared/tm-social-feed.js
-  var STYLE_ID44 = "tmvu-social-feed-style";
-  var clean3 = (value) => String(value || "").replace(/\s+/g, " ").trim();
-  var escapeHtml25 = (value) => String(value != null ? value : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  var buttonHtml11 = ({ cls = "", attrs = {}, shape = "full", size = "sm", color = "secondary", ...opts } = {}) => TmUI.button({
-    cls,
-    attrs,
-    shape,
-    size,
-    color,
-    ...opts
-  }).outerHTML;
-  var injectStyles30 = () => {
-    if (document.getElementById(STYLE_ID44)) return;
-    const style = document.createElement("style");
-    style.id = STYLE_ID44;
-    style.textContent = [
-      ".tmvu-social-feed-source.tmvu-social-feed-source--hidden>:not([data-tmvu-social-feed-mount]){display:none!important}",
-      ".tmvu-home-feed{display:flex;flex-direction:column;gap:var(--tmu-space-lg)}",
-      ".tmvu-home-feed-post{display:flex;gap:var(--tmu-space-xl);padding:var(--tmu-space-xl) var(--tmu-space-xl) var(--tmu-space-lg);border-radius:var(--tmu-space-lg);border:1px solid var(--tmu-border-soft-alpha);background:linear-gradient(180deg, var(--tmu-border-contrast), transparent),var(--tmu-surface-dark-mid);box-shadow:inset 0 1px 0 var(--tmu-border-contrast)}",
-      ".tmvu-home-feed-post--similar{margin-left:var(--tmu-space-xl);padding-left:var(--tmu-space-xl);position:relative}",
-      '.tmvu-home-feed-post--similar::before{content:"";position:absolute;left:var(--tmu-space-sm);top:var(--tmu-space-md);bottom:var(--tmu-space-md);width:2px;border-radius:999px;background:var(--tmu-success-fill-soft)}',
-      ".tmvu-home-feed-side{flex-shrink:0;width:116px;display:flex;flex-direction:column;align-items:center;gap:var(--tmu-space-sm);text-align:center}",
-      ".tmvu-home-feed-side-logo{width:76px;height:76px;border-radius:var(--tmu-space-lg);overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--tmu-surface-panel);border:1px solid var(--tmu-border-input-overlay);box-shadow:0 8px 18px var(--tmu-shadow-elev)}",
-      ".tmvu-home-feed-side-logo img{max-width:72px;max-height:72px;width:auto;height:auto;object-fit:contain;display:block}",
-      ".tmvu-home-feed-side-fallback{font-size:var(--tmu-font-3xl);opacity:.35}",
-      ".tmvu-home-feed-side-name{font-size:var(--tmu-font-sm);font-weight:800;color:var(--tmu-text-strong);text-decoration:none;line-height:1.35;word-break:break-word}",
-      ".tmvu-home-feed-side-name:hover{color:var(--tmu-text-inverse)}",
-      ".tmvu-home-feed-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:var(--tmu-space-md)}",
-      ".tmvu-home-feed-time{display:block;float:right;font-size:var(--tmu-font-xs);color:var(--tmu-text-dim);white-space:nowrap;font-variant-numeric:tabular-nums}",
-      ".tmvu-home-feed-body{font-size:var(--tmu-font-md);color:var(--tmu-text-strong);line-height:1.72;word-break:break-word}",
-      ".tmvu-home-feed-body a{color:var(--tmu-accent);text-decoration:none}",
-      ".tmvu-home-feed-body a:hover{text-decoration:underline}",
-      ".tmvu-feed-stars{display:inline-flex;align-items:center;gap:0;vertical-align:baseline}",
-      ".tmvu-feed-stars-full{color:var(--tmu-warning)}",
-      ".tmvu-feed-stars-empty{color:var(--tmu-border-embedded)}",
-      ".tmvu-home-feed-meta{display:flex;align-items:center;justify-content:flex-start;gap:var(--tmu-space-md);padding-bottom:0;color:var(--tmu-text-dim)}",
-      ".tmvu-home-feed-meta-left{display:flex;align-items:center;gap:var(--tmu-space-md);flex-wrap:wrap}",
-      ".tmvu-home-feed-like-count,.tmvu-home-feed-comment-count{display:inline-flex;align-items:center;gap:var(--tmu-space-sm);min-height:24px;padding:0 var(--tmu-space-md);border-radius:999px;border:1px solid var(--tmu-border-input-overlay);background:var(--tmu-surface-tab-active);color:var(--tmu-text-strong);font-size:var(--tmu-font-xs);font-weight:800;line-height:1;letter-spacing:.01em}",
-      '.tmvu-home-feed-like-count::before{content:"\u2665";font-size:var(--tmu-font-xs);color:var(--tmu-success)}',
-      '.tmvu-home-feed-comment-count::before{content:"\u{1F4AC}";font-size:var(--tmu-font-xs);opacity:.9}',
-      ".tmvu-home-feed-like-count{cursor:pointer;transition:background .12s,border-color .12s,color .12s;background:var(--tmu-surface-tab-active);border:none}",
-      ".tmvu-home-feed-like-count:hover{background:var(--tmu-surface-tab-hover);color:var(--tmu-text-strong)}",
-      ".tmvu-home-feed-like-count:disabled{opacity:.55;cursor:default}",
-      ".tmvu-home-feed-comment-count{border:none}",
-      ".tmvu-home-feed-comment-count.tmvu-home-feed-comment-count--action{cursor:pointer;transition:background .12s,color .12s}",
-      ".tmvu-home-feed-comment-count.tmvu-home-feed-comment-count--action:hover{background:var(--tmu-surface-tab-hover);color:var(--tmu-text-strong)}",
-      ".tmvu-home-feed-actions{display:flex;gap:var(--tmu-space-sm);align-items:center;padding-top:0;flex-wrap:wrap}",
-      ".tmvu-home-feed-action{appearance:none;min-height:28px;padding:0 var(--tmu-space-md);border-radius:999px;border:1px solid var(--tmu-border-input-overlay);background:var(--tmu-surface-tab-active);color:var(--tmu-text-main);cursor:pointer;font:inherit;font-size:var(--tmu-font-xs);font-weight:800;line-height:1;text-decoration:none;display:inline-flex;align-items:center;box-shadow:inset 0 1px 0 var(--tmu-border-contrast)}",
-      ".tmvu-home-feed-action:hover{background:var(--tmu-surface-tab-hover);color:var(--tmu-text-strong);border-color:var(--tmu-border-success)}",
-      ".tmvu-home-feed-action:disabled{opacity:.45;cursor:default}",
-      ".tmvu-home-feed-similar{display:flex;justify-content:flex-end;padding:var(--tmu-space-md) 0 0 var(--tmu-space-xl);margin-top:var(--tmu-space-md);border-top:1px solid var(--tmu-border-contrast)}",
-      ".tmvu-home-feed-similar-btn{appearance:none;background:transparent;border:none;color:var(--tmu-accent);cursor:pointer;font:inherit;font-size:var(--tmu-font-sm);font-weight:800;line-height:1.2;padding:0;display:inline-flex;align-items:center;gap:var(--tmu-space-sm)}",
-      ".tmvu-home-feed-similar-btn:hover{color:var(--tmu-text-strong)}",
-      ".tmvu-home-feed-composer{margin-top:var(--tmu-space-md);padding-top:var(--tmu-space-md);border-top:1px solid var(--tmu-border-contrast)}",
-      ".tmvu-home-feed-composer[hidden]{display:none!important}",
-      ".tmvu-home-feed-composer-input{width:100%;min-height:84px;box-sizing:border-box;background:var(--tmu-surface-overlay);border:1px solid var(--tmu-border-input-overlay);border-radius:var(--tmu-space-md);color:var(--tmu-text-main);padding:var(--tmu-space-md) var(--tmu-space-md);font:inherit;font-size:var(--tmu-font-sm);line-height:1.45;resize:vertical}",
-      ".tmvu-home-feed-composer-input::placeholder{color:var(--tmu-text-faint)}",
-      ".tmvu-home-feed-composer-actions{display:flex;justify-content:flex-end;gap:var(--tmu-space-sm);margin-top:var(--tmu-space-sm)}",
-      ".tmvu-home-feed-composer-btn{appearance:none;border:1px solid var(--tmu-border-input-overlay);background:var(--tmu-surface-overlay);border-radius:999px;color:var(--tmu-text-main);cursor:pointer;font:inherit;font-size:var(--tmu-font-xs);font-weight:700;line-height:1;padding:var(--tmu-space-sm) var(--tmu-space-md)}",
-      ".tmvu-home-feed-composer-btn:hover{background:var(--tmu-surface-tab-hover);border-color:var(--tmu-border-success);color:var(--tmu-text-strong)}",
-      '.tmvu-home-feed-composer-btn[data-role="submit"]{background:var(--tmu-surface-tab-active);color:var(--tmu-text-strong)}',
-      ".tmvu-home-feed-comments{display:flex;flex-direction:column;gap:var(--tmu-space-md);margin-top:var(--tmu-space-lg);padding-top:var(--tmu-space-md);border-top:1px solid var(--tmu-border-contrast)}",
-      ".tmvu-home-feed-more-comments{display:flex;align-items:center;gap:var(--tmu-space-md);padding:var(--tmu-space-md) var(--tmu-space-md);border-radius:var(--tmu-space-md);background:var(--tmu-surface-overlay);border:1px dashed var(--tmu-border-contrast);color:var(--tmu-text-main);cursor:pointer}",
-      ".tmvu-home-feed-more-comments:hover{background:var(--tmu-surface-tab-hover);border-color:var(--tmu-border-success)}",
-      ".tmvu-home-feed-more-comments-badge{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:42px;border-radius:var(--tmu-space-sm);background:var(--tmu-surface-panel);border:1px solid var(--tmu-border-input-overlay);font-size:var(--tmu-font-lg);color:var(--tmu-text-muted)}",
-      ".tmvu-home-feed-more-comments-copy{display:flex;flex-direction:column;gap:var(--tmu-space-xs);min-width:0}",
-      ".tmvu-home-feed-more-comments-title{font-size:var(--tmu-font-sm);font-weight:800;color:var(--tmu-text-strong)}",
-      ".tmvu-home-feed-comment{display:flex;align-items:flex-start;gap:var(--tmu-space-md);padding:var(--tmu-space-md) var(--tmu-space-lg);border-radius:var(--tmu-space-md);background:var(--tmu-surface-overlay);border:1px solid var(--tmu-border-contrast)}",
-      ".tmvu-home-feed-comment-logo{flex:0 0 42px;width:42px;height:42px;border-radius:var(--tmu-space-sm);overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--tmu-surface-panel);border:1px solid var(--tmu-border-input-overlay)}",
-      ".tmvu-home-feed-comment-logo img{max-width:42px;max-height:42px;width:auto;height:auto;object-fit:contain;display:block}",
-      ".tmvu-home-feed-comment-content{flex:1 1 auto;min-width:0}",
-      ".tmvu-home-feed-comment-body{font-size:var(--tmu-font-sm);line-height:1.62;color:var(--tmu-text-main)}",
-      ".tmvu-home-feed-comment-time{display:block;float:right;font-size:var(--tmu-font-xs);color:var(--tmu-text-faint);margin-left:var(--tmu-space-sm)}",
-      ".tmvu-home-feed-flag-fallback{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:12px;padding:0 var(--tmu-space-xs);border-radius:var(--tmu-space-xs);background:var(--tmu-surface-overlay);font-size:var(--tmu-font-2xs);font-weight:800;line-height:1;color:var(--tmu-text-strong);vertical-align:middle}",
-      ".tmvu-home-feed-likes-overlay{position:fixed;inset:0;z-index:200000;background:var(--tmu-shadow-panel);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:var(--tmu-space-xl)}",
-      ".tmvu-home-feed-likes-dialog{width:min(520px,100%);max-height:min(72vh,760px);display:flex;flex-direction:column;gap:var(--tmu-space-lg);padding:var(--tmu-space-xl);border-radius:var(--tmu-space-lg);border:1px solid var(--tmu-border-success);background:linear-gradient(160deg,var(--tmu-surface-card) 0%,var(--tmu-surface-dark-muted) 100%);box-shadow:0 20px 60px var(--tmu-shadow-panel)}",
-      ".tmvu-home-feed-likes-head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--tmu-space-md)}",
-      ".tmvu-home-feed-likes-title{font-size:var(--tmu-font-md);font-weight:800;color:var(--tmu-text-strong)}",
-      ".tmvu-home-feed-likes-subtitle{margin-top:var(--tmu-space-xs);font-size:var(--tmu-font-xs);color:var(--tmu-text-muted)}",
-      ".tmvu-home-feed-likes-close{appearance:none;border:1px solid var(--tmu-border-success);background:var(--tmu-surface-tab-active);border-radius:999px;color:var(--tmu-text-strong);cursor:pointer;font:inherit;font-size:var(--tmu-font-xs);font-weight:700;line-height:1;padding:var(--tmu-space-sm) var(--tmu-space-md)}",
-      ".tmvu-home-feed-likes-close:hover{background:var(--tmu-surface-tab-hover)}",
-      ".tmvu-home-feed-likes-body{overflow:auto;padding-right:var(--tmu-space-xs)}",
-      ".tmvu-home-feed-likes-list{display:flex;flex-direction:column;gap:var(--tmu-space-sm)}",
-      ".tmvu-home-feed-likes-item{display:flex;align-items:center;gap:var(--tmu-space-md);padding:var(--tmu-space-md) var(--tmu-space-md);border-radius:var(--tmu-space-md);border:1px solid var(--tmu-border-contrast);background:var(--tmu-surface-overlay);text-decoration:none}",
-      ".tmvu-home-feed-likes-item:hover{background:var(--tmu-surface-tab-hover);border-color:var(--tmu-border-success)}",
-      ".tmvu-home-feed-likes-item-logo{flex:0 0 40px;width:40px;height:40px;border-radius:var(--tmu-space-sm);overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--tmu-surface-panel);border:1px solid var(--tmu-border-input-overlay)}",
-      ".tmvu-home-feed-likes-item-logo img{max-width:40px;max-height:40px;width:auto;height:auto;object-fit:contain;display:block}",
-      ".tmvu-home-feed-likes-item-copy{min-width:0;display:flex;flex-direction:column;gap:var(--tmu-space-xs)}",
-      ".tmvu-home-feed-likes-item-name{display:flex;align-items:center;gap:var(--tmu-space-sm);font-size:var(--tmu-font-sm);font-weight:800;color:var(--tmu-text-strong)}",
-      ".tmvu-home-feed-likes-item-meta{font-size:var(--tmu-font-xs);color:var(--tmu-text-dim)}",
-      ".tmvu-home-feed-load-more{display:flex;justify-content:center;padding-top:var(--tmu-space-md)}",
-      ".tmvu-home-feed-load-more-btn{appearance:none;min-width:190px;padding:var(--tmu-space-md) var(--tmu-space-lg);border-radius:999px;border:1px solid var(--tmu-border-success);background:var(--tmu-surface-tab-active);color:var(--tmu-text-strong);cursor:pointer;font:inherit;font-size:var(--tmu-font-sm);font-weight:800;line-height:1.1}",
-      ".tmvu-home-feed-load-more-btn:hover{background:var(--tmu-surface-tab-hover);border-color:var(--tmu-border-success)}",
-      ".tmvu-home-feed-load-more-btn:disabled{opacity:.6;cursor:default}",
-      "@media (max-width: 760px){.tmvu-home-feed-post{flex-direction:column;padding:var(--tmu-space-lg)}.tmvu-home-feed-side{width:100%;flex-direction:row;justify-content:flex-start;text-align:left}.tmvu-home-feed-side-logo{width:64px;height:64px}}"
-    ].join("");
-    document.head.appendChild(style);
-  };
-  var renderFlag3 = (country) => {
-    const normalized = clean3(country).toLowerCase();
-    if (typeof window.get_flag === "function" && normalized) return window.get_flag(normalized);
-    if (!normalized) return "";
-    return `<span class="tmvu-home-feed-flag-fallback">${escapeHtml25(normalized.toUpperCase())}</span>`;
-  };
-  var formatFeedLikeTime = (unixTime) => {
-    const value = Number(unixTime);
-    if (!Number.isFinite(value) || value <= 0) return "";
-    try {
-      return new Date(value * 1e3).toLocaleString("en-GB", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-      });
-    } catch (_) {
-      return "";
-    }
-  };
-  var renderFeedLogo = (src, fallbackSrc = "") => {
-    const primary = escapeHtml25(src || "");
-    const fallback = escapeHtml25(fallbackSrc || "");
-    if (!primary) return '<span class="tmvu-home-feed-side-fallback">\u26BD</span>';
-    if (!fallback || fallback === primary) return `<img src="${primary}" alt="">`;
-    return `<img src="${primary}" data-fallback-src="${fallback}" onerror="if(this.dataset.fallbackSrc&&this.src!==this.dataset.fallbackSrc){this.src=this.dataset.fallbackSrc;this.removeAttribute('data-fallback-src');return;}this.onerror=null;this.style.display='none'" alt="">`;
-  };
-  var renderFeedDialogLogo = (clubId2) => {
-    const id = clean3(clubId2);
-    if (!id) return '<span class="tmvu-home-feed-side-fallback">\u26BD</span>';
-    return `<img src="/pics/club_logos/${escapeHtml25(id)}.png" onerror="this.onerror=null;this.style.display='none';this.insertAdjacentHTML('afterend','<span class=&quot;tmvu-home-feed-side-fallback&quot;>\u26BD</span>')" alt="">`;
-  };
-  var normalizeFeedLikes = (payload) => {
-    const likes = Array.isArray(payload == null ? void 0 : payload.likes) ? payload.likes : [];
-    const clubs = (payload == null ? void 0 : payload.clubs) && typeof payload.clubs === "object" ? payload.clubs : {};
-    return likes.map((like) => {
-      const clubId2 = clean3(like == null ? void 0 : like.club_id);
-      const clubInfo = clubs[clubId2] || {};
-      const timeValue = Number(like == null ? void 0 : like.time) || 0;
-      return {
-        clubId: clubId2,
-        clubName: clean3((like == null ? void 0 : like.club_name) || (clubInfo == null ? void 0 : clubInfo.club_name)) || `#${clubId2}`,
-        managerName: clean3(clubInfo == null ? void 0 : clubInfo.manager_name),
-        country: clean3(clubInfo == null ? void 0 : clubInfo.country).toLowerCase(),
-        timeValue,
-        timeText: formatFeedLikeTime(timeValue),
-        href: clubId2 ? `/club/${clubId2}/` : ""
-      };
-    }).sort((left, right) => left.timeValue - right.timeValue);
-  };
-  var showFeedLikesDialog = async (post) => {
-    var _a2;
-    const postId = clean3(post == null ? void 0 : post.id);
-    if (!postId) return;
-    (_a2 = document.getElementById("tmvu-home-feed-likes-overlay")) == null ? void 0 : _a2.remove();
-    const overlay = document.createElement("div");
-    overlay.id = "tmvu-home-feed-likes-overlay";
-    overlay.className = "tmvu-home-feed-likes-overlay";
-    overlay.innerHTML = `
-        <div class="tmvu-home-feed-likes-dialog" role="dialog" aria-modal="true" aria-labelledby="tmvu-home-feed-likes-title">
-            <div class="tmvu-home-feed-likes-head">
-                <div>
-                    <div id="tmvu-home-feed-likes-title" class="tmvu-home-feed-likes-title">Likes</div>
-                    <div class="tmvu-home-feed-likes-subtitle">Loading clubs who liked this post...</div>
-                </div>
-                ${buttonHtml11({ label: "Close", cls: "tmvu-home-feed-likes-close", attrs: { "data-feed-likes-close": true } })}
-            </div>
-            <div class="tmvu-home-feed-likes-body" data-feed-likes-body>
-                ${TmUI.loading("Loading likes...", true)}
-            </div>
-        </div>
-    `;
-    const closeDialog = () => {
-      document.removeEventListener("keydown", onKeyDown);
-      overlay.remove();
-    };
-    const onKeyDown = (event) => {
-      if (event.key === "Escape") closeDialog();
-    };
-    overlay.addEventListener("click", (event) => {
-      if (event.target === overlay || event.target.closest("[data-feed-likes-close]")) closeDialog();
-    });
-    document.addEventListener("keydown", onKeyDown);
-    document.body.appendChild(overlay);
-    const body = overlay.querySelector("[data-feed-likes-body]");
-    const subtitle = overlay.querySelector(".tmvu-home-feed-likes-subtitle");
-    const likes = normalizeFeedLikes(await TmMessagesModel.fetchFeedLikes(postId));
-    subtitle.textContent = likes.length ? `${likes.length} club${likes.length === 1 ? "" : "s"} liked this post` : "No likes found for this post";
-    if (!likes.length) {
-      body.innerHTML = TmUI.empty("No likes returned by the feed endpoint.", true);
-      return;
-    }
-    body.innerHTML = `
-        <div class="tmvu-home-feed-likes-list">
-            ${likes.map((like) => `
-                <a class="tmvu-home-feed-likes-item" href="${escapeHtml25(like.href || "#")}">
-                    <div class="tmvu-home-feed-likes-item-logo">${renderFeedDialogLogo(like.clubId)}</div>
-                    <div class="tmvu-home-feed-likes-item-copy">
-                        <div class="tmvu-home-feed-likes-item-name">${like.country ? `${renderFlag3(like.country)} ` : ""}${escapeHtml25(like.clubName)}</div>
-                        <div class="tmvu-home-feed-likes-item-meta">${escapeHtml25([like.managerName, like.timeText].filter(Boolean).join(" \u2022 "))}</div>
-                    </div>
-                </a>
-            `).join("")}
-        </div>
-    `;
-  };
-  var triggerNativeClick2 = (element) => {
-    if (!element) return false;
-    try {
-      element.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
-      return true;
-    } catch (_) {
-      try {
-        element.click();
-        return true;
-      } catch (_2) {
-        return false;
-      }
-    }
-  };
-  var parseNativeActionArgs2 = (onclickValue) => {
-    const match = String(onclickValue || "").match(/([A-Za-z0-9_]+)\((.*)\)/);
-    if (!match) return null;
-    const rawArgs = match[2].trim();
-    if (!rawArgs) return { fnName: match[1], args: [] };
-    return {
-      fnName: match[1],
-      args: rawArgs.split(",").map((part) => part.trim()).map((part) => {
-        if (part === "true") return true;
-        if (part === "false") return false;
-        if (/^['"].*['"]$/.test(part)) return part.slice(1, -1);
-        const numeric = Number(part);
-        return Number.isNaN(numeric) ? part : numeric;
-      })
-    };
-  };
-  var runNativeActionByOnclick2 = (element) => {
-    const onclickValue = element == null ? void 0 : element.getAttribute("onclick");
-    if (!onclickValue) return false;
-    const parsed = parseNativeActionArgs2(onclickValue);
-    if (!parsed) return false;
-    const fn = window[parsed.fnName];
-    if (typeof fn !== "function") return triggerNativeClick2(element);
-    try {
-      fn(...parsed.args);
-      return true;
-    } catch (_) {
-      return triggerNativeClick2(element);
-    }
-  };
-  var setNativeCommentValue = (textarea, value) => {
-    if (!textarea) return;
-    textarea.value = value;
-    textarea.dispatchEvent(new Event("input", { bubbles: true }));
-    textarea.dispatchEvent(new Event("change", { bubbles: true }));
-    textarea.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true }));
-  };
-  var formatCommentCountLabel = (count) => `${count} comment${count === 1 ? "" : "s"}`;
-  var formatLikeCountLabel = (count) => `${count} like${count === 1 ? "" : "s"}`;
-  var createFeedRenderer = ({ getMount, getFeedRoot, emptyCopy, onLoadMore }) => {
-    const state5 = {
-      expandedFeedPostIds: /* @__PURE__ */ new Set(),
-      expandedSimilarFeedPostIds: /* @__PURE__ */ new Set(),
-      currentModel: null,
-      currentFeedRoot: null
-    };
-    const getRenderablePosts = (feedRoot, feedModel = null) => {
-      if ((feedModel == null ? void 0 : feedModel.kind) === "api") {
-        return feedModel.topPosts.flatMap((post) => state5.expandedSimilarFeedPostIds.has(post.id) ? [post, ...post.similarEntries || []] : [post]);
-      }
-      if (Array.isArray(feedModel == null ? void 0 : feedModel.topPosts)) return feedModel.topPosts;
-      return queryVisibleNativeFeedPosts(feedRoot);
-    };
-    const getSimilarStoriesLabel = (post) => {
-      const similarCount = Array.isArray(post == null ? void 0 : post.similarEntries) ? post.similarEntries.length : 0;
-      if (!similarCount) return "";
-      return state5.expandedSimilarFeedPostIds.has(post.id) ? "Hide similar stories" : `Show ${similarCount} similar stories`;
-    };
-    const getCommentSummaryLabel = (post) => {
-      const totalCount = Number(post == null ? void 0 : post.totalCommentCount) || 0;
-      return totalCount ? formatCommentCountLabel(totalCount) : "";
-    };
-    const getRemainingCommentCopy = (post, visibleCommentCount) => {
-      const loadedCount = Array.isArray(post == null ? void 0 : post.comments) ? post.comments.length : 0;
-      const hiddenLoadedCount = Math.max(loadedCount - visibleCommentCount, 0);
-      const hiddenNativeCount = Math.max((Number(post == null ? void 0 : post.totalCommentCount) || 0) - loadedCount, 0);
-      if (hiddenLoadedCount > 0) return { title: `Show ${hiddenLoadedCount} more loaded comments` };
-      if (hiddenNativeCount > 0) return { title: `Open full thread (${hiddenNativeCount} more on TM)` };
-      return null;
-    };
-    const renderCurrent = () => {
-      if (state5.currentModel) {
-        renderCards(state5.currentFeedRoot || (getFeedRoot == null ? void 0 : getFeedRoot()) || null, state5.currentModel);
-        return;
-      }
-      renderCards(state5.currentFeedRoot || (getFeedRoot == null ? void 0 : getFeedRoot()) || null, null);
-    };
-    const mountFeedComposer = (targetEl, postEl, mode = "comment") => {
-      if (!targetEl || !postEl) return;
-      const controls = findNativeHomeFeedCommentControls(postEl);
-      if (!(controls == null ? void 0 : controls.textarea) || !(controls == null ? void 0 : controls.submitButton)) {
-        targetEl.hidden = true;
-        targetEl.innerHTML = "";
-        return;
-      }
-      targetEl.innerHTML = `
-            <textarea class="tmvu-home-feed-composer-input" data-role="input" placeholder="${mode === "reply" ? "Write a reply..." : "Write a comment..."}"></textarea>
-            <div class="tmvu-home-feed-composer-actions">
-                ${buttonHtml11({ label: "Cancel", cls: "tmvu-home-feed-composer-btn", attrs: { "data-role": "cancel" } })}
-                ${buttonHtml11({ label: mode === "reply" ? "Reply" : "Comment", cls: "tmvu-home-feed-composer-btn", attrs: { "data-role": "submit" } })}
-            </div>
-        `;
-      targetEl.hidden = false;
-      targetEl.__tmFeedComposerControls = controls;
-      const input = targetEl.querySelector('[data-role="input"]');
-      targetEl.onclick = (event) => {
-        const cancelButton = event.target.closest('[data-role="cancel"]');
-        if (cancelButton && targetEl.contains(cancelButton)) {
-          targetEl.hidden = true;
-          targetEl.innerHTML = "";
-          return;
-        }
-        const submitButton = event.target.closest('[data-role="submit"]');
-        if (!submitButton || !targetEl.contains(submitButton)) return;
-        const value = clean3((input == null ? void 0 : input.value) || "");
-        if (!value) {
-          input == null ? void 0 : input.focus();
-          return;
-        }
-        const composerControls = targetEl.__tmFeedComposerControls;
-        if (!(composerControls == null ? void 0 : composerControls.textarea) || !(composerControls == null ? void 0 : composerControls.submitButton)) return;
-        setNativeCommentValue(composerControls.textarea, value);
-        triggerNativeClick2(composerControls.submitButton);
-        targetEl.hidden = true;
-        targetEl.innerHTML = "";
-        setTimeout(renderCurrent, 500);
-        setTimeout(renderCurrent, 1200);
-      };
-      if (input) {
-        try {
-          input.focus({ preventScroll: true });
-        } catch (_) {
-          input.focus();
-        }
-      }
-    };
-    const handleFeedComposerAction = (post, action, composerEl) => {
-      const nativeAction = findNativeHomeFeedAction(post.sourceEl, action);
-      if (!nativeAction) return false;
-      triggerNativeClick2(nativeAction);
-      requestAnimationFrame(() => mountFeedComposer(composerEl, post.sourceEl, action));
-      return true;
-    };
-    const renderCards = (feedRoot, feedModel = null) => {
-      const mount8 = getMount();
-      if (!mount8) return;
-      const posts = getRenderablePosts(feedRoot, feedModel);
-      state5.currentFeedRoot = feedRoot;
-      state5.currentModel = feedModel;
-      if (!posts.length) {
-        mount8.innerHTML = TmUI.empty(escapeHtml25(emptyCopy), true);
-        return;
-      }
-      mount8.innerHTML = `
-            <div class="tmvu-home-feed">
-                ${posts.map((post) => {
-        const isExpanded = state5.expandedFeedPostIds.has(post.id);
-        const renderedComments = isExpanded ? post.comments : post.comments.slice(0, 3);
-        const remainingCommentCopy = getRemainingCommentCopy(post, renderedComments.length);
-        const commentSummaryLabel = getCommentSummaryLabel(post);
-        const hasCommentSummaryAction = Boolean(remainingCommentCopy || post.hiddenCommentsAction || post.comments.length > 3);
-        const similarStoriesLabel = getSimilarStoriesLabel(post);
-        return `
-                        <article class="tmvu-home-feed-post${post.isSimilarPost ? " tmvu-home-feed-post--similar" : ""}" data-feed-post-id="${escapeHtml25(post.id)}">
-                            <div class="tmvu-home-feed-side">
-                                <div class="tmvu-home-feed-side-logo">${renderFeedLogo(post.authorLogoSrc, post.authorLogoFallbackSrc)}</div>
-                                ${post.authorName ? post.authorHref ? `<a class="tmvu-home-feed-side-name" href="${escapeHtml25(post.authorHref)}">${escapeHtml25(post.authorName)}</a>` : `<div class="tmvu-home-feed-side-name">${escapeHtml25(post.authorName)}</div>` : ""}
-                            </div>
-                            <div class="tmvu-home-feed-main">
-                                <div>${post.time ? `<div class="tmvu-home-feed-time" style="float:right;">${escapeHtml25(post.time)}</div>` : ""}<div class="tmvu-home-feed-body">${post.bodyHtml || ""}</div></div>
-                                <div class="tmvu-home-feed-meta">
-                                    <div class="tmvu-home-feed-meta-left">
-                                        ${post.likeCount > 0 ? `<button type="button" class="tmvu-home-feed-like-count" data-feed-like-summary title="Show likes">${escapeHtml25(formatLikeCountLabel(post.likeCount))}</button>` : ""}
-                                        ${commentSummaryLabel ? hasCommentSummaryAction ? `<button type="button" class="tmvu-home-feed-comment-count tmvu-home-feed-comment-count--action" data-feed-comment-summary title="Open comments">${escapeHtml25(commentSummaryLabel)}</button>` : `<span class="tmvu-home-feed-comment-count">${escapeHtml25(commentSummaryLabel)}</span>` : ""}
-                                    </div>
-                                </div>
-                                <div class="tmvu-home-feed-actions">
-                                    ${buttonHtml11({ label: "Like", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "like" } })}
-                                    ${buttonHtml11({ label: "Comment", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "comment" } })}
-                                    ${buttonHtml11({ label: "Reply", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "reply" } })}
-                                    ${buttonHtml11({ label: "Link", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "link" } })}
-                                    ${buttonHtml11({ label: "Mute", cls: "tmvu-home-feed-action", attrs: { "data-feed-action": "mute" } })}
-                                </div>
-                                <div class="tmvu-home-feed-composer" data-feed-composer hidden></div>
-                                ${post.totalCommentCount > 0 || post.comments.length ? `
-                                    <div class="tmvu-home-feed-comments">
-                                        ${remainingCommentCopy ? `
-                                            <button type="button" class="tmvu-home-feed-more-comments" data-feed-more-comments>
-                                                <span class="tmvu-home-feed-more-comments-badge">+</span>
-                                                <span class="tmvu-home-feed-more-comments-copy">
-                                                    <span class="tmvu-home-feed-more-comments-title">${escapeHtml25(remainingCommentCopy.title)}</span>
-                                                </span>
-                                            </button>
-                                        ` : ""}
-                                        ${renderedComments.map((comment) => `
-                                            <div class="tmvu-home-feed-comment">
-                                                <div class="tmvu-home-feed-comment-logo">${renderFeedLogo(comment.authorLogoSrc, comment.authorLogoFallbackSrc)}</div>
-                                                <div class="tmvu-home-feed-comment-content">${comment.bodyHtml}</div>
-                                            </div>
-                                        `).join("")}
-                                    </div>
-                                ` : ""}
-                                ${similarStoriesLabel ? `
-                                    <div class="tmvu-home-feed-similar">
-                                        ${buttonHtml11({ label: similarStoriesLabel, cls: "tmvu-home-feed-similar-btn", color: "secondary", attrs: { "data-feed-similar-stories": true } })}
-                                    </div>
-                                ` : ""}
-                            </div>
-                        </article>
-                    `;
-      }).join("")}
-                ${(feedModel == null ? void 0 : feedModel.kind) === "api" && ((feedModel == null ? void 0 : feedModel.canLoadMore) || (feedModel == null ? void 0 : feedModel.isLoadingMore)) ? `
-                    <div class="tmvu-home-feed-load-more">
-                        ${buttonHtml11({
-        label: (feedModel == null ? void 0 : feedModel.isLoadingMore) ? "Loading more..." : "Load older feed posts",
-        cls: "tmvu-home-feed-load-more-btn",
-        attrs: {
-          "data-feed-load-more": true,
-          disabled: Boolean(feedModel == null ? void 0 : feedModel.isLoadingMore)
-        }
-      })}
-                    </div>
-                ` : ""}
-            </div>
-        `;
-      const openCommentThread = (post) => {
-        var _a2, _b;
-        if (!post) return;
-        if (post.comments.length > 3 && !state5.expandedFeedPostIds.has(post.id)) {
-          state5.expandedFeedPostIds.add(post.id);
-          renderCurrent();
-          return;
-        }
-        state5.expandedFeedPostIds.add(post.id);
-        const nativeTarget = ((_b = (_a2 = post.hiddenCommentsAction) == null ? void 0 : _a2.matches) == null ? void 0 : _b.call(_a2, ".hidden_comments_link, .comments_header, .comments_count")) ? post.hiddenCommentsAction.querySelector(".faux_link, [onclick], a[href]") || post.hiddenCommentsAction : post.hiddenCommentsAction;
-        if (!nativeTarget) {
-          renderCurrent();
-          return;
-        }
-        if (!runNativeActionByOnclick2(nativeTarget)) triggerNativeClick2(nativeTarget);
-        setTimeout(renderCurrent, 500);
-        setTimeout(renderCurrent, 1200);
-      };
-      const postsById = new Map(posts.map((entry) => [entry.id, entry]));
-      mount8.querySelectorAll("[data-feed-post-id]").forEach((postNode) => {
-        const postId = postNode.getAttribute("data-feed-post-id");
-        const post = postId ? postsById.get(postId) : null;
-        if (!post) return;
-        postNode.querySelectorAll("[data-feed-action]").forEach((button) => {
-          const action = button.getAttribute("data-feed-action");
-          const nativeAction = post.sourceEl ? findNativeHomeFeedAction(post.sourceEl, action) : null;
-          button.disabled = !nativeAction;
-        });
-      });
-      mount8.onclick = (event) => {
-        const loadMoreButton = event.target.closest("[data-feed-load-more]");
-        if (loadMoreButton && mount8.contains(loadMoreButton)) {
-          event.preventDefault();
-          if (!loadMoreButton.disabled) onLoadMore == null ? void 0 : onLoadMore();
-          return;
-        }
-        const postNode = event.target.closest("[data-feed-post-id]");
-        if (!postNode || !mount8.contains(postNode)) return;
-        const postId = postNode.getAttribute("data-feed-post-id");
-        const post = postId ? postsById.get(postId) : null;
-        if (!post) return;
-        if (event.target.closest("[data-feed-like-summary]")) {
-          showFeedLikesDialog(post);
-          return;
-        }
-        if (event.target.closest("[data-feed-comment-summary], [data-feed-more-comments]")) {
-          openCommentThread(post);
-          return;
-        }
-        if (event.target.closest("[data-feed-similar-stories]")) {
-          event.preventDefault();
-          if (state5.expandedSimilarFeedPostIds.has(post.id)) state5.expandedSimilarFeedPostIds.delete(post.id);
-          else state5.expandedSimilarFeedPostIds.add(post.id);
-          renderCurrent();
-          return;
-        }
-        const actionButton2 = event.target.closest("[data-feed-action]");
-        if (!actionButton2 || actionButton2.disabled) return;
-        const action = actionButton2.getAttribute("data-feed-action");
-        const nativeAction = post.sourceEl ? findNativeHomeFeedAction(post.sourceEl, action) : null;
-        if (!nativeAction) return;
-        if (action === "comment" || action === "reply") {
-          const composerEl = postNode.querySelector("[data-feed-composer]");
-          handleFeedComposerAction(post, action, composerEl);
-          return;
-        }
-        if (action === "link" || action === "mute") runNativeActionByOnclick2(nativeAction);
-        else triggerNativeClick2(nativeAction);
-      };
-    };
-    return {
-      renderModel(feedModel, feedRoot = (getFeedRoot == null ? void 0 : getFeedRoot()) || state5.currentFeedRoot || null) {
-        renderCards(feedRoot, feedModel);
-      },
-      renderPosts(posts, options = {}) {
-        renderCards(options.feedRoot || (getFeedRoot == null ? void 0 : getFeedRoot()) || state5.currentFeedRoot || null, {
-          kind: options.kind || "api",
-          topPosts: Array.isArray(posts) ? posts : [],
-          lastPost: options.lastPost || "",
-          canLoadMore: Boolean(options.canLoadMore),
-          isLoadingMore: Boolean(options.isLoadingMore)
-        });
-      },
-      renderNative(feedRoot = (getFeedRoot == null ? void 0 : getFeedRoot()) || state5.currentFeedRoot || null) {
-        renderCards(feedRoot, null);
-      },
-      renderCurrent
-    };
-  };
-  var createSocialFeedComponent = ({
-    mount: mount8,
-    getFeedRoot,
-    emptyCopy = "No feed posts loaded.",
-    loadingCopy = "Loading feed...",
-    onLoadMore = null
-  } = {}) => {
-    injectStyles30();
-    let hostMount = mount8;
-    const renderer = createFeedRenderer({
-      getMount: () => hostMount,
-      getFeedRoot,
-      emptyCopy,
-      onLoadMore: async () => {
-        if (typeof onLoadMore === "function") await onLoadMore();
-      }
-    });
-    return {
-      setMount(nextMount) {
-        hostMount = nextMount;
-      },
-      renderLoading(copy = loadingCopy) {
-        if (!hostMount) return;
-        hostMount.innerHTML = TmUI.loading(escapeHtml25(copy), true);
-      },
-      renderEmpty(copy = emptyCopy) {
-        if (!hostMount) return;
-        hostMount.innerHTML = TmUI.empty(escapeHtml25(copy), true);
-      },
-      ...renderer
-    };
-  };
-  var createSocialFeedController = ({
-    mount: mount8,
-    getFeedRoot,
-    fetchFeedPayload,
-    emptyCopy = "No feed posts loaded.",
-    loadingCopy = "Loading feed..."
-  } = {}) => {
-    injectStyles30();
-    const apiFeedState = {
-      topPosts: [],
-      lastPost: "",
-      canLoadMore: false,
-      isLoadingMore: false
-    };
-    const getApiFeedStateModel = () => apiFeedState.topPosts.length ? {
-      kind: "api",
-      topPosts: apiFeedState.topPosts,
-      lastPost: apiFeedState.lastPost,
-      canLoadMore: apiFeedState.canLoadMore,
-      isLoadingMore: apiFeedState.isLoadingMore
-    } : null;
-    const mergeApiFeedPosts = (existingPosts, nextPosts) => {
-      const merged = /* @__PURE__ */ new Map();
-      existingPosts.forEach((post) => merged.set(post.id, post));
-      nextPosts.forEach((post) => {
-        if (!merged.has(post.id)) merged.set(post.id, post);
-      });
-      return Array.from(merged.values());
-    };
-    const component = createSocialFeedComponent({
-      mount: mount8,
-      getFeedRoot,
-      emptyCopy,
-      loadingCopy,
-      onLoadMore: async () => {
-        if (apiFeedState.isLoadingMore || !apiFeedState.canLoadMore) return;
-        apiFeedState.isLoadingMore = true;
-        component.renderModel(getApiFeedStateModel());
-        await loadApiFeedPage({ lastPost: apiFeedState.lastPost });
-        apiFeedState.isLoadingMore = false;
-        component.renderModel(getApiFeedStateModel());
-      }
-    });
-    const fetchApiFeedModel = async ({ lastPost = "" } = {}) => {
-      const feedRoot = (getFeedRoot == null ? void 0 : getFeedRoot()) || null;
-      const payload = await fetchFeedPayload({ lastPost, feedRoot });
-      return buildHomeFeedModel({
-        payload,
-        nativePostMap: buildNativeHomeFeedPostMap(feedRoot),
-        fetchFeedNames: TmMessagesModel.fetchFeedNames.bind(TmMessagesModel)
-      });
-    };
-    const loadApiFeedPage = async ({ reset = false, lastPost = "" } = {}) => {
-      var _a2;
-      const apiFeedModel = await fetchApiFeedModel({ lastPost });
-      if (!((_a2 = apiFeedModel == null ? void 0 : apiFeedModel.topPosts) == null ? void 0 : _a2.length)) {
-        if (reset) {
-          apiFeedState.topPosts = [];
-          apiFeedState.lastPost = "";
-        }
-        apiFeedState.canLoadMore = false;
-        return null;
-      }
-      apiFeedState.topPosts = reset ? apiFeedModel.topPosts : mergeApiFeedPosts(apiFeedState.topPosts, apiFeedModel.topPosts);
-      apiFeedState.lastPost = apiFeedModel.lastPost || apiFeedState.lastPost;
-      apiFeedState.canLoadMore = Boolean(apiFeedModel.lastPost) && apiFeedModel.lastPost !== lastPost;
-      return getApiFeedStateModel();
-    };
-    return {
-      async render() {
-        var _a2;
-        if (!mount8) return false;
-        const feedRoot = (getFeedRoot == null ? void 0 : getFeedRoot()) || null;
-        component.renderLoading();
-        const apiFeedModel = await loadApiFeedPage({ reset: true });
-        if ((_a2 = apiFeedModel == null ? void 0 : apiFeedModel.topPosts) == null ? void 0 : _a2.length) {
-          component.renderModel(apiFeedModel);
-          return true;
-        }
-        if (feedRoot && queryVisibleNativeFeedPosts(feedRoot).length) {
-          component.renderNative(feedRoot);
-          return true;
-        }
-        component.renderEmpty();
-        return false;
-      }
-    };
-  };
-
   // src/pages/league.js
   function initLeaguePage(main2) {
     if (!main2 || !main2.isConnected) return;
@@ -31158,7 +31307,7 @@ order:initial
       }
       renderLeagueFeed();
     };
-    const injectStyles50 = () => TmLeagueStyles.inject();
+    const injectStyles51 = () => TmLeagueStyles.inject();
     const cleanupPage = () => {
       if (leaguePollInterval) {
         clearInterval(leaguePollInterval);
@@ -31200,7 +31349,7 @@ order:initial
       }
       if (leagueBootstrapped || !hasLeagueRoots()) return;
       ({ leagueCountry, leagueDivision, leagueGroup } = getLeagueRouteParams(path));
-      injectStyles50();
+      injectStyles51();
       primeLeaguePanelContext();
       prepareLeagueLayout();
       initLeagueFeed();
@@ -37133,7 +37282,7 @@ order:initial
           }
         }
       };
-      const esc4 = (v) => String(v != null ? v : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+      const esc5 = (v) => String(v != null ? v : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
       el2.innerHTML = TmUI.loading("Loading cup fixtures\u2026");
       TmCupModel.fetchCupFixtures(country, roundNum).then((data) => {
         const allInRound = [];
@@ -37164,7 +37313,7 @@ order:initial
         el2.innerHTML = `
                 <div class="mp-cup-wrap">
                     <div class="mp-cup-header">
-                        <span class="mp-cup-title">${esc4(cupName)}${roundLabel ? " \xB7 " + esc4(roundLabel) : ""}</span>
+                        <span class="mp-cup-title">${esc5(cupName)}${roundLabel ? " \xB7 " + esc5(roundLabel) : ""}</span>
                         <span class="mp-cup-badge"></span>
                     </div>
                     <div class="mp-cup-list">${rowsHtml}</div>
@@ -38757,7 +38906,7 @@ order:initial
   // src/pages/home.js
   function initHomePage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID68 = "tmvu-home-style";
+    const STYLE_ID69 = "tmvu-home-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const escapeHtml35 = (v) => String(v != null ? v : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     const findColumnBoxByTitle = (root2, title) => {
@@ -38768,11 +38917,12 @@ order:initial
         return heading === wanted;
       }) || null;
     };
-    const injectStyles50 = () => {
+    const injectStyles51 = () => {
       injectTmPageLayoutStyles();
       const rules = [
         ".tmvu-home-page{--tmu-page-gap:var(--tmu-space-xxl);display:grid!important;grid-template-columns:minmax(0,1fr) 320px;gap:var(--tmu-page-gap);align-items:start;max-width:1240px;margin:0 auto;padding:var(--tmu-space-sm) var(--tmu-space-md) var(--tmu-space-xl)}",
         ".tmvu-home-tabs-host{display:flex;flex-direction:column;min-width:0}",
+        ".tmvu-home-alert{padding:var(--tmu-space-md) var(--tmu-space-lg);background:var(--tmu-danger-fill-soft,rgba(200,50,50,.12));border-bottom:1px solid var(--tmu-border-danger,rgba(200,50,50,.35));border-radius:var(--tmu-space-md) var(--tmu-space-md) 0 0;color:var(--tmu-text-danger,#e57373);font-size:var(--tmu-font-sm);line-height:1.5}",
         ".tmvu-home-tabpanel{display:none;padding:var(--tmu-space-xl)}",
         ".tmvu-home-tabpanel.tmvu-tab-active{display:block}",
         ".tmvu-home-list-item{display:block;width:100%;padding:var(--tmu-space-md) var(--tmu-space-lg);border:1px solid var(--tmu-border-soft-alpha);border-radius:var(--tmu-space-md);background:var(--tmu-border-contrast);text-decoration:none;text-align:left;font:inherit;cursor:pointer;box-sizing:border-box}",
@@ -38897,8 +39047,8 @@ order:initial
         ".tmvu-home-thread-copy{min-width:0}",
         ".tmvu-home-thread-date{font-size:var(--tmu-font-xs);font-weight:800;color:var(--tmu-text-muted);white-space:nowrap;padding:0;background:transparent;border:none;border-radius:0;text-align:left;min-height:0}"
       ];
-      const style = document.getElementById(STYLE_ID68) || document.createElement("style");
-      style.id = STYLE_ID68;
+      const style = document.getElementById(STYLE_ID69) || document.createElement("style");
+      style.id = STYLE_ID69;
       style.textContent = rules.join("");
       if (!style.parentNode) document.head.appendChild(style);
     };
@@ -39450,7 +39600,7 @@ order:initial
       const col1 = nativeMain.querySelector(":scope > .column1") || nativeMain.querySelector(".column1");
       const col2 = nativeMain.querySelector(":scope > .column2_a") || nativeMain.querySelector(".column2_a");
       if (!col1 || !col2) return;
-      injectStyles50();
+      injectStyles51();
       const origTabs = parseOrigTabs(col1);
       const tabsContent = col1.querySelector(".tabs_content");
       const activeKey = ((_a2 = origTabs.find((t) => t.isActive)) == null ? void 0 : _a2.targetId) || ((_b = origTabs[0]) == null ? void 0 : _b.targetId) || "";
@@ -39693,6 +39843,19 @@ order:initial
             tabsHost.appendChild(panel);
           });
           body.appendChild(tabsHost);
+          let pollTries = 0;
+          const pollAlerts = setInterval(() => {
+            const found = Array.from(document.querySelectorAll(".alert"));
+            if (found.length > 0 || ++pollTries >= 20) {
+              clearInterval(pollAlerts);
+              found.forEach((alertEl) => {
+                const banner = document.createElement("div");
+                banner.className = "tmvu-home-alert";
+                banner.innerHTML = alertEl.innerHTML;
+                body.insertBefore(banner, tabsHost);
+              });
+            }
+          }, 300);
         }
       });
       void renderCalendarPanel();
@@ -39756,7 +39919,7 @@ order:initial
     if (!main2) main2 = document.querySelector(".tmvu-main");
     if (!main2) return;
     const sourceRoot3 = document.querySelector(".main_center") || main2;
-    const STYLE_ID68 = "tmvu-international-cup-overview-style";
+    const STYLE_ID69 = "tmvu-international-cup-overview-style";
     const CURRENT_SEASON2 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const cleanText31 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml35 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
@@ -39767,10 +39930,10 @@ order:initial
       clone.querySelectorAll(".box_shadow").forEach((node) => node.remove());
       return clone;
     };
-    const injectStyles50 = () => {
-      if (document.getElementById(STYLE_ID68)) return;
+    const injectStyles51 = () => {
+      if (document.getElementById(STYLE_ID69)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID68;
+      style.id = STYLE_ID69;
       style.textContent = `
             .tmvu-main.tmvu-icup-page {
                 display: grid !important;
@@ -40224,7 +40387,7 @@ order:initial
       title: panel.title,
       icon: "\u{1F3C1}"
     });
-    injectStyles50();
+    injectStyles51();
     TmStandingsTable.injectStyles();
     TmTournamentCards.injectStyles();
     TmMatchHoverCard.injectStyles();
@@ -40765,10 +40928,10 @@ order:initial
         const name = player2.name || "";
         if (!name) return;
         const retired = !player2.club_id;
-        const starsHtml = player2.rec != null ? TmStars.recommendation(player2.rec, "tmvu-pstars") : "";
+        const starsHtml2 = player2.rec != null ? TmStars.recommendation(player2.rec, "tmvu-pstars") : "";
         const ageHtml = !retired && player2.ageMonthsString ? `<span class="tmvu-pinfo">${player2.ageMonthsString}</span> ` : "";
         const r5Html = !retired && player2.r5 != null ? ` <span class="tmvu-pinfo">${Number(player2.r5).toFixed(2)}</span>` : "";
-        anchor.innerHTML = starsHtml + ageHtml + esc3(name) + r5Html;
+        anchor.innerHTML = starsHtml2 + ageHtml + esc3(name) + r5Html;
       }).catch(() => {
       });
     };
@@ -41055,10 +41218,10 @@ order:initial
   // src/pages/teamsters.js
   function initTeamstersPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID68 = "tmvu-teamsters-style";
+    const STYLE_ID69 = "tmvu-teamsters-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles50 = () => {
-      if (document.getElementById(STYLE_ID68)) return;
+    const injectStyles51 = () => {
+      if (document.getElementById(STYLE_ID69)) return;
       injectTmPageLayoutStyles();
       const rules = [
         // page-shell overrides
@@ -41104,7 +41267,7 @@ order:initial
         ".tmvu-apply-intro a{color:var(--tmu-accent)}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID68;
+      style.id = STYLE_ID69;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -41163,7 +41326,7 @@ order:initial
       const navItems = snap1 ? parseNav(snap1) : [];
       const articleHtml = parseArticle(snap2);
       const tabDefs = snap3 ? parseTabs2(snap3) : [];
-      injectStyles50();
+      injectStyles51();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-teamsters-hero",
@@ -41352,7 +41515,7 @@ order:initial
       const isApply = /^\/teamsters\/apply\//i.test(window.location.pathname);
       const check = () => isApply ? document.querySelector("#teamster_apply") : document.querySelector(".column2_a .box_head");
       const run = () => {
-        injectStyles50();
+        injectStyles51();
         if (isApply) {
           const liveForm = document.querySelector("#teamster_apply");
           const nativeCol1 = document.querySelector(".main_center .column1");
@@ -41380,10 +41543,10 @@ order:initial
   // src/pages/about-tm.js
   function initAboutTmPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID68 = "tmvu-abouttm-style";
+    const STYLE_ID69 = "tmvu-abouttm-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles50 = () => {
-      if (document.getElementById(STYLE_ID68)) return;
+    const injectStyles51 = () => {
+      if (document.getElementById(STYLE_ID69)) return;
       injectTmPageLayoutStyles();
       const rules = [
         // page wrapper: single centered column
@@ -41406,7 +41569,7 @@ order:initial
         '.tmvu-abouttm-clearfix::after{content:"";display:table;clear:both}'
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID68;
+      style.id = STYLE_ID69;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -41426,7 +41589,7 @@ order:initial
         ((_a2 = snap.querySelector(".box_head h1.std, .box_head h2.std")) == null ? void 0 : _a2.textContent) || "About TM"
       );
       const articleHtml = transformArticle(snap.querySelector(".box_body .std"));
-      injectStyles50();
+      injectStyles51();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-abouttm-hero",
@@ -41465,10 +41628,10 @@ order:initial
   // src/pages/about-pro.js
   function initAboutProPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID68 = "tmvu-aboutpro-style";
+    const STYLE_ID69 = "tmvu-aboutpro-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles50 = () => {
-      if (document.getElementById(STYLE_ID68)) return;
+    const injectStyles51 = () => {
+      if (document.getElementById(STYLE_ID69)) return;
       injectTmPageLayoutStyles();
       const rules = [
         // hero: single column (no side slot)
@@ -41490,7 +41653,7 @@ order:initial
         ".tmvu-aboutpro-quote-attr{font-size:var(--tmu-font-xs);color:var(--tmu-text-faint);margin-top:var(--tmu-space-xs);text-align:right}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID68;
+      style.id = STYLE_ID69;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -41559,7 +41722,7 @@ order:initial
       const col2 = nativeMain.querySelector(".column2_a");
       const col3 = nativeMain.querySelector(".column3_a");
       if (!col2) return;
-      injectStyles50();
+      injectStyles51();
       const navItems = parseNav(col1);
       const sections = buildSections2(col2);
       const quotes = buildQuotes(col3);
@@ -41685,7 +41848,7 @@ order:initial
   // src/pages/buy-pro.js
   function initBuyProPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID68 = "tmvu-buypro-style";
+    const STYLE_ID69 = "tmvu-buypro-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const PRO_NAV = [
       { href: "/buy-pro", label: "Buy Pro" },
@@ -41693,8 +41856,8 @@ order:initial
       { href: "/donations", label: "Donations" },
       { href: "/support-pro", label: "Support" }
     ];
-    const injectStyles50 = () => {
-      if (document.getElementById(STYLE_ID68)) return;
+    const injectStyles51 = () => {
+      if (document.getElementById(STYLE_ID69)) return;
       injectTmPageLayoutStyles();
       const rules = [
         // hero: single column
@@ -41719,7 +41882,7 @@ order:initial
         ".tmvu-buypro-notice strong{color:var(--tmu-text-strong)}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID68;
+      style.id = STYLE_ID69;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -41779,7 +41942,7 @@ order:initial
       const col3 = nativeMain.querySelector(".column3_a");
       const liveForm = document.getElementById("order_submit");
       if (!liveForm) return;
-      injectStyles50();
+      injectStyles51();
       liveForm.style.display = "none";
       const liveCountry = document.getElementById("payment_country-button");
       if (liveCountry) liveCountry.style.display = "none";
@@ -41857,7 +42020,7 @@ order:initial
   // src/pages/free-pro.js
   function initFreeProPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID68 = "tmvu-freepro-style";
+    const STYLE_ID69 = "tmvu-freepro-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
     const PRO_NAV = [
       { href: "/buy-pro", label: "Buy Pro" },
@@ -41865,8 +42028,8 @@ order:initial
       { href: "/donations", label: "Donations" },
       { href: "/support-pro", label: "Support" }
     ];
-    const injectStyles50 = () => {
-      if (document.getElementById(STYLE_ID68)) return;
+    const injectStyles51 = () => {
+      if (document.getElementById(STYLE_ID69)) return;
       injectTmPageLayoutStyles();
       const rules = [
         ".tmvu-freepro-hero{grid-template-columns:minmax(0,1fr)!important}",
@@ -41877,7 +42040,7 @@ order:initial
         ".tmvu-freepro-body a:hover{text-decoration:underline}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID68;
+      style.id = STYLE_ID69;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -41888,7 +42051,7 @@ order:initial
       const snap = col2.cloneNode(true);
       const title = "Free Pro";
       const std = snap.querySelector(".box_body .std");
-      injectStyles50();
+      injectStyles51();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-freepro-hero",
@@ -41936,10 +42099,10 @@ order:initial
   // src/pages/donations.js
   function initDonationsPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID68 = "tmvu-donations-style";
+    const STYLE_ID69 = "tmvu-donations-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles50 = () => {
-      if (document.getElementById(STYLE_ID68)) return;
+    const injectStyles51 = () => {
+      if (document.getElementById(STYLE_ID69)) return;
       injectTmPageLayoutStyles();
       const rules = [
         ".tmvu-donations-hero{grid-template-columns:minmax(0,1fr)!important}",
@@ -41968,7 +42131,7 @@ order:initial
         ".tmvu-donations-legendary .tmvu-donations-club{background:var(--tmu-border-contrast);border-radius:var(--tmu-space-xs)}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID68;
+      style.id = STYLE_ID69;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -42062,7 +42225,7 @@ order:initial
       const title = "Legendary Clubs";
       const std = snap.querySelector(".box_body .std");
       const navItems = col1 ? parseNav(col1.cloneNode(true)) : [];
-      injectStyles50();
+      injectStyles51();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-donations-hero",
@@ -42097,7 +42260,7 @@ order:initial
       const title = "Donations";
       const std = snap.querySelector(".box_body .std");
       const navItems = col1 ? parseNav(col1.cloneNode(true)) : [];
-      injectStyles50();
+      injectStyles51();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-donations-hero",
@@ -42154,10 +42317,10 @@ order:initial
   // src/pages/user-guide.js
   function initUserGuidePage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID68 = "tmvu-ug-style";
+    const STYLE_ID69 = "tmvu-ug-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles50 = () => {
-      if (document.getElementById(STYLE_ID68)) return;
+    const injectStyles51 = () => {
+      if (document.getElementById(STYLE_ID69)) return;
       injectTmPageLayoutStyles();
       const rules = [
         // hero: single column (no side slot used)
@@ -42186,7 +42349,7 @@ order:initial
         ".tmvu-ug-article .text_orange{color:var(--tmu-warning-soft);font-weight:600}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID68;
+      style.id = STYLE_ID69;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -42251,7 +42414,7 @@ order:initial
         if (s6.label) menuItems.push({ type: "subtitle", label: s6.label });
         s6.links.forEach((l) => menuItems.push({ href: l.href, label: l.label }));
       });
-      injectStyles50();
+      injectStyles51();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-ug-hero-card",
@@ -42298,7 +42461,7 @@ order:initial
     if (!main2) main2 = document.querySelector(".tmvu-main, .main_center");
     if (!main2) return;
     const sourceRoot3 = (document.querySelector(".main_center") || main2).cloneNode(true);
-    const STYLE_ID68 = "tmvu-international-cup-coefficients-style";
+    const STYLE_ID69 = "tmvu-international-cup-coefficients-style";
     const CURRENT_SEASON2 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const coefficientTierBreakIndexes = [];
     let activeCoefficientGroup = null;
@@ -42347,10 +42510,10 @@ order:initial
       clone.querySelectorAll(".box_shadow").forEach((node) => node.remove());
       return clone;
     };
-    const injectStyles50 = () => {
-      if (document.getElementById(STYLE_ID68)) return;
+    const injectStyles51 = () => {
+      if (document.getElementById(STYLE_ID69)) return;
       const style = document.createElement("style");
-      style.id = STYLE_ID68;
+      style.id = STYLE_ID69;
       style.textContent = `
             .tmvu-main.tmvu-icup-page.tmvu-icup-page-coefficients {
                 display: grid !important;
@@ -43048,7 +43211,7 @@ order:initial
       title: panel.title,
       icon: "\u{1F3C1}"
     });
-    injectStyles50();
+    injectStyles51();
     TmTournamentCards.injectStyles();
     const header = parseHeader();
     if (!header.box) return;
@@ -43324,7 +43487,8 @@ order:initial
     ...TmMessagesService,
     ...TmNationalTeamsService,
     ...TmYouthService,
-    ...TmCupService
+    ...TmCupService,
+    ...TmSponsorsService
   };
 
   // src/components/national-teams/tm-national-teams-nt-save.js
@@ -45071,14 +45235,14 @@ order:initial
   function initNationalTeamsRankingsPage(main2) {
     if (!main2 || !main2.isConnected) return;
     const sourceRoot3 = (document.querySelector(".main_center") || main2).cloneNode(true);
-    const STYLE_ID68 = "tmvu-national-teams-rankings-style";
+    const STYLE_ID69 = "tmvu-national-teams-rankings-style";
     const cleanText31 = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const escapeHtml35 = (value) => String(value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-    const injectStyles50 = () => {
-      if (document.getElementById(STYLE_ID68)) return;
+    const injectStyles51 = () => {
+      if (document.getElementById(STYLE_ID69)) return;
       injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID68;
+      style.id = STYLE_ID69;
       style.textContent = `
             .tmvu-nt-rankings-tabs {
                 margin-bottom: var(--tmu-space-sm);
@@ -45221,7 +45385,7 @@ order:initial
       return wrap.firstElementChild || wrap;
     };
     const render16 = () => {
-      injectStyles50();
+      injectStyles51();
       const overview = parseOverview5();
       if (!overview || !overview.panels.length) return;
       main2.classList.add("tmvu-nt-rankings-page", "tmu-page-layout-2col", "tmu-page-density-regular");
@@ -46931,7 +47095,7 @@ order:initial
     const routeMatch = window.location.pathname.match(/^\/national-teams\/(?:([a-z]{2,3})\/?)?$/i);
     if (!routeMatch) return;
     const sourceRoot3 = (document.querySelector(".main_center") || main2).cloneNode(true);
-    const STYLE_ID68 = "tmvu-national-teams-style";
+    const STYLE_ID69 = "tmvu-national-teams-style";
     const { R5_THRESHOLDS: R5_THRESHOLDS4 } = TmConst;
     const CURRENT_SEASON2 = typeof SESSION !== "undefined" && SESSION.season ? Number(SESSION.season) : null;
     const cleanText31 = (value) => String(value || "").replace(/\s+/g, " ").trim();
@@ -46944,11 +47108,11 @@ order:initial
       textarea.innerHTML = text;
       return textarea.value;
     };
-    const injectStyles50 = () => {
-      if (document.getElementById(STYLE_ID68)) return;
+    const injectStyles51 = () => {
+      if (document.getElementById(STYLE_ID69)) return;
       injectTmPageLayoutStyles();
       const style = document.createElement("style");
-      style.id = STYLE_ID68;
+      style.id = STYLE_ID69;
       style.textContent = `
             .tmvu-nt-page {
                 --tmu-page-main-track: minmax(0, 0.9fr);
@@ -47469,7 +47633,7 @@ order:initial
     };
     const render16 = () => {
       var _a2;
-      injectStyles50();
+      injectStyles51();
       TmMatchHoverCard.injectStyles();
       const overview = parseOverview5();
       if (!overview) return;
@@ -47512,10 +47676,10 @@ order:initial
   // src/pages/support-pro.js
   function initSupportProPage(main2) {
     if (!main2 || !main2.isConnected) return;
-    const STYLE_ID68 = "tmvu-spro-style";
+    const STYLE_ID69 = "tmvu-spro-style";
     const clean5 = (v) => String(v || "").replace(/\s+/g, " ").trim();
-    const injectStyles50 = () => {
-      if (document.getElementById(STYLE_ID68)) return;
+    const injectStyles51 = () => {
+      if (document.getElementById(STYLE_ID69)) return;
       injectTmPageLayoutStyles();
       const rules = [
         // hero: single column
@@ -47538,7 +47702,7 @@ order:initial
         ".tmvu-spro-faq-a{color:var(--tmu-text-main);padding-left:var(--tmu-space-md);border-left:2px solid var(--tmu-border-success);font-size:var(--tmu-font-sm);line-height:1.7}"
       ];
       const style = document.createElement("style");
-      style.id = STYLE_ID68;
+      style.id = STYLE_ID69;
       style.textContent = rules.join("");
       document.head.appendChild(style);
     };
@@ -47607,7 +47771,7 @@ order:initial
       const title = "Support";
       const boxBody = snap2.querySelector(".box_body");
       const navItems = col1 ? parseNav(col1.cloneNode(true)) : [];
-      injectStyles50();
+      injectStyles51();
       const heroWrap = document.createElement("section");
       TmHeroCard.mount(heroWrap, {
         heroClass: "tmvu-spro-hero",
@@ -49794,6 +49958,438 @@ order:initial
     return { mount: mount8, isLoaded };
   })();
 
+  // src/components/player/compare/tm-player-compare.js
+  var STYLE_ID67 = "tmpc-styles";
+  var injectStyles49 = () => {
+    if (document.getElementById(STYLE_ID67)) return;
+    document.head.appendChild(Object.assign(document.createElement("style"), {
+      id: STYLE_ID67,
+      textContent: `
+.tmpc-overlay{position:fixed;inset:0;z-index:10070;display:flex;background:var(--tmu-surface-overlay-strong);backdrop-filter:blur(4px)}
+.tmpc-dialog{width:100%;display:flex;flex-direction:column;background:var(--tmu-surface-panel);color:var(--tmu-text-main);overflow:hidden}
+.tmpc-head{display:flex;align-items:center;justify-content:space-between;padding:var(--tmu-space-md) var(--tmu-space-xl);border-bottom:1px solid var(--tmu-border-soft-alpha);flex-shrink:0}
+.tmpc-head-title{font-size:var(--tmu-font-sm);font-weight:800;color:var(--tmu-text-strong);text-transform:uppercase;letter-spacing:.08em}
+.tmpc-close-btn{background:none;border:none;color:var(--tmu-text-muted);cursor:pointer;font-size:var(--tmu-font-xl);line-height:1;padding:0 4px;border-radius:var(--tmu-space-xs)}
+.tmpc-close-btn:hover{color:var(--tmu-text-strong)}
+.tmpc-body{flex:1;overflow-y:auto;padding:var(--tmu-space-xl);display:flex;flex-direction:column;gap:var(--tmu-space-lg);scrollbar-width:thin;scrollbar-color:var(--tmu-border-soft-alpha) transparent}
+.tmpc-picker{display:flex;gap:var(--tmu-space-md);align-items:center;flex-wrap:wrap}
+.tmpc-picker-with-label{display:flex;align-items:center;gap:var(--tmu-space-sm);flex:0 0 auto}
+.tmpc-picker-label{font-size:var(--tmu-font-xs);color:var(--tmu-text-panel-label);margin-bottom:var(--tmu-space-xs);font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.tmpc-picker-group{display:flex;flex-direction:column;flex:1;min-width:150px}
+.tmpc-picker-or{font-size:var(--tmu-font-sm);color:var(--tmu-text-muted);padding:0 2px;align-self:flex-end;padding-bottom:9px}
+.tmpc-error{color:var(--tmu-danger);font-size:var(--tmu-font-sm)}
+.tmpc-players-hdr{display:grid;grid-template-columns:1fr 36px 1fr;gap:var(--tmu-space-sm);text-align:center;padding:var(--tmu-space-md) 0;border-bottom:1px solid var(--tmu-border-soft-alpha);margin-bottom:var(--tmu-space-xs)}
+.tmpc-player-name{font-size:var(--tmu-font-sm);font-weight:700;color:var(--tmu-text-strong);word-break:break-word}
+.tmpc-player-pos{font-size:var(--tmu-font-xs);color:var(--tmu-accent);margin-top:2px}
+.tmpc-player-stars{color:var(--tmu-metal-gold);font-size:var(--tmu-font-sm);margin-top:4px;letter-spacing:1px}
+.tmpc-vs{font-size:var(--tmu-font-xs);color:var(--tmu-text-muted);align-self:center;font-weight:700;padding-top:calc(var(--tmu-space-md) + 6px)}
+.tmpc-section-title{font-size:var(--tmu-font-xs);font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--tmu-text-panel-label);padding:var(--tmu-space-sm) 0 var(--tmu-space-xs);border-bottom:1px solid var(--tmu-border-soft-alpha);margin-top:var(--tmu-space-sm)}
+.tmpc-col-name{font-size:var(--tmu-font-xs);font-weight:700;color:var(--tmu-text-muted);text-align:center;padding-bottom:var(--tmu-space-xs);border-bottom:1px solid var(--tmu-border-soft-alpha);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tmpc-radar-wrap{display:flex;flex-direction:column;align-items:center}
+.tmpc-radar-legend{display:flex;gap:var(--tmu-space-xl);flex-wrap:wrap;justify-content:center;margin-top:var(--tmu-space-sm)}
+.tmpc-radar-legend-item{display:flex;align-items:center;gap:var(--tmu-space-xs);font-size:var(--tmu-font-xs);color:var(--tmu-text-muted)}
+.tmpc-radar-legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.tmpc-skills-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 var(--tmu-space-xl);align-items:start}
+.tmpc-skills-radar-layout{display:grid;grid-template-columns:3fr 1fr;gap:0 var(--tmu-space-xl);align-items:start}
+.tmpc-srow{display:flex;align-items:center;gap:var(--tmu-space-sm);padding:5px 0;border-bottom:1px solid var(--tmu-border-soft-alpha)}
+.tmpc-sval{width:36px;font-size:var(--tmu-font-lg);font-weight:800;font-variant-numeric:tabular-nums;text-align:right;line-height:1.2;flex-shrink:0}
+.tmpc-sval-win{}
+.tmpc-sval-loss{opacity:.6}
+.tmpc-slabel{flex:1;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--tmu-text-panel-label)}
+.tmpc-tab-panel{padding-top:var(--tmu-space-md)}
+.tmpc-result-tabs{border-bottom:1px solid var(--tmu-border-soft-alpha);margin-top:var(--tmu-space-md)}
+.tmpc-dialog .tmu-ac-drop{z-index:10080!important}
+`
+    }));
+  };
+  var getSkillVal = (player2, key) => {
+    var _a2;
+    const s6 = (_a2 = player2.skills) == null ? void 0 : _a2.find((sk) => sk.key === key || sk.key2 === key);
+    return Number.isFinite(s6 == null ? void 0 : s6.value) ? Number(s6.value) : 0;
+  };
+  var fmtSkill = (v) => TmSkill.skillBadge(v > 0 ? v : null);
+  var posDisplay = (player2) => {
+    if (player2.isGK) return "GK";
+    const pref = (player2.positions || []).filter((p) => p.preferred && p.position);
+    if (pref.length) return pref.map((p) => p.position).join("/");
+    const first = (player2.positions || []).find((p) => p.main && p.position);
+    return first ? first.position : "\u2014";
+  };
+  var starsHtml = (r5) => {
+    const n = !r5 ? 0 : r5 >= 110 ? 5 : r5 >= 90 ? 4 : r5 >= 70 ? 3 : r5 >= 50 ? 2 : 1;
+    return "\u2605".repeat(n) + "\u2606".repeat(5 - n);
+  };
+  var RADAR_OUT = [
+    { label: "Physical", keys: ["strength", "stamina", "pace"] },
+    { label: "Defending", keys: ["marking", "tackling"] },
+    { label: "Work", keys: ["workrate", "positioning"] },
+    { label: "Technical", keys: ["passing", "crossing", "technique"] },
+    { label: "Aerial", keys: ["heading"] },
+    { label: "Attacking", keys: ["finishing", "longshots", "set_pieces"] }
+  ];
+  var RADAR_GK = [
+    { label: "Physical", keys: ["strength", "stamina", "pace"] },
+    { label: "Shot Stop", keys: ["handling", "reflexes"] },
+    { label: "1v1", keys: ["oneonones"] },
+    { label: "Aerial", keys: ["arialability", "jumping"] },
+    { label: "Command", keys: ["communication"] },
+    { label: "Distrib.", keys: ["kicking", "throwing"] }
+  ];
+  var drawRadar = (canvas, groups, pA, pB) => {
+    const dpr = window.devicePixelRatio || 1;
+    const sz = canvas.clientWidth || 280;
+    canvas.width = sz * dpr;
+    canvas.height = sz * dpr;
+    const ctx = canvas.getContext("2d");
+    ctx.scale(dpr, dpr);
+    const N = groups.length;
+    const cx = sz / 2;
+    const cy = sz * 0.43;
+    const r = sz * 0.33;
+    const lr = sz * 0.38;
+    const ang = (i) => i / N * Math.PI * 2 - Math.PI / 2;
+    const groupScore = (player2, group) => {
+      const vals = group.keys.map((k) => getSkillVal(player2, k));
+      return vals.reduce((a, b) => a + b, 0) / vals.length;
+    };
+    const rs = getComputedStyle(document.documentElement);
+    const gridClr = rs.getPropertyValue("--tmu-border-soft-alpha-mid").trim() || "rgba(128,128,128,0.25)";
+    const axisClr = rs.getPropertyValue("--tmu-text-panel-label").trim() || "rgba(160,160,160,0.8)";
+    [0.25, 0.5, 0.75, 1].forEach((f) => {
+      ctx.beginPath();
+      for (let i = 0; i < N; i++) {
+        const a = ang(i);
+        const px = cx + Math.cos(a) * r * f;
+        const py = cy + Math.sin(a) * r * f;
+        i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.strokeStyle = gridClr;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    });
+    for (let i = 0; i < N; i++) {
+      const a = ang(i);
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+      ctx.strokeStyle = gridClr;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+    const drawPoly = (player2, fillClr, strokeClr) => {
+      ctx.beginPath();
+      for (let i = 0; i < N; i++) {
+        const score = groupScore(player2, groups[i]);
+        const pr = r * Math.min(score / 20, 1);
+        const a = ang(i);
+        i === 0 ? ctx.moveTo(cx + Math.cos(a) * pr, cy + Math.sin(a) * pr) : ctx.lineTo(cx + Math.cos(a) * pr, cy + Math.sin(a) * pr);
+      }
+      ctx.closePath();
+      ctx.fillStyle = fillClr;
+      ctx.fill();
+      ctx.strokeStyle = strokeClr;
+      ctx.lineWidth = 1.8;
+      ctx.stroke();
+    };
+    drawPoly(pA, "rgba(30,160,255,0.18)", "rgba(30,160,255,0.85)");
+    drawPoly(pB, "rgba(255,120,30,0.18)", "rgba(255,120,30,0.85)");
+    ctx.font = `bold 11px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif`;
+    ctx.fillStyle = axisClr;
+    for (let i = 0; i < N; i++) {
+      const a = ang(i);
+      const lx = cx + Math.cos(a) * lr;
+      const ly = cy + Math.sin(a) * lr;
+      ctx.textAlign = Math.cos(a) > 0.3 ? "left" : Math.cos(a) < -0.3 ? "right" : "center";
+      ctx.textBaseline = Math.sin(a) > 0.3 ? "top" : Math.sin(a) < -0.3 ? "bottom" : "middle";
+      ctx.fillText(groups[i].label, lx, ly);
+    }
+  };
+  var esc4 = (v) => String(v != null ? v : "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  var buildResult = (container, pA, pB) => {
+    const defs = pA.isGK ? SKILL_DEFS_GK : SKILL_DEFS_OUT;
+    const groups = pA.isGK ? RADAR_GK : RADAR_OUT;
+    const fmtRtn = (p) => typeof p.routine === "number" ? p.routine.toFixed(1) : "\u2014";
+    const half = Math.ceil(defs.length / 2);
+    const hdr = document.createElement("div");
+    hdr.className = "tmpc-players-hdr";
+    hdr.innerHTML = `
+        <div>
+            <div class="tmpc-player-name">${esc4(pA.name)}</div>
+            <div class="tmpc-player-pos">${esc4(posDisplay(pA))}</div>
+            <div class="tmpc-player-stars">${starsHtml(pA.r5)}</div>
+        </div>
+        <div class="tmpc-vs">vs.</div>
+        <div>
+            <div class="tmpc-player-name">${esc4(pB.name)}</div>
+            <div class="tmpc-player-pos">${esc4(posDisplay(pB))}</div>
+            <div class="tmpc-player-stars">${starsHtml(pB.r5)}</div>
+        </div>`;
+    const makeNumberRows = (subset) => subset.map((def) => {
+      const vA = getSkillVal(pA, def.key);
+      const vB = getSkillVal(pB, def.key);
+      return `<div class="tmpc-srow">
+            <span class="tmpc-slabel">${esc4(def.name)}</span>
+            <span class="tmpc-sval">${fmtSkill(vA)}</span>
+            <span class="tmpc-sval">${fmtSkill(vB)}</span>
+        </div>`;
+    }).join("");
+    const otherNumberRows = (() => {
+      const vA = pA.routine || 0, vB = pB.routine || 0;
+      const aW = vA > vB, bW = vB > vA;
+      return `<div class="tmpc-srow">
+            <span class="tmpc-slabel">Routine</span>
+            <span class="tmpc-sval ${aW ? "tmpc-sval-win" : bW ? "tmpc-sval-loss" : ""}">${fmtRtn(pA)}</span>
+            <span class="tmpc-sval ${bW ? "tmpc-sval-win" : aW ? "tmpc-sval-loss" : ""}">${fmtRtn(pB)}</span>
+        </div>`;
+    })();
+    const skillsPanel = document.createElement("div");
+    skillsPanel.className = "tmpc-tab-panel";
+    skillsPanel.innerHTML = `
+        <div class="tmpc-skills-radar-layout">
+            <div>
+                <div class="tmpc-skills-grid">
+                    <div><div class="tmpc-col-name">${esc4(pA.name)}</div>${makeNumberRows(defs.slice(0, half))}</div>
+                    <div><div class="tmpc-col-name">${esc4(pB.name)}</div>${makeNumberRows(defs.slice(half))}</div>
+                </div>
+                <div class="tmpc-section-title" style="margin-top:var(--tmu-space-lg)">Other</div>
+                ${otherNumberRows}
+            </div>
+            <div class="tmpc-radar-wrap">
+                <div class="tmpc-radar-legend" style="margin-top:0;margin-bottom:var(--tmu-space-sm)">
+                    <div class="tmpc-radar-legend-item">
+                        <div class="tmpc-radar-legend-dot" style="background:rgba(30,160,255,0.85)"></div>
+                        <span>${esc4(pA.name)}</span>
+                    </div>
+                    <div class="tmpc-radar-legend-item">
+                        <div class="tmpc-radar-legend-dot" style="background:rgba(255,120,30,0.85)"></div>
+                        <span>${esc4(pB.name)}</span>
+                    </div>
+                </div>
+                <canvas data-tmpc-radar style="width:100%;aspect-ratio:1;display:block"></canvas>
+            </div>
+        </div>`;
+    const makeBarsRows = (subset) => subset.map((def) => {
+      const vA = getSkillVal(pA, def.key);
+      const vB = getSkillVal(pB, def.key);
+      return TmCompareStat.compareStat({ label: def.name, leftValue: fmtSkill(vA), rightValue: fmtSkill(vB), leftNumber: vA, rightNumber: vB });
+    }).join("");
+    const otherBarsRows = TmCompareStat.compareStat({ label: "Routine", leftValue: fmtRtn(pA), rightValue: fmtRtn(pB), leftNumber: pA.routine || 0, rightNumber: pB.routine || 0 });
+    const graphsPanel = document.createElement("div");
+    graphsPanel.className = "tmpc-tab-panel";
+    graphsPanel.hidden = true;
+    graphsPanel.innerHTML = `
+        <div class="tmpc-skills-grid">
+            <div>${makeBarsRows(defs.slice(0, half))}</div>
+            <div>${makeBarsRows(defs.slice(half))}</div>
+        </div>
+        <div class="tmpc-section-title" style="margin-top:var(--tmu-space-lg)">Other</div>
+        ${otherBarsRows}`;
+    let radarDrawn = false;
+    const tabBar = TmTabs.tabs({
+      items: [
+        { key: "skills", label: "Skills" },
+        { key: "graphs", label: "Graphs" }
+      ],
+      active: "skills",
+      onChange: (key) => {
+        skillsPanel.hidden = key !== "skills";
+        graphsPanel.hidden = key !== "graphs";
+      }
+    });
+    tabBar.className += " tmpc-result-tabs";
+    container.innerHTML = "";
+    container.appendChild(hdr);
+    container.appendChild(tabBar);
+    container.appendChild(skillsPanel);
+    container.appendChild(graphsPanel);
+    requestAnimationFrame(() => {
+      const canvas = skillsPanel.querySelector("[data-tmpc-radar]");
+      if (canvas) drawRadar(canvas, groups, pA, pB);
+    });
+  };
+  var TmPlayerCompare = {
+    open(currentPlayer) {
+      injectStyles49();
+      const overlay = document.createElement("div");
+      overlay.className = "tmpc-overlay";
+      const dialog = document.createElement("div");
+      dialog.className = "tmpc-dialog";
+      overlay.appendChild(dialog);
+      let closed = false;
+      const close = () => {
+        if (closed) return;
+        closed = true;
+        document.removeEventListener("keydown", onKeydown);
+        overlay.remove();
+        document.body.style.overflow = "";
+      };
+      const onKeydown = (e) => {
+        if (e.key === "Escape") close();
+      };
+      const head = document.createElement("div");
+      head.className = "tmpc-head";
+      head.innerHTML = `<div class="tmpc-head-title">Compare Players</div><button class="tmpc-close-btn" aria-label="Close">\xD7</button>`;
+      head.querySelector(".tmpc-close-btn").addEventListener("click", close);
+      dialog.appendChild(head);
+      const body = document.createElement("div");
+      body.className = "tmpc-body";
+      dialog.appendChild(body);
+      let squadPlayers = [];
+      const ownClubIds = TmUtils.getOwnClubIds();
+      if (ownClubIds == null ? void 0 : ownClubIds.length) {
+        fetchRawPlayers(ownClubIds[0]).then((players) => {
+          squadPlayers = (players || []).filter((p) => Number(p.id) !== Number(currentPlayer.id));
+        });
+      }
+      let selectedPlayer = null;
+      const acRoot = TmAutocomplete.autocomplete({
+        placeholder: "Search your squad\u2026",
+        size: "full",
+        density: "comfy",
+        tone: "overlay",
+        onInput: (e) => {
+          selectedPlayer = null;
+          populateAc(e.target.value || "");
+        }
+      });
+      const populateAc = (rawQ = "") => {
+        const q2 = rawQ.toLowerCase().trim();
+        const items = squadPlayers.filter((p) => !q2 || (p.name || "").toLowerCase().includes(q2)).slice(0, 20).map((p) => TmAutocomplete.autocompleteItem({
+          label: `${p.name} (${posDisplay(p)})`,
+          onSelect: () => {
+            selectedPlayer = p;
+            acRoot.setValue(p.name);
+            acRoot.hideDrop();
+            idInput.value = "";
+            clearError();
+            runCompare(p);
+          }
+        }));
+        acRoot.setItems(items);
+      };
+      acRoot.inputEl.addEventListener("focus", () => {
+        selectedPlayer = null;
+        populateAc(acRoot.inputEl.value || "");
+      });
+      acRoot.inputEl.addEventListener("blur", () => setTimeout(() => acRoot.hideDrop(), 120));
+      const idInput = TmInput.input({
+        placeholder: "Player ID\u2026",
+        size: "full",
+        density: "comfy",
+        tone: "overlay",
+        type: "number",
+        min: 1,
+        onInput: () => {
+          selectedPlayer = null;
+          acRoot.setValue("");
+          acRoot.hideDrop();
+        }
+      });
+      const withLabel = document.createElement("div");
+      withLabel.className = "tmpc-picker-with-label";
+      const withLabelText = document.createElement("span");
+      withLabelText.className = "tmpc-picker-label";
+      withLabelText.textContent = "Compare with:";
+      const acWrap = document.createElement("div");
+      acWrap.style.cssText = "width:320px;flex-shrink:0";
+      acWrap.appendChild(acRoot);
+      withLabel.appendChild(withLabelText);
+      withLabel.appendChild(acWrap);
+      const orEl = document.createElement("div");
+      orEl.className = "tmpc-picker-or";
+      orEl.textContent = "or";
+      const groupId = document.createElement("div");
+      groupId.style.cssText = "display:flex;flex-direction:column;flex:0 0 auto;width:120px";
+      groupId.appendChild(idInput);
+      const compareBtn = TmUI.button({ slot: "Compare", color: "primary", size: "sm" });
+      const btnWrap = document.createElement("div");
+      btnWrap.style.cssText = "flex-shrink:0";
+      btnWrap.appendChild(compareBtn);
+      const pickerDiv = document.createElement("div");
+      pickerDiv.className = "tmpc-picker";
+      pickerDiv.appendChild(withLabel);
+      pickerDiv.appendChild(orEl);
+      pickerDiv.appendChild(groupId);
+      pickerDiv.appendChild(btnWrap);
+      const errorEl = document.createElement("div");
+      errorEl.className = "tmpc-error";
+      errorEl.hidden = true;
+      const clearError = () => {
+        errorEl.hidden = true;
+      };
+      const showError = (msg) => {
+        errorEl.textContent = msg;
+        errorEl.hidden = false;
+      };
+      const resultDiv = document.createElement("div");
+      body.appendChild(pickerDiv);
+      body.appendChild(errorEl);
+      body.appendChild(resultDiv);
+      let busy = false;
+      const runCompare = async (directPlayer) => {
+        var _a2;
+        if (busy) return;
+        clearError();
+        resultDiv.innerHTML = "";
+        const playerObj = directPlayer || selectedPlayer || null;
+        let opponentId = playerObj ? Number(playerObj.id) : null;
+        if (!opponentId) {
+          const raw = idInput.value.trim();
+          opponentId = raw ? Number(raw) : null;
+        }
+        if (!opponentId || !Number.isFinite(opponentId) || opponentId < 1) {
+          showError("Select a player from squad or enter a valid player ID.");
+          return;
+        }
+        if (opponentId === Number(currentPlayer.id)) {
+          showError("Cannot compare a player with themselves.");
+          return;
+        }
+        busy = true;
+        compareBtn.disabled = true;
+        compareBtn.textContent = "Loading\u2026";
+        try {
+          const opponent = ((_a2 = playerObj == null ? void 0 : playerObj.skills) == null ? void 0 : _a2.length) ? playerObj : await TmPlayerModel.fetchPlayerTooltip(opponentId);
+          if (!opponent) {
+            showError("Could not load player data. Check the player ID.");
+            return;
+          }
+          if (Boolean(currentPlayer.isGK) !== Boolean(opponent.isGK)) {
+            showError("Cannot compare a Goalkeeper with an outfield player.");
+            return;
+          }
+          buildResult(resultDiv, currentPlayer, opponent);
+          setTimeout(() => resultDiv.scrollIntoView({ behavior: "smooth", block: "nearest" }), 80);
+        } catch (e) {
+          showError("Failed to load player data. Please try again.");
+        } finally {
+          busy = false;
+          compareBtn.disabled = false;
+          compareBtn.textContent = "Compare";
+        }
+      };
+      compareBtn.addEventListener("click", () => runCompare());
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) close();
+      });
+      document.addEventListener("keydown", onKeydown);
+      document.body.style.overflow = "hidden";
+      document.body.appendChild(overlay);
+    },
+    mountButton(container, { player: player2 }) {
+      injectStyles49();
+      if (!container) return;
+      TmUI.render(
+        container,
+        `<tm-row data-cls="px-1 pt-1 pb-1" data-justify="flex-start">
+                <tm-button data-variant="secondary" data-size="sm" data-action="compare">\u21C4 Compare players</tm-button>
+            </tm-row>`,
+        { compare: () => TmPlayerCompare.open(player2) }
+      );
+    }
+  };
+
   // src/pages/player.js
   function initPlayerPage(main2) {
     if (!main2 || !main2.isConnected) {
@@ -49892,6 +50488,7 @@ order:initial
       };
     };
     const renderPlayerChrome = ({ rerenderSkills = false } = {}) => {
+      var _a2;
       if (!player2) return;
       TmPlayerCard.render({
         player: player2
@@ -49909,11 +50506,15 @@ order:initial
       }
       if (rerenderSkills) TmSkillsGrid.reRender();
       else TmSkillsGrid.mount({ player: player2 });
+      const mainRail = (_a2 = ensurePlayerLayout()) == null ? void 0 : _a2.mainRail;
+      const compareSlot = ensureRailSlot(mainRail, "tmpc-trigger-slot");
+      TmPlayerCompare.mountButton(compareSlot, { player: player2 });
     };
     const applyTooltip = (data) => {
       if (!data) return;
       if (data.retired) return;
       player2 = data;
+      window.tmCompareOpen = () => TmPlayerCompare.open(player2);
       renderPlayerChrome();
       fetchScoutData();
       TmTabsMod.mount({ player: player2, injectCSS: injectCSS4 });
@@ -49947,11 +50548,11 @@ order:initial
   }
 
   // src/pages/players-styles.js
-  var STYLE_ID67 = "tmvu-players-page-style";
+  var STYLE_ID68 = "tmvu-players-page-style";
   var injectPlayersPageStyles = () => {
-    if (document.getElementById(STYLE_ID67)) return;
+    if (document.getElementById(STYLE_ID68)) return;
     const style = document.createElement("style");
-    style.id = STYLE_ID67;
+    style.id = STYLE_ID68;
     style.textContent = `
         .tmvu-players-shell {
             display: flex;
@@ -52917,7 +53518,7 @@ order:initial
     if (topMenu) topMenu.style.display = "none";
     if (topMenuSub) topMenuSub.style.display = "none";
   }
-  function injectStyles49() {
+  function injectStyles50() {
     ensureTmTheme();
     if (document.getElementById("tmvu-shell-styles")) return;
     const style = document.createElement("style");
@@ -53567,7 +54168,7 @@ order:initial
     const currentPath = normalizeHref(window.location.pathname) || "/home/";
     const groups = collectNavGroups();
     replaceMainCenterClass();
-    injectStyles49();
+    injectStyles50();
     const clubInfo = getClubInfo();
     const openGroupId = getInitialOpenGroup();
     const headerFab = getHeaderFab(currentPath);

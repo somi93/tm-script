@@ -4,6 +4,8 @@ import { TmSideMenu } from '../components/shared/tm-side-menu.js';
 import { TmUI } from '../components/shared/tm-ui.js';
 import { TmUtils } from '../lib/tm-utils.js';
 import { TmCountdownBlock } from '../components/shared/tm-countdown-block.js';
+import { TmSponsorsService } from '../services/sponsors.js';
+import { TmSponsorsModel } from '../models/sponsors.js';
 
 'use strict';
 
@@ -324,6 +326,21 @@ const injectStyles = () => {
                 overflow: hidden;
                 opacity: 0;
                 pointer-events: none;
+            }
+
+            .tmvu-sponsors-deal-list {
+                display: flex;
+                flex-direction: column;
+                gap: var(--tmu-space-md);
+            }
+
+            .tmvu-sponsors-deal-sign {
+                min-width: 80px;
+            }
+
+            .tmvu-sponsors-deal-sign:disabled {
+                opacity: .45;
+                cursor: not-allowed;
             }
         `;
 
@@ -897,6 +914,74 @@ mainCol.className = 'tmvu-sponsors-main tmu-page-section-stack';
 const sideCol = document.createElement('aside');
 sideCol.className = 'tmvu-sponsors-side tmu-page-rail-stack';
 
+let dealPickerEl = null;
+let signingInProgress = false;
+
+const renderDealPickerCard = (offers) => {
+    const card = createCard('Sign a New Sponsor Deal', '🤝');
+    card.classList.add('tmvu-sponsors-fullwidth');
+
+    const stack = document.createElement('div');
+    stack.className = 'tmvu-sponsors-deal-list';
+
+    offers.forEach((offer) => {
+        const item = document.createElement('article');
+        item.className = 'tmvu-sponsors-offer';
+        item.innerHTML = `
+            <div class="tmvu-sponsors-offer-top">
+                <img class="tmvu-sponsors-offer-image" src="${escapeHtml(offer.imageSrc)}" alt="Sponsor">
+            </div>
+            <div class="tmvu-sponsors-offer-body">
+                <div>
+                    <div class="tmvu-sponsors-offer-label">Contract Duration</div>
+                    <div class="tmvu-sponsors-offer-title">${escapeHtml(String(offer.days))} day contract</div>
+                </div>
+                <div class="tmvu-sponsors-offer-amount">${escapeHtml(offer.payout.toLocaleString())}</div>
+            </div>
+        `;
+
+        const actionRow = document.createElement('div');
+        actionRow.className = 'tmvu-sponsors-action-row';
+        const signBtn = TmUI.button({
+            label: 'Sign',
+            color: 'primary',
+            size: 'sm',
+            cls: 'tmvu-sponsors-deal-sign',
+            onClick: async () => {
+                if (signingInProgress) return;
+                signingInProgress = true;
+                card.querySelectorAll('.tmvu-sponsors-deal-sign').forEach(btn => { btn.disabled = true; });
+                await TmSponsorsService.signSponsor(offer.type);
+            },
+        });
+        actionRow.appendChild(signBtn);
+        item.appendChild(actionRow);
+        stack.appendChild(item);
+    });
+
+    card.appendChild(stack);
+    return card;
+};
+
+const showDealPicker = (offers) => {
+    if (dealPickerEl?.isConnected) dealPickerEl.remove();
+    dealPickerEl = null;
+    if (!offers?.length) return;
+    dealPickerEl = renderDealPickerCard(offers);
+    // Insert after hero (index 0), before goals card
+    const heroEl = mainCol.children[0];
+    mainCol.insertBefore(dealPickerEl, heroEl?.nextSibling || null);
+};
+
+const loadSponsorState = async () => {
+    const raw = await TmSponsorsService.checkSponsor();
+    const state = TmSponsorsModel.normalize(raw);
+    if (!state) return;
+    if (!state.hasSponsor) {
+        showDealPicker(state.offers);
+    }
+};
+
 function renderPage() {
     const state = getViewState();
     const hero = renderHero();
@@ -947,6 +1032,7 @@ const render = (main, sourceRoot) => {
     bindObservers();
     renderPage();
     queueSponsorRefresh();
+    void loadSponsorState();
 };
 
 export function initSponsorsPage(main) {

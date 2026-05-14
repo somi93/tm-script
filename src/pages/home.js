@@ -33,6 +33,7 @@ export function initHomePage(main) {
         const rules = [
             '.tmvu-home-page{--tmu-page-gap:var(--tmu-space-xxl);display:grid!important;grid-template-columns:minmax(0,1fr) 320px;gap:var(--tmu-page-gap);align-items:start;max-width:1240px;margin:0 auto;padding:var(--tmu-space-sm) var(--tmu-space-md) var(--tmu-space-xl)}',
             '.tmvu-home-tabs-host{display:flex;flex-direction:column;min-width:0}',
+            '.tmvu-home-alert{padding:var(--tmu-space-md) var(--tmu-space-lg);background:var(--tmu-danger-fill-soft,rgba(200,50,50,.12));border-bottom:1px solid var(--tmu-border-danger,rgba(200,50,50,.35));border-radius:var(--tmu-space-md) var(--tmu-space-md) 0 0;color:var(--tmu-text-danger,#e57373);font-size:var(--tmu-font-sm);line-height:1.5}',
             '.tmvu-home-tabpanel{display:none;padding:var(--tmu-space-xl)}',
             '.tmvu-home-tabpanel.tmvu-tab-active{display:block}',
             '.tmvu-home-list-item{display:block;width:100%;padding:var(--tmu-space-md) var(--tmu-space-lg);border:1px solid var(--tmu-border-soft-alpha);border-radius:var(--tmu-space-md);background:var(--tmu-border-contrast);text-decoration:none;text-align:left;font:inherit;cursor:pointer;box-sizing:border-box}',
@@ -1071,6 +1072,20 @@ export function initHomePage(main) {
                 });
 
                 body.appendChild(tabsHost);
+
+                let pollTries = 0;
+                const pollAlerts = setInterval(() => {
+                    const found = Array.from(document.querySelectorAll('.alert'));
+                    if (found.length > 0 || ++pollTries >= 20) {
+                        clearInterval(pollAlerts);
+                        found.forEach(alertEl => {
+                            const banner = document.createElement('div');
+                            banner.className = 'tmvu-home-alert';
+                            banner.innerHTML = alertEl.innerHTML;
+                            body.insertBefore(banner, tabsHost);
+                        });
+                    }
+                }, 300);
             },
         });
 
