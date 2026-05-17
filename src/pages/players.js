@@ -9,6 +9,7 @@ import { runSyncPipeline } from '../workflows/player-history/sync-pipeline.js';
 import { TmProgress } from '../components/shared/tm-progress.js';
 import { injectPlayersPageStyles } from './players-styles.js';
 import { CountryFlag } from '../components/shared/country-flag.js';
+import { TmPlayerTooltip } from '../components/player/tooltip/tm-player-tooltip.js';
 
 const parseSquadPageSkillChanges = (doc = document) => {
     const result = new Map();
@@ -411,15 +412,43 @@ export function initPlayersPage(main) {
             const outfield = players.filter(p => !isGK(p));
             const gks = players.filter(p => isGK(p));
 
+            const pidMap = new Map(players.map(p => [p.id, p]));
+
+            const bindTooltip = (tblEl) => {
+                let currentPid = null;
+                tblEl.addEventListener('mouseover', e => {
+                    const nameEl = e.target.closest('.tmvu-players-name');
+                    const row = nameEl?.closest('tr[data-pid]');
+                    const pid = row ? Number(row.dataset.pid) : null;
+                    if (pid === currentPid) return;
+                    currentPid = pid;
+                    if (pid && pidMap.has(pid)) {
+                        TmPlayerTooltip.show(nameEl, pidMap.get(pid));
+                    } else {
+                        TmPlayerTooltip.hide();
+                    }
+                });
+                tblEl.addEventListener('mouseleave', () => {
+                    currentPid = null;
+                    TmPlayerTooltip.hide();
+                });
+            };
+
+            const addTable = (headers, items) => {
+                const tbl = TmTable.table({ headers, items, sortKey: 'no', sortDir: 1, rowAttrs: item => ({ 'data-pid': item.id }) });
+                bindTooltip(tbl);
+                body.appendChild(tbl);
+            };
+
             if (outfield.length) {
-                body.appendChild(TmTable.table({ headers: buildTableHeaders(false), items: outfield, sortKey: 'no', sortDir: 1 }));
+                addTable(buildTableHeaders(false), outfield);
             }
             if (gks.length) {
                 const gkLbl = document.createElement('div');
                 gkLbl.className = 'tmvu-players-section-title';
                 gkLbl.textContent = `Goalkeepers (${gks.length})`;
                 body.appendChild(gkLbl);
-                body.appendChild(TmTable.table({ headers: buildTableHeaders(true), items: gks, sortKey: 'no', sortDir: 1 }));
+                addTable(buildTableHeaders(true), gks);
             }
 
             sectionsHost.appendChild(panel);

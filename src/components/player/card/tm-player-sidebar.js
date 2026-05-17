@@ -157,7 +157,7 @@ const mountLiveTransfer = (tfCard, transferListed) => {
  * @param {Element} container - The .column3_a element.
  */
 const mount = (container, opts = {}) => {
-    const { player, sourceRoot: providedSourceRoot = null } = opts;
+    const { player, sourceRoot: providedSourceRoot = null, noTransfer = false, noOptions = false, noAwards = false } = opts;
     if (!container) return;
 
     if (!container.__tmpsSourceRoot) {
@@ -272,7 +272,7 @@ const mount = (container, opts = {}) => {
     const handlers = {};
     let h = '<div class="tmps-sidebar">';
 
-    if (btnData.length > 0) {
+    if (!noTransfer && btnData.length > 0) {
         btnData.forEach((b, i) => { handlers[`tf_${i}`] = new Function(b.onclick); });
         h += '<tm-card data-title="Transfer Options" data-flush data-variant="sidebar">';
         h += btnData.map((b, i) =>
@@ -281,7 +281,7 @@ const mount = (container, opts = {}) => {
         h += '</tm-card>';
     }
 
-    if (pendingBid) {
+    if (!noTransfer && pendingBid) {
         handlers.pending_withdraw = new Function(pendingBid.onclick);
         h += '<tm-card data-title="Pending bid" data-icon="⚡" data-flush data-variant="sidebar">';
         h += `<div class="text-sm muted px-3 pt-3 pb-2">${renderPendingBidCopy(pendingBid.copy, pendingBid.amount)}</div>`;
@@ -289,11 +289,11 @@ const mount = (container, opts = {}) => {
         h += '</tm-card>';
     }
 
-    if (transferListed) {
+    if (!noTransfer && transferListed) {
         h += '<div data-ref="tmtf-live"></div>';
     }
 
-    if (noteText || otherBtns.length > 0) {
+    if (!noOptions && (noteText || otherBtns.length > 0)) {
         otherBtns.forEach((b, i) => {
             handlers[`opt_${i}`] = /compare/i.test(b.label)
                 ? () => window.tmCompareOpen()
@@ -307,7 +307,7 @@ const mount = (container, opts = {}) => {
         h += '</tm-card>';
     }
 
-    if (awardRows.length > 0) {
+    if (!noAwards && awardRows.length > 0) {
         h += '<tm-card data-title="Awards" data-icon="🏆" data-flush data-variant="sidebar"><div class="tmps-award-list">';
         for (const a of awardRows) {
             h += `
@@ -337,5 +337,52 @@ const mount = (container, opts = {}) => {
     }
 };
 
-export const TmPlayerSidebar = { mount };
+const mountAwards = (container, opts = {}) => {
+    const { sourceRoot } = opts;
+    if (!container || !sourceRoot) return;
+    const awardRows = [];
+    sourceRoot.querySelectorAll('.award_row').forEach(li => {
+        const img = li.querySelector('img');
+        const imgSrc = img ? img.getAttribute('src') : '';
+        const rawText = li.textContent.trim();
+        let awardType = '', awardIcon = '🏆', iconCls = 'gold';
+        if (/award_year_u21/.test(imgSrc)) { awardType = 'U21 Player of the Year'; awardIcon = '🌟'; iconCls = 'silver'; }
+        else if (/award_year/.test(imgSrc))  { awardType = 'Player of the Year';     awardIcon = '🏆'; iconCls = 'gold';   }
+        else if (/award_goal_u21/.test(imgSrc)) { awardType = 'U21 Top Scorer'; awardIcon = '⚽'; iconCls = 'silver'; }
+        else if (/award_goal/.test(imgSrc))  { awardType = 'Top Scorer'; awardIcon = '⚽'; iconCls = 'gold'; }
+        const seasonMatch = rawText.match(/season\s+(\d+)/i);
+        const season = seasonMatch ? seasonMatch[1] : '';
+        const leagueLink = li.querySelector('a[league_link]');
+        const leagueName = leagueLink ? leagueLink.textContent.trim() : '';
+        const leagueHref = leagueLink ? leagueLink.getAttribute('href') : '';
+        const flagEl = li.querySelector('.country_link');
+        const flagHtml = flagEl ? flagEl.outerHTML : '';
+        let statText = '';
+        const goalMatch   = rawText.match(/(\d+)\s+goals?\s+in\s+(\d+)\s+match/i);
+        const ratingMatch = rawText.match(/rating\s+of\s+([\d.]+)\s+in\s+(\d+)\s+match/i);
+        if (goalMatch)   statText = `${goalMatch[1]} goals / ${goalMatch[2]} games`;
+        else if (ratingMatch) statText = `${ratingMatch[1]} avg / ${ratingMatch[2]} games`;
+        awardRows.push({ awardType, awardIcon, iconCls, season, leagueName, leagueHref, flagHtml, statText });
+    });
+    if (!awardRows.length) { container.innerHTML = ''; return; }
+    let h = '<div class="tmps-sidebar"><tm-card data-title="Awards" data-icon="🏆" data-flush data-variant="sidebar"><div class="tmps-award-list">';
+    for (const a of awardRows) {
+        h += `<tm-row data-cls="tmps-award py-2 px-3" data-gap="10px">
+            <div class="tmps-award-icon rounded-md text-lg ${a.iconCls}">${a.awardIcon}</div>
+            <div class="tmps-award-body">
+                <div class="tmps-award-title text-sm font-bold">${a.awardType}</div>`;
+        let sub = '';
+        if (a.flagHtml) sub += a.flagHtml + ' ';
+        if (a.leagueName) sub += a.leagueHref ? `<a href="${a.leagueHref}" class="lime">${a.leagueName}</a>` : a.leagueName;
+        if (a.statText) sub += (sub ? ' · ' : '') + a.statText;
+        if (sub) h += `<div class="tmps-award-sub text-xs muted">${sub}</div>`;
+        h += `</div>`;
+        if (a.season) h += `<span class="tmps-award-season text-sm font-bold yellow">S${a.season}</span>`;
+        h += `</tm-row>`;
+    }
+    h += '</div></tm-card></div>';
+    TmUI.render(container, h, {});
+};
+
+export const TmPlayerSidebar = { mount, mountAwards };
 

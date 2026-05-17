@@ -56,6 +56,7 @@ const isWatch = process.argv.includes('--watch');
 const PAGES = [
     'app-shell',
     'home',
+    'account',
     'bids',
     'club',
     'cup',
@@ -98,6 +99,7 @@ const PAGES = [
     'shortlist',
     'import',
     'r5history',
+    'stadium',
 ];
 
 // --- Build -------------------------------------------------------------------

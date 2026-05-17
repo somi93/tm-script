@@ -70,12 +70,18 @@ export function initForumPage(main) {
     // ── thread ────────────────────────────────────────────────────────────────
 
     function renderThread(src) {
-        const sidebarProps = TmForumSidebar.parse(src);
         const forumEl = src.querySelector('#forum') || src;
+        const pagerLinks = TmForumPager.parse(forumEl, '.topic_pages');
+        const lastPageLink = [...pagerLinks].reverse().find(l => !l.icon);
+        if (lastPageLink?.href) {
+            window.location.replace(lastPageLink.href);
+            return;
+        }
+
+        const sidebarProps = TmForumSidebar.parse(src);
         const topicPagesEl = forumEl.querySelector('.topic_pages');
         const backHref = topicPagesEl?.querySelector('.arrow_left')?.getAttribute('href') || '';
         const pagerSummary = clean(topicPagesEl?.querySelector('.subtle')?.textContent || '');
-        const pagerLinks = TmForumPager.parse(forumEl, '.topic_pages');
         const topicTitle = clean(forumEl.querySelector('h1.mega_headline')?.textContent || 'Thread');
         const posts = TmForumPosts.parse(forumEl);
 
@@ -113,6 +119,8 @@ export function initForumPage(main) {
         main.appendChild(col);
 
         TmForumComposer.mountWhenReady(col, 'Reply');
+
+        requestAnimationFrame(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'instant' }));
     }
 
     // ── new topic ─────────────────────────────────────────────────────────────

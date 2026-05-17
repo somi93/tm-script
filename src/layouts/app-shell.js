@@ -35,6 +35,7 @@ import { initAboutTmPage } from '../pages/about-tm.js';
 import { initAboutProPage } from '../pages/about-pro.js';
 import { initBuyProPage } from '../pages/buy-pro.js';
 import { initFreeProPage } from '../pages/free-pro.js';
+import { initAccountPage }   from '../pages/account.js';
 import { initDonationsPage } from '../pages/donations.js';
 import { initUserGuidePage } from '../pages/user-guide.js';
 import { initInternationalCupCoefficientsPage } from '../pages/international-cup-coefficients.js';
@@ -47,6 +48,7 @@ import { initNationalTeamsElectionPage } from '../pages/national-teams-election.
 import { initNationalTeamsRegionPage } from '../pages/national-teams-region.js';
 import { initNationalTeamsSquadPage } from '../pages/national-teams-squad.js';
 import { initNationalTeamsPage } from '../pages/national-teams.js';
+import { initStadiumPage } from '../pages/stadium.js';
 import { initSupportProPage } from '../pages/support-pro.js';
 import { initPlayerPage } from '../pages/player.js';
 import { initPlayersPage } from '../pages/players.js';
@@ -645,7 +647,7 @@ function initCurrentPage() {
     if (/^\/club(?:\/\d+(?:\/(?:overview\/)?)?)?\/?$/i.test(currentPath)) {
         initClubPage(main);
     }
-    if (/^\/fixtures\/club\/\d+\/?$/i.test(currentPath)) {
+    if (/^\/fixtures\/club\/?(?:\d+\/?)?$/i.test(currentPath)) {
         initFixturesPage(main);
     }
     if (/^\/fixtures\/national-teams\/[a-z]{2,3}\/?$/i.test(currentPath)) {
@@ -737,6 +739,14 @@ function initCurrentPage() {
     }
     if (/^\/national-teams\//i.test(currentPath)) {
         initNationalTeamsPage(main);
+    }
+    if (/^\/account(?:\/(?:settings|club-info|teams|reserve-teams|donate-pro))?\/?$/i.test(currentPath)) {
+        initAccountPage(main);
+        return;
+    }
+    if (/^\/stadium\/?$/i.test(currentPath)) {
+        initStadiumPage(main);
+        return;
     }
     if (/^\/support-pro\/?$/i.test(currentPath)) {
         initSupportProPage(main);

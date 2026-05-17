@@ -1,7 +1,7 @@
 import { TmAppShellHeader } from './tm-app-shell-header.js';
 import { TmUI } from './tm-ui.js';
 import { TmMessagesModel } from '../../models/messages.js';
-import { openPmDialog } from './tm-pm-dialog.js';
+import { openPmDialog, openPmCompose } from './tm-pm-dialog.js';
 import { bindFeedMenu } from './tm-feed-menu.js';
 
 const STYLE_ID = 'tmvu-shell-pm-menu-styles';
@@ -279,11 +279,8 @@ function bindPmMenu(pmState) {
     pmState.composeEl?.addEventListener('click', event => {
         event.preventDefault();
         event.stopPropagation();
-        if (typeof window.pm_new === 'function') {
-            window.pm_new('', 'new');
-            return;
-        }
-        window.location.assign('/pm/');
+        closePmMenu(pmState);
+        openPmCompose(pmState);
     });
 
     pmState.viewAllEl?.addEventListener('click', event => {

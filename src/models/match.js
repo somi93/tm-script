@@ -43,6 +43,17 @@ export const TmMatchModel = {
     },
 
     /**
+     * Fetch raw match data (no normalization). Returns the API response as-is.
+     * Use when the consumer handles raw format directly (e.g. buildRichTooltip).
+     *
+     * @param {string|number} matchId
+     * @returns {Promise<object|null>}
+     */
+    async fetchMatchRaw(matchId) {
+        return TmMatchService.fetchMatchRaw(matchId);
+    },
+
+    /**
      * Fetch match data without triggering the async player-profile enrichment.
      * Use when only static match facts are needed (stats page, history, etc.).
      *

@@ -37,9 +37,16 @@ const show = (el, matchId, season) => {
 
     state.anchor = el;
     const isCurrentSeason = Number(season) === currentSeason();
+
+    // NT matches are identified by their href containing /matches/nt/.
+    // The raw matchId may be numeric-only ('551631') or already prefixed ('nt551631');
+    // normalise to 'nt<numeric>' so the API call uses the correct id.
+    const isNt = /\/matches\/nt\//i.test(el.dataset?.href || '');
+    const apiMatchId = isNt ? 'nt' + String(matchId).replace(/^nt/, '') : matchId;
+
     state.tooltipEl = document.createElement('div');
     state.tooltipEl.className = 'rnd-h2h-tooltip';
-    state.tooltipEl.dataset.forMid = String(matchId);
+    state.tooltipEl.dataset.forMid = String(apiMatchId);
     state.tooltipEl.style.transform = 'none';
     document.body.appendChild(state.tooltipEl);
     TmTooltip.positionTooltip(state.tooltipEl, el);
@@ -49,8 +56,8 @@ const show = (el, matchId, season) => {
         state.hideTimer = setTimeout(() => removeTooltip(), 100);
     });
 
-    if (state.cache[matchId]) {
-        const cached = state.cache[matchId];
+    if (state.cache[apiMatchId]) {
+        const cached = state.cache[apiMatchId];
         state.tooltipEl.innerHTML = cached._rich ? buildRichTooltip(cached) : buildLegacyTooltipContent(cached);
         requestAnimationFrame(() => state.tooltipEl?.classList.add('visible'));
         return;
@@ -63,15 +70,15 @@ const show = (el, matchId, season) => {
         if (state.tooltipEl) state.tooltipEl.innerHTML = TmUI.error('Failed', true);
     };
 
-    if (isCurrentSeason) {
-        TmMatchModel.fetchMatchCached(matchId).then(data => {
-            if (!data) {
-                onFail();
-                return;
-            }
+    // NT matches: fetch raw (no normalization) — buildRichTooltip handles raw format natively.
+    // This avoids normalizeRawMatch edge-cases with NT data and gives correct homeId ('128')
+    // so goal home/away detection works correctly.
+    if (isNt) {
+        TmMatchModel.fetchMatchRaw(apiMatchId).then(data => {
+            if (!data) { onFail(); return; }
             data._rich = true;
-            state.cache[matchId] = data;
-            if (state.tooltipEl?.dataset.forMid === String(matchId)) {
+            state.cache[apiMatchId] = data;
+            if (state.tooltipEl?.dataset.forMid === String(apiMatchId)) {
                 state.tooltipEl.innerHTML = buildRichTooltip(data);
                 TmTooltip.positionTooltip(state.tooltipEl, state.anchor);
             }
@@ -79,13 +86,30 @@ const show = (el, matchId, season) => {
         return;
     }
 
-    TmMatchModel.fetchTooltip(matchId, season).then(data => {
+    // Current-season club matches use the cached normalized path.
+    if (isCurrentSeason) {
+        TmMatchModel.fetchMatchCached(apiMatchId).then(data => {
+            if (!data) {
+                onFail();
+                return;
+            }
+            data._rich = true;
+            state.cache[apiMatchId] = data;
+            if (state.tooltipEl?.dataset.forMid === String(apiMatchId)) {
+                state.tooltipEl.innerHTML = buildRichTooltip(data);
+                TmTooltip.positionTooltip(state.tooltipEl, state.anchor);
+            }
+        }).catch(onFail);
+        return;
+    }
+
+    TmMatchModel.fetchTooltip(apiMatchId, season).then(data => {
         if (!data) {
             onFail();
             return;
         }
-        state.cache[matchId] = data;
-        if (state.tooltipEl?.dataset.forMid === String(matchId)) {
+        state.cache[apiMatchId] = data;
+        if (state.tooltipEl?.dataset.forMid === String(apiMatchId)) {
             state.tooltipEl.innerHTML = buildLegacyTooltipContent(data);
             TmTooltip.positionTooltip(state.tooltipEl, state.anchor);
         }

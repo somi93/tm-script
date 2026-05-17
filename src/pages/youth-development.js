@@ -142,6 +142,7 @@ const revealAllPlayers = () => {
 const handlePullNewPlayers = async () => {
     if (state.busy || !state.pull.available || !state.pull.visible) return;
     setBusy(true);
+    let newPlayers = null;
     try {
         const result = await TmYouthModel.fetchNewYouthPlayers({
             age: state.selectedAge,
@@ -157,19 +158,29 @@ const handlePullNewPlayers = async () => {
             return;
         }
 
-        const newPlayers = decoratePlayers(result.players || [], { revealed: false, pulledNew: true });
+        newPlayers = decoratePlayers(result.players || [], { revealed: false, pulledNew: true });
         if (!newPlayers.length) {
             state.notice = 'No new youth players were returned for the selected focus.';
             return;
         }
 
-        setPlayers([...newPlayers, ...state.players]);
         state.pull.visible = false;
-        state.notice = 'New youth players loaded. Reveal them before hire or fire actions unlock.';
+        state.notice = 'New youth players loading...';
     } catch (error) {
         state.notice = error?.message || 'Failed to pull new youth players.';
     } finally {
         setBusy(false);
+    }
+
+    if (newPlayers?.length) {
+        for (let i = 0; i < newPlayers.length; i++) {
+            if (i > 0) await new Promise(resolve => setTimeout(resolve, 1000));
+            setPlayers([newPlayers[i], ...state.players]);
+            if (i === newPlayers.length - 1) {
+                state.notice = 'New youth players loaded. Reveal them before hire or fire actions unlock.';
+            }
+            renderPage();
+        }
     }
 };
 

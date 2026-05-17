@@ -12,7 +12,8 @@ import { TmTabsMod } from '../components/player/tabs/tm-tabs-mod.js';
 import { TmPlayerModel, refreshPlayerSkills } from '../models/player.js';
 import { runSyncPipeline } from '../workflows/player-history/sync-pipeline.js';
 import { injectTmPageLayoutStyles } from '../components/shared/tm-page-layout.js';
-import { TmPlayerCompare } from '../components/player/compare/tm-player-compare.js';
+import { TmPlayerCompare, RADAR_OUT, RADAR_GK } from '../components/player/compare/tm-player-compare.js';
+import { TmPlayerRadar } from '../components/shared/tm-player-radar.js';
 
 export function initPlayerPage(main) {
     if (!main || !main.isConnected) {
@@ -124,19 +125,25 @@ export function initPlayerPage(main) {
         }
 
         let sidebarSlot = col3.querySelector('#tmps-sidebar-slot');
-        let calcSlot = col3.querySelector('#tmac-slot');
+        let radarSlot   = col3.querySelector('#tmpr-player-slot');
+        let optionsSlot = col3.querySelector('#tmps-options-slot');
+        let awardsSlot  = col3.querySelector('#tmps-awards-slot');
 
-        if (!sidebarSlot || !calcSlot) {
+        if (!sidebarSlot || !radarSlot || !optionsSlot || !awardsSlot) {
             col3.innerHTML = '';
 
             sidebarSlot = ensureRailSlot(col3, 'tmps-sidebar-slot');
-            calcSlot = ensureRailSlot(col3, 'tmac-slot');
+            radarSlot   = ensureRailSlot(col3, 'tmpr-player-slot');
+            optionsSlot = ensureRailSlot(col3, 'tmps-options-slot');
+            awardsSlot  = ensureRailSlot(col3, 'tmps-awards-slot');
         }
 
         return {
             col3,
             sidebarSlot,
-            calcSlot,
+            radarSlot,
+            optionsSlot,
+            awardsSlot,
             nativeSnapshot: col3.__tmvuNativeSnapshot,
         };
     };
@@ -154,12 +161,35 @@ export function initPlayerPage(main) {
                 player,
                 isOwnPlayer: player.isOwnPlayer,
                 sourceRoot: sidebarLayout.nativeSnapshot,
+                noOptions: true,
+                noAwards: true,
             });
         }
 
-        if (sidebarLayout?.calcSlot) {
-            TmAsiCalculator.mount(sidebarLayout.calcSlot, { player });
+        if (sidebarLayout?.radarSlot) {
+            const groups = player.isGK ? RADAR_GK : RADAR_OUT;
+            TmPlayerRadar.mount(sidebarLayout.radarSlot, groups, [player]);
         }
+
+        if (sidebarLayout?.optionsSlot) {
+            TmPlayerSidebar.mount(sidebarLayout.optionsSlot, {
+                player,
+                isOwnPlayer: player.isOwnPlayer,
+                sourceRoot: sidebarLayout.nativeSnapshot,
+                noTransfer: true,
+                noAwards: true,
+            });
+        }
+
+        if (sidebarLayout?.awardsSlot) {
+            TmPlayerSidebar.mountAwards(sidebarLayout.awardsSlot, {
+                sourceRoot: sidebarLayout.nativeSnapshot,
+            });
+        }
+
+        const layout = ensurePlayerLayout();
+        const asiSlot = ensureRailSlot(layout?.leftRail, 'tmac-slot');
+        if (asiSlot) TmAsiCalculator.mount(asiSlot, { player });
 
         if (rerenderSkills) TmSkillsGrid.reRender();
         else TmSkillsGrid.mount({ player });

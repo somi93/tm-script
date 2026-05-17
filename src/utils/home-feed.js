@@ -43,7 +43,14 @@ const resolveFeedLinkTarget = (target) => {
     const raw = clean(target);
     if (!raw) return '';
     if (raw.startsWith('/')) return raw;
-    if (/^league;/i.test(raw)) return '/league/';
+    if (/^league;/i.test(raw)) {
+        const parts = raw.split(';');
+        const country = parts[1];
+        const division = parts[2];
+        const group = parts[3] || '1';
+        if (country && division) return `/league/${country}/${division}/${group}/`;
+        return '/league/';
+    }
     return '';
 };
 

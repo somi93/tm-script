@@ -61,8 +61,14 @@ export const injectPlayersPageStyles = () => {
             overflow-x: auto;
             overflow-y: hidden;
         }
-        .tmvu-players-team-panel { margin-bottom: var(--tmu-space-lg); }
+
+        .tmvu-players-team-panel { margin-bottom: var(--tmu-space-lg); overflow: visible; }
         .tmvu-players-panel-body { padding: var(--tmu-space-md) var(--tmu-space-md) var(--tmu-space-sm); }
+        .tmvu-players-panel-body .tmu-tbl thead th {
+            position: sticky;
+            top: calc(var(--tmvu-header-height, 0px) + 10px);
+            z-index: 2;
+        }
         .tmvu-players-team-title { font-size: var(--tmu-font-md); font-weight: 700; color: var(--tmu-text-strong); }
         .tmvu-players-team-count { color: var(--tmu-text-muted); font-weight: 400; margin-left: var(--tmu-space-xs); }
         .tmvu-players-section-title {

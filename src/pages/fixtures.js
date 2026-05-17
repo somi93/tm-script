@@ -4,14 +4,14 @@ import { TmSummaryStrip } from '../components/shared/tm-summary-strip.js';
 import { TmClubFixturesStyles } from '../components/club/tm-club-fixtures-styles.js';
 import { TmClubModel } from '../models/club.js';
 import { initClubLayout, normalizeClubHref } from '../components/club/tm-club-layout.js';
+import { TmUtils } from '../lib/tm-utils.js';
 
 export function initFixturesPage(main) {
     if (!main || !main.isConnected) return;
 
     const routeMatch = window.location.pathname.match(/^\/fixtures\/club\/(\d+)\/?$/);
-    if (!routeMatch) return;
-
-    const CLUB_ID = routeMatch[1];
+    const CLUB_ID = routeMatch?.[1] ?? TmUtils.getOwnClubIds()[0];
+    if (!CLUB_ID) return;
     const layout = initClubLayout({ main, currentPath: normalizeClubHref(window.location.pathname) });
     if (!layout?.mainColumn) return;
     const container = layout.mainColumn;

@@ -44,4 +44,8 @@ export const TmMessagesModel = {
     suggestClubs(q, limit) {
         return TmMessagesService.suggestClubs(q, limit);
     },
+
+    likeForumPost(postId, likeType, currentValue) {
+        return TmMessagesService.likeForumPost(postId, likeType, currentValue);
+    },
 };

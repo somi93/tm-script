@@ -93,4 +93,12 @@ export const TmMessagesService = {
     async suggestClubs(q, limit = 10) {
         return _post('/ajax/suggest_clubs.ajax.php', { q_string: q, limit, settings: '{}' });
     },
+
+    async likeForumPost(postId, likeType, currentValue) {
+        return _post('/ajax/forum_like.ajax.php', {
+            post_id: postId,
+            like_type: likeType,
+            current_value: currentValue,
+        });
+    },
 };

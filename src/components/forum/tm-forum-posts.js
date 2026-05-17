@@ -2,6 +2,7 @@ import { TmSectionCard } from '../shared/tm-section-card.js';
 import { TmUI } from '../shared/tm-ui.js';
 import { TmPlayerModel } from '../../models/player.js';
 import { TmPlayerTooltip } from '../player/tooltip/tm-player-tooltip.js';
+import { TmMessagesModel } from '../../models/messages.js';
 import { TmStars } from '../shared/tm-stars.js';
 import { esc, clean } from './tm-forum-utils.js';
 
@@ -32,7 +33,7 @@ function postHtml(p) {
         ? '<div class="tmvu-forum-post-franks">' + p.forumRankImgs.map(src => '<img src="' + esc(src) + '">').join('') + '</div>'
         : '';
 
-    return '<div class="tmvu-forum-post">'
+    return '<div class="tmvu-forum-post"' + (p.postDbId ? ' id="tmvu-post-' + p.postDbId + '"' : '') + '>'
         // user card
         + '<div class="tmvu-forum-post-user">'
         + '<div class="tmvu-forum-post-logo">'
@@ -57,6 +58,10 @@ function postHtml(p) {
         + '<div class="tmvu-forum-post-content">' + p.contentHtml + '</div>'
         + '<div class="tmvu-forum-post-actions">'
         + (p.postDbId ? btn({ label: '\u2665 ' + (p.likesPos || 0), cls: 'tmvu-post-btn', color: 'secondary', size: 'xs', attrs: { onclick: 'pop_likes(' + p.postDbId + ')' } }) : '')
+        + (p.postDbId ? '<div class="tmvu-post-like-btns" id="tmvu-like-btns-' + p.postDbId + '">'
+            + btn({ label: '\uD83D\uDC4D', cls: 'tmvu-post-btn', color: 'secondary', size: 'xs', attrs: { onclick: '_tmvuPost.like(' + p.postDbId + ',1)', title: 'Like' } })
+            + btn({ label: '\uD83D\uDC4E', cls: 'tmvu-post-btn', color: 'secondary', size: 'xs', attrs: { onclick: '_tmvuPost.like(' + p.postDbId + ',2)', title: 'Dislike' } })
+            + '</div>' : '')
         + (p.seqNum   ? btn({ label: 'Quote', cls: 'tmvu-post-btn', color: 'secondary', size: 'xs', attrs: { onclick: 'quote(' + p.seqNum + ')' } }) : '')
         + btn({ label: 'Reply', cls: 'tmvu-post-btn', color: 'secondary', size: 'xs', attrs: { onclick: 'reply()' } })
         + '</div>'
@@ -232,6 +237,57 @@ export const TmForumPosts = {
             clearTimeout(tipTimer);
             TmPlayerTooltip.hide();
         });
+
+        window._tmvuPost = {
+            like(postId, likeType) {
+                const btnsEl = document.getElementById('tmvu-like-btns-' + postId);
+                if (!btnsEl) return;
+                const origHtml = btnsEl.innerHTML;
+                btnsEl.innerHTML = '<span class="tmvu-post-like-loader">\u23F3</span>';
+
+                const likesDiv = document.querySelector('#like_post' + postId);
+                const currentValue = likesDiv?.getAttribute('current_value') || '0';
+
+                TmMessagesModel.likeForumPost(String(postId), likeType, currentValue).then(data => {
+                    if (data != null) {
+                        const postEl = document.getElementById('tmvu-post-' + postId);
+                        const metaEl = postEl?.querySelector('.tmvu-forum-post-meta');
+                        let likesEl = postEl?.querySelector('.tmvu-forum-post-likes');
+
+                        const posSpan = likesDiv?.querySelector('.positive');
+                        const negSpan = likesDiv?.querySelector('.negative');
+                        let pos = parseInt(posSpan?.getAttribute('current_value') || '0', 10) || 0;
+                        let neg = parseInt(negSpan?.getAttribute('current_value') || '0', 10) || 0;
+                        if (likeType === 1) pos++;
+                        else neg++;
+
+                        const newHtml =
+                            (pos > 0 ? '<span class="tmvu-forum-post-like-pos">+' + pos + '</span>' : '')
+                            + (pos > 0 && neg > 0 ? ' ' : '')
+                            + (neg > 0 ? '<span class="tmvu-forum-post-like-neg">-' + neg + '</span>' : '');
+
+                        if (likesEl) {
+                            likesEl.innerHTML = newHtml;
+                        } else if (metaEl && newHtml) {
+                            likesEl = document.createElement('span');
+                            likesEl.className = 'tmvu-forum-post-likes';
+                            likesEl.setAttribute('onclick', 'pop_likes(' + postId + ')');
+                            likesEl.setAttribute('title', 'See who liked this');
+                            likesEl.innerHTML = newHtml;
+                            const dateEl = metaEl.querySelector('.tmvu-forum-post-date');
+                            if (dateEl) metaEl.insertBefore(likesEl, dateEl);
+                            else metaEl.appendChild(likesEl);
+                        }
+
+                        btnsEl.innerHTML = origHtml;
+                    } else {
+                        btnsEl.innerHTML = origHtml;
+                    }
+                }).catch(() => {
+                    btnsEl.innerHTML = origHtml;
+                });
+            },
+        };
 
         return el;
     },

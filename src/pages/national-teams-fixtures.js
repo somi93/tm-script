@@ -38,6 +38,7 @@ const parseFixturesResponse = (payload) => Object.entries(payload || {})
             awayName: cleanText(match?.awayteamname || ''),
             awayHref: extractHrefFromHtml(match?.away_link),
             awayFlagHtml: normalizeFlagHtml(match?.away_flag),
+            matchHref: extractHrefFromHtml(match?.match_link) || (match?.id ? `/matches/nt/${match.id}/` : ''),
             result: cleanText(match?.result || wrapperText(match?.match_link) || 'x-x'),
             matchtype_name: cleanText(match?.matchtype_name || match?.matchtype_sort || ''),
         })).filter(match => match.matchId && match.homeName && match.awayName);
