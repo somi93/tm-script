@@ -51,6 +51,20 @@ const injectStyles = () => {
             letter-spacing: .08em;
         }
 
+        .tmvu-match-date-header {
+            padding: var(--tmu-space-xs) var(--tmu-space-md);
+            border-bottom: 1px solid var(--tmu-border-faint);
+            color: var(--tmu-text-muted);
+            font-size: var(--tmu-font-xs);
+            font-weight: 700;
+            letter-spacing: .04em;
+            background: var(--tmu-surface-dark-soft);
+        }
+
+        .tmvu-match-date-header:first-child {
+            border-top: none;
+        }
+
         .tmvu-cup-round-groups {
             display: flex;
             flex-direction: column;
@@ -140,23 +154,28 @@ const injectStyles = () => {
 
 const buildFixtureList = (matches, { season = null } = {}) => {
     injectStyles();
-    return `
-        <div class="tmvu-match-list">
-            ${matches.map((match, index) => TmMatchRow.render({
-                matchId: match.matchId,
-                season,
-                isPlayed: match.isPlayed,
-                isHighlight: match.isHighlight,
-                scoreText: match.scoreText,
-                scoreHref: match.scoreHref,
-                home: match.home,
-                away: match.away,
-            }, {
-                index,
-                showLogos: false,
-            })).join('')}
-        </div>
-    `;
+    let lastDate = null;
+    const rows = matches.map((match, index) => {
+        let header = '';
+        if (match.dateText && match.dateText !== lastDate) {
+            lastDate = match.dateText;
+            header = `<div class="tmvu-match-date-header">${escapeHtml(match.dateText)}</div>`;
+        }
+        return header + TmMatchRow.render({
+            matchId: match.matchId,
+            season,
+            isPlayed: match.isPlayed,
+            isHighlight: match.isHighlight,
+            scoreText: match.scoreText,
+            scoreHref: match.scoreHref,
+            home: match.home,
+            away: match.away,
+        }, {
+            index,
+            showLogos: false,
+        });
+    }).join('');
+    return `<div class="tmvu-match-list">${rows}</div>`;
 };
 
 const buildGroupedFixtureList = (groups, { season = null } = {}) => {

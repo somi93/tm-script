@@ -45,7 +45,10 @@ const _tableOpts = () => ({
     nameDecorator: p => playerStatusIconsHtml({ ...p, onSale: _onSaleIds.has(String(p.id)) }),
     extraColsBefore: [{ key: 'no', label: '#', align: 'r' }],
     extraColsAfter: _showTraining
-        ? [{ key: 'training', label: 'Training', align: 'c', sortable: false, render: (v) => PlayerTrainingDots.render(Array.isArray(v?.custom) ? v.custom.join('') : '') }]
+        ? [{ key: 'training', label: 'Training', align: 'c', sortable: false, render: (v, p) => {
+            if (p?.isGK) return '<span style="color:var(--tmu-text-muted);font-size:var(--tmu-font-xs);letter-spacing:.04em">AUTO</span>';
+            return PlayerTrainingDots.render(Array.isArray(v?.custom) ? v.custom.join('') : '');
+        } }]
         : [],
 });
 

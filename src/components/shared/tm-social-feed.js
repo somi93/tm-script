@@ -63,7 +63,7 @@ const injectStyles = () => {
         '.tmvu-home-feed-action:hover{background:var(--tmu-surface-tab-hover);color:var(--tmu-text-strong);border-color:var(--tmu-border-success)}',
         '.tmvu-home-feed-action:disabled{opacity:.45;cursor:default}',
         '.tmvu-home-feed-similar{display:flex;justify-content:flex-end;padding:var(--tmu-space-md) 0 0 var(--tmu-space-xl);margin-top:var(--tmu-space-md);border-top:1px solid var(--tmu-border-contrast)}',
-        '.tmvu-home-feed-similar-btn{appearance:none;background:transparent;border:none;color:var(--tmu-accent);cursor:pointer;font:inherit;font-size:var(--tmu-font-sm);font-weight:800;line-height:1.2;padding:0;display:inline-flex;align-items:center;gap:var(--tmu-space-sm)}',
+        '.tmvu-home-feed-similar-btn{appearance:none;background:transparent;border:none;color:var(--tmu-accent);cursor:pointer;font:inherit;font-size:var(--tmu-font-sm);font-weight:800;line-height:1.2;padding:0 var(--tmu-space-md);display:inline-flex;align-items:center;gap:var(--tmu-space-sm)}',
         '.tmvu-home-feed-similar-btn:hover{color:var(--tmu-text-strong)}',
         '.tmvu-home-feed-composer{margin-top:var(--tmu-space-md);padding-top:var(--tmu-space-md);border-top:1px solid var(--tmu-border-contrast)}',
         '.tmvu-home-feed-composer[hidden]{display:none!important}',

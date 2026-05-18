@@ -193,10 +193,6 @@ export function initPlayerPage(main) {
 
         if (rerenderSkills) TmSkillsGrid.reRender();
         else TmSkillsGrid.mount({ player });
-
-        const mainRail = ensurePlayerLayout()?.mainRail;
-        const compareSlot = ensureRailSlot(mainRail, 'tmpc-trigger-slot');
-        TmPlayerCompare.mountButton(compareSlot, { player });
     };
 
     const applyTooltip = (data) => {

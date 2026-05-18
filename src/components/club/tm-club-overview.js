@@ -278,6 +278,13 @@ function injectStyles() {
             padding: var(--tmu-space-md) var(--tmu-space-lg) var(--tmu-space-xl);
         }
 
+        .tmco-trophies-empty {
+            padding: var(--tmu-space-lg);
+            color: var(--tmu-text-muted);
+            font-size: var(--tmu-font-sm);
+            text-align: center;
+        }
+
         .tmco-trophy {
             display: grid;
             grid-template-columns: 75px minmax(0, 1fr);
@@ -555,10 +562,12 @@ function mountTrophiesBox(container, data) {
             <div class="tmco-box-title">Trophies</div>
         </div>
         <div class="tmco-box-body">
-            <div class="tmco-trophies">
+            ${(!data.visible.length && !data.hidden.length)
+                ? `<div class="tmco-trophies-empty">No trophies yet.</div>`
+                : `<div class="tmco-trophies">
                 ${buildTrophyRows(data.visible)}
                 ${data.hidden.length ? `<div class="tmco-expand" hidden>${buildTrophyRows(data.hidden)}</div><div class="tmco-expand-toggle">↓ ↓ ↓</div>` : ''}
-            </div>
+            </div>`}
         </div>
     `;
 

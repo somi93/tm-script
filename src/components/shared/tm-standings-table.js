@@ -1,4 +1,5 @@
 import { TmButton } from './tm-button.js';
+import { CountryFlag } from './country-flag.js';
 
 const STYLE_ID = 'tmvu-standings-table-style';
 const htmlOf = (node) => node ? node.outerHTML : '';
@@ -130,6 +131,8 @@ function injectStyles() {
             flex-shrink: 0;
         }
 
+
+
         .std-form-head,
         .std-form-cell {
             white-space: nowrap;
@@ -215,7 +218,8 @@ function buildHtml({ rows = [], liveZoneMap = {}, isFiltered = false, showForm =
             const clubLogo = row.clubId
                 ? `<img class="std-club-logo" src="/pics/club_logos/${escapeHtml(row.clubId)}_25.png" onerror="this.style.visibility='hidden'">`
                 : '';
-            clubInner = `<span class="std-club-cell">${clubLogo}${clubHref ? `<a href="${clubHref}">${escapeHtml(row.clubName)}</a>` : escapeHtml(row.clubName)}</span>`;
+            const flagHtml = row.countryCode ? CountryFlag.render(row.countryCode) : '';
+            clubInner = `<span class="std-club-cell">${clubLogo}${clubHref ? `<a href="${clubHref}">${escapeHtml(row.clubName)}</a>` : escapeHtml(row.clubName)}${flagHtml}</span>`;
         }
         const clubCell = `<td class="std-left">${clubInner}</td>`;
 

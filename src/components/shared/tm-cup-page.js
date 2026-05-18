@@ -93,10 +93,20 @@ function htmlOf(node) {
     return node ? node.outerHTML : '';
 }
 
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+function fmtMatchDate(iso) {
+    if (!iso) return '';
+    const [, mo, dy] = iso.split('-');
+    if (!dy || !mo) return iso;
+    return `${Number(dy)}. ${MONTH_NAMES[Number(mo) - 1] || mo}`;
+}
+
 function matchFromApi(m, roundLabel = '') {
     return {
         roundLabel,
         matchId: String(m.id || ''),
+        date: String(m.date || ''),
+        dateText: fmtMatchDate(String(m.date || '')),
         scoreText: m.result ? String(m.result) : 'x-x',
         scoreHref: `/matches/${m.id}/`,
         scoreHtml: m.match_link || '',

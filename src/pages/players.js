@@ -524,10 +524,6 @@ export function initPlayersPage(main) {
             weeklyChanges: skillChangesMap.get(player.id) || null,
         }));
 
-        console.group('[Step 2] Players loaded — total:', allPlayers.map(p => p.weeklyChanges));
-        console.log(allPlayers);
-        console.groupEnd();
-
         // Steps 3-11: sync pipeline
         let syncBar = null;
         const allPlayersWithData = await runSyncPipeline(allPlayers, (done, total) => {

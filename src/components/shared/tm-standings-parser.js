@@ -34,10 +34,14 @@ function parseStandingsRow(row, { highlightedClubId = '', rankFallback = 0 } = {
     const clubId = extractClubId(clubLink);
     const isHighlighted = cells.some(cell => cell.classList.contains('highlight_td'));
 
+    const countryLink = cells.reduce((found, cell) => found || cell.querySelector('a[href*="/national-teams/"]'), null);
+    const countryCode = countryLink?.getAttribute('href')?.match(/\/national-teams\/([a-z]{2,4})\//i)?.[1]?.toLowerCase() || '';
+
     return {
         rank: hasRankColumn ? (Number.parseInt(cleanText(cells[0]?.textContent || ''), 10) || rankFallback) : rankFallback,
         clubId,
         clubName: cleanText(clubLink.textContent || ''),
+        countryCode,
         gp: Number.parseInt(cleanText(cells[1 + offset]?.textContent || ''), 10) || 0,
         w: Number.parseInt(cleanText(cells[2 + offset]?.textContent || ''), 10) || 0,
         d: Number.parseInt(cleanText(cells[3 + offset]?.textContent || ''), 10) || 0,

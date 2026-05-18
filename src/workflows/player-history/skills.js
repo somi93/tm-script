@@ -236,10 +236,10 @@ const fillSkillsForward = (player) => {
                 caps[si] = (ti >= 0 && futInt === curInt) ? curInt + 0.99 : (ti < 0 ? curInt + 0.99 : Infinity);
                 floors[si] = ti < 0 ? futInt : curInt;
             } else {
-                caps[si] = Infinity;
-                floors[si] = 1.0;
+                // No DOM or future constraint — pin max skills at 20
+                if (curInt >= 20) { caps[si] = 20; floors[si] = 20; }
+                else { caps[si] = Infinity; floors[si] = 1.0; }
             }
-            if (curInt >= 20) { caps[si] = 20; floors[si] = 20; }
             caps[si] = Math.min(caps[si], 20);
         }
 

@@ -4685,6 +4685,7 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
       event.stopPropagation();
       closePmMenu(pmState);
       openPmCompose(pmState);
+      openPmDialog(pmState, { place: "inbox" });
     });
     (_b = pmState.viewAllEl) == null ? void 0 : _b.addEventListener("click", (event) => {
       event.preventDefault();
@@ -6030,9 +6031,9 @@ box-shadow:inset 0 -1px 0 var(--tmu-border-soft-alpha)
     if (!Array.isArray(player2 == null ? void 0 : player2.skills)) return player2;
     const remap = { set_pieces: "setpieces", arialability: "aerial" };
     player2.skills = player2.skills.map((skill) => {
-      var _a2, _b, _c, _d;
+      var _a2, _b, _c, _d, _e, _f;
       const postKey = (_a2 = remap[skill.key]) != null ? _a2 : skill.key;
-      const value = (_d = postPlayer[postKey]) != null ? _d : skill.key2 ? (_c = postPlayer[(_b = remap[skill.key2]) != null ? _b : skill.key2]) != null ? _c : null : null;
+      const value = (_f = (_b = postPlayer[postKey]) != null ? _b : postPlayer[skill.key]) != null ? _f : skill.key2 ? (_e = (_d = postPlayer[(_c = remap[skill.key2]) != null ? _c : skill.key2]) != null ? _d : postPlayer[skill.key2]) != null ? _e : null : null;
       return { ...skill, value: value != null ? Number(value) : null };
     }).filter((skill) => skill.value != null && skill.value !== 0);
     return player2;
@@ -12728,7 +12729,7 @@ order:initial
     return match ? match[1] : "";
   }
   function parseStandingsRow(row, { highlightedClubId = "", rankFallback = 0 } = {}) {
-    var _a2, _b, _c, _d, _e, _f, _g, _h;
+    var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
     const cells = Array.from(row.querySelectorAll("td"));
     if (cells.length < 8) return null;
     let clubLink = null;
@@ -12742,17 +12743,20 @@ order:initial
     const className = row.className || "";
     const clubId2 = extractClubId(clubLink);
     const isHighlighted = cells.some((cell) => cell.classList.contains("highlight_td"));
+    const countryLink = cells.reduce((found, cell) => found || cell.querySelector('a[href*="/national-teams/"]'), null);
+    const countryCode = ((_c = (_b = (_a2 = countryLink == null ? void 0 : countryLink.getAttribute("href")) == null ? void 0 : _a2.match(/\/national-teams\/([a-z]{2,4})\//i)) == null ? void 0 : _b[1]) == null ? void 0 : _c.toLowerCase()) || "";
     return {
-      rank: hasRankColumn ? Number.parseInt(cleanText9(((_a2 = cells[0]) == null ? void 0 : _a2.textContent) || ""), 10) || rankFallback : rankFallback,
+      rank: hasRankColumn ? Number.parseInt(cleanText9(((_d = cells[0]) == null ? void 0 : _d.textContent) || ""), 10) || rankFallback : rankFallback,
       clubId: clubId2,
       clubName: cleanText9(clubLink.textContent || ""),
-      gp: Number.parseInt(cleanText9(((_b = cells[1 + offset]) == null ? void 0 : _b.textContent) || ""), 10) || 0,
-      w: Number.parseInt(cleanText9(((_c = cells[2 + offset]) == null ? void 0 : _c.textContent) || ""), 10) || 0,
-      d: Number.parseInt(cleanText9(((_d = cells[3 + offset]) == null ? void 0 : _d.textContent) || ""), 10) || 0,
-      l: Number.parseInt(cleanText9(((_e = cells[4 + offset]) == null ? void 0 : _e.textContent) || ""), 10) || 0,
-      gf: Number.parseInt(cleanText9(((_f = cells[5 + offset]) == null ? void 0 : _f.textContent) || ""), 10) || 0,
-      ga: Number.parseInt(cleanText9(((_g = cells[6 + offset]) == null ? void 0 : _g.textContent) || ""), 10) || 0,
-      pts: Number.parseInt(cleanText9(((_h = cells[7 + offset]) == null ? void 0 : _h.textContent) || ""), 10) || 0,
+      countryCode,
+      gp: Number.parseInt(cleanText9(((_e = cells[1 + offset]) == null ? void 0 : _e.textContent) || ""), 10) || 0,
+      w: Number.parseInt(cleanText9(((_f = cells[2 + offset]) == null ? void 0 : _f.textContent) || ""), 10) || 0,
+      d: Number.parseInt(cleanText9(((_g = cells[3 + offset]) == null ? void 0 : _g.textContent) || ""), 10) || 0,
+      l: Number.parseInt(cleanText9(((_h = cells[4 + offset]) == null ? void 0 : _h.textContent) || ""), 10) || 0,
+      gf: Number.parseInt(cleanText9(((_i = cells[5 + offset]) == null ? void 0 : _i.textContent) || ""), 10) || 0,
+      ga: Number.parseInt(cleanText9(((_j = cells[6 + offset]) == null ? void 0 : _j.textContent) || ""), 10) || 0,
+      pts: Number.parseInt(cleanText9(((_k = cells[7 + offset]) == null ? void 0 : _k.textContent) || ""), 10) || 0,
       zone: getZone(className),
       isMe: className.includes("highlighted_row_done") || isHighlighted || !!highlightedClubId && clubId2 === highlightedClubId
     };
@@ -12925,6 +12929,8 @@ order:initial
             flex-shrink: 0;
         }
 
+
+
         .std-form-head,
         .std-form-cell {
             white-space: nowrap;
@@ -12993,7 +12999,8 @@ order:initial
       } else {
         const clubHref = row.clubId ? `/club/${row.clubId}/` : "";
         const clubLogo = row.clubId ? `<img class="std-club-logo" src="/pics/club_logos/${escapeHtml13(row.clubId)}_25.png" onerror="this.style.visibility='hidden'">` : "";
-        clubInner = `<span class="std-club-cell">${clubLogo}${clubHref ? `<a href="${clubHref}">${escapeHtml13(row.clubName)}</a>` : escapeHtml13(row.clubName)}</span>`;
+        const flagHtml = row.countryCode ? CountryFlag.render(row.countryCode) : "";
+        clubInner = `<span class="std-club-cell">${clubLogo}${clubHref ? `<a href="${clubHref}">${escapeHtml13(row.clubName)}</a>` : escapeHtml13(row.clubName)}${flagHtml}</span>`;
       }
       const clubCell = `<td class="std-left">${clubInner}</td>`;
       const nextRow = rows[index + 1];
@@ -20692,12 +20699,13 @@ order:initial
           caps[si] = ti >= 0 && futInt === curInt ? curInt + 0.99 : ti < 0 ? curInt + 0.99 : Infinity;
           floors[si] = ti < 0 ? futInt : curInt;
         } else {
-          caps[si] = Infinity;
-          floors[si] = 1;
-        }
-        if (curInt >= 20) {
-          caps[si] = 20;
-          floors[si] = 20;
+          if (curInt >= 20) {
+            caps[si] = 20;
+            floors[si] = 20;
+          } else {
+            caps[si] = Infinity;
+            floors[si] = 1;
+          }
         }
         caps[si] = Math.min(caps[si], 20);
       }
@@ -21762,7 +21770,10 @@ order:initial
     rowCls: null,
     nameDecorator: (p) => playerStatusIconsHtml({ ...p, onSale: _onSaleIds.has(String(p.id)) }),
     extraColsBefore: [{ key: "no", label: "#", align: "r" }],
-    extraColsAfter: _showTraining ? [{ key: "training", label: "Training", align: "c", sortable: false, render: (v) => PlayerTrainingDots.render(Array.isArray(v == null ? void 0 : v.custom) ? v.custom.join("") : "") }] : []
+    extraColsAfter: _showTraining ? [{ key: "training", label: "Training", align: "c", sortable: false, render: (v, p) => {
+      if (p == null ? void 0 : p.isGK) return '<span style="color:var(--tmu-text-muted);font-size:var(--tmu-font-xs);letter-spacing:.04em">AUTO</span>';
+      return PlayerTrainingDots.render(Array.isArray(v == null ? void 0 : v.custom) ? v.custom.join("") : "");
+    } }] : []
   });
   var _appendSection = (body, label, players, marginTop = false) => {
     const lbl = document.createElement("div");
@@ -24600,7 +24611,7 @@ order:initial
       ".tmvu-home-feed-action:hover{background:var(--tmu-surface-tab-hover);color:var(--tmu-text-strong);border-color:var(--tmu-border-success)}",
       ".tmvu-home-feed-action:disabled{opacity:.45;cursor:default}",
       ".tmvu-home-feed-similar{display:flex;justify-content:flex-end;padding:var(--tmu-space-md) 0 0 var(--tmu-space-xl);margin-top:var(--tmu-space-md);border-top:1px solid var(--tmu-border-contrast)}",
-      ".tmvu-home-feed-similar-btn{appearance:none;background:transparent;border:none;color:var(--tmu-accent);cursor:pointer;font:inherit;font-size:var(--tmu-font-sm);font-weight:800;line-height:1.2;padding:0;display:inline-flex;align-items:center;gap:var(--tmu-space-sm)}",
+      ".tmvu-home-feed-similar-btn{appearance:none;background:transparent;border:none;color:var(--tmu-accent);cursor:pointer;font:inherit;font-size:var(--tmu-font-sm);font-weight:800;line-height:1.2;padding:0 var(--tmu-space-md);display:inline-flex;align-items:center;gap:var(--tmu-space-sm)}",
       ".tmvu-home-feed-similar-btn:hover{color:var(--tmu-text-strong)}",
       ".tmvu-home-feed-composer{margin-top:var(--tmu-space-md);padding-top:var(--tmu-space-md);border-top:1px solid var(--tmu-border-contrast)}",
       ".tmvu-home-feed-composer[hidden]{display:none!important}",
@@ -25474,6 +25485,13 @@ order:initial
             padding: var(--tmu-space-md) var(--tmu-space-lg) var(--tmu-space-xl);
         }
 
+        .tmco-trophies-empty {
+            padding: var(--tmu-space-lg);
+            color: var(--tmu-text-muted);
+            font-size: var(--tmu-font-sm);
+            text-align: center;
+        }
+
         .tmco-trophy {
             display: grid;
             grid-template-columns: 75px minmax(0, 1fr);
@@ -25728,10 +25746,10 @@ order:initial
             <div class="tmco-box-title">Trophies</div>
         </div>
         <div class="tmco-box-body">
-            <div class="tmco-trophies">
+            ${!data.visible.length && !data.hidden.length ? `<div class="tmco-trophies-empty">No trophies yet.</div>` : `<div class="tmco-trophies">
                 ${buildTrophyRows(data.visible)}
                 ${data.hidden.length ? `<div class="tmco-expand" hidden>${buildTrophyRows(data.hidden)}</div><div class="tmco-expand-toggle">\u2193 \u2193 \u2193</div>` : ""}
-            </div>
+            </div>`}
         </div>
     `;
     section.onclick = (event) => {
@@ -38192,6 +38210,20 @@ order:initial
             letter-spacing: .08em;
         }
 
+        .tmvu-match-date-header {
+            padding: var(--tmu-space-xs) var(--tmu-space-md);
+            border-bottom: 1px solid var(--tmu-border-faint);
+            color: var(--tmu-text-muted);
+            font-size: var(--tmu-font-xs);
+            font-weight: 700;
+            letter-spacing: .04em;
+            background: var(--tmu-surface-dark-soft);
+        }
+
+        .tmvu-match-date-header:first-child {
+            border-top: none;
+        }
+
         .tmvu-cup-round-groups {
             display: flex;
             flex-direction: column;
@@ -38279,23 +38311,28 @@ order:initial
   };
   var buildFixtureList = (matches, { season = null } = {}) => {
     injectStyles39();
-    return `
-        <div class="tmvu-match-list">
-            ${matches.map((match, index) => TmMatchRow.render({
-      matchId: match.matchId,
-      season,
-      isPlayed: match.isPlayed,
-      isHighlight: match.isHighlight,
-      scoreText: match.scoreText,
-      scoreHref: match.scoreHref,
-      home: match.home,
-      away: match.away
-    }, {
-      index,
-      showLogos: false
-    })).join("")}
-        </div>
-    `;
+    let lastDate = null;
+    const rows = matches.map((match, index) => {
+      let header = "";
+      if (match.dateText && match.dateText !== lastDate) {
+        lastDate = match.dateText;
+        header = `<div class="tmvu-match-date-header">${escapeHtml26(match.dateText)}</div>`;
+      }
+      return header + TmMatchRow.render({
+        matchId: match.matchId,
+        season,
+        isPlayed: match.isPlayed,
+        isHighlight: match.isHighlight,
+        scoreText: match.scoreText,
+        scoreHref: match.scoreHref,
+        home: match.home,
+        away: match.away
+      }, {
+        index,
+        showLogos: false
+      });
+    }).join("");
+    return `<div class="tmvu-match-list">${rows}</div>`;
   };
   var buildGroupedFixtureList = (groups, { season = null } = {}) => {
     injectStyles39();
@@ -38473,11 +38510,20 @@ order:initial
   function htmlOf6(node) {
     return node ? node.outerHTML : "";
   }
+  var MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  function fmtMatchDate(iso) {
+    if (!iso) return "";
+    const [, mo, dy] = iso.split("-");
+    if (!dy || !mo) return iso;
+    return `${Number(dy)}. ${MONTH_NAMES[Number(mo) - 1] || mo}`;
+  }
   function matchFromApi(m, roundLabel = "") {
     var _a2, _b, _c, _d;
     return {
       roundLabel,
       matchId: String(m.id || ""),
+      date: String(m.date || ""),
+      dateText: fmtMatchDate(String(m.date || "")),
       scoreText: m.result ? String(m.result) : "x-x",
       scoreHref: `/matches/${m.id}/`,
       scoreHtml: m.match_link || "",
@@ -52042,7 +52088,6 @@ order:initial
       };
     };
     const renderPlayerChrome = ({ rerenderSkills = false } = {}) => {
-      var _a2;
       if (!player2) return;
       TmPlayerCard.render({
         player: player2
@@ -52080,9 +52125,6 @@ order:initial
       if (asiSlot) TmAsiCalculator.mount(asiSlot, { player: player2 });
       if (rerenderSkills) TmSkillsGrid.reRender();
       else TmSkillsGrid.mount({ player: player2 });
-      const mainRail = (_a2 = ensurePlayerLayout()) == null ? void 0 : _a2.mainRail;
-      const compareSlot = ensureRailSlot(mainRail, "tmpc-trigger-slot");
-      TmPlayerCompare.mountButton(compareSlot, { player: player2 });
     };
     const applyTooltip = (data) => {
       if (!data) return;
@@ -52780,9 +52822,6 @@ order:initial
         b: reserveIds.has(player2.id) ? true : void 0,
         weeklyChanges: skillChangesMap.get(player2.id) || null
       }));
-      console.group("[Step 2] Players loaded \u2014 total:", allPlayers2.map((p) => p.weeklyChanges));
-      console.log(allPlayers2);
-      console.groupEnd();
       let syncBar = null;
       const allPlayersWithData = await runSyncPipeline(allPlayers2, (done, total) => {
         if (!syncBar) syncBar = TmProgress.progressBar({ title: "\u26A1 Syncing players" });

@@ -281,6 +281,7 @@ function bindPmMenu(pmState) {
         event.stopPropagation();
         closePmMenu(pmState);
         openPmCompose(pmState);
+        openPmDialog(pmState, { place: 'inbox' }); // populate list in background
     });
 
     pmState.viewAllEl?.addEventListener('click', event => {
