@@ -146,6 +146,9 @@ export async function applyTacticsAssignment(ctx, slotMap) {
     const prevFieldPids = new Set(
         players.filter(p => isFieldSlot(getPlayerSlot(p))).map(p => String(p.id))
     );
+    const prevBenchPids = new Set(
+        players.filter(p => isBenchSlot(getPlayerSlot(p))).map(p => String(p.id))
+    );
     for (const p of players) {
         const slot = getPlayerSlot(p);
         if (slot && (isFieldSlot(slot) || isBenchSlot(slot))) setPlayerSlot(p, null);
@@ -159,6 +162,9 @@ export async function applyTacticsAssignment(ctx, slotMap) {
         changed[String(pid)] = slot;
     }
     for (const pid of prevFieldPids) {
+        if (!changed[pid]) changed[pid] = 'out';
+    }
+    for (const pid of prevBenchPids) {
         if (!changed[pid]) changed[pid] = 'out';
     }
     ctx.rebuildAll();

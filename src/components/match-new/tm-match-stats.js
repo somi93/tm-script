@@ -13,7 +13,7 @@ import { ATTACK_STYLES, STYLE_ORDER } from '../../constants/match.js';
 // ── Full stat derivation ─────────────────────────────────────────────────────
 
 export const deriveStats = (match, replayState) => {
-    const homeClubId = String(match.home.club.id);
+    const homeClubId = String(match.home.club.teamId ?? match.home.club.id);
     const { committedClipIndex, currentMinute } = replayState;
 
     const mkAdv = () => {

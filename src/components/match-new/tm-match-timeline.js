@@ -193,8 +193,9 @@ const buildEventHtml = (evt, evtIdx, min, match, playerMap) => {
 
 /**
  * Build the full rows HTML for all key events up to (inclusive) `upToMinute`.
+ * committedActionIndex gates events within the current minute.
  */
-const buildTimelineHtml = (match, playerMap, upToMinute) => {
+const buildTimelineHtml = (match, playerMap, upToMinute, committedActionIndex = Infinity) => {
     const sortedMins = Object.keys(match.report || {})
         .map(Number)
         .filter(m => m <= upToMinute)
@@ -206,6 +207,7 @@ const buildTimelineHtml = (match, playerMap, upToMinute) => {
     for (const min of sortedMins) {
         const evts = match.report[String(min)] || [];
         for (let idx = 0; idx < evts.length; idx++) {
+            if (min === upToMinute && idx > committedActionIndex) break;
             const evt = evts[idx];
             const cells = buildEventHtml(evt, idx, min, match, playerMap);
             if (!cells.length) continue;
@@ -253,13 +255,15 @@ export const TmMatchTimeline = {
         wrap.className = 'tl-wrap';
 
         const upToMinute = initialState != null ? initialState.currentMinute : Infinity;
-        wrap.innerHTML = buildTimelineHtml(match, playerMap, upToMinute);
+        const initCommitted = initialState?.committedActionIndex ?? Infinity;
+        wrap.innerHTML = buildTimelineHtml(match, playerMap, upToMinute, initCommitted);
 
         return {
             el: wrap,
             update(replayState) {
                 const min = replayState?.currentMinute ?? Infinity;
-                wrap.innerHTML = buildTimelineHtml(match, playerMap, min);
+                const committed = replayState?.committedActionIndex ?? Infinity;
+                wrap.innerHTML = buildTimelineHtml(match, playerMap, min, committed);
             },
         };
     },

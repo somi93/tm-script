@@ -235,14 +235,22 @@ export const TmMatchHeader = {
 
             setModeActive(replayState.mode);
 
-            // live mentality
+            // live mentality — gated by committedClipIndex for the current minute
             const deriveMentality = (side) => {
                 const clubId = String(match[side].club.id);
                 let level = match[side].tactics.mentality ?? 4;
                 for (const min of Object.keys(match.plays).map(Number).sort((a, b) => a - b)) {
                     if (min > replayState.currentMinute) break;
+                    const isCurrent = (min === replayState.currentMinute);
+                    let ci = -1;
+                    let minDone = false;
                     for (const play of match.plays[String(min)]) {
+                        if (minDone) break;
                         for (const clip of (play.clips || [])) {
+                            if (isCurrent) {
+                                ci++;
+                                if (ci > replayState.committedClipIndex) { minDone = true; break; }
+                            }
                             for (const act of (clip.actions || [])) {
                                 if (act.action === 'mentality_change' && String(act.team) === clubId)
                                     level = act.mentality;

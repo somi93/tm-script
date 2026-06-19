@@ -56,6 +56,7 @@ export const normalizeRawMatchClub = (rawClub, isNt = false) => {
         : (id ? (rawClub.logo || `/pics/club_logos/${id}_140.png`) : '');
     return {
         id: isNt ? null : id,
+        teamId: id,
         name: rawClub.club_name || null,
         nick: rawClub.club_nick || null,
         country,

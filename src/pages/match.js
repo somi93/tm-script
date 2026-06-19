@@ -13,6 +13,7 @@ import { TmMatchVenueNew } from '../components/match-new/tm-match-venue.js';
 import { TmMatchH2HNew }   from '../components/match-new/tm-match-h2h.js';
 import { TmMatchReportNew }   from '../components/match-new/tm-match-report.js';
 import { TmMatchLeagueNew }  from '../components/match-new/tm-match-league.js';
+import { TmMatchLeagueNt }   from '../components/match-new/tm-match-league-nt.js';
 import { TmMatchIntCupNew }  from '../components/match-new/tm-match-intcup.js';
 import { TmMatchCupNew }     from '../components/match-new/tm-match-cup.js';
 import { TmMatchTimeline }   from '../components/match-new/tm-match-timeline.js';
@@ -222,7 +223,7 @@ const openPlayer = async (matchId) => {
                     nameOut: playerName(outAct?.by || ''),
                 });
             } else if (act.action === 'mentality_change') {
-                const isHome = String(act.team) === String(match.home.club.id);
+                const isHome = String(act.team) === String(match.home.club.teamId ?? match.home.club.id);
                 const club = isHome ? match.home.club : match.away.club;
                 const teamName = (club.name || '?').toUpperCase();
                 const mentalityName = MENTALITY_MAP_LONG[act.mentality] || String(act.mentality);
@@ -375,6 +376,8 @@ const openPlayer = async (matchId) => {
                 leagueInstance = TmMatchIntCupNew.create(match, ctrl.getState());
             } else if (match.competition?.type === 'cup') {
                 leagueInstance = TmMatchCupNew.create(match, ctrl.getState());
+            } else if (match.ntMatch || match.competition?.type === 'ntq') {
+                leagueInstance = TmMatchLeagueNt.create(match, matchId);
             } else {
                 leagueInstance = TmMatchLeagueNew.create(match, ctrl.getState());
             }
@@ -395,7 +398,7 @@ const openPlayer = async (matchId) => {
         { key: 'statistics', label: 'Statistics' },
         { key: 'report',     label: 'Report'     },
         { key: 'h2h',        label: 'H2H'        },
-        { key: 'league',     label: match.competition?.type === 'international_cup' ? (match.competition.name || 'Cup') : (match.competition?.type === 'cup' ? (match.competition.name || 'Cup') : 'League') },
+        { key: 'league',     label: match.competition?.type === 'international_cup' ? (match.competition.name || 'Cup') : (match.competition?.type === 'cup' ? (match.competition.name || 'Cup') : (match.ntMatch || match.competition?.type === 'ntq') ? (match.competition?.name || 'Competition') : 'League') },
         { key: 'timeline',   label: 'Timeline'   },
         { key: 'venue',      label: 'Venue'      },
     ];

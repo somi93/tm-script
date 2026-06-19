@@ -36,6 +36,7 @@ function getTacticsRoute(pathname = window.location.pathname, teamMode = getTact
 function buildAssocForSave(tactics) {
     const result = {};
     for (const pk of Object.keys(TmConst.POSITION_MAP)) result[pk] = 0;
+    for (const bench of TmConst.BENCH_SLOTS) result[bench] = 0;
     for (const p of tactics.players) {
         const slot = p.positions?.find(pos => pos.playing)?.key ?? null;
         if (slot) result[slot] = p.id;

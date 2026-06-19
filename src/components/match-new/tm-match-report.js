@@ -76,7 +76,7 @@ const CHEVRON = '<svg class="rnd-acc-chevron" viewBox="0 0 24 24"><path d="M8.59
 
 const buildPlayHtml = (play, min, match, nameMap) => {
     const acts = play.clips.flatMap(c => c.actions || []);
-    const isHome = String(play.team) === String(match.home.club.id);
+    const isHome = String(play.team) === String(match.home.club.teamId ?? match.home.club.id);
 
     // ── Header badges ─────────────────────────────────────────────────────────
     let headerBadges = '';
